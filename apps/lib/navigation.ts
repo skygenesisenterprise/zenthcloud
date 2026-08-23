@@ -21,9 +21,7 @@ import {
   ShoppingCart,
   ServerOff,
   Code2,
-  Terminal,
   Boxes,
-  FileText,
   Settings,
   MapPin,
   Radio,
@@ -68,7 +66,7 @@ export const publicCloudItems: NavItem[] = [
   { labelKey: "publicCloud.networking.label", href: "/public-cloud/networking", descriptionKey: "publicCloud.networking.description", icon: Network },
   { labelKey: "publicCloud.databases.label", href: "/public-cloud/databases", descriptionKey: "publicCloud.databases.description", icon: Database },
   { labelKey: "publicCloud.containers.label", href: "/public-cloud/containers", descriptionKey: "publicCloud.containers.description", icon: Container },
-  { labelKey: "publicCloud.gpuAi.label", href: "/public-cloud/gpu-ai", descriptionKey: "publicCloud.gpuAi.description", icon: Brain },
+  { labelKey: "publicCloud.gpuAi.label", href: "/public-cloud/gpu-and-ai", descriptionKey: "publicCloud.gpuAi.description", icon: Brain },
   { labelKey: "publicCloud.backup.label", href: "/public-cloud/backup", descriptionKey: "publicCloud.backup.description", icon: Archive },
   { labelKey: "publicCloud.security.label", href: "/public-cloud/security", descriptionKey: "publicCloud.security.description", icon: ShieldCheck },
 ];

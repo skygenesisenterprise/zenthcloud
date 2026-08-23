@@ -3,11 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { User } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { getDomainUrl } from "@/lib/domains";
 
 export function TopBar() {
   const t = useTranslations("Public.topBar");
+  const locale = useLocale();
   const [accountHref, setAccountHref] = React.useState("https://sso.zenthcloud.com/login");
 
   React.useEffect(() => {
@@ -18,7 +19,7 @@ export function TopBar() {
     <div className="hidden lg:block sticky top-0 z-50 bg-primary text-primary-foreground select-none">
       <div className="mx-auto flex h-11 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
-          href="/"
+          href={`/${locale}`}
           className="flex shrink-0 items-center font-bold tracking-tight hover:text-primary-foreground/80 transition-colors"
         >
           <span className="text-lg">ZenthCloud</span>

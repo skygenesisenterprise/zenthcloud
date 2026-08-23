@@ -21,8 +21,6 @@ export const metadata: Metadata = {
     template: "%s | Zenthcloud",
     default: "Zenthcloud",
   },
-  description:
-    "An open-source, sovereign and ethical cloud platform built for transparency, control, and modular infrastructure.",
   icons: {
     icon: [
       {

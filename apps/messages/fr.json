@@ -658,9 +658,9 @@
         "primary": "Commencer",
         "secondary": "Contacter les ventes",
         "websites": "Site public : zenthcloud.com · Manager client : manager.zenthcloud.com"
-    }
-  },
-  "compute": {
+      }
+    },
+    "compute": {
       "meta": {
         "title": "Compute Cloud | ZenthCloud",
         "description": "Déployez du compute cloud avec ZenthCloud : VPS, serveurs dédiés et options managées sur une infrastructure européenne."
@@ -751,12 +751,21 @@
         "included": {
           "title": "Systèmes inclus",
           "description": "Distributions open source courantes disponibles sans surcharge artificielle.",
-          "list": ["Debian", "Ubuntu", "Rocky Linux", "AlmaLinux"]
+          "list": [
+            "Debian",
+            "Ubuntu",
+            "Rocky Linux",
+            "AlmaLinux"
+          ]
         },
         "commercial": {
           "title": "Licences commerciales",
           "description": "Logiciels nécessitant une licence commerciale, gérés en toute transparence.",
-          "list": ["Windows Server", "Panneaux de contrôle", "Logiciels propriétaires"]
+          "list": [
+            "Windows Server",
+            "Panneaux de contrôle",
+            "Logiciels propriétaires"
+          ]
         }
       },
       "management": {
@@ -765,17 +774,37 @@
         "self": {
           "title": "Self-managed",
           "description": "Vous gardez le contrôle total. ZenthCloud fournit l'infrastructure, le réseau, la console et l'API.",
-          "features": ["Infrastructure", "Réseau", "Console", "API", "Outils de base"]
+          "features": [
+            "Infrastructure",
+            "Réseau",
+            "Console",
+            "API",
+            "Outils de base"
+          ]
         },
         "assisted": {
           "title": "Assisted",
           "description": "ZenthCloud intervient ponctuellement sur les aspects où vous avez besoin d'aide.",
-          "features": ["Installation", "Configuration", "Migration", "Dépannage", "Optimisation"]
+          "features": [
+            "Installation",
+            "Configuration",
+            "Migration",
+            "Dépannage",
+            "Optimisation"
+          ]
         },
         "managed": {
           "title": "Managed",
           "description": "ZenthCloud prend en charge une partie importante de l'exploitation de votre infrastructure.",
-          "features": ["OS", "Mises à jour", "Monitoring", "Sécurité", "Sauvegardes", "Maintenance", "Logiciels"]
+          "features": [
+            "OS",
+            "Mises à jour",
+            "Monitoring",
+            "Sécurité",
+            "Sauvegardes",
+            "Maintenance",
+            "Logiciels"
+          ]
         }
       },
       "automation": {
@@ -808,7 +837,13 @@
       "pricing": {
         "title": "Tarification transparente",
         "description": "Des options pour chaque niveau de besoin. Les prix définitifs seront publiés prochainement.",
-        "tabs": ["VPS", "Dedicated", "Options", "Managed", "Licences"],
+        "tabs": [
+          "VPS",
+          "Dedicated",
+          "Options",
+          "Managed",
+          "Licences"
+        ],
         "vps": {
           "label": "VPS Cloud",
           "price": "À partir de €X.XX/mois",
@@ -865,17 +900,35 @@
         "block": {
           "title": "Block Storage",
           "description": "Le stockage persistant pour vos workloads Compute.",
-          "features": ["Volumes persistants", "Association VPS / Dedicated", "Évolution de capacité", "Usage applicatif", "Bases de données"]
+          "features": [
+            "Volumes persistants",
+            "Association VPS / Dedicated",
+            "Évolution de capacité",
+            "Usage applicatif",
+            "Bases de données"
+          ]
         },
         "object": {
           "title": "Object Storage",
           "description": "Le stockage d'objets pour vos données et applications.",
-          "features": ["API", "Fichiers", "Médias", "Backups", "Datasets", "Scalabilité"]
+          "features": [
+            "API",
+            "Fichiers",
+            "Médias",
+            "Backups",
+            "Datasets",
+            "Scalabilité"
+          ]
         },
         "backup": {
           "title": "Backup Storage",
           "description": "Une capacité dédiée à la protection de vos données.",
-          "features": ["Sauvegardes", "Rétention", "Restauration", "Séparation logique"]
+          "features": [
+            "Sauvegardes",
+            "Rétention",
+            "Restauration",
+            "Séparation logique"
+          ]
         }
       },
       "workloads": {
@@ -927,19 +980,42 @@
       "objectStorageApi": {
         "title": "Object Storage / API",
         "description": "Une approche API-first pour vos applications et automatisation.",
-        "features": ["API", "Automatisation", "Intégration applicative", "CI/CD", "Sauvegardes automatisées", "Stockage de médias"],
+        "features": [
+          "API",
+          "Automatisation",
+          "Intégration applicative",
+          "CI/CD",
+          "Sauvegardes automatisées",
+          "Stockage de médias"
+        ],
         "terminalTitle": "api",
         "terminalExample": "curl -X PUT https://api.zenthcloud.com/v1/storage/objects/data.tar.gz \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H \"Content-Type: application/octet-stream\" \\\n  --data-binary @backup.tar.gz"
       },
       "durability": {
         "title": "Durabilité et disponibilité",
         "description": "Protéger vos données contre les défaillances sans promesse non fondée.",
-        "items": ["Réplication", "Redondance", "Protection contre les défaillances matérielles", "Monitoring", "Intégrité", "Sauvegarde"]
+        "items": [
+          "Réplication",
+          "Redondance",
+          "Protection contre les défaillances matérielles",
+          "Monitoring",
+          "Intégrité",
+          "Sauvegarde"
+        ]
       },
       "security": {
         "title": "Sécurité du stockage",
         "description": "Des mécanismes de sécurité à plusieurs niveaux.",
-        "items": ["Contrôle d'accès", "Isolation", "Chiffrement", "Permissions", "Réseau privé", "Audit", "Sauvegardes", "Protection contre la suppression accidentelle"],
+        "items": [
+          "Contrôle d'accès",
+          "Isolation",
+          "Chiffrement",
+          "Permissions",
+          "Réseau privé",
+          "Audit",
+          "Sauvegardes",
+          "Protection contre la suppression accidentelle"
+        ],
         "responsibility": "Le client reste responsable de ses données et de ses applications."
       },
       "backupNotStorage": {
@@ -951,7 +1027,12 @@
       "scalability": {
         "title": "Scalabilité",
         "description": "Commencez petit. Évoluez lorsque votre workload évolue.",
-        "steps": ["100 GB", "500 GB", "1 TB", "10 TB+"]
+        "steps": [
+          "100 GB",
+          "500 GB",
+          "1 TB",
+          "10 TB+"
+        ]
       },
       "managed": {
         "title": "Managed Storage",
@@ -959,23 +1040,44 @@
         "self": {
           "title": "Self-managed",
           "description": "Le client gère son stockage.",
-          "features": ["Provisionnement", "Configuration", "Surveillance basique"]
+          "features": [
+            "Provisionnement",
+            "Configuration",
+            "Surveillance basique"
+          ]
         },
         "assisted": {
           "title": "Assisted",
           "description": "Zenth Cloud accompagne la configuration et la migration.",
-          "features": ["Configuration", "Migration", "Optimisation"]
+          "features": [
+            "Configuration",
+            "Migration",
+            "Optimisation"
+          ]
         },
         "managed": {
           "title": "Managed",
           "description": "Zenth Cloud prend en charge davantage d'opérations.",
-          "features": ["Configuration", "Monitoring", "Sauvegardes", "Maintenance", "Migration", "Optimisation"]
+          "features": [
+            "Configuration",
+            "Monitoring",
+            "Sauvegardes",
+            "Maintenance",
+            "Migration",
+            "Optimisation"
+          ]
         }
       },
       "openSource": {
         "title": "Built with open technologies",
         "description": "Designed without unnecessary lock-in.",
-        "benefits": ["Transparence", "Interopérabilité", "Portabilité", "Maîtrise technologique", "Réduction du vendor lock-in"]
+        "benefits": [
+          "Transparence",
+          "Interopérabilité",
+          "Portabilité",
+          "Maîtrise technologique",
+          "Réduction du vendor lock-in"
+        ]
       },
       "pricing": {
         "title": "Tarification transparente",
@@ -999,7 +1101,17 @@
       "useCases": {
         "title": "Cas d'usage",
         "description": "Le stockage Zenth Cloud s'adapte à de nombreux scénarios.",
-        "items": ["Stockage applicatif", "Bases de données", "Médias", "Sauvegardes", "Archives", "Datasets", "Hébergement de fichiers", "Infrastructures SaaS", "Environnements de développement"]
+        "items": [
+          "Stockage applicatif",
+          "Bases de données",
+          "Médias",
+          "Sauvegardes",
+          "Archives",
+          "Datasets",
+          "Hébergement de fichiers",
+          "Infrastructures SaaS",
+          "Environnements de développement"
+        ]
       },
       "crossSelling": {
         "title": "Construisez votre infrastructure",
@@ -1046,33 +1158,70 @@
       "publicNetwork": {
         "title": "Public Network",
         "description": "Connectez vos ressources à Internet de manière contrôlée.",
-        "items": ["Connectivité Internet", "IPv4", "IPv6", "IP publiques", "Exposition de services", "Routage public"]
+        "items": [
+          "Connectivité Internet",
+          "IPv4",
+          "IPv6",
+          "IP publiques",
+          "Exposition de services",
+          "Routage public"
+        ]
       },
       "privateNetwork": {
         "title": "Private Network",
         "description": "Connectez vos workloads entre eux sans exposer leur trafic à Internet.",
-        "items": ["Trafic interne", "Segmentation", "Isolation", "Communication entre workloads", "Architectures multi-tier", "Réduction de l'exposition publique"]
+        "items": [
+          "Trafic interne",
+          "Segmentation",
+          "Isolation",
+          "Communication entre workloads",
+          "Architectures multi-tier",
+          "Réduction de l'exposition publique"
+        ]
       },
       "firewall": {
         "title": "Firewall",
         "description": "Contrôlez les flux entrants et sortants avec des règles simples.",
-        "items": ["Règles entrantes", "Règles sortantes", "Ports", "Protocoles", "Sources", "Destinations"]
+        "items": [
+          "Règles entrantes",
+          "Règles sortantes",
+          "Ports",
+          "Protocoles",
+          "Sources",
+          "Destinations"
+        ]
       },
       "segmentation": {
         "title": "Network segmentation",
         "description": "Séparez les zones de votre infrastructure pour réduire la surface d'attaque.",
-        "items": ["Réduction de la surface d'attaque", "Contrôle des communications", "Architecture multi-tier", "Isolation des services", "Maîtrise des flux"]
+        "items": [
+          "Réduction de la surface d'attaque",
+          "Contrôle des communications",
+          "Architecture multi-tier",
+          "Isolation des services",
+          "Maîtrise des flux"
+        ]
       },
       "loadBalancing": {
         "title": "Load Balancing",
         "description": "Répartissez le trafic entre plusieurs instances pour plus de résilience.",
-        "items": ["Haute disponibilité", "Montée en charge", "Répartition du trafic", "Déploiements progressifs"],
+        "items": [
+          "Haute disponibilité",
+          "Montée en charge",
+          "Répartition du trafic",
+          "Déploiements progressifs"
+        ],
         "note": "Fonctionnalité en cours de définition."
       },
       "ipv6": {
         "title": "IPv6 first-class",
         "description": "IPv6 n'est pas une option secondaire chez Zenth Cloud.",
-        "items": ["Adressage IPv6", "Coexistence IPv4 / IPv6", "Architectures modernes", "Préparation aux futurs workloads"]
+        "items": [
+          "Adressage IPv6",
+          "Coexistence IPv4 / IPv6",
+          "Architectures modernes",
+          "Préparation aux futurs workloads"
+        ]
       },
       "networkForCompute": {
         "title": "Network for Compute",
@@ -1092,12 +1241,26 @@
       "automation": {
         "title": "Built for automation",
         "description": "Provisionnez et gérez votre réseau par code.",
-        "items": ["API", "Provisioning", "Infrastructure as code", "Intégration CI/CD", "Création automatisée de réseaux", "Gestion automatisée des règles"]
+        "items": [
+          "API",
+          "Provisioning",
+          "Infrastructure as code",
+          "Intégration CI/CD",
+          "Création automatisée de réseaux",
+          "Gestion automatisée des règles"
+        ]
       },
       "security": {
         "title": "Security by architecture",
         "description": "Secure networking starts with architecture.",
-        "items": ["Private networks", "Firewall", "Segmentation", "Moindre privilège", "Contrôle des flux", "Isolation"],
+        "items": [
+          "Private networks",
+          "Firewall",
+          "Segmentation",
+          "Moindre privilège",
+          "Contrôle des flux",
+          "Isolation"
+        ],
         "responsibility": "La sécurité réseau combine les capacités Zenth Cloud et la configuration du client."
       },
       "managed": {
@@ -1106,33 +1269,70 @@
         "self": {
           "title": "Self-managed",
           "description": "Le client configure son réseau.",
-          "features": ["Configuration réseau", "Firewall", "Règles de base"]
+          "features": [
+            "Configuration réseau",
+            "Firewall",
+            "Règles de base"
+          ]
         },
         "assisted": {
           "title": "Assisted",
           "description": "Zenth Cloud accompagne la configuration et l'architecture.",
-          "features": ["Configuration", "Migration", "Architecture", "Règles", "Dépannage"]
+          "features": [
+            "Configuration",
+            "Migration",
+            "Architecture",
+            "Règles",
+            "Dépannage"
+          ]
         },
         "managed": {
           "title": "Managed",
           "description": "Zenth Cloud prend davantage en charge l'opération réseau.",
-          "features": ["Configuration réseau", "Firewall", "Monitoring", "Optimisation", "Maintenance"]
+          "features": [
+            "Configuration réseau",
+            "Firewall",
+            "Monitoring",
+            "Optimisation",
+            "Maintenance"
+          ]
         }
       },
       "openSource": {
         "title": "Open source networking",
         "description": "Open technologies. Open architecture. Less lock-in.",
-        "benefits": ["Transparence", "Interopérabilité", "Flexibilité", "Standards ouverts", "Maîtrise de l'infrastructure"]
+        "benefits": [
+          "Transparence",
+          "Interopérabilité",
+          "Flexibilité",
+          "Standards ouverts",
+          "Maîtrise de l'infrastructure"
+        ]
       },
       "pricing": {
         "title": "Tarification transparente",
         "description": "Modèles tarifaires à venir selon trafic, IP, réseaux privés et services réseau.",
-        "items": ["Trafic", "IP", "Réseaux privés", "Load balancers", "Services réseau", "Firewall", "Managed"],
+        "items": [
+          "Trafic",
+          "IP",
+          "Réseaux privés",
+          "Load balancers",
+          "Services réseau",
+          "Firewall",
+          "Managed"
+        ],
         "cta": "Voir la tarification"
       },
       "useCases": {
         "title": "Cas d'usage",
-        "items": ["Application web", "SaaS", "Infrastructure distribuée", "Bases de données privées", "Microservices", "Workloads sécurisés"]
+        "items": [
+          "Application web",
+          "SaaS",
+          "Infrastructure distribuée",
+          "Bases de données privées",
+          "Microservices",
+          "Workloads sécurisés"
+        ]
       },
       "crossSelling": {
         "title": "Construisez votre infrastructure",
@@ -1203,7 +1403,15 @@
       },
       "whyManaged": {
         "title": "Pourquoi une base de données managée ?",
-        "items": ["Provisioning", "Maintenance", "Backups", "Monitoring", "Security", "Scaling", "Recovery"]
+        "items": [
+          "Provisioning",
+          "Maintenance",
+          "Backups",
+          "Monitoring",
+          "Security",
+          "Scaling",
+          "Recovery"
+        ]
       },
       "workloads": {
         "title": "Une base conçue pour votre application",
@@ -1240,63 +1448,161 @@
       },
       "security": {
         "title": "Sécurité",
-        "items": ["Réseau privé", "Firewall", "Contrôle des accès", "Authentification", "Gestion des secrets", "Chiffrement en transit", "Chiffrement au repos", "Isolation", "Monitoring", "Audit"],
+        "items": [
+          "Réseau privé",
+          "Firewall",
+          "Contrôle des accès",
+          "Authentification",
+          "Gestion des secrets",
+          "Chiffrement en transit",
+          "Chiffrement au repos",
+          "Isolation",
+          "Monitoring",
+          "Audit"
+        ],
         "responsibility": "Zenth Cloud fournit les mécanismes d'infrastructure ; la sécurité dépend aussi de la configuration client."
       },
       "backups": {
         "title": "Backups & Recovery",
         "description": "Protégez vos données et facilitez la restauration.",
-        "items": ["Backups automatisés", "Snapshots", "Rétention", "Restauration", "Protection contre la suppression accidentelle"],
+        "items": [
+          "Backups automatisés",
+          "Snapshots",
+          "Rétention",
+          "Restauration",
+          "Protection contre la suppression accidentelle"
+        ],
         "cta": "Découvrir Backup"
       },
       "scaling": {
         "title": "Scaling",
         "description": "Scale your database as your application grows.",
-        "steps": ["Small", "Medium", "Large", "Enterprise"]
+        "steps": [
+          "Small",
+          "Medium",
+          "Large",
+          "Enterprise"
+        ]
       },
       "highAvailability": {
         "title": "High Availability",
         "description": "Réduisez le risque d'interruption avec une architecture résiliente.",
-        "items": ["Continuité", "Réplication", "Résilience"],
+        "items": [
+          "Continuité",
+          "Réplication",
+          "Résilience"
+        ],
         "note": "Disponibilité selon offres."
       },
       "monitoring": {
         "title": "Monitoring",
         "description": "Understand your database before it becomes a problem.",
-        "metrics": ["CPU", "Mémoire", "Stockage", "I/O", "Connexions", "Requêtes", "Latence", "Disponibilité"]
+        "metrics": [
+          "CPU",
+          "Mémoire",
+          "Stockage",
+          "I/O",
+          "Connexions",
+          "Requêtes",
+          "Latence",
+          "Disponibilité"
+        ]
       },
       "managedVsSelf": {
         "title": "Managed vs Self-managed",
-        "rows": ["Infrastructure", "Installation", "Maintenance", "Monitoring", "Backups", "Scaling", "Administration DB"],
-        "self": ["Client", "Client", "Client", "Client", "Client", "Client", "Client"],
-        "managed": ["Zenth Cloud", "Zenth Cloud", "Zenth Cloud", "Zenth Cloud / selon offre", "Zenth Cloud / selon offre", "Assisté / automatisé selon offre", "Partagée selon niveau de service"]
+        "rows": [
+          "Infrastructure",
+          "Installation",
+          "Maintenance",
+          "Monitoring",
+          "Backups",
+          "Scaling",
+          "Administration DB"
+        ],
+        "self": [
+          "Client",
+          "Client",
+          "Client",
+          "Client",
+          "Client",
+          "Client",
+          "Client"
+        ],
+        "managed": [
+          "Zenth Cloud",
+          "Zenth Cloud",
+          "Zenth Cloud",
+          "Zenth Cloud / selon offre",
+          "Zenth Cloud / selon offre",
+          "Assisté / automatisé selon offre",
+          "Partagée selon niveau de service"
+        ]
       },
       "developers": {
         "title": "Built for developers",
         "description": "Intégrez votre base de données dans vos workflows de développement.",
-        "features": ["API", "Provisioning", "Infrastructure as code", "CI/CD", "Environnements temporaires", "Staging"]
+        "features": [
+          "API",
+          "Provisioning",
+          "Infrastructure as code",
+          "CI/CD",
+          "Environnements temporaires",
+          "Staging"
+        ]
       },
       "openSource": {
         "title": "Open source database ecosystem",
         "description": "Open source engines. Managed infrastructure.",
-        "benefits": ["Transparence", "Standards ouverts", "Portabilité", "Réduction du vendor lock-in", "Écosystème mature"]
+        "benefits": [
+          "Transparence",
+          "Standards ouverts",
+          "Portabilité",
+          "Réduction du vendor lock-in",
+          "Écosystème mature"
+        ]
       },
       "pricing": {
         "title": "Tarification transparente",
         "description": "Modèles tarifaires à venir selon moteur, ressources et options.",
-        "items": ["Moteur", "vCPU", "RAM", "Stockage", "Backups", "Haute disponibilité", "Trafic", "Connexions", "Managed"],
+        "items": [
+          "Moteur",
+          "vCPU",
+          "RAM",
+          "Stockage",
+          "Backups",
+          "Haute disponibilité",
+          "Trafic",
+          "Connexions",
+          "Managed"
+        ],
         "cta": "Voir la tarification"
       },
       "migration": {
         "title": "Migration",
         "description": "Already running a database elsewhere? Bring it to Zenth Cloud.",
-        "cases": ["VPS", "Serveur dédié", "Autre cloud", "On-premise"],
-        "services": ["Audit", "Planification", "Transfert", "Validation", "Bascule"],
+        "cases": [
+          "VPS",
+          "Serveur dédié",
+          "Autre cloud",
+          "On-premise"
+        ],
+        "services": [
+          "Audit",
+          "Planification",
+          "Transfert",
+          "Validation",
+          "Bascule"
+        ],
         "cta": "Parler à un expert"
       },
       "useCases": {
         "title": "Cas d'usage",
-        "items": ["SaaS", "E-commerce", "Production + Staging", "Multi-service application"]
+        "items": [
+          "SaaS",
+          "E-commerce",
+          "Production + Staging",
+          "Multi-service application"
+        ]
       },
       "crossSelling": {
         "title": "Construisez votre infrastructure",
@@ -1372,12 +1678,24 @@
       },
       "envConfig": {
         "title": "Environment configuration",
-        "items": ["Environment variables", "Secrets", "Configuration", "Ports", "Runtime settings"]
+        "items": [
+          "Environment variables",
+          "Secrets",
+          "Configuration",
+          "Ports",
+          "Runtime settings"
+        ]
       },
       "scaling": {
         "title": "Scaling",
         "description": "Faites évoluer vos workloads conteneurisés.",
-        "items": ["Scale up", "Scale down", "Replicas", "Autoscaling", "Rolling deployments"],
+        "items": [
+          "Scale up",
+          "Scale down",
+          "Replicas",
+          "Autoscaling",
+          "Rolling deployments"
+        ],
         "note": "Capacités selon offres."
       },
       "zeroDowntime": {
@@ -1388,27 +1706,80 @@
       "logsMonitoring": {
         "title": "Logs & Monitoring",
         "description": "Observez vos containers sans vous connecter au serveur.",
-        "items": ["Container logs", "CPU", "RAM", "Réseau", "Restarts", "Health status", "Uptime"]
+        "items": [
+          "Container logs",
+          "CPU",
+          "RAM",
+          "Réseau",
+          "Restarts",
+          "Health status",
+          "Uptime"
+        ]
       },
       "healthChecks": {
         "title": "Health checks",
         "description": "Vérifiez l'état de vos containers et déclenchez des actions de recovery.",
-        "items": ["Healthy", "Unhealthy", "Recovery"]
+        "items": [
+          "Healthy",
+          "Unhealthy",
+          "Recovery"
+        ]
       },
       "comparison": {
         "title": "Containers vs VPS vs Kubernetes",
-        "rows": ["Infrastructure", "Déploiement", "Containers", "Scaling", "Complexité", "Contrôle"],
-        "vps": ["Client", "Manuel", "À gérer", "Manuel", "Faible à moyenne", "Élevé"],
-        "containers": ["Zenth Cloud", "Simplifié", "Natifs", "Simplifié / selon offre", "Faible", "Moyen"],
-        "kubernetes": ["Zenth Cloud / Managed", "Orchestré", "Natifs", "Avancé", "Élevée", "Très élevé"]
+        "rows": [
+          "Infrastructure",
+          "Déploiement",
+          "Containers",
+          "Scaling",
+          "Complexité",
+          "Contrôle"
+        ],
+        "vps": [
+          "Client",
+          "Manuel",
+          "À gérer",
+          "Manuel",
+          "Faible à moyenne",
+          "Élevé"
+        ],
+        "containers": [
+          "Zenth Cloud",
+          "Simplifié",
+          "Natifs",
+          "Simplifié / selon offre",
+          "Faible",
+          "Moyen"
+        ],
+        "kubernetes": [
+          "Zenth Cloud / Managed",
+          "Orchestré",
+          "Natifs",
+          "Avancé",
+          "Élevée",
+          "Très élevé"
+        ]
       },
       "developers": {
         "title": "Built for developers",
-        "features": ["Git", "CI/CD", "API", "CLI", "Infrastructure as Code", "Webhooks"]
+        "features": [
+          "Git",
+          "CI/CD",
+          "API",
+          "CLI",
+          "Infrastructure as Code",
+          "Webhooks"
+        ]
       },
       "openSource": {
         "title": "Built on open standards",
-        "benefits": ["OCI", "Docker ecosystem", "Standards ouverts", "Portabilité", "Réduction du vendor lock-in"]
+        "benefits": [
+          "OCI",
+          "Docker ecosystem",
+          "Standards ouverts",
+          "Portabilité",
+          "Réduction du vendor lock-in"
+        ]
       },
       "managed": {
         "title": "Managed Containers",
@@ -1416,33 +1787,76 @@
         "self": {
           "title": "Self-managed",
           "description": "Vous utilisez des containers sur Compute et gérez l'environnement.",
-          "features": ["Installation container runtime", "Configuration manuelle", "Gestion des déploiements"]
+          "features": [
+            "Installation container runtime",
+            "Configuration manuelle",
+            "Gestion des déploiements"
+          ]
         },
         "platform": {
           "title": "Platform",
           "description": "Zenth Cloud gère la couche d'exécution, vous gérez votre application.",
-          "features": ["Provisioning", "Exécution", "Networking", "Logs", "Monitoring"]
+          "features": [
+            "Provisioning",
+            "Exécution",
+            "Networking",
+            "Logs",
+            "Monitoring"
+          ]
         },
         "managed": {
           "title": "Managed",
           "description": "Zenth Cloud prend davantage en charge l'opération.",
-          "features": ["Déploiement", "Monitoring", "Configuration", "Mises à jour", "Troubleshooting", "Optimisation"]
+          "features": [
+            "Déploiement",
+            "Monitoring",
+            "Configuration",
+            "Mises à jour",
+            "Troubleshooting",
+            "Optimisation"
+          ]
         }
       },
       "security": {
         "title": "Security",
-        "items": ["Isolation des workloads", "Firewall", "Private networking", "Contrôle des accès", "Secrets", "Image security", "Registry privé", "Monitoring"],
+        "items": [
+          "Isolation des workloads",
+          "Firewall",
+          "Private networking",
+          "Contrôle des accès",
+          "Secrets",
+          "Image security",
+          "Registry privé",
+          "Monitoring"
+        ],
         "responsibility": "Container isolation is one layer of security, not the entire security model."
       },
       "pricing": {
         "title": "Tarification transparente",
         "description": "Modèles tarifaires à venir selon ressources et options.",
-        "items": ["CPU", "RAM", "Stockage", "Workloads", "Trafic", "Registry", "Volumes", "Replicas", "Managed", "Monitoring"],
+        "items": [
+          "CPU",
+          "RAM",
+          "Stockage",
+          "Workloads",
+          "Trafic",
+          "Registry",
+          "Volumes",
+          "Replicas",
+          "Managed",
+          "Monitoring"
+        ],
         "cta": "Voir la tarification"
       },
       "useCases": {
         "title": "Cas d'usage",
-        "items": ["Web application", "API", "Worker", "CI/CD", "Microservices"]
+        "items": [
+          "Web application",
+          "API",
+          "Worker",
+          "CI/CD",
+          "Microservices"
+        ]
       },
       "crossSelling": {
         "title": "Construisez votre infrastructure",
@@ -1482,6 +1896,1232 @@
         "description": "Déployez votre premier container sur Zenth Cloud.",
         "primary": "Deploy a container",
         "secondary": "Explore Kubernetes"
+      }
+    },
+    "gpuAi": {
+      "meta": {
+        "title": "GPU & AI Cloud | ZenthCloud",
+        "description": "Infrastructure GPU et IA sur Zenth Cloud pour l'entraînement, l'inférence et le calcul accéléré."
+      },
+      "hero": {
+        "badge": "Public Cloud GPU & AI",
+        "title": "Compute without limits. Accelerated by GPUs.",
+        "subtitle": "Exécutez des workloads GPU sans acheter ni maintenir votre propre matériel.",
+        "primaryCta": "Explore GPU Compute",
+        "secondaryCta": "Build with AI"
+      },
+      "whyGpu": {
+        "title": "Why GPU Computing?",
+        "description": "Les GPU excellent sur les workloads fortement parallélisables, notamment les opérations matricielles et l'IA."
+      },
+      "gpuProfiles": {
+        "title": "GPU profiles",
+        "description": "Trois profils pour couvrir les besoins du développement à l'entreprise.",
+        "entry": {
+          "title": "Entry GPU",
+          "description": "Développement, expérimentation, petits modèles et inference légère."
+        },
+        "performance": {
+          "title": "Performance GPU",
+          "description": "Entraînement, inference, fine-tuning et workloads plus importants."
+        },
+        "enterprise": {
+          "title": "Enterprise GPU",
+          "description": "Gros modèles, workloads intensifs, calcul scientifique et infrastructure professionnelle."
+        }
+      },
+      "gpuTypes": {
+        "title": "GPU Compute types",
+        "shared": {
+          "title": "Shared GPU",
+          "description": "GPU partagé entre plusieurs workloads pour un accès simple et un coût maîtrisé."
+        },
+        "dedicated": {
+          "title": "Dedicated GPU",
+          "description": "GPU physique dédié pour l'isolation et des performances prévisibles."
+        },
+        "server": {
+          "title": "GPU Server",
+          "description": "Configurations multi-GPU pour les workloads les plus exigeants."
+        }
+      },
+      "aiWorkloads": {
+        "title": "AI workloads",
+        "inference": {
+          "title": "Inference",
+          "description": "Exécuter un modèle déjà entraîné : LLM, vision, speech, classification, génération."
+        },
+        "fineTuning": {
+          "title": "Fine-tuning",
+          "description": "Adapter un modèle existant à un domaine ou dataset particulier."
+        },
+        "training": {
+          "title": "Training",
+          "description": "Entraîner un modèle sur vos propres données."
+        },
+        "embeddings": {
+          "title": "Embeddings",
+          "description": "Générer des représentations vectorielles pour la recherche sémantique et le RAG."
+        },
+        "agents": {
+          "title": "AI agents",
+          "description": "Exécuter des agents nécessitant des ressources de calcul selon le cas."
+        }
+      },
+      "genAi": {
+        "title": "Generative AI",
+        "items": [
+          "LLM inference",
+          "Image generation",
+          "Speech generation",
+          "Multimodal AI",
+          "RAG",
+          "Embeddings"
+        ]
+      },
+      "training": {
+        "title": "Training & Fine-tuning",
+        "description": "Vos données restent au cœur de votre infrastructure IA."
+      },
+      "containers": {
+        "title": "AI + Containers",
+        "description": "Reproductibilité, isolation et déploiement automatisé de vos workloads IA.",
+        "cta": "Discover Containers"
+      },
+      "storage": {
+        "title": "AI + Storage",
+        "description": "Stockez datasets, checkpoints, modèles et outputs.",
+        "cta": "Discover Storage"
+      },
+      "networking": {
+        "title": "AI + Networking",
+        "description": "Réseau privé, isolation et communication interne pour vos services AI.",
+        "cta": "Discover Networking"
+      },
+      "aiInference": {
+        "title": "AI inference",
+        "description": "Passez de l'expérimentation à la production avec des services d'inference scalables.",
+        "items": [
+          "Scaling",
+          "Replicas",
+          "Load balancing",
+          "Model serving",
+          "Monitoring",
+          "Autoscaling"
+        ],
+        "note": "Mécanismes disponibles selon offres."
+      },
+      "developers": {
+        "title": "GPU for developers",
+        "items": [
+          "SSH",
+          "Containers",
+          "CUDA",
+          "ROCm",
+          "Python",
+          "Frameworks ML",
+          "API",
+          "CLI",
+          "Infrastructure as Code"
+        ]
+      },
+      "preconfigured": {
+        "title": "Preconfigured environments",
+        "items": [
+          "AI Development",
+          "LLM",
+          "CUDA",
+          "Machine Learning"
+        ]
+      },
+      "monitoring": {
+        "title": "GPU monitoring",
+        "metrics": [
+          "GPU utilization",
+          "VRAM usage",
+          "Temperature",
+          "Power",
+          "CPU",
+          "RAM",
+          "Network",
+          "Storage"
+        ]
+      },
+      "costEfficiency": {
+        "title": "Cost efficiency",
+        "items": [
+          "Development",
+          "Inference",
+          "Training",
+          "Dedicated"
+        ]
+      },
+      "consumptionModels": {
+        "title": "On-demand vs dedicated",
+        "onDemand": {
+          "title": "On-demand",
+          "description": "Expérimentation, développement et workloads variables."
+        },
+        "dedicated": {
+          "title": "Dedicated",
+          "description": "Workloads continus, performances prévisibles et isolation."
+        },
+        "reserved": {
+          "title": "Reserved",
+          "description": "Workloads planifiés ou permanents selon offres."
+        }
+      },
+      "security": {
+        "title": "Security",
+        "items": [
+          "Isolation",
+          "Private networking",
+          "Firewall",
+          "Contrôle d'accès",
+          "Secrets",
+          "Stockage sécurisé",
+          "Monitoring",
+          "Isolation des workloads GPU"
+        ],
+        "responsibility": "Zenth Cloud fournit l'infrastructure ; la protection des datasets et modèles dépend aussi du client."
+      },
+      "openSource": {
+        "title": "Open source AI ecosystem",
+        "description": "Use the models, frameworks and tools you choose.",
+        "benefits": [
+          "Open source models",
+          "Open source frameworks",
+          "Containers",
+          "OCI",
+          "Linux",
+          "Open APIs"
+        ]
+      },
+      "managed": {
+        "title": "Managed AI Infrastructure",
+        "infrastructureOnly": {
+          "title": "Infrastructure only",
+          "description": "Zenth Cloud fournit GPU, réseau, stockage et compute. Vous gérez votre environnement.",
+          "features": [
+            "GPU",
+            "Réseau",
+            "Stockage",
+            "Compute"
+          ]
+        },
+        "assisted": {
+          "title": "Assisted",
+          "description": "Zenth Cloud aide au déploiement, à l'optimisation et à la migration.",
+          "features": [
+            "Déploiement",
+            "Optimisation",
+            "Migration",
+            "Configuration"
+          ]
+        },
+        "managedAi": {
+          "title": "Managed AI Infrastructure",
+          "description": "Zenth Cloud prend en charge davantage d'opérations selon les offres disponibles.",
+          "features": [
+            "Runtime",
+            "Monitoring",
+            "Scaling",
+            "Model serving",
+            "Maintenance"
+          ]
+        }
+      },
+      "kubernetes": {
+        "title": "GPU + Kubernetes",
+        "description": "Orchestrez des workloads GPU complexes avec Kubernetes.",
+        "cta": "Discover Kubernetes"
+      },
+      "useCases": {
+        "title": "Use cases",
+        "items": [
+          "AI inference",
+          "Machine Learning",
+          "Generative AI",
+          "Rendering",
+          "Scientific Computing",
+          "Data Processing",
+          "Development",
+          "Research"
+        ]
+      },
+      "pricing": {
+        "title": "Tarification transparente",
+        "description": "Modèles tarifaires à venir selon GPU, ressources et options.",
+        "items": [
+          "GPU model",
+          "GPU count",
+          "VRAM",
+          "CPU",
+          "RAM",
+          "Storage",
+          "Network",
+          "Runtime",
+          "Reserved / on-demand",
+          "Managed options"
+        ],
+        "cta": "Voir la tarification"
+      },
+      "migration": {
+        "title": "Migration",
+        "description": "Bring your AI workloads to Zenth Cloud.",
+        "cases": [
+          "Workstation",
+          "Serveur GPU",
+          "Autre cloud",
+          "On-premise"
+        ],
+        "services": [
+          "Architecture",
+          "Transfert des datasets",
+          "Configuration",
+          "Containerisation",
+          "Validation",
+          "Mise en production"
+        ],
+        "cta": "Parler à un expert"
+      },
+      "crossSelling": {
+        "title": "Construisez votre infrastructure IA",
+        "compute": {
+          "label": "Compute",
+          "description": "CPU et ressources générales.",
+          "cta": "Discover Compute"
+        },
+        "storage": {
+          "label": "Storage",
+          "description": "Stockez vos datasets et modèles.",
+          "cta": "Discover Storage"
+        },
+        "networking": {
+          "label": "Networking",
+          "description": "Connectez vos services IA en privé.",
+          "cta": "Discover Networking"
+        },
+        "containers": {
+          "label": "Containers",
+          "description": "Containerisez vos workloads IA.",
+          "cta": "Discover Containers"
+        },
+        "kubernetes": {
+          "label": "Kubernetes",
+          "description": "Orchestrez à grande échelle.",
+          "cta": "Discover Kubernetes"
+        },
+        "databases": {
+          "label": "Databases",
+          "description": "Bases de données pour vos applications IA.",
+          "cta": "Discover Databases"
+        },
+        "backup": {
+          "label": "Backup",
+          "description": "Protégez vos données et modèles.",
+          "cta": "Discover Backup"
+        }
+      },
+      "finalCta": {
+        "title": "Build what comes next.",
+        "description": "Déployez votre infrastructure GPU et IA sur Zenth Cloud.",
+        "primary": "Explore GPU Compute",
+        "secondary": "Talk to an expert"
+      }
+    },
+    "backup": {
+      "meta": {
+        "title": "Backup Cloud | ZenthCloud",
+        "description": "Protégez vos workloads cloud avec Zenth Cloud Backup. Sauvegardes, restauration et résilience pour Compute, Storage et Databases."
+      },
+      "hero": {
+        "badge": "Public Cloud Backup",
+        "title": "Your infrastructure deserves a way back.",
+        "subtitle": "Protégez vos workloads et restaurez vos données après une erreur humaine, une panne ou un incident.",
+        "primaryCta": "Protect my infrastructure",
+        "secondaryCta": "Explore Backup"
+      },
+      "whatCanProtect": {
+        "title": "What can you protect?",
+        "items": [
+          "VPS",
+          "Dedicated Servers",
+          "Volumes",
+          "Databases",
+          "Containers",
+          "Object Storage"
+        ]
+      },
+      "backupTypes": {
+        "title": "Backup types",
+        "snapshot": {
+          "title": "Snapshot",
+          "description": "Capture rapide d'un état à un instant donné. Idéal pour rollback et tests."
+        },
+        "backup": {
+          "title": "Backup",
+          "description": "Copie destinée à une conservation durable et à la récupération après incident."
+        },
+        "archive": {
+          "title": "Archive",
+          "description": "Conservation longue durée pour les données historiques."
+        },
+        "difference": "A snapshot is a recovery tool. A backup is part of a recovery strategy."
+      },
+      "automatedBackups": {
+        "title": "Automated backups",
+        "description": "Définissez des politiques de sauvegarde automatisées adaptées à vos workloads.",
+        "items": [
+          "Fréquence",
+          "Planification",
+          "Rétention",
+          "Automatisation",
+          "Nettoyage automatique"
+        ]
+      },
+      "retention": {
+        "title": "Retention policies",
+        "description": "Créer une sauvegarde ne suffit pas. Gardez les points de récupération qui comptent."
+      },
+      "recovery": {
+        "title": "Recovery",
+        "description": "Restaurez à différents niveaux selon les capacités du produit.",
+        "items": [
+          "Fichier",
+          "Volume",
+          "Instance",
+          "Database",
+          "Workload complet"
+        ]
+      },
+      "recoveryWorkflow": {
+        "title": "Recovery workflow",
+        "description": "La récupération doit être un workflow, pas une improvisation en cas d'urgence.",
+        "steps": [
+          "Incident",
+          "Choose Recovery Point",
+          "Validate",
+          "Restore",
+          "Back Online"
+        ]
+      },
+      "humanError": {
+        "title": "Protection against human error",
+        "description": "Une sauvegarde est un filet de sécurité contre les erreurs humaines."
+      },
+      "infrastructureFailure": {
+        "title": "Protection against infrastructure failure",
+        "description": "Les sauvegardes réduisent l'impact des pannes matérielles et logicielles."
+      },
+      "isolation": {
+        "title": "Isolation",
+        "description": "Les sauvegardes sont logiquement séparées de l'environnement primaire pour plus de résilience."
+      },
+      "security": {
+        "title": "Security",
+        "items": [
+          "Contrôle d'accès",
+          "Permissions",
+          "Chiffrement",
+          "Isolation",
+          "Réseau privé",
+          "Audit",
+          "Protection contre suppression accidentelle"
+        ]
+      },
+      "encryption": {
+        "title": "Encryption",
+        "inTransit": "Protection des données pendant leur transfert.",
+        "atRest": "Protection des données lorsqu'elles sont stockées.",
+        "keyManagement": "Gestion des clés selon les offres disponibles."
+      },
+      "databaseBackup": {
+        "title": "Backup for Databases",
+        "description": "Stratégies de sauvegarde adaptées aux bases de données.",
+        "cta": "Discover Databases"
+      },
+      "computeBackup": {
+        "title": "Backup for Compute",
+        "description": "Protection des instances et volumes Compute.",
+        "cta": "Discover Compute"
+      },
+      "containersBackup": {
+        "title": "Backup for Containers",
+        "description": "Les containers peuvent être jetables. Vos données ne le sont pas.",
+        "cta": "Discover Containers"
+      },
+      "storageBackup": {
+        "title": "Backup + Storage",
+        "description": "Primary storage keeps your workload running. Backup gives you a way back.",
+        "cta": "Discover Storage"
+      },
+      "threeTwoOne": {
+        "title": "3-2-1 principle",
+        "description": "Une stratégie de backup résiliente suit des principes tels que 3 copies, 2 supports, 1 copie hors site."
+      },
+      "monitoring": {
+        "title": "Backup monitoring",
+        "items": [
+          "Dernière sauvegarde",
+          "Sauvegardes en échec",
+          "Prochaine exécution",
+          "Recovery points disponibles",
+          "Espace utilisé"
+        ]
+      },
+      "alerts": {
+        "title": "Alerts",
+        "description": "Une sauvegarde qui échoue silencieusement n'est pas une stratégie de backup.",
+        "items": [
+          "Backup failure",
+          "Storage threshold",
+          "Policy failure",
+          "Recovery event"
+        ]
+      },
+      "managed": {
+        "title": "Managed Backup",
+        "self": {
+          "title": "Self-managed",
+          "description": "Vous construisez votre propre stratégie de sauvegarde.",
+          "features": [
+            "Configuration des politiques",
+            "Planification",
+            "Surveillance basique"
+          ]
+        },
+        "assisted": {
+          "title": "Assisted",
+          "description": "Zenth Cloud accompagne l'architecture, la politique et la restauration.",
+          "features": [
+            "Architecture",
+            "Politique",
+            "Migration",
+            "Restauration"
+          ]
+        },
+        "managed": {
+          "title": "Managed Backup",
+          "description": "Zenth Cloud prend en charge une partie importante de la protection.",
+          "features": [
+            "Politiques",
+            "Monitoring",
+            "Rétention",
+            "Vérification",
+            "Restauration",
+            "Optimisation"
+          ]
+        }
+      },
+      "backupTesting": {
+        "title": "Backup testing",
+        "description": "Une sauvegarde n'est utile que si elle peut être restaurée.",
+        "steps": [
+          "Backup",
+          "Restore Test",
+          "Validation",
+          "Trusted Recovery Point"
+        ]
+      },
+      "disasterRecovery": {
+        "title": "Disaster Recovery",
+        "description": "Backup est un composant d'une stratégie de reprise d'activité.",
+        "items": [
+          "Backup",
+          "Disaster Recovery",
+          "Business Continuity"
+        ]
+      },
+      "rpoRto": {
+        "title": "RPO / RTO",
+        "rpo": "Combien de données pouvez-vous vous permettre de perdre ?",
+        "rto": "Combien de temps pouvez-vous vous permettre d'être indisponible ?"
+      },
+      "pricing": {
+        "title": "Tarification transparente",
+        "description": "Modèles tarifaires à venir selon capacité, workloads et options.",
+        "items": [
+          "Capacité",
+          "Nombre de workloads",
+          "Fréquence",
+          "Rétention",
+          "Snapshots",
+          "Restauration",
+          "Trafic",
+          "Stockage",
+          "Managed"
+        ],
+        "cta": "Voir la tarification"
+      },
+      "useCases": {
+        "title": "Use cases",
+        "items": [
+          "VPS Protection",
+          "Database Protection",
+          "Ransomware / destructive incident",
+          "Migration",
+          "Disaster Recovery"
+        ]
+      },
+      "crossSelling": {
+        "title": "Construisez votre infrastructure résiliente",
+        "compute": {
+          "label": "Compute",
+          "description": "Protégez vos instances et serveurs.",
+          "cta": "Discover Compute"
+        },
+        "storage": {
+          "label": "Storage",
+          "description": "Stockez vos données et recovery points.",
+          "cta": "Discover Storage"
+        },
+        "databases": {
+          "label": "Databases",
+          "description": "Sauvegardez vos bases de données.",
+          "cta": "Discover Databases"
+        },
+        "containers": {
+          "label": "Containers",
+          "description": "Protégez les données persistantes de vos containers.",
+          "cta": "Discover Containers"
+        },
+        "networking": {
+          "label": "Networking",
+          "description": "Connectez vos environnements de reprise.",
+          "cta": "Discover Networking"
+        },
+        "gpuAi": {
+          "label": "GPU & AI",
+          "description": "Protégez vos modèles et datasets.",
+          "cta": "Discover GPU & AI"
+        }
+      },
+      "finalCta": {
+        "title": "Make recovery part of your infrastructure.",
+        "description": "Configurez votre première politique de sauvegarde sur Zenth Cloud.",
+        "primary": "Protect my infrastructure",
+        "secondary": "Talk to an expert"
+      }
+    },
+    "security": {
+      "meta": {
+        "title": "Sécurité Cloud Infrastructure | ZenthCloud",
+        "description": "La sécurité de l'infrastructure cloud de ZenthCloud : responsabilité partagée, réseau privé, firewall, IAM, chiffrement, isolation et monitoring."
+      },
+      "hero": {
+        "badge": "Public Cloud Security",
+        "title": "La sécurité intégrée à chaque couche.",
+        "subtitle": "ZenthCloud sécurise l'infrastructure physique, le réseau, la plateforme et l'accès. Vous gardez le contrôle de vos workloads, de vos données et de vos configurations.",
+        "primaryCta": "Explorer notre sécurité",
+        "secondaryCta": "Voir l'architecture"
+      },
+      "sharedResponsibility": {
+        "title": "Responsabilité partagée",
+        "description": "La sécurité cloud est un partage clair des responsabilités. ZenthCloud protège l'infrastructure que vous utilisez. Vous protégez ce que vous y déployez.",
+        "zenthTitle": "ZenthCloud",
+        "zenthItems": [
+          "Infrastructure physique",
+          "Réseau core",
+          "Hyperviseur / plateforme",
+          "Services managés",
+          "Sécurité de la plateforme"
+        ],
+        "customerTitle": "Client",
+        "customerItems": [
+          "Application",
+          "Code applicatif",
+          "Permissions utilisateurs",
+          "Secrets",
+          "Configuration des données"
+        ],
+        "message": "ZenthCloud sécurise l'infrastructure. Vous gardez le contrôle de ce que vous exécutez dessus."
+      },
+      "layers": {
+        "title": "Security at every layer",
+        "description": "Une approche defense in depth : chaque couche ajoute ses propres contrôles sans se substituer à la suivante.",
+        "items": [
+          {
+            "key": "physical",
+            "title": "Physical Security",
+            "description": "Datacenters avec accès contrôlé et surveillance."
+          },
+          {
+            "key": "network",
+            "title": "Network Security",
+            "description": "Firewalls, réseaux privés et segmentation."
+          },
+          {
+            "key": "compute",
+            "title": "Compute Isolation",
+            "description": "Isolation des workloads et séparation des ressources."
+          },
+          {
+            "key": "identity",
+            "title": "Identity & Access",
+            "description": "IAM, RBAC et authentification forte."
+          },
+          {
+            "key": "data",
+            "title": "Data Security",
+            "description": "Protection des données au repos, en transit et en utilisation."
+          },
+          {
+            "key": "monitoring",
+            "title": "Monitoring",
+            "description": "Télémétrie, alertes et événements de sécurité."
+          },
+          {
+            "key": "backup",
+            "title": "Backup & Recovery",
+            "description": "Backups, recovery points et restauration."
+          }
+        ]
+      },
+      "physical": {
+        "title": "Infrastructure physique",
+        "description": "La sécurité commence par l'endroit où tournent vos workloads.",
+        "items": [
+          "Datacenters avec accès contrôlé",
+          "Surveillance et traçabilité des accès",
+          "Alimentation redondante",
+          "Réseau redondant",
+          "Protection physique des serveurs"
+        ],
+        "note": "ZenthCloud opère son infrastructure. Certains sites peuvent être hébergés auprès de partenaires de confiance, sous notre supervision."
+      },
+      "network": {
+        "title": "Sécurité réseau",
+        "description": "Contrôlez comment vos workloads sont exposés, segmentés et protégés.",
+        "items": [
+          "Firewalls et security groups",
+          "Réseaux privés",
+          "Segmentation réseau",
+          "ACL et contrôle des flux",
+          "Protection DDoS",
+          "Contrôle ingress / egress"
+        ],
+        "cta": "Découvrir Networking"
+      },
+      "networkIsolation": {
+        "title": "Isolation réseau",
+        "description": "Vos services internes n'ont pas besoin d'être directement exposés à Internet. Placez les bases de données, workers et APIs sensibles sur un réseau privé.",
+        "message": "Gardez les services internes privés par défaut."
+      },
+      "firewall": {
+        "title": "Firewall",
+        "description": "Définissez explicitement ce qui est autorisé à entrer et à sortir.",
+        "items": [
+          "Règles entrantes",
+          "Règles sortantes",
+          "Ports autorisés",
+          "Restrictions de source",
+          "Segmentation réseau"
+        ],
+        "mockup": {
+          "title": "Exemple de politique firewall",
+          "inbound": [
+            "22 → Restreint",
+            "80 → Autorisé",
+            "443 → Autorisé",
+            "5432 → Privé uniquement"
+          ],
+          "outbound": [
+            "Internet → Contrôlé"
+          ]
+        }
+      },
+      "ddos": {
+        "title": "Protection DDoS",
+        "description": "Mitigation des attaques courantes au niveau réseau.",
+        "items": [
+          "Attaques volumétriques",
+          "Attaques réseau",
+          "Filtrage du trafic",
+          "Mitigation"
+        ],
+        "message": "Conçu pour atténuer les attaques réseau courantes."
+      },
+      "identity": {
+        "title": "Identity & Access Management",
+        "description": "La sécurité commence par le contrôle de qui peut accéder à quoi.",
+        "items": [
+          "Identité centralisée",
+          "RBAC et rôles",
+          "Comptes de service",
+          "Credentials API",
+          "Politiques d'accès"
+        ],
+        "roles": {
+          "title": "Exemple de structure d'organisation",
+          "items": [
+            "Owner",
+            "Administrator",
+            "Developer",
+            "Billing",
+            "Read-only"
+          ]
+        }
+      },
+      "mfa": {
+        "title": "Authentification forte",
+        "description": "Protégez l'accès à votre infrastructure, pas seulement à vos applications.",
+        "items": [
+          "MFA / TOTP",
+          "WebAuthn et clés de sécurité",
+          "SSO",
+          "Politiques MFA"
+        ],
+        "message": "L'authentification forte réduit le risque d'accès non autorisé."
+      },
+      "apiSecurity": {
+        "title": "API Security",
+        "description": "La plateforme ZenthCloud est programmable. Ses API suivent les mêmes exigences de sécurité que l'interface web.",
+        "items": [
+          "API tokens",
+          "Credentials scopées",
+          "Expiration et rotation",
+          "Comptes de service",
+          "Rate limiting",
+          "Audit logging"
+        ],
+        "terminalTitle": "api",
+        "terminalExample": "curl -X GET https://api.zenthcloud.com/v1/projects \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H \"Content-Type: application/json\""
+      },
+      "secrets": {
+        "title": "Gestion des secrets",
+        "description": "Gardez les credentials hors de votre code.",
+        "items": [
+          "API keys",
+          "Mots de passe de base de données",
+          "Secrets applicatifs",
+          "Tokens",
+          "Certificats"
+        ],
+        "message": "Conçu pour s'intégrer avec un Secret Manager lorsque celui-ci est disponible."
+      },
+      "dataSecurity": {
+        "title": "Protection des données",
+        "description": "Les données doivent être protégées quel que soit leur état.",
+        "atRest": {
+          "title": "Au repos",
+          "description": "Protection des données stockées."
+        },
+        "inTransit": {
+          "title": "En transit",
+          "description": "Protection des communications réseau."
+        },
+        "inUse": {
+          "title": "En cours d'utilisation",
+          "description": "Protection pendant le traitement, selon les mécanismes disponibles."
+        }
+      },
+      "encryption": {
+        "title": "Chiffrement",
+        "description": "Le chiffrement est intégré aux couches de stockage et de communication.",
+        "items": [
+          "Chiffrement au repos",
+          "Chiffrement en transit",
+          "Gestion des certificats",
+          "Gestion des clés selon offres"
+        ],
+        "note": "Les spécifications techniques exactes seront publiées dans le Trust Center."
+      },
+      "computeIsolation": {
+        "title": "Isolation des workloads",
+        "description": "Chaque workload s'exécute dans sa propre limite de ressources et de visibilité.",
+        "items": [
+          "Isolation des workloads",
+          "Séparation des ressources",
+          "Contrôle des accès",
+          "Limites de ressources"
+        ],
+        "dedicatedNote": "L'infrastructure dédiée offre une isolation physique des ressources."
+      },
+      "containerSecurity": {
+        "title": "Sécurité des conteneurs",
+        "description": "Les conteneurs apportent portabilité et isolation. La sécurité reste un ensemble de contrôles en couches.",
+        "items": [
+          "Isolation des conteneurs",
+          "Provenance des images",
+          "Registries privés",
+          "Secrets",
+          "Network policies",
+          "Runtime security"
+        ],
+        "message": "Les conteneurs ajoutent de l'isolation. La sécurité nécessite toujours des contrôles en couches.",
+        "cta": "Découvrir Containers"
+      },
+      "kubernetesSecurity": {
+        "title": "Sécurité Kubernetes",
+        "description": "Kubernetes ajoute une couche d'orchestration avec ses propres contrôles de sécurité.",
+        "items": [
+          "Identity",
+          "RBAC",
+          "Network Policies",
+          "Secrets",
+          "Workload Isolation",
+          "Monitoring"
+        ],
+        "cta": "Découvrir Kubernetes"
+      },
+      "databaseSecurity": {
+        "title": "Sécurité des bases de données",
+        "description": "Les bases de données n'ont généralement pas besoin d'être exposées directement à Internet.",
+        "items": [
+          "Réseau privé pour bases de données",
+          "Contrôles d'accès",
+          "Credentials",
+          "Chiffrement",
+          "Backups",
+          "Monitoring"
+        ],
+        "cta": "Découvrir Databases"
+      },
+      "backup": {
+        "title": "Backup & Recovery",
+        "description": "La sécurité, c'est aussi la capacité à récupérer.",
+        "items": [
+          "Backups",
+          "Recovery points",
+          "Rétention",
+          "Restauration",
+          "Disaster recovery"
+        ],
+        "cta": "Découvrir Backup"
+      },
+      "monitoring": {
+        "title": "Monitoring & Détection",
+        "description": "Vous ne pouvez pas sécuriser ce que vous ne voyez pas.",
+        "items": [
+          "Monitoring infrastructure",
+          "Monitoring réseau",
+          "Métriques système",
+          "Événements de sécurité",
+          "Alertes",
+          "Détection d'anomalies"
+        ]
+      },
+      "audit": {
+        "title": "Audit logs",
+        "description": "Retracez qui a fait quoi, quand et sur quelle ressource.",
+        "example": {
+          "timestamp": "2026-08-23 14:32",
+          "user": "administrator",
+          "action": "Update firewall rule",
+          "resource": "network-prod",
+          "result": "Success"
+        },
+        "fields": [
+          "Qui",
+          "Quoi",
+          "Quand",
+          "Quelle ressource",
+          "Résultat"
+        ]
+      },
+      "patchManagement": {
+        "title": "Gestion des vulnérabilités",
+        "description": "Chacun est responsable de ses couches.",
+        "zenthTitle": "ZenthCloud",
+        "zenthItems": [
+          "Infrastructure",
+          "Plateforme",
+          "Services managés"
+        ],
+        "customerTitle": "Client",
+        "customerItems": [
+          "Application",
+          "Packages",
+          "Code",
+          "Configuration système si unmanaged"
+        ],
+        "message": "Nous maintenons la plateforme. Vous contrôlez votre workload."
+      },
+      "securityUpdates": {
+        "title": "Mises à jour de sécurité",
+        "description": "La maintenance fait partie de la sécurité.",
+        "items": [
+          "Mises à jour infrastructure",
+          "Mises à jour hyperviseur",
+          "Mises à jour plateforme managée",
+          "Correctifs de sécurité"
+        ],
+        "note": "Les fenêtres de maintenance seront communiquées selon les offres."
+      },
+      "architecture": {
+        "title": "Architecture de sécurité",
+        "description": "Une vue d'ensemble de la manière dont les contrôles s'organisent."
+      },
+      "securityByDefault": {
+        "title": "Security by default",
+        "description": "Des paramètres par défaut qui réduisent les erreurs.",
+        "items": [
+          "Moindre privilège",
+          "Privé par défaut lorsque possible",
+          "Exposition minimale",
+          "Accès explicite",
+          "Credentials sécurisés",
+          "Logging"
+        ],
+        "message": "Les paramètres sécurisés par défaut réduisent le nombre de choses à retenir."
+      },
+      "compliance": {
+        "title": "Conformité",
+        "description": "ZenthCloud travaille sur un programme de conformité structuré.",
+        "items": [
+          "ISO 27001",
+          "SOC 2",
+          "GDPR",
+          "DORA",
+          "NIS2"
+        ],
+        "roadmap": "Consultez notre feuille de route de conformité pour connaître l'état d'avancement."
+      },
+      "sovereignty": {
+        "title": "Souveraineté des données",
+        "description": "Vos workloads et vos données restent en Europe.",
+        "items": [
+          "Localisation des données",
+          "Localisation des workloads",
+          "Juridictions européennes",
+          "Contrôle des données",
+          "Transparence sur les fournisseurs"
+        ],
+        "message": "ZenthCloud déploie ses régions en Europe et communique sur ses fournisseurs sous-jacents."
+      },
+      "openSource": {
+        "title": "Open source & transparence",
+        "description": "La transparence renforce la confiance.",
+        "items": [
+          "Infrastructure logicielle open source",
+          "Logiciels inspectables",
+          "Composants auditable",
+          "Revue communautaire",
+          "Standards ouverts"
+        ],
+        "quote": "La transparence fait partie de la sécurité."
+      },
+      "developers": {
+        "title": "Sécurité pour les développeurs",
+        "description": "Intégrez la sécurité dans vos workflows de développement.",
+        "items": [
+          "API",
+          "CLI",
+          "Infrastructure as Code",
+          "Secrets",
+          "SSH keys",
+          "CI/CD",
+          "Access tokens"
+        ],
+        "terminalTitle": "cli",
+        "terminalExample": "zenthcloud compute firewall create \\\n  --instance web-prod-01 \\\n  --rule \"allow 443 from 0.0.0.0/0\" \\\n  --rule \"deny 22 from internet\""
+      },
+      "managedSecurity": {
+        "title": "Managed Security",
+        "description": "Plusieurs niveaux de responsabilité selon vos besoins.",
+        "self": {
+          "title": "Self-managed",
+          "description": "Vous gérez la sécurité de vos workloads. ZenthCloud fournit l'infrastructure sécurisée et les outils.",
+          "features": [
+            "Infrastructure sécurisée",
+            "Réseau privé et firewall",
+            "IAM et API tokens",
+            "Monitoring et audit logs"
+          ]
+        },
+        "managed": {
+          "title": "Managed",
+          "description": "ZenthCloud prend en charge davantage d'opérations de sécurité selon les offres.",
+          "features": [
+            "Patching",
+            "Monitoring",
+            "Configuration sécurisée",
+            "Backup",
+            "Network security"
+          ]
+        },
+        "enterprise": {
+          "title": "Enterprise",
+          "description": "Accompagnement renforcé pour les organisations aux exigences élevées.",
+          "features": [
+            "Architecture sécurisée",
+            "Politiques de sécurité",
+            "Audit",
+            "Accompagnement",
+            "Conformité"
+          ]
+        }
+      },
+      "incidentResponse": {
+        "title": "Réponse aux incidents",
+        "description": "Un processus structuré pour détecter, contenir et récupérer.",
+        "steps": [
+          "Détection",
+          "Investigation",
+          "Contention",
+          "Récupération",
+          "Post-incident"
+        ],
+        "note": "Ce processus couvre l'infrastructure opérée par ZenthCloud."
+      },
+      "trustCenter": {
+        "title": "Trust Center",
+        "description": "Tout ce dont vous avez besoin pour évaluer la sécurité de ZenthCloud.",
+        "items": [
+          "Architecture",
+          "Politiques",
+          "Conformité",
+          "Certifications",
+          "Sous-traitants",
+          "Contacts sécurité",
+          "Historique des incidents",
+          "Disponibilité"
+        ],
+        "coming": "Notre Trust Center sera publié prochainement."
+      },
+      "useCases": {
+        "title": "Cas d'usage",
+        "description": "Comment la sécurité de l'infrastructure ZenthCloud s'applique à vos projets.",
+        "items": [
+          "VPS sécurisé",
+          "Application privée",
+          "Infrastructure base de données",
+          "Workloads conteneurisés",
+          "Infrastructure IA",
+          "Infrastructure entreprise"
+        ]
+      },
+      "comparison": {
+        "title": "Qui est responsable de quoi ?",
+        "description": "Un tableau clair du partage des responsabilités.",
+        "headers": {
+          "layer": "Couche",
+          "zenth": "ZenthCloud",
+          "customer": "Client"
+        },
+        "rows": [
+          {
+            "layer": "Infrastructure physique",
+            "zenth": "Oui",
+            "customer": "Non"
+          },
+          {
+            "layer": "Réseau core",
+            "zenth": "Oui",
+            "customer": "Non"
+          },
+          {
+            "layer": "Cloud platform",
+            "zenth": "Oui",
+            "customer": "Non"
+          },
+          {
+            "layer": "OS sur VPS non managé",
+            "zenth": "Partagé",
+            "customer": "Client"
+          },
+          {
+            "layer": "Application",
+            "zenth": "Non",
+            "customer": "Oui"
+          },
+          {
+            "layer": "Credentials",
+            "zenth": "Partagé",
+            "customer": "Client"
+          },
+          {
+            "layer": "Configuration des données",
+            "zenth": "Partagé",
+            "customer": "Client"
+          },
+          {
+            "layer": "Politique de backup",
+            "zenth": "Selon offre",
+            "customer": "Client / ZenthCloud"
+          }
+        ]
+      },
+      "pricing": {
+        "title": "Tarification",
+        "description": "La sécurité de base est incluse dans le service.",
+        "included": {
+          "title": "Inclus",
+          "items": [
+            "Firewall de base",
+            "Réseau privé",
+            "Protection DDoS de base",
+            "IAM",
+            "Audit logs",
+            "Chiffrement de base"
+          ]
+        },
+        "optional": {
+          "title": "Options",
+          "items": [
+            "Managed security",
+            "Monitoring avancé",
+            "Firewall dédié",
+            "Backup avancé",
+            "Conseil sécurité",
+            "Services conformité"
+          ]
+        },
+        "cta": "Voir la tarification"
+      },
+      "crossSelling": {
+        "title": "Construisez une infrastructure sécurisée",
+        "description": "La sécurité relie l'ensemble de vos services ZenthCloud.",
+        "compute": {
+          "label": "Compute",
+          "description": "Déployez des instances isolées et contrôlées.",
+          "cta": "Découvrir Compute",
+          "href": "/public-cloud/compute"
+        },
+        "networking": {
+          "label": "Networking",
+          "description": "Construisez des architectures réseau privées et segmentées.",
+          "cta": "Découvrir Networking",
+          "href": "/public-cloud/networking"
+        },
+        "containers": {
+          "label": "Containers",
+          "description": "Exécutez des workloads isolés et contrôlés.",
+          "cta": "Découvrir Containers",
+          "href": "/public-cloud/containers"
+        },
+        "databases": {
+          "label": "Databases",
+          "description": "Isolez vos bases de données sur le réseau privé.",
+          "cta": "Découvrir Databases",
+          "href": "/public-cloud/databases"
+        },
+        "backup": {
+          "label": "Backup",
+          "description": "Protégez vos workloads et vos données.",
+          "cta": "Découvrir Backup",
+          "href": "/public-cloud/backup"
+        },
+        "gpuAi": {
+          "label": "GPU & IA",
+          "description": "Sécurisez vos workloads GPU et vos modèles.",
+          "cta": "Découvrir GPU & IA",
+          "href": "/public-cloud/gpu-and-ai"
+        },
+        "kubernetes": {
+          "label": "Kubernetes",
+          "description": "Orchestrez vos workloads avec des contrôles de sécurité.",
+          "cta": "Découvrir Kubernetes",
+          "href": "/public-cloud/containers"
+        }
+      },
+      "finalCta": {
+        "title": "Construisez sur une infrastructure de confiance.",
+        "description": "Chez ZenthCloud, la sécurité est une responsabilité architecturale, pas un produit ajouté après coup.",
+        "primary": "Explorer ZenthCloud",
+        "secondary": "Parler à un expert",
+        "tertiary": "Lire la documentation sécurité"
       }
     },
     "footer": {

@@ -254,9 +254,9 @@ export async function Footer({ locale: initialLocale }: FooterProps) {
   const socialLinks = [
     { name: "X (Twitter)", href: "https://x.com/ZenthCloud" },
     { name: "LinkedIn", href: "https://linkedin.com/company/zenthcloud" },
-    { name: "GitHub", href: "https://github.com/zenthcloud" },
+    { name: "GitHub", href: "https://github.com/skygenesisenterprise/zenthcloud" },
     { name: "YouTube", href: "https://youtube.com/@ZenthCloud" },
-    { name: "Discord", href: "https://discord.gg/zenthcloud" },
+    { name: "Discord", href: "https://discord.gg/skygenesisenterprise" },
     { name: "Slack", href: "https://slack.com/zenthcloud" },
     { name: "Twitch", href: "https://twitch.tv/ZenthCloud" },
     { name: "Instagram", href: "https://instagram.com/ZenthCloud" },
