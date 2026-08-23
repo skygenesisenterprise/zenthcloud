@@ -57,7 +57,7 @@ export function HeroCarousel({
 
   return (
     <section
-      className="relative flex flex-col overflow-hidden text-white min-h-[560px] md:min-h-[600px] md:max-h-[640px]"
+      className="relative flex flex-col overflow-hidden text-white min-h-140 md:min-h-150 md:max-h-160"
       style={{
         background: "linear-gradient(135deg, #7c3aed 0%, #c026d3 35%, #f97316 100%)",
       }}
@@ -127,7 +127,7 @@ export function HeroCarousel({
                   </div>
                   <div className="flex flex-1 items-center justify-center">
                     <div className="relative">
-                      <div className="flex h-40 w-56 items-center justify-center rounded-xl bg-gradient-to-br from-white/25 to-white/5 border border-white/20 shadow-xl">
+                      <div className="flex h-40 w-56 items-center justify-center rounded-xl bg-linear-to-br from-white/25 to-white/5 border border-white/20 shadow-xl">
                         <Cloud className="h-16 w-16 text-white" />
                       </div>
                       <div className="absolute -bottom-5 -right-6 h-24 w-24 rounded-2xl bg-white/15 border border-white/20 backdrop-blur-sm flex items-center justify-center">

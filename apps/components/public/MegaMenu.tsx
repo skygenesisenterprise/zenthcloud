@@ -70,7 +70,7 @@ export function MegaMenu({ group, isOpen, onOpen, onClose }: MegaMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-[42rem] max-w-[calc(100vw-2rem)] z-50">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-2xl max-w-[calc(100vw-2rem)] z-50">
           <div className="rounded-xl border border-border bg-white shadow-xl overflow-hidden">
             {group.headline && (
               <div className="border-b border-border bg-background px-6 py-4">

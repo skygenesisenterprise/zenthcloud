@@ -658,6 +658,830 @@
         "primary": "Commencer",
         "secondary": "Contacter les ventes",
         "websites": "Site public : zenthcloud.com · Manager client : manager.zenthcloud.com"
+    }
+  },
+  "compute": {
+      "meta": {
+        "title": "Compute Cloud | ZenthCloud",
+        "description": "Déployez du compute cloud avec ZenthCloud : VPS, serveurs dédiés et options managées sur une infrastructure européenne."
+      },
+      "hero": {
+        "badge": "Public Cloud Compute",
+        "title": "Une infrastructure de calcul performante, sans la complexité opérationnelle.",
+        "subtitle": "Déployez des workloads sur du VPS, des serveurs dédiés ou du bare metal. ZenthCloud fournit la plateforme, le réseau et les services pour que vous puissiez vous concentrer sur ce qui compte.",
+        "primaryCta": "Voir les instances",
+        "secondaryCta": "Comparer les offres"
+      },
+      "computeTypes": {
+        "title": "Choisissez votre Compute",
+        "description": "Trois niveaux de puissance pour couvrir l'ensemble de vos besoins, du projet personnel aux workloads d'entreprise.",
+        "vps": {
+          "title": "Cloud VPS",
+          "description": "Instances virtuelles flexibles pour démarrer rapidement et faire évoluer vos ressources à la demande.",
+          "useCases": "Applications web, API, backends, développement, staging, petits workloads, serveurs de jeu, projets personnels."
+        },
+        "dedicated": {
+          "title": "Dedicated Servers",
+          "description": "Ressources physiques dédiées pour les charges soutenues, les bases de données et les applications professionnelles.",
+          "useCases": "Workloads importants, bases de données, virtualisation, applications métier, charges soutenues."
+        },
+        "enterprise": {
+          "title": "Bare Metal / Enterprise",
+          "description": "Serveurs physiques entièrement dédiés pour les environnements nécessitant un contrôle total du matériel.",
+          "useCases": "Charges réglementées, performances prévisibles, isolation complète, déploiements entreprise."
+        }
+      },
+      "workloads": {
+        "title": "Des instances adaptées à votre workload",
+        "description": "Chaque charge de travail a ses contraintes. Choisissez le profil qui correspond à votre usage.",
+        "generalPurpose": {
+          "title": "General Purpose",
+          "description": "Équilibre CPU/RAM pour la majorité des applications.",
+          "useCases": "Applications web, API, SaaS, environnements de développement."
+        },
+        "computeOptimized": {
+          "title": "Compute Optimized",
+          "description": "Priorité au CPU pour les tâches intensives en calcul.",
+          "useCases": "Compilation, calcul scientifique, CI/CD, traitement parallèle."
+        },
+        "memoryOptimized": {
+          "title": "Memory Optimized",
+          "description": "Mémoire généreuse pour les charges gourmandes en RAM.",
+          "useCases": "Bases de données, caches, analytics en mémoire."
+        },
+        "storageOptimized": {
+          "title": "Storage Optimized",
+          "description": "Stockage NVMe rapide et IOPS élevés pour les charges intensives en I/O.",
+          "useCases": "Bases de données, stockage applicatif, workloads I/O intensifs."
+        }
+      },
+      "infrastructure": {
+        "title": "Une infrastructure prête à l'emploi",
+        "description": "Toutes les briques techniques nécessaires pour faire tourner vos workloads en conditions réelles.",
+        "cta": "En savoir plus sur l'infrastructure",
+        "items": [
+          "CPU modernes",
+          "Mémoire RAM",
+          "Stockage NVMe",
+          "Réseau haute capacité",
+          "IPv4 / IPv6",
+          "Protection réseau",
+          "Virtualisation",
+          "Monitoring",
+          "Snapshots",
+          "Backups"
+        ]
+      },
+      "openSource": {
+        "title": "Open source by design",
+        "description": "Nous privilégions l'open source pour construire une infrastructure transparente, flexible et durable.",
+        "quote": "Nous privilégions l'open source pour construire une infrastructure transparente, flexible et durable.",
+        "benefits": [
+          "Réduction de la dépendance propriétaire",
+          "Transparence",
+          "Interopérabilité",
+          "Possibilité d'évolution",
+          "Communauté",
+          "Maîtrise technologique"
+        ]
+      },
+      "software": {
+        "title": "Software & Licenses",
+        "description": "Choisissez votre environnement. ZenthCloud gère la complexité des licences lorsque cela est nécessaire.",
+        "included": {
+          "title": "Systèmes inclus",
+          "description": "Distributions open source courantes disponibles sans surcharge artificielle.",
+          "list": ["Debian", "Ubuntu", "Rocky Linux", "AlmaLinux"]
+        },
+        "commercial": {
+          "title": "Licences commerciales",
+          "description": "Logiciels nécessitant une licence commerciale, gérés en toute transparence.",
+          "list": ["Windows Server", "Panneaux de contrôle", "Logiciels propriétaires"]
+        }
+      },
+      "management": {
+        "title": "Self-managed, Assisted ou Managed",
+        "description": "Vous choisissez le niveau de responsabilité que vous souhaitez conserver.",
+        "self": {
+          "title": "Self-managed",
+          "description": "Vous gardez le contrôle total. ZenthCloud fournit l'infrastructure, le réseau, la console et l'API.",
+          "features": ["Infrastructure", "Réseau", "Console", "API", "Outils de base"]
+        },
+        "assisted": {
+          "title": "Assisted",
+          "description": "ZenthCloud intervient ponctuellement sur les aspects où vous avez besoin d'aide.",
+          "features": ["Installation", "Configuration", "Migration", "Dépannage", "Optimisation"]
+        },
+        "managed": {
+          "title": "Managed",
+          "description": "ZenthCloud prend en charge une partie importante de l'exploitation de votre infrastructure.",
+          "features": ["OS", "Mises à jour", "Monitoring", "Sécurité", "Sauvegardes", "Maintenance", "Logiciels"]
+        }
+      },
+      "automation": {
+        "title": "Built for automation",
+        "description": "ZenthCloud est conçu pour s'intégrer dans vos workflows existants. Provisionnez, déployez et gérez votre infrastructure par code.",
+        "features": [
+          "API RESTful",
+          "Infrastructure as code",
+          "Provisioning automatisé",
+          "Intégration CI/CD",
+          "Gestion programmatique des instances"
+        ],
+        "terminalTitle": "zenthcloud-cli",
+        "terminalExample": "curl -X POST https://api.zenthcloud.com/v1/compute/instances \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"name\":\"web-prod-01\",\"type\":\"c4m8\",\"image\":\"ubuntu-24.04\"}'"
+      },
+      "security": {
+        "title": "Sécurité intégrée",
+        "description": "Des mécanismes de sécurité à plusieurs niveaux pour protéger vos charges de travail.",
+        "features": [
+          "Isolation des instances",
+          "Firewall",
+          "Réseau privé",
+          "Protection DDoS",
+          "Contrôle d'accès",
+          "Monitoring",
+          "Backups",
+          "Snapshots"
+        ]
+      },
+      "pricing": {
+        "title": "Tarification transparente",
+        "description": "Des options pour chaque niveau de besoin. Les prix définitifs seront publiés prochainement.",
+        "tabs": ["VPS", "Dedicated", "Options", "Managed", "Licences"],
+        "vps": {
+          "label": "VPS Cloud",
+          "price": "À partir de €X.XX/mois",
+          "cta": "Voir les plans VPS"
+        },
+        "dedicated": {
+          "label": "Dedicated",
+          "price": "Sur mesure",
+          "cta": "Demander un devis"
+        },
+        "managed": {
+          "label": "Managed",
+          "price": "En option",
+          "cta": "En savoir plus"
+        }
+      },
+      "useCases": {
+        "title": "Pour quels cas d'usage ?",
+        "description": "Identifiez immédiatement comment le Compute ZenthCloud peut servir votre projet.",
+        "items": [
+          "Hébergement web",
+          "SaaS",
+          "API",
+          "Bases de données",
+          "CI/CD",
+          "Développement",
+          "Serveurs de jeu",
+          "Virtualisation",
+          "Workloads professionnels"
+        ]
+      },
+      "finalCta": {
+        "title": "Déployez votre infrastructure avec Zenth Cloud.",
+        "description": "Créez votre compte et lancez votre première instance en quelques minutes.",
+        "primary": "Créer une instance",
+        "secondary": "Parler à un expert"
+      }
+    },
+    "storage": {
+      "meta": {
+        "title": "Stockage Cloud | ZenthCloud",
+        "description": "Stockage block, object et backup pour vos workloads cloud. Une brique fondamentale de l'infrastructure Zenth Cloud."
+      },
+      "hero": {
+        "badge": "Public Cloud Storage",
+        "title": "Un stockage cloud conçu pour accompagner votre infrastructure, sans complexité inutile.",
+        "subtitle": "Conservez, exploitez et protégez vos données avec des solutions de stockage intégrées à Compute, Backup et Network.",
+        "primaryCta": "Explorer le Storage",
+        "secondaryCta": "Voir les solutions"
+      },
+      "solutions": {
+        "title": "Une solution pour chaque type de données",
+        "description": "Trois familles de stockage pour couvrir les usages primaires, applicatifs et de protection.",
+        "block": {
+          "title": "Block Storage",
+          "description": "Le stockage persistant pour vos workloads Compute.",
+          "features": ["Volumes persistants", "Association VPS / Dedicated", "Évolution de capacité", "Usage applicatif", "Bases de données"]
+        },
+        "object": {
+          "title": "Object Storage",
+          "description": "Le stockage d'objets pour vos données et applications.",
+          "features": ["API", "Fichiers", "Médias", "Backups", "Datasets", "Scalabilité"]
+        },
+        "backup": {
+          "title": "Backup Storage",
+          "description": "Une capacité dédiée à la protection de vos données.",
+          "features": ["Sauvegardes", "Rétention", "Restauration", "Séparation logique"]
+        }
+      },
+      "workloads": {
+        "title": "Choisissez selon votre workload",
+        "description": "Chaque usage a ses contraintes. Identifiez le type de stockage adapté.",
+        "applications": {
+          "title": "Applications",
+          "description": "Sites web, SaaS, API et services backend."
+        },
+        "databases": {
+          "title": "Databases",
+          "description": "PostgreSQL, MySQL, Redis persistant et autres bases de données."
+        },
+        "media": {
+          "title": "Media",
+          "description": "Vidéos, images, fichiers et contenus utilisateurs."
+        },
+        "backups": {
+          "title": "Backups",
+          "description": "Sauvegardes VPS, dédiées, snapshots exportés et plans de reprise."
+        },
+        "archives": {
+          "title": "Archives",
+          "description": "Données historiques, documents, datasets et conservation longue durée."
+        }
+      },
+      "performance": {
+        "title": "Performance adaptée au besoin",
+        "description": "Tous les workloads n'ont pas les mêmes exigences.",
+        "performance": {
+          "title": "Performance",
+          "description": "Latence faible et I/O importantes pour les workloads exigeants."
+        },
+        "balanced": {
+          "title": "Balanced",
+          "description": "Profil adapté aux applications générales."
+        },
+        "capacity": {
+          "title": "Capacity",
+          "description": "Gros volumes de données où la capacité est prioritaire."
+        }
+      },
+      "integration": {
+        "title": "Intégration avec Compute",
+        "description": "Combinez les briques Zenth Cloud pour construire une infrastructure complète.",
+        "example": "VPS + Block Storage + Backup + Network",
+        "cta": "Découvrir Compute"
+      },
+      "objectStorageApi": {
+        "title": "Object Storage / API",
+        "description": "Une approche API-first pour vos applications et automatisation.",
+        "features": ["API", "Automatisation", "Intégration applicative", "CI/CD", "Sauvegardes automatisées", "Stockage de médias"],
+        "terminalTitle": "api",
+        "terminalExample": "curl -X PUT https://api.zenthcloud.com/v1/storage/objects/data.tar.gz \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H \"Content-Type: application/octet-stream\" \\\n  --data-binary @backup.tar.gz"
+      },
+      "durability": {
+        "title": "Durabilité et disponibilité",
+        "description": "Protéger vos données contre les défaillances sans promesse non fondée.",
+        "items": ["Réplication", "Redondance", "Protection contre les défaillances matérielles", "Monitoring", "Intégrité", "Sauvegarde"]
+      },
+      "security": {
+        "title": "Sécurité du stockage",
+        "description": "Des mécanismes de sécurité à plusieurs niveaux.",
+        "items": ["Contrôle d'accès", "Isolation", "Chiffrement", "Permissions", "Réseau privé", "Audit", "Sauvegardes", "Protection contre la suppression accidentelle"],
+        "responsibility": "Le client reste responsable de ses données et de ses applications."
+      },
+      "backupNotStorage": {
+        "title": "Backup ≠ Storage",
+        "description": "Un volume de stockage et une sauvegarde ne sont pas la même chose.",
+        "message": "Le stockage conserve vos données. La sauvegarde vous permet de les récupérer après un incident.",
+        "cta": "Découvrir Backup"
+      },
+      "scalability": {
+        "title": "Scalabilité",
+        "description": "Commencez petit. Évoluez lorsque votre workload évolue.",
+        "steps": ["100 GB", "500 GB", "1 TB", "10 TB+"]
+      },
+      "managed": {
+        "title": "Managed Storage",
+        "description": "Zenth Cloud peut aller au-delà de la simple fourniture d'espace.",
+        "self": {
+          "title": "Self-managed",
+          "description": "Le client gère son stockage.",
+          "features": ["Provisionnement", "Configuration", "Surveillance basique"]
+        },
+        "assisted": {
+          "title": "Assisted",
+          "description": "Zenth Cloud accompagne la configuration et la migration.",
+          "features": ["Configuration", "Migration", "Optimisation"]
+        },
+        "managed": {
+          "title": "Managed",
+          "description": "Zenth Cloud prend en charge davantage d'opérations.",
+          "features": ["Configuration", "Monitoring", "Sauvegardes", "Maintenance", "Migration", "Optimisation"]
+        }
+      },
+      "openSource": {
+        "title": "Built with open technologies",
+        "description": "Designed without unnecessary lock-in.",
+        "benefits": ["Transparence", "Interopérabilité", "Portabilité", "Maîtrise technologique", "Réduction du vendor lock-in"]
+      },
+      "pricing": {
+        "title": "Tarification transparente",
+        "description": "Des modèles flexibles selon vos usages. Prix à venir.",
+        "block": {
+          "label": "Block Storage",
+          "price": "€X.XX / Go/mois",
+          "cta": "Voir les plans Block"
+        },
+        "object": {
+          "label": "Object Storage",
+          "price": "€X.XX / Go/mois",
+          "cta": "Voir les plans Object"
+        },
+        "backup": {
+          "label": "Backup Storage",
+          "price": "€X.XX / Go/mois",
+          "cta": "Voir les plans Backup"
+        }
+      },
+      "useCases": {
+        "title": "Cas d'usage",
+        "description": "Le stockage Zenth Cloud s'adapte à de nombreux scénarios.",
+        "items": ["Stockage applicatif", "Bases de données", "Médias", "Sauvegardes", "Archives", "Datasets", "Hébergement de fichiers", "Infrastructures SaaS", "Environnements de développement"]
+      },
+      "crossSelling": {
+        "title": "Construisez votre infrastructure",
+        "description": "Le Storage s'intègre naturellement avec les autres services Zenth Cloud.",
+        "compute": {
+          "label": "Compute",
+          "description": "Vous avez besoin d'une instance pour exploiter vos données ?",
+          "cta": "Découvrir Compute"
+        },
+        "backup": {
+          "label": "Backup",
+          "description": "Vous souhaitez protéger vos données ?",
+          "cta": "Découvrir Backup"
+        },
+        "network": {
+          "label": "Network",
+          "description": "Vous avez besoin d'un réseau privé ?",
+          "cta": "Découvrir Network"
+        }
+      },
+      "finalCta": {
+        "title": "Build your infrastructure around your data.",
+        "description": "Lancez votre premier volume et intégrez-le à votre infrastructure.",
+        "primary": "Créer du Storage",
+        "secondary": "Explorer Compute"
+      }
+    },
+    "networking": {
+      "meta": {
+        "title": "Réseau Cloud | ZenthCloud",
+        "description": "Réseau public, privé, firewall et segmentation pour connecter vos workloads cloud sur Zenth Cloud."
+      },
+      "hero": {
+        "badge": "Public Cloud Networking",
+        "title": "Connect your cloud. Secure every workload.",
+        "subtitle": "Zenth Cloud fournit les briques réseau nécessaires pour connecter vos workloads, contrôler les flux et construire des architectures privées ou publiques.",
+        "primaryCta": "Explorer le Networking",
+        "secondaryCta": "Construire mon infrastructure"
+      },
+      "architecture": {
+        "title": "Une architecture réseau à votre mesure",
+        "description": "Le Networking est le socle reliant les différentes briques cloud."
+      },
+      "publicNetwork": {
+        "title": "Public Network",
+        "description": "Connectez vos ressources à Internet de manière contrôlée.",
+        "items": ["Connectivité Internet", "IPv4", "IPv6", "IP publiques", "Exposition de services", "Routage public"]
+      },
+      "privateNetwork": {
+        "title": "Private Network",
+        "description": "Connectez vos workloads entre eux sans exposer leur trafic à Internet.",
+        "items": ["Trafic interne", "Segmentation", "Isolation", "Communication entre workloads", "Architectures multi-tier", "Réduction de l'exposition publique"]
+      },
+      "firewall": {
+        "title": "Firewall",
+        "description": "Contrôlez les flux entrants et sortants avec des règles simples.",
+        "items": ["Règles entrantes", "Règles sortantes", "Ports", "Protocoles", "Sources", "Destinations"]
+      },
+      "segmentation": {
+        "title": "Network segmentation",
+        "description": "Séparez les zones de votre infrastructure pour réduire la surface d'attaque.",
+        "items": ["Réduction de la surface d'attaque", "Contrôle des communications", "Architecture multi-tier", "Isolation des services", "Maîtrise des flux"]
+      },
+      "loadBalancing": {
+        "title": "Load Balancing",
+        "description": "Répartissez le trafic entre plusieurs instances pour plus de résilience.",
+        "items": ["Haute disponibilité", "Montée en charge", "Répartition du trafic", "Déploiements progressifs"],
+        "note": "Fonctionnalité en cours de définition."
+      },
+      "ipv6": {
+        "title": "IPv6 first-class",
+        "description": "IPv6 n'est pas une option secondaire chez Zenth Cloud.",
+        "items": ["Adressage IPv6", "Coexistence IPv4 / IPv6", "Architectures modernes", "Préparation aux futurs workloads"]
+      },
+      "networkForCompute": {
+        "title": "Network for Compute",
+        "description": "Votre Compute n'existe pas isolément. Le réseau définit la manière dont vos workloads communiquent.",
+        "cta": "Découvrir Compute"
+      },
+      "networkForStorage": {
+        "title": "Network for Storage",
+        "description": "Accès privé au stockage, séparation du trafic et applications distribuées.",
+        "cta": "Découvrir Storage"
+      },
+      "networkForDatabases": {
+        "title": "Network for Databases",
+        "description": "Les bases de données n'ont pas besoin d'être directement exposées à Internet.",
+        "cta": "Découvrir Databases"
+      },
+      "automation": {
+        "title": "Built for automation",
+        "description": "Provisionnez et gérez votre réseau par code.",
+        "items": ["API", "Provisioning", "Infrastructure as code", "Intégration CI/CD", "Création automatisée de réseaux", "Gestion automatisée des règles"]
+      },
+      "security": {
+        "title": "Security by architecture",
+        "description": "Secure networking starts with architecture.",
+        "items": ["Private networks", "Firewall", "Segmentation", "Moindre privilège", "Contrôle des flux", "Isolation"],
+        "responsibility": "La sécurité réseau combine les capacités Zenth Cloud et la configuration du client."
+      },
+      "managed": {
+        "title": "Managed Networking",
+        "description": "De la connectivité à l'expertise opérationnelle.",
+        "self": {
+          "title": "Self-managed",
+          "description": "Le client configure son réseau.",
+          "features": ["Configuration réseau", "Firewall", "Règles de base"]
+        },
+        "assisted": {
+          "title": "Assisted",
+          "description": "Zenth Cloud accompagne la configuration et l'architecture.",
+          "features": ["Configuration", "Migration", "Architecture", "Règles", "Dépannage"]
+        },
+        "managed": {
+          "title": "Managed",
+          "description": "Zenth Cloud prend davantage en charge l'opération réseau.",
+          "features": ["Configuration réseau", "Firewall", "Monitoring", "Optimisation", "Maintenance"]
+        }
+      },
+      "openSource": {
+        "title": "Open source networking",
+        "description": "Open technologies. Open architecture. Less lock-in.",
+        "benefits": ["Transparence", "Interopérabilité", "Flexibilité", "Standards ouverts", "Maîtrise de l'infrastructure"]
+      },
+      "pricing": {
+        "title": "Tarification transparente",
+        "description": "Modèles tarifaires à venir selon trafic, IP, réseaux privés et services réseau.",
+        "items": ["Trafic", "IP", "Réseaux privés", "Load balancers", "Services réseau", "Firewall", "Managed"],
+        "cta": "Voir la tarification"
+      },
+      "useCases": {
+        "title": "Cas d'usage",
+        "items": ["Application web", "SaaS", "Infrastructure distribuée", "Bases de données privées", "Microservices", "Workloads sécurisés"]
+      },
+      "crossSelling": {
+        "title": "Construisez votre infrastructure",
+        "description": "Networking relie l'ensemble de vos services Zenth Cloud.",
+        "compute": {
+          "label": "Compute",
+          "description": "Connectez vos instances à votre réseau.",
+          "cta": "Découvrir Compute"
+        },
+        "storage": {
+          "label": "Storage",
+          "description": "Accédez à votre stockage via le réseau privé.",
+          "cta": "Découvrir Storage"
+        },
+        "backup": {
+          "label": "Backup",
+          "description": "Protégez vos données indépendamment du stockage primaire.",
+          "cta": "Découvrir Backup"
+        },
+        "databases": {
+          "label": "Databases",
+          "description": "Isolez vos bases de données sur le réseau privé.",
+          "cta": "Découvrir Databases"
+        },
+        "security": {
+          "label": "Security",
+          "description": "Renforcez la sécurité de votre infrastructure.",
+          "cta": "Découvrir Security"
+        }
+      },
+      "finalCta": {
+        "title": "Build the network behind your cloud.",
+        "description": "Créez votre réseau et connectez vos workloads en quelques minutes.",
+        "primary": "Créer mon infrastructure",
+        "secondary": "Explorer Compute"
+      }
+    },
+    "databases": {
+      "meta": {
+        "title": "Bases de données cloud | ZenthCloud",
+        "description": "Déployez des bases de données managées PostgreSQL, MySQL et Redis sur Zenth Cloud. Connectez-les à votre Compute et votre réseau privé."
+      },
+      "hero": {
+        "badge": "Public Cloud Databases",
+        "title": "Your database. Managed by Zenth Cloud.",
+        "subtitle": "Déployez des bases de données sans administrer toute l'infrastructure sous-jacente. Concentrez-vous sur votre application.",
+        "primaryCta": "Créer une base de données",
+        "secondaryCta": "Explorer les moteurs"
+      },
+      "engines": {
+        "title": "Choisissez votre moteur",
+        "description": "Les moteurs supportés par Zenth Cloud, disponibles en service managé.",
+        "postgresql": {
+          "title": "PostgreSQL",
+          "description": "Moteur relationnel robuste pour applications SaaS, APIs et données métier.",
+          "useCases": "Applications SaaS, APIs, applications métiers, données relationnelles."
+        },
+        "mysql": {
+          "title": "MySQL",
+          "description": "Moteur populaire pour applications web, CMS et workloads relationnels.",
+          "useCases": "Applications web, CMS, applications traditionnelles, workloads relationnels."
+        },
+        "redis": {
+          "title": "Redis",
+          "description": "Moteur de données en mémoire pour caches, sessions et temps réel.",
+          "useCases": "Caches, sessions, files d'attente, workloads temps réel."
+        }
+      },
+      "whyManaged": {
+        "title": "Pourquoi une base de données managée ?",
+        "items": ["Provisioning", "Maintenance", "Backups", "Monitoring", "Security", "Scaling", "Recovery"]
+      },
+      "workloads": {
+        "title": "Une base conçue pour votre application",
+        "webApplications": {
+          "title": "Web applications",
+          "description": "Sites, APIs et applications SaaS."
+        },
+        "saas": {
+          "title": "SaaS",
+          "description": "Données utilisateurs, transactions et services multi-tenant."
+        },
+        "enterprise": {
+          "title": "Enterprise applications",
+          "description": "Applications métiers, ERP, CRM et services internes."
+        },
+        "development": {
+          "title": "Development",
+          "description": "Environnements de test, staging et CI/CD."
+        },
+        "analytics": {
+          "title": "Analytics",
+          "description": "Analyse de données selon les moteurs et performances disponibles."
+        }
+      },
+      "computeIntegration": {
+        "title": "Database + Compute",
+        "description": "Connect your applications to their data over a private network.",
+        "cta": "Découvrir Compute"
+      },
+      "networkingIntegration": {
+        "title": "Database + Networking",
+        "description": "Une base de données n'a généralement pas besoin d'être directement exposée à Internet.",
+        "cta": "Découvrir Networking"
+      },
+      "security": {
+        "title": "Sécurité",
+        "items": ["Réseau privé", "Firewall", "Contrôle des accès", "Authentification", "Gestion des secrets", "Chiffrement en transit", "Chiffrement au repos", "Isolation", "Monitoring", "Audit"],
+        "responsibility": "Zenth Cloud fournit les mécanismes d'infrastructure ; la sécurité dépend aussi de la configuration client."
+      },
+      "backups": {
+        "title": "Backups & Recovery",
+        "description": "Protégez vos données et facilitez la restauration.",
+        "items": ["Backups automatisés", "Snapshots", "Rétention", "Restauration", "Protection contre la suppression accidentelle"],
+        "cta": "Découvrir Backup"
+      },
+      "scaling": {
+        "title": "Scaling",
+        "description": "Scale your database as your application grows.",
+        "steps": ["Small", "Medium", "Large", "Enterprise"]
+      },
+      "highAvailability": {
+        "title": "High Availability",
+        "description": "Réduisez le risque d'interruption avec une architecture résiliente.",
+        "items": ["Continuité", "Réplication", "Résilience"],
+        "note": "Disponibilité selon offres."
+      },
+      "monitoring": {
+        "title": "Monitoring",
+        "description": "Understand your database before it becomes a problem.",
+        "metrics": ["CPU", "Mémoire", "Stockage", "I/O", "Connexions", "Requêtes", "Latence", "Disponibilité"]
+      },
+      "managedVsSelf": {
+        "title": "Managed vs Self-managed",
+        "rows": ["Infrastructure", "Installation", "Maintenance", "Monitoring", "Backups", "Scaling", "Administration DB"],
+        "self": ["Client", "Client", "Client", "Client", "Client", "Client", "Client"],
+        "managed": ["Zenth Cloud", "Zenth Cloud", "Zenth Cloud", "Zenth Cloud / selon offre", "Zenth Cloud / selon offre", "Assisté / automatisé selon offre", "Partagée selon niveau de service"]
+      },
+      "developers": {
+        "title": "Built for developers",
+        "description": "Intégrez votre base de données dans vos workflows de développement.",
+        "features": ["API", "Provisioning", "Infrastructure as code", "CI/CD", "Environnements temporaires", "Staging"]
+      },
+      "openSource": {
+        "title": "Open source database ecosystem",
+        "description": "Open source engines. Managed infrastructure.",
+        "benefits": ["Transparence", "Standards ouverts", "Portabilité", "Réduction du vendor lock-in", "Écosystème mature"]
+      },
+      "pricing": {
+        "title": "Tarification transparente",
+        "description": "Modèles tarifaires à venir selon moteur, ressources et options.",
+        "items": ["Moteur", "vCPU", "RAM", "Stockage", "Backups", "Haute disponibilité", "Trafic", "Connexions", "Managed"],
+        "cta": "Voir la tarification"
+      },
+      "migration": {
+        "title": "Migration",
+        "description": "Already running a database elsewhere? Bring it to Zenth Cloud.",
+        "cases": ["VPS", "Serveur dédié", "Autre cloud", "On-premise"],
+        "services": ["Audit", "Planification", "Transfert", "Validation", "Bascule"],
+        "cta": "Parler à un expert"
+      },
+      "useCases": {
+        "title": "Cas d'usage",
+        "items": ["SaaS", "E-commerce", "Production + Staging", "Multi-service application"]
+      },
+      "crossSelling": {
+        "title": "Construisez votre infrastructure",
+        "compute": {
+          "label": "Compute",
+          "description": "Hébergez vos applications.",
+          "cta": "Découvrir Compute"
+        },
+        "storage": {
+          "label": "Storage",
+          "description": "Stockez vos données applicatives.",
+          "cta": "Découvrir Storage"
+        },
+        "networking": {
+          "label": "Networking",
+          "description": "Connectez vos services en privé.",
+          "cta": "Découvrir Networking"
+        },
+        "backup": {
+          "label": "Backup",
+          "description": "Protégez vos bases de données.",
+          "cta": "Découvrir Backup"
+        },
+        "security": {
+          "label": "Security",
+          "description": "Sécurisez votre infrastructure.",
+          "cta": "Découvrir Security"
+        }
+      },
+      "finalCta": {
+        "title": "Let your database run. Let your team build.",
+        "description": "Déployez votre première base de données managée en quelques minutes.",
+        "primary": "Créer une base de données",
+        "secondary": "Parler à un expert"
+      }
+    },
+    "containers": {
+      "meta": {
+        "title": "Containers Cloud | ZenthCloud",
+        "description": "Déployez et exécutez des applications conteneurisées sur Zenth Cloud sans gérer l'infrastructure sous-jacente."
+      },
+      "hero": {
+        "badge": "Public Cloud Containers",
+        "title": "Run containers. Not infrastructure.",
+        "subtitle": "Déployez des workloads conteneurisés tout en simplifiant la gestion de l'infrastructure.",
+        "primaryCta": "Deploy a container",
+        "secondaryCta": "Explore the platform"
+      },
+      "codeToApp": {
+        "title": "From code to running application"
+      },
+      "deploy": {
+        "title": "Deploy your containers",
+        "description": "Fournissez votre image, configurez vos ressources et déployez en quelques étapes."
+      },
+      "dockerOci": {
+        "title": "Docker & OCI",
+        "description": "Use the container ecosystem you already know."
+      },
+      "registry": {
+        "title": "Container Registry",
+        "description": "Build, stockez et déployez vos images depuis un registry privé."
+      },
+      "persistentStorage": {
+        "title": "Persistent Storage",
+        "description": "Containers can be ephemeral. Your data doesn't have to be.",
+        "cta": "Discover Storage"
+      },
+      "networking": {
+        "title": "Networking",
+        "description": "Connectez vos containers à Internet et à vos services privés.",
+        "cta": "Discover Networking"
+      },
+      "envConfig": {
+        "title": "Environment configuration",
+        "items": ["Environment variables", "Secrets", "Configuration", "Ports", "Runtime settings"]
+      },
+      "scaling": {
+        "title": "Scaling",
+        "description": "Faites évoluer vos workloads conteneurisés.",
+        "items": ["Scale up", "Scale down", "Replicas", "Autoscaling", "Rolling deployments"],
+        "note": "Capacités selon offres."
+      },
+      "zeroDowntime": {
+        "title": "Safer deployments",
+        "description": "Déployez de nouvelles versions de manière progressive.",
+        "note": "Zero downtime selon mécanismes disponibles."
+      },
+      "logsMonitoring": {
+        "title": "Logs & Monitoring",
+        "description": "Observez vos containers sans vous connecter au serveur.",
+        "items": ["Container logs", "CPU", "RAM", "Réseau", "Restarts", "Health status", "Uptime"]
+      },
+      "healthChecks": {
+        "title": "Health checks",
+        "description": "Vérifiez l'état de vos containers et déclenchez des actions de recovery.",
+        "items": ["Healthy", "Unhealthy", "Recovery"]
+      },
+      "comparison": {
+        "title": "Containers vs VPS vs Kubernetes",
+        "rows": ["Infrastructure", "Déploiement", "Containers", "Scaling", "Complexité", "Contrôle"],
+        "vps": ["Client", "Manuel", "À gérer", "Manuel", "Faible à moyenne", "Élevé"],
+        "containers": ["Zenth Cloud", "Simplifié", "Natifs", "Simplifié / selon offre", "Faible", "Moyen"],
+        "kubernetes": ["Zenth Cloud / Managed", "Orchestré", "Natifs", "Avancé", "Élevée", "Très élevé"]
+      },
+      "developers": {
+        "title": "Built for developers",
+        "features": ["Git", "CI/CD", "API", "CLI", "Infrastructure as Code", "Webhooks"]
+      },
+      "openSource": {
+        "title": "Built on open standards",
+        "benefits": ["OCI", "Docker ecosystem", "Standards ouverts", "Portabilité", "Réduction du vendor lock-in"]
+      },
+      "managed": {
+        "title": "Managed Containers",
+        "description": "Choisissez le niveau de responsabilité qui correspond à votre équipe.",
+        "self": {
+          "title": "Self-managed",
+          "description": "Vous utilisez des containers sur Compute et gérez l'environnement.",
+          "features": ["Installation container runtime", "Configuration manuelle", "Gestion des déploiements"]
+        },
+        "platform": {
+          "title": "Platform",
+          "description": "Zenth Cloud gère la couche d'exécution, vous gérez votre application.",
+          "features": ["Provisioning", "Exécution", "Networking", "Logs", "Monitoring"]
+        },
+        "managed": {
+          "title": "Managed",
+          "description": "Zenth Cloud prend davantage en charge l'opération.",
+          "features": ["Déploiement", "Monitoring", "Configuration", "Mises à jour", "Troubleshooting", "Optimisation"]
+        }
+      },
+      "security": {
+        "title": "Security",
+        "items": ["Isolation des workloads", "Firewall", "Private networking", "Contrôle des accès", "Secrets", "Image security", "Registry privé", "Monitoring"],
+        "responsibility": "Container isolation is one layer of security, not the entire security model."
+      },
+      "pricing": {
+        "title": "Tarification transparente",
+        "description": "Modèles tarifaires à venir selon ressources et options.",
+        "items": ["CPU", "RAM", "Stockage", "Workloads", "Trafic", "Registry", "Volumes", "Replicas", "Managed", "Monitoring"],
+        "cta": "Voir la tarification"
+      },
+      "useCases": {
+        "title": "Cas d'usage",
+        "items": ["Web application", "API", "Worker", "CI/CD", "Microservices"]
+      },
+      "crossSelling": {
+        "title": "Construisez votre infrastructure",
+        "compute": {
+          "label": "Compute",
+          "description": "Une infrastructure VM complète.",
+          "cta": "Discover Compute"
+        },
+        "storage": {
+          "label": "Storage",
+          "description": "Stockage persistant pour vos containers.",
+          "cta": "Discover Storage"
+        },
+        "networking": {
+          "label": "Networking",
+          "description": "Connectez vos containers en privé.",
+          "cta": "Discover Networking"
+        },
+        "databases": {
+          "label": "Databases",
+          "description": "Bases de données managées.",
+          "cta": "Discover Databases"
+        },
+        "kubernetes": {
+          "label": "Kubernetes",
+          "description": "Orchestrez vos containers à grande échelle.",
+          "cta": "Discover Kubernetes"
+        },
+        "backup": {
+          "label": "Backup",
+          "description": "Protégez vos données.",
+          "cta": "Discover Backup"
+        }
+      },
+      "finalCta": {
+        "title": "Ship your application, not your infrastructure.",
+        "description": "Déployez votre premier container sur Zenth Cloud.",
+        "primary": "Deploy a container",
+        "secondary": "Explore Kubernetes"
       }
     },
     "footer": {

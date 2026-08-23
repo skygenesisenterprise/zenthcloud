@@ -6,6 +6,7 @@ import { Locale } from "@/lib/locale";
 import { Header } from "@/components/public/Header";
 import { TopBar } from "@/components/public/TopBar";
 import { Footer } from "@/components/public/Footer";
+import { BackToTopButton } from "@/components/common/back-to-top-button";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default async function LocaleLayout({
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          <BackToTopButton />
         </div>
       </LocaleProvider>
     </NextIntlClientProvider>

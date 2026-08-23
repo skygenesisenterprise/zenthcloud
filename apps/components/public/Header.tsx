@@ -1,58 +1,67 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { Menu } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/public/MegaMenu";
 import { MobileMenu } from "@/components/public/MobileMenu";
 import { mainNav, utilityNav, type NavGroup, type NavItem, type NavGroupFooter } from "@/lib/navigation";
 
-function translateItem(item: NavItem, t: (key: string) => string): NavItem {
+function localizeHref(href: string | undefined, locale: string): string | undefined {
+  if (!href) return href;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("#")) return href;
+  if (href === `/${locale}` || href.startsWith(`/${locale}/`)) return href;
+  return `/${locale}${href.startsWith("/") ? href : `/${href}`}`;
+}
+
+function translateItem(item: NavItem, locale: string, t: (key: string) => string): NavItem {
   return {
     ...item,
     label: item.labelKey ? t(item.labelKey) : item.label,
     description: item.descriptionKey ? t(item.descriptionKey) : item.description,
+    href: localizeHref(item.href, locale),
   };
 }
 
-function translateFooter(footer: NavGroupFooter | undefined, t: (key: string) => string): NavGroupFooter | undefined {
+function translateFooter(footer: NavGroupFooter | undefined, locale: string, t: (key: string) => string): NavGroupFooter | undefined {
   if (!footer) return undefined;
   return {
     ...footer,
     title: footer.titleKey ? t(footer.titleKey) : footer.title,
     description: footer.descriptionKey ? t(footer.descriptionKey) : footer.description,
+    href: localizeHref(footer.href, locale) ?? footer.href,
   };
 }
 
-function translateGroup(group: NavGroup, t: (key: string) => string): NavGroup {
+function translateGroup(group: NavGroup, locale: string, t: (key: string) => string): NavGroup {
   return {
     ...group,
     label: group.labelKey ? t(group.labelKey) : group.label,
     headline: group.headlineKey ? t(group.headlineKey) : group.headline,
-    items: group.items.map((item) => translateItem(item, t)),
-    footer: translateFooter(group.footer, t),
-    footerLinks: group.footerLinks?.map((item) => translateItem(item, t)),
+    items: group.items.map((item) => translateItem(item, locale, t)),
+    footer: translateFooter(group.footer, locale, t),
+    footerLinks: group.footerLinks?.map((item) => translateItem(item, locale, t)),
+    href: localizeHref(group.href, locale),
   };
 }
 
 export function Header() {
   const tHeader = useTranslations("Public.header");
   const tNav = useTranslations("Public.navigation");
+  const locale = useLocale();
 
   const translatedMainNav = React.useMemo(
-    () => mainNav.map((group) => translateGroup(group, tNav)),
-    [tNav]
+    () => mainNav.map((group) => translateGroup(group, locale, tNav)),
+    [tNav, locale]
   );
 
   const translatedUtilityNav = React.useMemo(
     () =>
       utilityNav.map((item) => ({
-        ...item,
-        label: item.labelKey ? tHeader(item.labelKey) : item.label,
+        ...translateItem(item, locale, tHeader),
       })),
-    [tHeader]
+    [tHeader, locale]
   );
 
   const [openIndex, setOpenIndex] = React.useState<number | null>(null);
@@ -75,7 +84,7 @@ export function Header() {
     <>
       <header
         className={cn(
-          "sticky top-11 z-40 w-full border-b bg-background transition-shadow duration-200",
+          "sticky top-11 z-40 w-full border-b bg-background transition-shadow duration-200 select-none",
           scrolled ? "shadow-md" : ""
         )}
       >
