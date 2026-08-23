@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skygenesisenterprise/guilderia/server/src/interfaces"
-	"github.com/skygenesisenterprise/guilderia/server/src/models"
-	"github.com/skygenesisenterprise/guilderia/server/src/utils"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/interfaces"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/models"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/utils"
 )
 
 type UserService struct {
@@ -54,6 +54,18 @@ func NewUserService(
 	}
 }
 
+func normalizePresenceState(status string) string {
+	switch strings.ToLower(strings.TrimSpace(status)) {
+	case "online", "idle", "dnd", "do_not_disturb", "invisible", "offline":
+		s := strings.ToLower(strings.TrimSpace(status))
+		if s == "do_not_disturb" {
+			return "dnd"
+		}
+		return s
+	default:
+		return ""
+	}
+}
 func (s *UserService) EnsureUser(ctx context.Context, principal interfaces.Principal) (*models.User, error) {
 	user, err := s.users.GetByID(ctx, principal.UserID)
 	if err == nil {
@@ -65,7 +77,6 @@ func (s *UserService) EnsureUser(ctx context.Context, principal interfaces.Princ
 		EmailNormalized: principal.UserID + "@local.aether",
 		DisplayName:     principal.UserID,
 		Status:          "active",
-		PresenceStatus:  "online",
 	}
 	if createErr := s.users.Create(ctx, user); createErr != nil {
 		return nil, createErr
@@ -89,13 +100,6 @@ func (s *UserService) UpdateMe(ctx context.Context, principal interfaces.Princip
 		user.AvatarURL = &trimmed
 	} else {
 		user.AvatarURL = nil
-	}
-	if status != "" {
-		normalizedStatus := normalizePresenceState(status)
-		if normalizedStatus == "" {
-			return nil, utils.ErrValidationFailed
-		}
-		user.PresenceStatus = normalizedStatus
 	}
 	user.UpdatedAt = time.Now().UTC()
 	if err := s.users.Update(ctx, user); err != nil {
@@ -208,7 +212,7 @@ func (s *UserService) UpdateNotificationPreferences(
 	now := time.Now().UTC()
 	preference := &models.NotificationPreference{
 		Common:                      models.Common{ID: utils.NewID(), CreatedAt: now, UpdatedAt: now},
-		UserID:                      principal.UserID,
+		UserId:                      principal.UserID,
 		DirectMessageNotifications:  input.DirectMessages,
 		MentionNotifications:        input.Mentions,
 		ChannelMessageNotifications: input.ChannelMessages,
@@ -234,4 +238,47 @@ func defaultString(value string, fallback string) string {
 
 func roleAllowed(role string) bool {
 	return utils.ValidRole(role)
+}
+
+func (s *UserService) GetByID(ctx context.Context, userID string) (*models.User, error) {
+	return s.users.GetByID(ctx, userID)
+}
+
+type UpdateSettingsInput struct {
+	Theme                   string
+	Language                string
+	Timezone                string
+	NotificationPreferences NotificationPreferencesDTO
+}
+
+func (s *UserService) UpdateSettings(ctx context.Context, userID string, input UpdateSettingsInput) (*models.UserSettings, error) {
+	settings, err := s.settings.GetByUserID(ctx, userID)
+	if err != nil {
+		if utils.AsAppError(err).Code != "USER_SETTINGS_NOT_FOUND" {
+			return nil, err
+		}
+		settings = &models.UserSettings{}
+	}
+
+	if input.Theme != "" {
+		settings.Theme = input.Theme
+	}
+	if input.Language != "" {
+		settings.Language = input.Language
+	}
+	if input.Timezone != "" {
+		settings.TimeZone = input.Timezone
+	}
+
+	settings.UpdatedAt = time.Now().UTC()
+
+	if err := s.settings.Upsert(ctx, settings); err != nil {
+		return nil, err
+	}
+
+	return settings, nil
+}
+
+func (s *UserService) GetSettings(ctx context.Context, userID string) (*models.UserSettings, error) {
+	return s.settings.GetByUserID(ctx, userID)
 }

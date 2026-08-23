@@ -1,11 +1,11 @@
 /**
  * Shared utility for reading/writing cookies that are shared across
- * subdomains (e.g. sso.guilderia.localhost ↔ console.guilderia.localhost).
+ * subdomains (e.g. sso.zenthcloud.localhost ↔ console.zenthcloud.localhost).
  *
  * The domain is derived from the current hostname:
- *   sso.guilderia.localhost   → .guilderia.localhost
- *   console.guilderia.localhost → .guilderia.localhost
- *   guilderia.com             → .guilderia.com
+ *   sso.zenthcloud.localhost   → .zenthcloud.localhost
+ *   console.zenthcloud.localhost → .zenthcloud.localhost
+ *   zenthcloud.com             → .zenthcloud.com
  */
 
 function getCookieDomain(): string {

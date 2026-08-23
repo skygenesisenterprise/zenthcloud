@@ -17,7 +17,7 @@ const imageLocalPatterns: NonNullable<NextConfig["images"]>["localPatterns"] = [
   { pathname: "/api/v1/integrations/plex/image" },
 ];
 const imageRemotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [
-  { protocol: "https", hostname: "guilderia.com", pathname: "/**" },
+  { protocol: "https", hostname: "zenthcloud.com", pathname: "/**" },
   { protocol: "https", hostname: "api.dicebear.com", pathname: "/**" },
   { protocol: "https", hostname: "avatars.githubusercontent.com", pathname: "/**" },
   { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: "../",
   },
-  allowedDevOrigins: ["guilderia.com", "api.guilderia.com", "sso.guilderia.com", "guilderia.localhost", "api.guilderia.localhost", "sso.guilderia.localhost", "studios.guilderia.localhost"],
+  allowedDevOrigins: ["zenthcloud.com", "api.zenthcloud.com", "sso.zenthcloud.com", "zenthcloud.localhost", "api.zenthcloud.localhost", "sso.zenthcloud.localhost", "studios.zenthcloud.localhost"],
   outputFileTracingExcludes: {
     "*": ["test/**"],
   },

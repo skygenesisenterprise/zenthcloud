@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/skygenesisenterprise/guilderia/server/src/models"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/models"
 )
 
 type UserRepository interface {
@@ -86,154 +86,120 @@ type WorkspaceMemberRepository interface {
 	Delete(ctx context.Context, workspaceID, userID string) error
 }
 
+type AuthAccountRepository interface {
+	Create(ctx context.Context, account *models.AuthAccount) error
+	GetByProvider(ctx context.Context, provider string, providerAccountID string) (*models.AuthAccount, error)
+	GetByUserIDAndProvider(ctx context.Context, userID string, provider string) (*models.AuthAccount, error)
+	ListByUserID(ctx context.Context, userID string) ([]models.AuthAccount, error)
+	Update(ctx context.Context, account *models.AuthAccount) error
+	Delete(ctx context.Context, id string) error
+}
+
 type WorkspaceSSOConfigRepository interface {
 	GetByWorkspaceID(ctx context.Context, workspaceID string) (*models.WorkspaceSSOConfig, error)
 	Upsert(ctx context.Context, config *models.WorkspaceSSOConfig) error
 }
 
-type TeamRepository interface {
-	Create(ctx context.Context, team *models.Team) error
-	GetByID(ctx context.Context, id string) (*models.Team, error)
-	ListByWorkspace(ctx context.Context, workspaceID string) ([]models.Team, error)
-	Update(ctx context.Context, team *models.Team) error
-	Archive(ctx context.Context, id string, archivedAt time.Time) error
-}
-
-type ChannelRepository interface {
-	Create(ctx context.Context, channel *models.Channel) error
-	GetByID(ctx context.Context, id string) (*models.Channel, error)
-	ListByWorkspace(ctx context.Context, workspaceID string) ([]models.Channel, error)
-	Update(ctx context.Context, channel *models.Channel) error
-	Archive(ctx context.Context, id string, archivedAt time.Time) error
-}
-
-type ConversationRepository interface {
-	Create(ctx context.Context, conversation *models.Conversation) error
-	GetByID(ctx context.Context, id string) (*models.Conversation, error)
-	ListByWorkspace(ctx context.Context, workspaceID string) ([]models.Conversation, error)
-	Update(ctx context.Context, conversation *models.Conversation) error
-	Archive(ctx context.Context, id string, archivedAt time.Time) error
-}
-
-type ConversationMemberRepository interface {
-	Create(ctx context.Context, member *models.ConversationMember) error
-	ListByConversation(ctx context.Context, conversationID string) ([]models.ConversationMember, error)
-	Get(ctx context.Context, conversationID, userID string) (*models.ConversationMember, error)
-	Update(ctx context.Context, member *models.ConversationMember) error
-	Delete(ctx context.Context, conversationID, userID string) error
-}
-
-type TaskRepository interface {
-	Create(ctx context.Context, task *models.Task) error
-	ListByWorkspace(ctx context.Context, workspaceID string) ([]models.Task, error)
-	GetByID(ctx context.Context, id string) (*models.Task, error)
-	Update(ctx context.Context, task *models.Task) error
-	Archive(ctx context.Context, id string, archivedAt time.Time) error
-}
-
-type ProjectRepository interface {
-	Create(ctx context.Context, project *models.Project) error
-	ListByWorkspace(ctx context.Context, workspaceID string) ([]models.Project, error)
-	GetByID(ctx context.Context, id string) (*models.Project, error)
-	Update(ctx context.Context, project *models.Project) error
-	Archive(ctx context.Context, id string, archivedAt time.Time) error
-}
-
-type MessageRepository interface {
-	Create(ctx context.Context, message *models.Message) error
-	GetByID(ctx context.Context, id string) (*models.Message, error)
-	ListByConversation(ctx context.Context, conversationID string, cursor string, limit int) ([]models.Message, string, bool, error)
-	Update(ctx context.Context, message *models.Message) error
-	SoftDelete(ctx context.Context, id string, deletedAt time.Time) error
-}
-
-type ReactionRepository interface {
-	Create(ctx context.Context, reaction *models.Reaction) error
-	Delete(ctx context.Context, messageID, userID, emoji string) error
-	ListByMessage(ctx context.Context, messageID string) ([]models.Reaction, error)
-}
-
-type ReadReceiptRepository interface {
-	Upsert(ctx context.Context, receipt *models.ReadReceipt) error
-}
-
-type MeetingRepository interface {
-	Create(ctx context.Context, meeting *models.Meeting) error
-	GetByID(ctx context.Context, id string) (*models.Meeting, error)
-	ListByWorkspace(ctx context.Context, workspaceID string) ([]models.Meeting, error)
-	ListActive(ctx context.Context, limit int) ([]models.Meeting, error)
-	ListStartingBetween(ctx context.Context, start, end time.Time, limit int) ([]models.Meeting, error)
-	ListExpiredScheduled(ctx context.Context, before time.Time, limit int) ([]models.Meeting, error)
-	ListAbandonedActive(ctx context.Context, before time.Time, limit int) ([]models.Meeting, error)
-	Update(ctx context.Context, meeting *models.Meeting) error
-}
-
-type MeetingParticipantRepository interface {
-	Create(ctx context.Context, participant *models.MeetingParticipant) error
-	Get(ctx context.Context, meetingID, userID string) (*models.MeetingParticipant, error)
-	ListByMeeting(ctx context.Context, meetingID string) ([]models.MeetingParticipant, error)
-	Upsert(ctx context.Context, participant *models.MeetingParticipant) error
-	Update(ctx context.Context, participant *models.MeetingParticipant) error
-}
-
-type MeetingSessionRepository interface {
-	Create(ctx context.Context, session *models.MeetingSession) error
-	GetByID(ctx context.Context, id string) (*models.MeetingSession, error)
-	GetActiveByMeeting(ctx context.Context, meetingID string) (*models.MeetingSession, error)
-	GetByProviderRoomName(ctx context.Context, roomName string) (*models.MeetingSession, error)
-	ListActive(ctx context.Context, limit int) ([]models.MeetingSession, error)
-	Update(ctx context.Context, session *models.MeetingSession) error
-}
-
-type MeetingSessionParticipantRepository interface {
-	Create(ctx context.Context, participant *models.MeetingSessionParticipant) error
-	GetByIdentity(ctx context.Context, sessionID, providerIdentity string) (*models.MeetingSessionParticipant, error)
-	ListBySession(ctx context.Context, sessionID string) ([]models.MeetingSessionParticipant, error)
-	Upsert(ctx context.Context, participant *models.MeetingSessionParticipant) error
-	Update(ctx context.Context, participant *models.MeetingSessionParticipant) error
-}
-
-type WebRTCNodeRepository interface {
-	Upsert(ctx context.Context, node *models.WebRTCNode) error
-	GetByID(ctx context.Context, id string) (*models.WebRTCNode, error)
-	ListHealthy(ctx context.Context, provider string) ([]models.WebRTCNode, error)
-	Update(ctx context.Context, node *models.WebRTCNode) error
-}
-
-type WebRTCWebhookEventRepository interface {
-	Create(ctx context.Context, event *models.WebRTCWebhookEvent) error
-	GetByEventID(ctx context.Context, provider, eventID string) (*models.WebRTCWebhookEvent, error)
-}
-
-type IntegrationRepository interface {
-	Create(ctx context.Context, integration *models.Integration) error
-	GetByID(ctx context.Context, id string) (*models.Integration, error)
-	ListByWorkspace(ctx context.Context, workspaceID string) ([]models.Integration, error)
-	Update(ctx context.Context, integration *models.Integration) error
+type RoleRepository interface {
+	Create(ctx context.Context, role *models.Role) error
+	GetByID(ctx context.Context, id string) (*models.Role, error)
+	GetBySlug(ctx context.Context, slug string) (*models.Role, error)
+	List(ctx context.Context) ([]models.Role, error)
+	Update(ctx context.Context, role *models.Role) error
 	Delete(ctx context.Context, id string) error
 }
 
-type AuditLogRepository interface {
-	Create(ctx context.Context, audit *models.AuditLog) error
-	ListByWorkspace(ctx context.Context, workspaceID string, limit int) ([]models.AuditLog, error)
+type UserRoleRepository interface {
+	Assign(ctx context.Context, userRole *models.UserRole) error
+	Remove(ctx context.Context, userID, roleID string) error
+	GetByUserAndRole(ctx context.Context, userID, roleID string) (*models.UserRole, error)
+	ListByUser(ctx context.Context, userID string) ([]models.UserRole, error)
+	ListByRole(ctx context.Context, roleID string) ([]models.UserRole, error)
+	CountByRole(ctx context.Context, roleID string) (int64, error)
 }
 
-type NotificationRepository interface {
-	Create(ctx context.Context, notification *models.Notification) error
-	GetByIdempotencyKey(ctx context.Context, key string) (*models.Notification, error)
-	ListByUser(ctx context.Context, userID string, before *time.Time, beforeID string, limit int) ([]models.Notification, error)
-	CountUnreadByUser(ctx context.Context, userID string) (int64, error)
-	MarkRead(ctx context.Context, userID, notificationID string, readAt time.Time) (bool, error)
-	MarkAllRead(ctx context.Context, userID string, readAt time.Time) (bool, error)
-	ListBefore(ctx context.Context, before time.Time, limit int) ([]models.Notification, error)
-	DeleteByIDs(ctx context.Context, ids []string) error
+type MfaSecretRepository interface {
+	GetByUserID(ctx context.Context, userID string) (*models.MfaSecret, error)
+	Create(ctx context.Context, secret *models.MfaSecret) error
+	Update(ctx context.Context, secret *models.MfaSecret) error
+	DeleteByUserID(ctx context.Context, userID string) error
 }
 
-type OutboxRepository interface {
-	Create(ctx context.Context, event *models.OutboxEvent) error
-	ClaimUnpublished(ctx context.Context, workerID string, limit int, maxAttempts int) ([]models.OutboxEvent, error)
-	MarkPublished(ctx context.Context, id string, publishedAt time.Time) error
-	MarkFailed(ctx context.Context, id string, attempts int, lastError string) error
+type MfaRecoveryCodeRepository interface {
+	Create(ctx context.Context, code *models.MfaRecoveryCode) error
+	CreateBatch(ctx context.Context, codes []*models.MfaRecoveryCode) error
+	GetByUserID(ctx context.Context, userID string) ([]models.MfaRecoveryCode, error)
+	GetByID(ctx context.Context, id string) (*models.MfaRecoveryCode, error)
+	MarkUsed(ctx context.Context, id string) error
+	DeleteByUserID(ctx context.Context, userID string) error
+}
+
+type ArticleRepository interface {
+	Create(ctx context.Context, article *models.Article) error
+	GetByID(ctx context.Context, id string) (*models.Article, error)
+	GetBySlug(ctx context.Context, slug string) (*models.Article, error)
+	List(ctx context.Context, workspaceID string, status string, categoryID string, offset, limit int) ([]models.Article, int64, error)
+	Update(ctx context.Context, article *models.Article) error
+	Delete(ctx context.Context, id string) error
+}
+
+type CategoryRepository interface {
+	Create(ctx context.Context, category *models.Category) error
+	GetByID(ctx context.Context, id string) (*models.Category, error)
+	GetBySlug(ctx context.Context, slug string) (*models.Category, error)
+	List(ctx context.Context) ([]models.Category, error)
+	Update(ctx context.Context, category *models.Category) error
+	Delete(ctx context.Context, id string) error
+}
+
+type TagRepository interface {
+	Create(ctx context.Context, tag *models.Tag) error
+	GetByID(ctx context.Context, id string) (*models.Tag, error)
+	GetBySlug(ctx context.Context, slug string) (*models.Tag, error)
+	List(ctx context.Context) ([]models.Tag, error)
+	Delete(ctx context.Context, id string) error
+}
+
+type MediaRepository interface {
+	Create(ctx context.Context, media *models.Media) error
+	GetByID(ctx context.Context, id string) (*models.Media, error)
+	List(ctx context.Context, workspaceID string, mimeType string, offset, limit int) ([]models.Media, int64, error)
+	Update(ctx context.Context, media *models.Media) error
+	Delete(ctx context.Context, id string) error
+}
+
+type WebhookRepository interface {
+	Create(ctx context.Context, webhook *models.Webhook) error
+	GetByID(ctx context.Context, id string) (*models.Webhook, error)
+	ListByWorkspace(ctx context.Context, workspaceID string) ([]models.Webhook, error)
+	Update(ctx context.Context, webhook *models.Webhook) error
+	Delete(ctx context.Context, id string) error
+}
+
+type WebhookDeliveryRepository interface {
+	Create(ctx context.Context, delivery *models.WebhookDelivery) error
+	ListByWebhook(ctx context.Context, webhookID string, limit int) ([]models.WebhookDelivery, error)
+}
+
+type SeoConfigRepository interface {
+	GetByPagePath(ctx context.Context, pagePath string) (*models.SeoConfig, error)
+	Upsert(ctx context.Context, config *models.SeoConfig) error
+	List(ctx context.Context) ([]models.SeoConfig, error)
+}
+
+type NewsletterSubscriberRepository interface {
+	Create(ctx context.Context, subscriber *models.NewsletterSubscriber) error
+	GetByEmail(ctx context.Context, email string) (*models.NewsletterSubscriber, error)
+	List(ctx context.Context, status string, offset, limit int) ([]models.NewsletterSubscriber, int64, error)
+	Update(ctx context.Context, subscriber *models.NewsletterSubscriber) error
+}
+
+type ScheduleRepository interface {
+	Create(ctx context.Context, schedule *models.Schedule) error
+	GetByID(ctx context.Context, id string) (*models.Schedule, error)
+	List(ctx context.Context, from, to time.Time, offset, limit int) ([]models.Schedule, int64, error)
+	Update(ctx context.Context, schedule *models.Schedule) error
+	Delete(ctx context.Context, id string) error
 }
 
 type RepositorySet interface {
@@ -246,24 +212,21 @@ type RepositorySet interface {
 	EmailVerificationTokens() EmailVerificationTokenRepository
 	PasswordResetTokens() PasswordResetTokenRepository
 	AuthAuditEvents() AuthAuditEventRepository
+	AuthAccounts() AuthAccountRepository
 	Workspaces() WorkspaceRepository
 	WorkspaceMembers() WorkspaceMemberRepository
 	WorkspaceSSOConfigs() WorkspaceSSOConfigRepository
-	Teams() TeamRepository
-	Channels() ChannelRepository
-	Conversations() ConversationRepository
-	ConversationMembers() ConversationMemberRepository
-	Messages() MessageRepository
-	Reactions() ReactionRepository
-	ReadReceipts() ReadReceiptRepository
-	Meetings() MeetingRepository
-	MeetingParticipants() MeetingParticipantRepository
-	MeetingSessions() MeetingSessionRepository
-	MeetingSessionParticipants() MeetingSessionParticipantRepository
-	Integrations() IntegrationRepository
-	AuditLogs() AuditLogRepository
-	Notifications() NotificationRepository
-	OutboxEvents() OutboxRepository
-	WebRTCNodes() WebRTCNodeRepository
-	WebRTCWebhookEvents() WebRTCWebhookEventRepository
+	Roles() RoleRepository
+	UserRoles() UserRoleRepository
+	MfaSecrets() MfaSecretRepository
+	MfaRecoveryCodes() MfaRecoveryCodeRepository
+	Articles() ArticleRepository
+	Categories() CategoryRepository
+	Tags() TagRepository
+	Media() MediaRepository
+	Webhooks() WebhookRepository
+	WebhookDeliveries() WebhookDeliveryRepository
+	SeoConfigs() SeoConfigRepository
+	NewsletterSubscribers() NewsletterSubscriberRepository
+	Schedules() ScheduleRepository
 }

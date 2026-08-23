@@ -10,11 +10,11 @@ type Locale = (typeof routing.locales)[number];
  * Domain ↔ route group mapping
  * -------------------------------------------------------------------------- */
 
-type DomainGroup = "sso" | "studios" | "main";
+type DomainGroup = "sso" | "console" | "main";
 
-const SSO_HOSTS = ["sso.zenthcloud.localhost", "sso.zenthcloud.lan"];
-const STUDIOS_HOSTS = ["studios.zenthcloud.localhost", "studios.zenthcloud.lan"];
-const MAIN_HOSTS = ["zenthcloud.localhost", "zenthcloud.lan", "zenthcloud.com", "www.zenthcloud.com"];
+const SSO_HOSTS = ["sso.zenthcloud.com", "sso.zenthcloud.lan"];
+const CONSOLE_HOSTS = ["console.zenthcloud.com", "console.zenthcloud.lan"];
+const MAIN_HOSTS = ["zenthcloud.com", "zenthcloud.lan", "www.zenthcloud.com"];
 
 const AUTH_PATHS = [
   "/login",
@@ -32,7 +32,7 @@ const PLATFORM_PATHS = ["/dash"];
 function detectGroup(host: string): DomainGroup {
   const hostname = host.split(":")[0];
   if (SSO_HOSTS.includes(hostname)) return "sso";
-  if (STUDIOS_HOSTS.includes(hostname)) return "studios";
+  if (CONSOLE_HOSTS.includes(hostname)) return "console";
   return "main";
 }
 
@@ -44,8 +44,8 @@ function getDomainForGroup(group: DomainGroup, currentUrl: URL): string {
     switch (group) {
       case "sso":
         return `${protocol}//sso.zenthcloud.localhost`;
-      case "studios":
-        return `${protocol}//studios.zenthcloud.localhost`;
+      case "console":
+        return `${protocol}//console.zenthcloud.localhost`;
       case "main":
         return `${protocol}//zenthcloud.localhost`;
     }
@@ -54,8 +54,8 @@ function getDomainForGroup(group: DomainGroup, currentUrl: URL): string {
   switch (group) {
     case "sso":
       return `${protocol}//sso.zenthcloud.com`;
-    case "studios":
-      return `${protocol}//studios.zenthcloud.com`;
+    case "console":
+      return `${protocol}//console.zenthcloud.com`;
     case "main":
       return `${protocol}//${hostname}`;
   }
@@ -65,7 +65,7 @@ function belongsToGroup(pathname: string, group: DomainGroup): boolean {
   switch (group) {
     case "sso":
       return AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
-    case "studios":
+    case "console":
       return PLATFORM_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
     case "main":
       return true;
@@ -74,7 +74,7 @@ function belongsToGroup(pathname: string, group: DomainGroup): boolean {
 
 function getTargetGroup(pathname: string): DomainGroup | null {
   if (AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "sso";
-  if (PLATFORM_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "studios";
+  if (PLATFORM_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "console";
   return null;
 }
 
@@ -106,8 +106,8 @@ function isValidLocale(segment: string): segment is Locale {
  * Auth helpers
  * -------------------------------------------------------------------------- */
 
-const REFRESH_COOKIE = "kami_sama_refresh";
-const ACCESS_TOKEN_COOKIE = "kami_sama_access_token";
+const REFRESH_COOKIE = "zenthcloud_refresh";
+const ACCESS_TOKEN_COOKIE = "zenthcloud_access_token";
 
 function isAuthCookiePresent(request: NextRequest): boolean {
   const refresh = request.cookies.get(REFRESH_COOKIE);
@@ -147,7 +147,7 @@ export default function proxy(request: NextRequest) {
     switch (currentGroup) {
       case "sso":
         return NextResponse.redirect(new URL("/login", request.url));
-      case "studios":
+      case "console":
         return NextResponse.redirect(new URL("/dash", request.url));
       case "main":
       default: {
@@ -155,7 +155,7 @@ export default function proxy(request: NextRequest) {
           return NextResponse.redirect(new URL("/profile-change", request.url));
         }
         const locale = getLocaleFromCountry(getCountryFromRequest(request));
-        return NextResponse.redirect(new URL(`/${locale}`, request.url));
+        return NextResponse.redirect(new URL(`/${locale}/discover`, request.url));
       }
     }
   }
@@ -173,8 +173,8 @@ export default function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  /* ---- Studios domain: only platform routes ---- */
-  if (currentGroup === "studios") {
+  /* ---- Console domain: only platform routes ---- */
+  if (currentGroup === "console") {
     if (PLATFORM_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
       if (IS_DEVELOPMENT) return NextResponse.next();
       if (isAuthCookiePresent(request) && hasAdminAccess(request)) return NextResponse.next();

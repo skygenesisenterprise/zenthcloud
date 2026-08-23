@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -13,19 +12,31 @@ import (
 const devJWTSecret = "dev-insecure-secret-change-me"
 
 type Config struct {
-	App       AppConfig
-	Server    ServerConfig
-	Database  DatabaseConfig
-	Redis     RedisConfig
-	Auth      AuthConfig
-	CORS      CORSConfig
-	Realtime  RealtimeConfig
-	Storage   StorageConfig
-	LiveKit   LiveKitConfig
-	WebRTC    WebRTCConfig
-	Worker    WorkerConfig
-	Outbox    OutboxConfig
-	Retention RetentionConfig
+	App         AppConfig
+	Server      ServerConfig
+	Database    DatabaseConfig
+	Redis       RedisConfig
+	Auth        AuthConfig
+	OAuth       OAuthConfig
+	CORS        CORSConfig
+	Anilist     AnilistConfig
+	MyAnimeList MyAnimeListConfig
+	MediaSource MediaSourceConfig
+}
+
+type OAuthProviderConfig struct {
+	ClientID     string
+	ClientSecret string
+	RedirectURL  string
+	Enabled      bool
+}
+
+type OAuthConfig struct {
+	Google  OAuthProviderConfig
+	GitHub  OAuthProviderConfig
+	Discord OAuthProviderConfig
+	Apple   OAuthProviderConfig
+	StateTTL time.Duration
 }
 
 type AppConfig struct {
@@ -35,6 +46,7 @@ type AppConfig struct {
 	Mode           string
 	AccessLogs     bool
 	TrustedProxies []string
+	FrontendURL    string
 }
 
 type ServerConfig struct {
@@ -87,90 +99,88 @@ type AuthConfig struct {
 	EmailVerificationTTL   time.Duration
 	PasswordResetTTL       time.Duration
 	RateLimitEnabled       bool
+	TOTPIssuer             string
+	MFARecoveryCodeLength  int
 }
 
 type CORSConfig struct {
 	AllowedOrigins []string
 }
 
-type RealtimeConfig struct {
-	Enabled           bool
-	HeartbeatInterval time.Duration
-	ClientTimeout     time.Duration
-}
-
-type StorageConfig struct {
-	Driver    string
-	LocalPath string
-}
-
-type LiveKitConfig struct {
-	Enabled     bool
-	URL         string
-	PublicURL   string
-	InternalURL string
-	APIKey      string
-	APISecret   string
-}
-
-type TURNConfig struct {
+type AnilistConfig struct {
 	Enabled  bool
-	URL      string
-	Username string
-	Password string
+	CacheTTL time.Duration
 }
 
-type WebRTCConfig struct {
-	Provider            string
-	PublicURL           string
-	Region              string
-	NodeID              string
-	TokenTTL            time.Duration
-	RoomEmptyTimeout    time.Duration
-	ParticipantTTL      time.Duration
-	NodeCapacity        int
-	HealthcheckInterval time.Duration
-	Draining            bool
-	TURN                TURNConfig
+// MyAnimeListConfig configures the MyAnimeList v2 integration. The client ID
+// is used as the API key passed via the X-MAL-CLIENT-ID header for public
+// endpoints. It can be overridden at runtime by saving settings through the UI
+// (persisted in source_configs).
+type MyAnimeListConfig struct {
+	Enabled       bool
+	ClientID      string
+	BaseURL       string
+	SyncInterval  time.Duration
 }
 
-type WorkerConfig struct {
-	Enabled           bool
-	ID                string
-	Concurrency       int
-	MaxAttempts       int
-	RetryBaseDelay    time.Duration
-	BlockTimeout      time.Duration
-	ClaimIdleTimeout  time.Duration
-	ShutdownTimeout   time.Duration
-	SchedulerEnabled  bool
-	HeartbeatInterval time.Duration
-	HeartbeatTTL      time.Duration
+// MediaSourceConfig separates the two provider roles:
+//   - Type selects the CONTENT provider (plex | local) that feeds the catalog
+//     database through the /api/v1/source/* multiplexer.
+//   - Jellyfin is a STREAMING provider only: it is wired independently below
+//     (whenever its credentials are present) and never imports content.
+type MediaSourceConfig struct {
+	Enabled  bool
+	Type     string
+	Jellyfin JellyfinConfig
+	Plex     PlexConfig
 }
 
-type OutboxConfig struct {
-	Enabled      bool
-	BatchSize    int
-	PollInterval time.Duration
-	MaxAttempts  int
+// JellyfinConfig configures the media-server (Jellyfin) streaming provider.
+// It backs ALL playback for the public /watch page (HLS resolution + same-
+// origin proxy in routes/discover.go) and is independent of the content
+// provider selection (MediaSourceConfig.Type).
+type JellyfinConfig struct {
+	URL           string
+	APIKey        string
+	UserID        string
+	SyncInterval  time.Duration
+	StreamProfile string
+	CacheTTL      time.Duration
+	// StrmDir is the writable directory (shared with the media-server
+	// container) where the worker drops .strm files so Jellyfin's library
+	// scanner turns a Plex URL into a transcodeable item.
+	StrmDir string
+	// StrmLibraryName / StrmLibraryPath describe the Jellyfin virtual folder
+	// that backs .strm bridging (auto-created if missing).
+	StrmLibraryName string
+	StrmLibraryPath string
 }
 
-type RetentionConfig struct {
-	NotificationDays int
-	AuditDays        int
-	SessionDays      int
-	UploadHours      int
+// PlexConfig configures the Plex Media Server integration.
+// Auth uses a static X-Plex-Token; no plex.tv PIN flow is supported here.
+type PlexConfig struct {
+	URL              string
+	Token            string
+	ClientIdentifier string
+	Product          string
+	Version          string
+	Device           string
+	StreamProfile    string
+	SyncInterval     time.Duration
+	CacheTTL         time.Duration
+	Timeout          time.Duration
 }
 
 func Load() (Config, error) {
 	cfg := Config{
 		App: AppConfig{
 			Env:            getEnv("APP_ENV", "development"),
-			Name:           getEnv("APP_NAME", "Guilderia"),
+			Name:           getEnv("APP_NAME", "Etheria Times"),
 			Version:        getEnv("APP_VERSION", "dev"),
 			Mode:           getEnv("GIN_MODE", "debug"),
 			AccessLogs:     getEnvBool("API_ACCESS_LOGS", true),
 			TrustedProxies: getEnvSlice("TRUSTED_PROXY_CIDRS", nil),
+			FrontendURL:    getEnv("FRONTEND_URL", "http://localhost:3000"),
 		},
 		Server: ServerConfig{
 			Host: getEnv("HOST", "0.0.0.0"),
@@ -181,7 +191,7 @@ func Load() (Config, error) {
 			Host:     getEnv("POSTGRESQL__HOST", "localhost"),
 			Port:     getEnv("POSTGRESQL__PORT", "5432"),
 			User:     getEnv("POSTGRESQL__USER", "postgres"),
-			Name:     getEnv("POSTGRESQL__NAME", "guilderia"),
+			Name:     getEnv("POSTGRESQL__NAME", "postgres"),
 			Password: getEnv("POSTGRESQL__PASSWORD", "postgres"),
 		},
 		Redis: RedisConfig{
@@ -192,7 +202,7 @@ func Load() (Config, error) {
 			Port:           getEnv("REDIS_PORT", "6379"),
 			Password:       getEnv("REDIS_PASSWORD", ""),
 			DB:             getEnvInt("REDIS_DB", 0),
-			KeyPrefix:      getEnv("REDIS_KEY_PREFIX", "guilderia:v1"),
+			KeyPrefix:      getEnv("REDIS_KEY_PREFIX", "aether-meet:v1"),
 			DefaultTTL:     getEnvDuration("REDIS_DEFAULT_TTL", 5*time.Minute),
 			ConnectTimeout: getEnvDuration("REDIS_CONNECT_TIMEOUT", 5*time.Second),
 			ReadTimeout:    getEnvDuration("REDIS_READ_TIMEOUT", 3*time.Second),
@@ -204,10 +214,10 @@ func Load() (Config, error) {
 			LocalEnabled:           getEnvBool("AUTH_LOCAL_ENABLED", true),
 			Mode:                   strings.ToLower(getEnv("AUTH_MODE", "jwt")),
 			JWTSecret:              getEnv("AUTH_JWT_SECRET", getEnv("JWT_SECRET", "")),
-			JWTIssuer:              getEnv("AUTH_JWT_ISSUER", getEnv("JWT_ISSUER", "guilderia")),
+			JWTIssuer:              getEnv("AUTH_JWT_ISSUER", getEnv("JWT_ISSUER", "zenthcloud")),
 			JWTAccessTTL:           getEnvDuration("AUTH_ACCESS_TOKEN_TTL", getEnvDuration("JWT_ACCESS_TTL", 15*time.Minute)),
 			JWTRefreshTTL:          getEnvDuration("AUTH_REFRESH_TOKEN_TTL", getEnvDuration("JWT_REFRESH_TTL", 30*24*time.Hour)),
-			RefreshCookieName:      getEnv("AUTH_REFRESH_COOKIE_NAME", "guilderia_refresh"),
+			RefreshCookieName:      getEnv("AUTH_REFRESH_COOKIE_NAME", "zenthcloud_account_refresh"),
 			CookieSecure:           getEnvBool("AUTH_COOKIE_SECURE", strings.EqualFold(getEnv("APP_ENV", "development"), "production")),
 			CookieSameSite:         strings.ToLower(getEnv("AUTH_COOKIE_SAME_SITE", "lax")),
 			CookieDomain:           strings.TrimSpace(getEnv("AUTH_COOKIE_DOMAIN", "")),
@@ -219,89 +229,76 @@ func Load() (Config, error) {
 			EmailVerificationTTL:   getEnvDuration("AUTH_EMAIL_VERIFICATION_TTL", 24*time.Hour),
 			PasswordResetTTL:       getEnvDuration("AUTH_PASSWORD_RESET_TTL", time.Hour),
 			RateLimitEnabled:       getEnvBool("AUTH_RATE_LIMIT_ENABLED", true),
+			TOTPIssuer:             getEnv("AUTH_MFA_TOTP_ISSUER", "Etheria Times"),
+			MFARecoveryCodeLength:  getEnvInt("AUTH_MFA_RECOVERY_CODE_LENGTH", 8),
+		},
+		OAuth: OAuthConfig{
+			Google: OAuthProviderConfig{
+				ClientID:     getEnv("OAUTH_GOOGLE_CLIENT_ID", ""),
+				ClientSecret: getEnv("OAUTH_GOOGLE_CLIENT_SECRET", ""),
+				RedirectURL:  getEnv("OAUTH_GOOGLE_REDIRECT_URL", ""),
+				Enabled:      getEnv("OAUTH_GOOGLE_CLIENT_ID", "") != "",
+			},
+			GitHub: OAuthProviderConfig{
+				ClientID:     getEnv("OAUTH_GITHUB_CLIENT_ID", ""),
+				ClientSecret: getEnv("OAUTH_GITHUB_CLIENT_SECRET", ""),
+				RedirectURL:  getEnv("OAUTH_GITHUB_REDIRECT_URL", ""),
+				Enabled:      getEnv("OAUTH_GITHUB_CLIENT_ID", "") != "",
+			},
+			Discord: OAuthProviderConfig{
+				ClientID:     getEnv("OAUTH_DISCORD_CLIENT_ID", ""),
+				ClientSecret: getEnv("OAUTH_DISCORD_CLIENT_SECRET", ""),
+				RedirectURL:  getEnv("OAUTH_DISCORD_REDIRECT_URL", ""),
+				Enabled:      getEnv("OAUTH_DISCORD_CLIENT_ID", "") != "",
+			},
+			Apple: OAuthProviderConfig{
+				ClientID:     getEnv("OAUTH_APPLE_CLIENT_ID", ""),
+				ClientSecret: getEnv("OAUTH_APPLE_CLIENT_SECRET", ""),
+				RedirectURL:  getEnv("OAUTH_APPLE_REDIRECT_URL", ""),
+				Enabled:      getEnv("OAUTH_APPLE_CLIENT_ID", "") != "",
+			},
+			StateTTL: getEnvDuration("OAUTH_STATE_TTL", 10*time.Minute),
 		},
 		CORS: CORSConfig{
 			AllowedOrigins: getEnvSlice("CORS_ALLOWED_ORIGINS", []string{"http://localhost:3000"}),
 		},
-		Realtime: RealtimeConfig{
-			Enabled:           getEnvBool("REALTIME_ENABLED", true),
-			HeartbeatInterval: getEnvDuration("REALTIME_HEARTBEAT_INTERVAL", 30*time.Second),
-			ClientTimeout:     getEnvDuration("REALTIME_CLIENT_TIMEOUT", 75*time.Second),
+		Anilist: AnilistConfig{
+			Enabled:  getEnvBool("ANILIST_ENABLED", false),
+			CacheTTL: getEnvDuration("ANILIST_CACHE_TTL", 5*time.Minute),
 		},
-		Storage: StorageConfig{
-			Driver:    strings.ToLower(getEnv("STORAGE_DRIVER", "local")),
-			LocalPath: getEnv("STORAGE_LOCAL_PATH", "/media"),
+		MyAnimeList: MyAnimeListConfig{
+			Enabled:      getEnvBool("MYANIMELIST_ENABLED", false),
+			ClientID:     getEnv("MYANIMELIST_CLIENT_ID", ""),
+			BaseURL:      getEnv("MYANIMELIST_BASE_URL", "https://api.myanimelist.net/v2"),
+			SyncInterval: getEnvDuration("MYANIMELIST_SYNC_INTERVAL", time.Hour),
 		},
-		LiveKit: LiveKitConfig{
-			Enabled:     getEnvBool("LIVEKIT_ENABLED", false),
-			URL:         getEnv("LIVEKIT_URL", ""),
-			PublicURL:   getEnv("LIVEKIT_PUBLIC_URL", getEnv("LIVEKIT_URL", "")),
-			InternalURL: getEnv("LIVEKIT_INTERNAL_URL", ""),
-			APIKey:      getEnv("LIVEKIT_API_KEY", ""),
-			APISecret:   getEnv("LIVEKIT_API_SECRET", ""),
-		},
-		WebRTC: WebRTCConfig{
-			Provider:            strings.ToLower(getEnv("WEBRTC_PROVIDER", "")),
-			PublicURL:           getEnv("WEBRTC_PUBLIC_URL", getEnv("LIVEKIT_PUBLIC_URL", getEnv("LIVEKIT_URL", ""))),
-			Region:              getEnv("WEBRTC_REGION", "global"),
-			NodeID:              getEnv("WEBRTC_NODE_ID", ""),
-			TokenTTL:            getEnvDuration("WEBRTC_TOKEN_TTL", 10*time.Minute),
-			RoomEmptyTimeout:    getEnvDuration("WEBRTC_ROOM_EMPTY_TIMEOUT", 5*time.Minute),
-			ParticipantTTL:      getEnvDuration("WEBRTC_PARTICIPANT_TTL", 2*time.Minute),
-			NodeCapacity:        getEnvInt("WEBRTC_NODE_CAPACITY", 500),
-			HealthcheckInterval: getEnvDuration("WEBRTC_HEALTHCHECK_INTERVAL", 30*time.Second),
-			Draining:            getEnvBool("WEBRTC_DRAINING", false),
-			TURN: TURNConfig{
-				Enabled:  getEnvBool("TURN_ENABLED", false),
-				URL:      getEnv("TURN_URL", ""),
-				Username: getEnv("TURN_USERNAME", ""),
-				Password: getEnv("TURN_PASSWORD", ""),
+		MediaSource: MediaSourceConfig{
+			Enabled: getEnvBool("MEDIA_SOURCE_ENABLED", false),
+			Type:    getEnv("MEDIA_SOURCE_TYPE", "local"),
+			Jellyfin: JellyfinConfig{
+				URL:              getEnv("MEDIA_SOURCE_JELLYFIN_URL", "http://media-server:8096"),
+				APIKey:           getEnv("MEDIA_SOURCE_JELLYFIN_API_KEY", "795337733c3d47778b206b7f469b1467"),
+				UserID:           getEnv("MEDIA_SOURCE_JELLYFIN_USER_ID", "c8aa35777aae4664a0d4904d814a0e78"),
+				SyncInterval:     getEnvDuration("MEDIA_SOURCE_SYNC_INTERVAL", time.Hour),
+				StreamProfile:    getEnv("MEDIA_SOURCE_STREAM_PROFILE", "native"),
+				CacheTTL:         getEnvDuration("MEDIA_SOURCE_CACHE_TTL", 5*time.Minute),
+				StrmDir:          getEnv("MEDIA_SOURCE_JELLYFIN_STRM_DIR", "/remote-media"),
+				StrmLibraryName:  getEnv("MEDIA_SOURCE_JELLYFIN_STRM_LIBRARY", "Remote"),
+				StrmLibraryPath:  getEnv("MEDIA_SOURCE_JELLYFIN_STRM_LIBRARY_PATH", "/remote-media"),
+			},
+			Plex: PlexConfig{
+				URL:              getEnv("MEDIA_SOURCE_PLEX_URL", ""),
+				Token:            getEnv("MEDIA_SOURCE_PLEX_TOKEN", ""),
+				ClientIdentifier: getEnv("MEDIA_SOURCE_PLEX_CLIENT_ID", "kamisama-server"),
+				Product:          getEnv("MEDIA_SOURCE_PLEX_PRODUCT", "KamiSama"),
+				Version:          getEnv("MEDIA_SOURCE_PLEX_VERSION", "1.0.0"),
+				Device:           getEnv("MEDIA_SOURCE_PLEX_DEVICE", "Server"),
+				StreamProfile:    getEnv("MEDIA_SOURCE_PLEX_STREAM_PROFILE", "native"),
+				SyncInterval:     getEnvDuration("MEDIA_SOURCE_PLEX_SYNC_INTERVAL", time.Hour),
+				CacheTTL:         getEnvDuration("MEDIA_SOURCE_PLEX_CACHE_TTL", 5*time.Minute),
+				Timeout:          getEnvDuration("MEDIA_SOURCE_PLEX_TIMEOUT", 30*time.Second),
 			},
 		},
-		Worker: WorkerConfig{
-			Enabled:           getEnvBool("WORKER_ENABLED", false),
-			ID:                getEnv("WORKER_ID", ""),
-			Concurrency:       getEnvInt("WORKER_CONCURRENCY", 2),
-			MaxAttempts:       getEnvInt("WORKER_MAX_ATTEMPTS", 5),
-			RetryBaseDelay:    getEnvDuration("WORKER_RETRY_BASE_DELAY", 5*time.Second),
-			BlockTimeout:      getEnvDuration("WORKER_BLOCK_TIMEOUT", 5*time.Second),
-			ClaimIdleTimeout:  getEnvDuration("WORKER_CLAIM_IDLE_TIMEOUT", 30*time.Second),
-			ShutdownTimeout:   getEnvDuration("WORKER_SHUTDOWN_TIMEOUT", 15*time.Second),
-			SchedulerEnabled:  getEnvBool("WORKER_SCHEDULER_ENABLED", true),
-			HeartbeatInterval: getEnvDuration("WORKER_HEARTBEAT_INTERVAL", 15*time.Second),
-			HeartbeatTTL:      getEnvDuration("WORKER_HEARTBEAT_TTL", 45*time.Second),
-		},
-		Outbox: OutboxConfig{
-			Enabled:      getEnvBool("OUTBOX_ENABLED", true),
-			BatchSize:    getEnvInt("OUTBOX_BATCH_SIZE", 50),
-			PollInterval: getEnvDuration("OUTBOX_POLL_INTERVAL", 5*time.Second),
-			MaxAttempts:  getEnvInt("OUTBOX_MAX_ATTEMPTS", 10),
-		},
-		Retention: RetentionConfig{
-			NotificationDays: getEnvInt("NOTIFICATION_RETENTION_DAYS", 30),
-			AuditDays:        getEnvInt("AUDIT_RETENTION_DAYS", 90),
-			SessionDays:      getEnvInt("SESSION_RETENTION_DAYS", 30),
-			UploadHours:      getEnvInt("UPLOAD_RETENTION_HOURS", 24),
-		},
-	}
-
-	if cfg.Worker.ID == "" {
-		cfg.Worker.ID = "worker-" + strings.ReplaceAll(strconv.FormatInt(time.Now().UTC().UnixNano(), 36), "-", "")
-	}
-	if cfg.WebRTC.Provider == "" && cfg.LiveKit.Enabled {
-		cfg.WebRTC.Provider = "livekit"
-	}
-	if cfg.WebRTC.NodeID == "" {
-		cfg.WebRTC.NodeID = "guilderia-" + cfg.WebRTC.Region + "-1"
-	}
-	if cfg.LiveKit.InternalURL == "" {
-		cfg.LiveKit.InternalURL = cfg.LiveKit.URL
-	}
-	if cfg.LiveKit.PublicURL == "" {
-		cfg.LiveKit.PublicURL = cfg.LiveKit.URL
-	}
-	if cfg.WebRTC.PublicURL == "" {
-		cfg.WebRTC.PublicURL = cfg.LiveKit.PublicURL
 	}
 
 	if cfg.Auth.JWTSecret == "" && cfg.App.Env != "production" {
@@ -355,97 +352,6 @@ func (c Config) Validate() error {
 		if c.Database.URL == "" {
 			return errors.New("database must be configured when local auth is enabled")
 		}
-	}
-	if c.LiveKit.Enabled || c.WebRTC.Provider == "livekit" {
-		if c.LiveKit.PublicURL == "" || c.LiveKit.InternalURL == "" || c.LiveKit.APIKey == "" || c.LiveKit.APISecret == "" {
-			return errors.New("LIVEKIT_PUBLIC_URL, LIVEKIT_INTERNAL_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET are required when LiveKit is enabled")
-		}
-		if err := validateURL(c.LiveKit.PublicURL, "LIVEKIT_PUBLIC_URL"); err != nil {
-			return err
-		}
-		if err := validateURL(c.LiveKit.InternalURL, "LIVEKIT_INTERNAL_URL"); err != nil {
-			return err
-		}
-		if err := validatePublicWebRTCURL(c.LiveKit.PublicURL, "LIVEKIT_PUBLIC_URL"); err != nil {
-			return err
-		}
-		if c.WebRTC.PublicURL == "" {
-			return errors.New("WEBRTC_PUBLIC_URL is required when LiveKit is enabled")
-		}
-		if err := validateURL(c.WebRTC.PublicURL, "WEBRTC_PUBLIC_URL"); err != nil {
-			return err
-		}
-		if err := validatePublicWebRTCURL(c.WebRTC.PublicURL, "WEBRTC_PUBLIC_URL"); err != nil {
-			return err
-		}
-		if c.WebRTC.TokenTTL <= 0 || c.WebRTC.RoomEmptyTimeout <= 0 || c.WebRTC.ParticipantTTL <= 0 || c.WebRTC.HealthcheckInterval <= 0 {
-			return errors.New("webrtc durations must be greater than zero")
-		}
-		if c.WebRTC.NodeCapacity <= 0 {
-			return errors.New("WEBRTC_NODE_CAPACITY must be greater than zero")
-		}
-		if c.WebRTC.NodeID == "" || c.WebRTC.Region == "" {
-			return errors.New("WEBRTC_NODE_ID and WEBRTC_REGION are required when LiveKit is enabled")
-		}
-		if c.WebRTC.TURN.Enabled {
-			if c.WebRTC.TURN.URL == "" {
-				return errors.New("TURN_URL is required when TURN_ENABLED=true")
-			}
-			if err := validateURLOrScheme(c.WebRTC.TURN.URL, "TURN_URL"); err != nil {
-				return err
-			}
-		}
-	}
-	if c.Worker.Concurrency <= 0 {
-		return errors.New("WORKER_CONCURRENCY must be greater than zero")
-	}
-	if c.Worker.MaxAttempts <= 0 {
-		return errors.New("WORKER_MAX_ATTEMPTS must be greater than zero")
-	}
-	if c.Worker.BlockTimeout <= 0 || c.Worker.ClaimIdleTimeout <= 0 || c.Worker.ShutdownTimeout <= 0 || c.Worker.HeartbeatInterval <= 0 || c.Worker.HeartbeatTTL <= 0 {
-		return errors.New("worker durations must be greater than zero")
-	}
-	if c.Outbox.BatchSize <= 0 || c.Outbox.MaxAttempts <= 0 {
-		return errors.New("outbox batch and max attempts must be greater than zero")
-	}
-	if c.Outbox.PollInterval <= 0 {
-		return errors.New("OUTBOX_POLL_INTERVAL must be greater than zero")
-	}
-	if c.Retention.NotificationDays < 0 || c.Retention.AuditDays < 0 || c.Retention.SessionDays < 0 || c.Retention.UploadHours < 0 {
-		return errors.New("retention values cannot be negative")
-	}
-	return nil
-}
-
-func validateURL(value, key string) error {
-	parsed, err := url.Parse(value)
-	if err != nil || parsed.Scheme == "" || parsed.Host == "" {
-		return fmt.Errorf("%s must be a valid URL", key)
-	}
-	return nil
-}
-
-func validateURLOrScheme(value, key string) error {
-	if strings.HasPrefix(value, "turn:") || strings.HasPrefix(value, "stun:") {
-		return nil
-	}
-	return validateURL(value, key)
-}
-
-func validatePublicWebRTCURL(value, key string) error {
-	parsed, err := url.Parse(value)
-	if err != nil {
-		return fmt.Errorf("%s must be a valid URL", key)
-	}
-
-	host := strings.ToLower(parsed.Hostname())
-	switch host {
-	case "", "localhost", "127.0.0.1", "::1", "livekit", "webrtc":
-		return fmt.Errorf("%s must use a public hostname or IP", key)
-	}
-
-	if strings.HasSuffix(host, ".internal") || strings.HasSuffix(host, ".local") {
-		return fmt.Errorf("%s must use a public hostname or IP", key)
 	}
 	return nil
 }

@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/skygenesisenterprise/guilderia/server/src/interfaces"
-	"github.com/skygenesisenterprise/guilderia/server/src/utils"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/interfaces"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/utils"
 )
 
 type contextKey string

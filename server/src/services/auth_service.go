@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -14,10 +13,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/skygenesisenterprise/guilderia/server/src/config"
-	"github.com/skygenesisenterprise/guilderia/server/src/interfaces"
-	"github.com/skygenesisenterprise/guilderia/server/src/models"
-	"github.com/skygenesisenterprise/guilderia/server/src/utils"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/config"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/interfaces"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/models"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/utils"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +29,6 @@ type AuthService struct {
 	identity     interfaces.IdentityProvider
 	hasher       *PasswordHasher
 	limiter      *AuthRateLimiter
-	outbox       *OutboxService
 	workspaceSvc *WorkspaceService
 }
 
@@ -66,7 +64,7 @@ type AuthSessionDTO struct {
 	Current    bool   `json:"current"`
 }
 
-func NewAuthService(cfg config.AuthConfig, db interfaces.Database, repos *Repositories, identity interfaces.IdentityProvider, outbox *OutboxService, limiter *AuthRateLimiter, workspaceSvc *WorkspaceService) *AuthService {
+func NewAuthService(cfg config.AuthConfig, db interfaces.Database, repos *Repositories, identity interfaces.IdentityProvider, limiter *AuthRateLimiter, workspaceSvc *WorkspaceService) *AuthService {
 	return &AuthService{
 		cfg:          cfg,
 		db:           db,
@@ -74,7 +72,6 @@ func NewAuthService(cfg config.AuthConfig, db interfaces.Database, repos *Reposi
 		identity:     identity,
 		hasher:       NewPasswordHasher(cfg),
 		limiter:      limiter,
-		outbox:       outbox,
 		workspaceSvc: workspaceSvc,
 	}
 }
@@ -100,13 +97,15 @@ func (s *AuthService) Register(ctx context.Context, req RegisterInput, meta Requ
 
 	now := time.Now().UTC()
 	userID := utils.NewID()
+	
+	isFirstUser := s.isFirstUser(ctx)
+
 	user := &models.User{
 		Common:          models.Common{ID: userID, CreatedAt: now, UpdatedAt: now},
 		Email:           email,
 		EmailNormalized: normalized,
 		DisplayName:     strings.TrimSpace(req.DisplayName),
 		Status:          "active",
-		PresenceStatus:  "offline",
 	}
 	credential := &models.LocalCredential{
 		Common:            models.Common{ID: utils.NewID(), CreatedAt: now, UpdatedAt: now},
@@ -116,6 +115,7 @@ func (s *AuthService) Register(ctx context.Context, req RegisterInput, meta Requ
 	}
 
 	var workspaceID string
+	isFirstUser = s.isFirstUser(ctx)
 	err = s.db.Transaction(ctx, func(tx *gorm.DB) error {
 		txRepos := s.repos.WithDB(tx)
 		if err := txRepos.Users().Create(ctx, user); err != nil {
@@ -137,11 +137,15 @@ func (s *AuthService) Register(ctx context.Context, req RegisterInput, meta Requ
 			OwnerID:     userID,
 			Description: "Personal workspace",
 		}
+		workspaceRole := "owner"
+		if isFirstUser {
+			workspaceRole = "superadmin"
+		}
 		member := &models.WorkspaceMember{
 			Common:      models.Common{ID: utils.NewID(), CreatedAt: now, UpdatedAt: now},
 			WorkspaceID: workspace.ID,
 			UserID:      userID,
-			Role:        "owner",
+			Role:        workspaceRole,
 			JoinedAt:    now,
 		}
 		if err := txRepos.Workspaces().Create(ctx, workspace); err != nil {
@@ -151,14 +155,6 @@ func (s *AuthService) Register(ctx context.Context, req RegisterInput, meta Requ
 			return err
 		}
 		workspaceID = workspace.ID
-		if s.outbox != nil {
-			if err := s.outbox.Add(ctx, txRepos.OutboxEvents(), "auth.email_verification.requested", "user", userID, workspaceID, map[string]any{"userId": userID}); err != nil {
-				return err
-			}
-			if err := s.outbox.Add(ctx, txRepos.OutboxEvents(), "auth.audit.persist", "user", userID, workspaceID, map[string]any{"eventType": "auth.registered", "userId": userID}); err != nil {
-				return err
-			}
-		}
 		return nil
 	})
 	if err != nil {
@@ -168,7 +164,67 @@ func (s *AuthService) Register(ctx context.Context, req RegisterInput, meta Requ
 		return nil, err
 	}
 
-	return s.createAuthenticatedSession(ctx, user, &workspaceID, roleToPermissions("owner"), []string{"owner"}, meta)
+	// Pour le premier utilisateur, attribuer les rôles superadmin
+	var roles []string
+	var permissions []string
+	if isFirstUser {
+		roles = s.GetFirstUserRoles()
+		permissions = s.GetFirstUserPermissions()
+	} else {
+		roles = []string{"owner"}
+		permissions = roleToPermissions("owner")
+	}
+	return s.createAuthenticatedSession(ctx, user, &workspaceID, permissions, roles, meta)
+}
+
+func (s *AuthService) isFirstUser(ctx context.Context) bool {
+	var count int64
+	s.db.Gorm().Model(&models.User{}).Count(&count)
+	return count == 0
+}
+
+// EnsureFirstUserHasAdminRoles s'assure que le premier utilisateur a les rôles superadmin
+func (s *AuthService) EnsureFirstUserHasAdminRoles(ctx context.Context) error {
+	var firstUser models.User
+	if err := s.db.Gorm().
+		Model(&models.User{}).
+		Order("created_at ASC").
+		First(&firstUser).Error; err != nil {
+		return err
+	}
+
+	userRoles, _ := s.repos.UserRoles().ListByUser(ctx, firstUser.ID)
+	for _, ur := range userRoles {
+		role, err := s.repos.Roles().GetByID(ctx, ur.RoleID)
+		if err == nil && role.Slug == "superadmin" {
+			return nil
+		}
+	}
+
+	adminSlugs := []string{"superadmin", "admin", "owner"}
+	for _, slug := range adminSlugs {
+		role, err := s.repos.Roles().GetBySlug(ctx, slug)
+		if err != nil {
+			continue
+		}
+		_ = s.repos.UserRoles().Assign(ctx, &models.UserRole{
+			UserID:     firstUser.ID,
+			RoleID:     role.ID,
+			AssignedAt: time.Now().UTC(),
+		})
+	}
+
+	return nil
+}
+
+// GetFirstUserRoles retourne les rôles à attribuer au premier utilisateur
+func (s *AuthService) GetFirstUserRoles() []string {
+	return []string{"superadmin", "admin", "owner"}
+}
+
+// GetFirstUserPermissions retourne les permissions à attribuer au premier utilisateur
+func (s *AuthService) GetFirstUserPermissions() []string {
+	return roleToPermissions("superadmin")
 }
 
 type RegisterInput struct {
@@ -303,7 +359,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string, meta Req
 		if txErr != nil {
 			return txErr
 		}
-		roles, permissions := workspaceRoleAndPermissions(user.ID, session.WorkspaceID, txRepos)
+		workspaceID, roles, permissions, _ := s.resolvePrimaryWorkspace(ctx, user.ID)
 		nextToken, nextHash, createErr := issueRefreshToken()
 		if createErr != nil {
 			return createErr
@@ -329,7 +385,6 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string, meta Req
 			return err
 		}
 		session.TokenHash = nextHash
-		session.RefreshTokenHash = nextHash
 		session.LastUsedAt = now
 		session.UserAgent = stringPtr(meta.UserAgent)
 		session.IPAddress = stringPtr(meta.IPAddress)
@@ -339,7 +394,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string, meta Req
 		}
 		accessToken, err := s.identity.IssueToken(ctx, interfaces.Principal{
 			UserID:      user.ID,
-			WorkspaceID: valueOrEmpty(session.WorkspaceID),
+			WorkspaceID: valueOrEmpty(workspaceID),
 			Roles:       roles,
 			Permissions: permissions,
 			SessionID:   session.ID,
@@ -348,7 +403,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string, meta Req
 			return err
 		}
 		result = &AuthResult{
-			User:         s.toUserDTO(user, session.WorkspaceID, roles, permissions),
+			User:         s.toUserDTO(user, workspaceID, roles, permissions),
 			AccessToken:  accessToken,
 			ExpiresIn:    int64(s.cfg.JWTAccessTTL.Seconds()),
 			RefreshToken: nextToken,
@@ -454,18 +509,6 @@ func (s *AuthService) ChangePassword(
 		if err := txRepos.Users().Update(ctx, user); err != nil {
 			return err
 		}
-		if s.outbox != nil {
-			payload, _ := json.Marshal(map[string]any{"eventType": "auth.password.changed", "userId": user.ID})
-			return txRepos.AuthAuditEvents().Create(ctx, &models.AuthAuditEvent{
-				Common:    models.Common{ID: utils.NewID(), CreatedAt: now, UpdatedAt: now},
-				UserID:    &user.ID,
-				SessionID: stringPtr(principal.SessionID),
-				EventType: "auth.password.changed",
-				IPAddress: stringPtr(meta.IPAddress),
-				UserAgent: stringPtr(meta.UserAgent),
-				Metadata:  payload,
-			})
-		}
 		return nil
 	})
 }
@@ -495,9 +538,6 @@ func (s *AuthService) RequestPasswordReset(ctx context.Context, email string) er
 	}
 	if err := s.repos.PasswordResetTokens().Create(ctx, model); err != nil {
 		return err
-	}
-	if s.outbox != nil {
-		return s.outbox.Add(ctx, nil, "auth.password_reset.requested", "user", user.ID, "", map[string]any{"userId": user.ID, "tokenId": model.ID})
 	}
 	return nil
 }
@@ -547,8 +587,6 @@ func (s *AuthService) createAuthenticatedSession(ctx context.Context, user *mode
 		Common:               models.Common{ID: utils.NewID(), CreatedAt: now, UpdatedAt: now},
 		TokenHash:            refreshHash,
 		UserID:               user.ID,
-		WorkspaceID:          workspaceID,
-		RefreshTokenHash:     refreshHash,
 		RefreshTokenFamilyID: utils.NewID(),
 		UserAgent:            stringPtr(meta.UserAgent),
 		IPAddress:            stringPtr(meta.IPAddress),
@@ -569,20 +607,6 @@ func (s *AuthService) createAuthenticatedSession(ctx context.Context, user *mode
 		}
 		if err := txRepos.AuthRefreshTokens().Create(ctx, refreshRecord); err != nil {
 			return err
-		}
-		if s.outbox != nil {
-			payload, _ := json.Marshal(map[string]any{"eventType": "auth.login.succeeded", "userId": user.ID, "sessionId": session.ID})
-			if err := txRepos.AuthAuditEvents().Create(ctx, &models.AuthAuditEvent{
-				Common:    models.Common{ID: utils.NewID(), CreatedAt: now, UpdatedAt: now},
-				UserID:    &user.ID,
-				SessionID: &session.ID,
-				EventType: "auth.login.succeeded",
-				IPAddress: stringPtr(meta.IPAddress),
-				UserAgent: stringPtr(meta.UserAgent),
-				Metadata:  payload,
-			}); err != nil {
-				return err
-			}
 		}
 		return nil
 	}); err != nil {
@@ -616,8 +640,32 @@ func (s *AuthService) resolvePrimaryWorkspace(ctx context.Context, userID string
 	if err != nil {
 		return nil, nil, nil, err
 	}
+
+	// Merge workspace role with global roles from user_roles table
 	roles := []string{member.Role}
-	return &workspaces[0].ID, roles, roleToPermissions(member.Role), nil
+	seen := map[string]bool{member.Role: true}
+	globalRoles, _ := s.repos.UserRoles().ListByUser(ctx, userID)
+	for _, ur := range globalRoles {
+		role, rErr := s.repos.Roles().GetByID(ctx, ur.RoleID)
+		if rErr == nil && !seen[role.Slug] {
+			roles = append(roles, role.Slug)
+			seen[role.Slug] = true
+		}
+	}
+
+	// Compute merged permissions from all roles
+	permissions := make(map[string]bool)
+	for _, role := range roles {
+		for _, p := range roleToPermissions(role) {
+			permissions[p] = true
+		}
+	}
+	mergedPermissions := make([]string, 0, len(permissions))
+	for p := range permissions {
+		mergedPermissions = append(mergedPermissions, p)
+	}
+
+	return &workspaces[0].ID, roles, mergedPermissions, nil
 }
 
 func workspaceRoleAndPermissions(userID string, workspaceID *string, repos *Repositories) ([]string, []string) {
@@ -633,6 +681,8 @@ func workspaceRoleAndPermissions(userID string, workspaceID *string, repos *Repo
 
 func roleToPermissions(role string) []string {
 	switch role {
+	case "superadmin":
+		return []string{"workspace:read", "workspace:write", "meeting:read", "meeting:write", "session:read", "session:write", "admin:read", "admin:write", "platform:read", "platform:write"}
 	case "owner":
 		return []string{"workspace:read", "workspace:write", "meeting:read", "meeting:write", "session:read", "session:write"}
 	case "admin":
@@ -649,7 +699,7 @@ func (s *AuthService) toUserDTO(user *models.User, workspaceID *string, roles, p
 		DisplayName:    user.DisplayName,
 		AvatarURL:      user.AvatarURL,
 		Status:         user.Status,
-		PresenceStatus: user.PresenceStatus,
+		PresenceStatus: "offline",
 		WorkspaceID:    workspaceID,
 		Roles:          roles,
 		Permissions:    permissions,

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/skygenesisenterprise/guilderia/server/src/config"
-	"github.com/skygenesisenterprise/guilderia/server/src/interfaces"
-	"github.com/skygenesisenterprise/guilderia/server/src/utils"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/config"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/interfaces"
+	"github.com/skygenesisenterprise/zenthcloud/server/src/utils"
 )
 
 type JWTIdentityProvider struct {

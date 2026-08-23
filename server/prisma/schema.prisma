@@ -18,131 +18,98 @@ enum UserStatus {
   deleted
 }
 
-enum PresenceStatus {
-  offline
-  online
-  idle
-  dnd
-  invisible
+enum ArticleStatus {
+  DRAFT
+  WRITING
+  REVIEW
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
 }
 
-enum LoginStatus {
-  success
-  failed
-  blocked
-  requires_mfa
+enum ArticleType {
+  ARTICLE
+  ANNOUNCEMENT
+  TECHNICAL_NOTE
+  DOSSIER
+  COMMUNIQUE
+  ANALYSIS
 }
 
-enum AnimeStatus {
-  upcoming
-  airing
-  complete
-  hiatus
-  cancelled
-  added
-  draft
-  review
+enum CommentStatus {
+  pending
   approved
-  scheduled
-  published
-  archived
-}
-
-enum ContentType {
-  series
-  movie
-  ova
-  special
-}
-
-enum ScheduleEntryType {
-  simulcast
-  premiere
-  release
-  event
-}
-
-enum ScheduleStatus {
-  scheduled
-  airing
-  completed
-  cancelled
-  delayed
-}
-
-enum ReactionType {
-  like
-  love
-  insightful
-  funny
-}
-
-enum PostType {
-  discussion
-  review
-  recommendation
-  announcement
-}
-
-enum PostStatus {
-  active
   hidden
   deleted
 }
 
-enum CommunityUserRole {
-  user
-  moderator
-  admin
+enum NotificationType {
+  article
+  bookmark
+  system
+  account
 }
 
-enum PublicationState {
-  Draft
-  Review
-  Approved
-  Scheduled
-  Published
-  Archived
+enum SubscriptionStatus {
+  active
+  trialing
+  past_due
+  canceled
+  expired
 }
 
-enum CollectionType {
-  editorial
-  genre
-  seasonal
-  thematic
-  franchise
-  ranking
-  custom
+enum SocialPlatform {
+  twitter
+  facebook
+  instagram
+  linkedin
+  youtube
+  twitch
+  discord
 }
 
-enum CollectionVisibility {
-  public
-  unlisted
-  private
+enum ServiceState {
+  operational
+  degraded
+  down
+  maintenance
 }
 
-enum MetadataStatus {
-  synced
-  stale
-  error
-  missing
+enum IncidentStatus {
+  investigating
+  identified
+  monitoring
+  resolved
+}
+
+enum AdStatus {
+  draft
+  active
+  paused
+  completed
+  archived
+}
+
+enum AdPlacementType {
+  banner
+  sidebar
+  native
+  in_article
+  video
+  popup
 }
 
 // ═══════════════════════════════════════════════════════════════
-// AUTH & USERS
+// AUTH / USER  (tables créées et gérées par le backend Go / GORM)
 // ═══════════════════════════════════════════════════════════════
 
 model User {
   id                String     @id @default(uuid())
   email             String     @unique
   emailNormalized   String     @unique @map("email_normalized")
-  username          String?    @unique
   displayName       String     @map("display_name")
   avatarUrl         String?    @map("avatar_url")
   status            UserStatus @default(active)
-  communityRole     CommunityUserRole @default(user) @map("community_role")
-  reputation        Int        @default(0)
-  joinedCommunityAt DateTime?  @map("joined_community_at")
   emailVerifiedAt   DateTime?  @map("email_verified_at")
   passwordChangedAt DateTime?  @map("password_changed_at")
   disabledAt        DateTime?  @map("disabled_at")
@@ -150,43 +117,35 @@ model User {
   createdAt         DateTime   @default(now()) @map("created_at")
   updatedAt         DateTime   @updatedAt @map("updated_at")
 
-  localCredential        LocalCredential?
-  mfaSecret              MfaSecret?
-  mfaRecoveryCodes       MfaRecoveryCode[]
-  presence               UserPresence?
-  passwordHistory        PasswordHistory[]
-  sessions               AuthSession[]
-  authAccounts           AuthAccount[]
+  localCredential         LocalCredential?
+  mfaSecret               MfaSecret?
+  mfaRecoveryCodes        MfaRecoveryCode[]
+  sessions                AuthSession[]
+  authAccounts            AuthAccount[]
   emailVerificationTokens EmailVerificationToken[]
-  passwordResetTokens    PasswordResetToken[]
-  authAuditEvents        AuthAuditEvent[]
-  loginHistory           LoginHistory[]
-  devices                Device[]
-  profiles               Profile[]
-  settings               UserSettings?
-  notificationPrefs      NotificationPreference?
-  privacySettings        PrivacySettings?
-  communityBadges        UserBadge[]
-  communityPosts         ForumPost[]
-  communityComments      Comment[]
-  communityReviews       Review[]
-  communityRecommendations Recommendation[]
-  communityAnnouncements CommunityAnnouncement[]
-  updatedCollections      Collection[]
+  passwordResetTokens     PasswordResetToken[]
+  authAuditEvents         AuthAuditEvent[]
+  settings                UserSettings?
+  notificationPreferences NotificationPreference?
+  roles                   UserRole[]
+  memberWorkspaces        WorkspaceMember[]
+  ownedWorkspaces         Workspace[]      @relation("WorkspaceOwner")
+  subscriptions           Subscription[]
+  billingInfo             BillingInfo?
+  transactions            Transaction[]
+  notifications           Notification[]
+  uploadedMedia           Media[]
+  comments                Comment[]
+  articleViews            ArticleView[]
+  articleBookmarks        ArticleBookmark[]
+  publishedArticles       Article[]       @relation("ArticlePublisher")
+  auditLogs               AuditLog[]
+  apiKeys                 ApiKey[]
+  webhooks                Webhook[]
+  ads                     AdCampaign[]
+  socialAccounts          SocialAccount[]
 
-  @@index([status])
   @@map("users")
-}
-
-model UserPresence {
-  id         String         @id @default(uuid())
-  userId     String         @unique @map("user_id")
-  status     PresenceStatus @default(offline)
-  lastSeenAt DateTime?      @map("last_seen_at")
-  updatedAt  DateTime       @updatedAt @map("updated_at")
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("user_presence")
 }
 
 model LocalCredential {
@@ -196,76 +155,78 @@ model LocalCredential {
   passwordAlgorithm String   @map("password_algorithm")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("local_credentials")
 }
 
-model PasswordHistory {
-  id             String   @id @default(uuid())
-  userId         String   @map("user_id")
-  passwordHash   String   @map("password_hash")
-  createdAt      DateTime @default(now()) @map("created_at")
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model MfaSecret {
+  id          String    @id @default(uuid())
+  userId      String    @unique @map("user_id")
+  secret      String
+  otpauthUrl  String?   @map("otpauth_url")
+  qrCodeUrl   String?   @map("qr_code_url")
+  confirmedAt DateTime? @map("confirmed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("mfa_secrets")
+}
+
+model MfaRecoveryCode {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  codeHash  String    @map("code_hash")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@map("password_history")
+  @@map("mfa_recovery_codes")
 }
 
 model AuthSession {
-  id                   String    @id @default(uuid())
-  userId               String    @map("user_id")
-  tokenHash            String    @unique @map("token_hash")
-  refreshTokenFamilyId String    @map("refresh_token_family_id")
-  userAgent            String?   @map("user_agent")
-  ipAddress            String?   @map("ip_address")
-  expiresAt            DateTime  @map("expires_at")
-  lastUsedAt           DateTime  @map("last_used_at")
-  revokedAt            DateTime? @map("revoked_at")
-  revocationReason     String?   @map("revocation_reason")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
-  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  refreshTokens        AuthRefreshToken[]
+  id                  String    @id @default(uuid())
+  tokenHash           String    @unique @map("token_hash")
+  userId              String    @map("user_id")
+  refreshTokenFamilyId String   @map("refresh_token_family_id")
+  userAgent           String?   @map("user_agent")
+  ipAddress           String?   @map("ip_address")
+  expiresAt           DateTime  @map("expires_at")
+  lastUsedAt          DateTime  @default(now()) @map("last_used_at")
+  revokedAt           DateTime? @map("revoked_at")
+  revocationReason    String?   @map("revocation_reason")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
 
-  @@index([userId, expiresAt])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
   @@map("auth_sessions")
 }
 
 model AuthRefreshToken {
-  id           String        @id @default(uuid())
-  sessionId    String        @map("session_id")
-  familyId     String        @map("family_id")
-  tokenHash    String        @unique @map("token_hash")
-  expiresAt    DateTime      @map("expires_at")
-  usedAt       DateTime?     @map("used_at")
-  revokedAt    DateTime?     @map("revoked_at")
-  replacedById String?       @map("replaced_by_id")
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
-  session      AuthSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid())
+  sessionId    String    @map("session_id")
+  familyId     String    @map("family_id")
+  tokenHash    String    @unique @map("token_hash")
+  expiresAt    DateTime  @map("expires_at")
+  usedAt       DateTime? @map("used_at")
+  revokedAt    DateTime? @map("revoked_at")
+  replacedById String?   @map("replaced_by_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  @@index([sessionId, familyId])
+  @@index([sessionId])
+  @@index([familyId])
   @@index([expiresAt])
   @@map("auth_refresh_tokens")
-}
-
-model AuthAccount {
-  id                String    @id @default(uuid())
-  userId            String    @map("user_id")
-  provider          String
-  providerAccountId String    @map("provider_account_id")
-  accessToken       String?   @map("access_token")
-  refreshToken      String?   @map("refresh_token")
-  scopes            String?   @map("scopes")
-  tokenExpiresAt    DateTime? @map("token_expires_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-  @@index([userId, provider])
-  @@map("auth_accounts")
 }
 
 model EmailVerificationToken {
@@ -278,10 +239,10 @@ model EmailVerificationToken {
   requestCount Int       @default(0) @map("request_count")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([consumedAt])
   @@map("email_verification_tokens")
 }
 
@@ -295,24 +256,25 @@ model PasswordResetToken {
   requestCount Int       @default(0) @map("request_count")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([consumedAt])
   @@map("password_reset_tokens")
 }
 
 model AuthAuditEvent {
-  id          String    @id @default(uuid())
-  userId      String?   @map("user_id")
-  sessionId   String?   @map("session_id")
-  eventType   String    @map("event_type")
-  ipAddress   String?   @map("ip_address")
-  userAgent   String?   @map("user_agent")
-  metadata    Json?     @map("metadata")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  sessionId String?  @map("session_id")
+  eventType String   @map("event_type")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  metadata  Json?    @map("metadata")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([sessionId])
@@ -320,35 +282,23 @@ model AuthAuditEvent {
   @@map("auth_audit_events")
 }
 
-model MfaSecret {
-  id          String    @id @default(uuid())
-  userId      String    @unique @map("user_id")
-  secret      String
-  otpauthUrl  String?   @map("otpauth_url")
-  qrCodeUrl   String?   @map("qr_code_url")
-  confirmedAt DateTime? @map("confirmed_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+model AuthAccount {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  provider          String
+  providerAccountId String    @map("provider_account_id")
+  accessToken       String?   @map("access_token")
+  refreshToken      String?   @map("refresh_token")
+  scopes            String?
+  tokenExpiresAt    DateTime? @map("token_expires_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  @@map("mfa_secrets")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_accounts")
 }
-
-model MfaRecoveryCode {
-  id        String    @id @default(uuid())
-  userId    String    @map("user_id")
-  codeHash  String    @map("code_hash")
-  usedAt    DateTime? @map("used_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, codeHash])
-  @@map("mfa_recovery_codes")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// USER SETTINGS & NOTIFICATION PREFERENCES
-// ═══════════════════════════════════════════════════════════════
 
 model UserSettings {
   id            String   @id @default(uuid())
@@ -364,139 +314,51 @@ model UserSettings {
   secureSession Boolean  @default(true) @map("secure_session")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
 }
 
-model Profile {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  displayName String    @map("display_name")
-  avatarUrl   String?   @map("avatar_url")
-  pinCode     String?   @map("pin_code")
-  pinEnabled  Boolean   @default(false) @map("pin_enabled")
-  isDefault   Boolean   @default(false) @map("is_default")
-  sortOrder   Int       @default(0) @map("sort_order")
-  lastUsedAt  DateTime? @map("last_used_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, sortOrder])
-  @@index([userId, isDefault])
-  @@map("profiles")
-}
-
 model NotificationPreference {
-  id                          String   @id @default(uuid())
-  userId                      String   @unique @map("user_id")
-  directMessageNotifications  Boolean  @default(true) @map("direct_message_notifications")
-  mentionNotifications        Boolean  @default(true) @map("mention_notifications")
-  channelMessageNotifications Boolean  @default(true) @map("channel_message_notifications")
-  meetingReminders            Boolean  @default(true) @map("meeting_reminders")
-  callNotifications           Boolean  @default(true) @map("call_notifications")
-  emailNotifications          Boolean  @default(true) @map("email_notifications")
-  soundEnabled                Boolean  @default(true) @map("sound_enabled")
-  desktopNotifications        Boolean  @default(true) @map("desktop_notifications")
-  pushEnabled                 Boolean  @default(true) @map("push_enabled")
-  newEpisodes                 Boolean  @default(true) @map("new_episodes")
-  news                        Boolean  @default(true)
-  reminders                   Boolean  @default(true)
-  createdAt                   DateTime @default(now()) @map("created_at")
-  updatedAt                   DateTime @updatedAt @map("updated_at")
-  user                        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                        String   @id @default(uuid())
+  userId                    String   @unique @map("user_id")
+  directMessageNotifications Boolean @default(true) @map("direct_message_notifications")
+  mentionNotifications      Boolean  @default(true) @map("mention_notifications")
+  channelMessageNotifications Boolean @default(true) @map("channel_message_notifications")
+  meetingReminders          Boolean  @default(true) @map("meeting_reminders")
+  callNotifications         Boolean  @default(true) @map("call_notifications")
+  emailNotifications        Boolean  @default(true) @map("email_notifications")
+  soundEnabled              Boolean  @default(true) @map("sound_enabled")
+  desktopNotifications      Boolean  @default(true) @map("desktop_notifications")
+  pushEnabled               Boolean  @default(true) @map("push_enabled")
+  newEpisodes               Boolean  @default(true) @map("new_episodes")
+  news                      Boolean  @default(true)
+  reminders                 Boolean  @default(true)
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notification_preferences")
 }
 
-model PrivacySettings {
-  id               String   @id @default(uuid())
-  userId           String   @unique @map("user_id")
-  dataProcessing   Boolean  @default(true) @map("data_processing")
-  marketingEmails  Boolean  @default(true) @map("marketing_emails")
-  analytics        Boolean  @default(true)
-  publicProfile    Boolean  @default(false) @map("public_profile")
-  searchable       Boolean  @default(true)
-  showOnlineStatus Boolean  @default(true) @map("show_online_status")
-  dataRetention    String?  @map("data_retention")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("privacy_settings")
-}
-
-model Device {
-  id             String    @id @default(uuid())
-  userId         String    @map("user_id")
-  type           String    @default("unknown")
-  os             String?   @map("os")
-  osVersion      String?   @map("os_version")
-  browser        String?
-  browserVersion String?   @map("browser_version")
-  deviceModel    String?   @map("device_model")
-  manufacturer   String?
-  isTrusted      Boolean   @default(false) @map("is_trusted")
-  pushToken      String?   @map("push_token")
-  lastActive     DateTime  @map("last_active")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  loginHistory   LoginHistory[]
-
-  @@index([userId])
-  @@map("devices")
-}
-
-model LoginHistory {
-  id            String      @id @default(uuid())
-  userId        String      @map("user_id")
-  sessionId     String?     @map("session_id")
-  timestamp     DateTime
-  deviceId      String?     @map("device_id")
-  ipAddress     String?     @map("ip_address")
-  location      String?
-  country       String?
-  city          String?
-  userAgent     String?     @map("user_agent")
-  status        LoginStatus
-  failureReason String?     @map("failure_reason")
-  twoFaUsed     Boolean     @default(false) @map("two_fa_used")
-  twoFaMethod   String?     @map("two_fa_method")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  device        Device?     @relation(fields: [deviceId], references: [id], onDelete: SetNull)
-
-  @@index([userId, timestamp])
-  @@map("login_history")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// WORKSPACES
-// ═══════════════════════════════════════════════════════════════
-
 model Workspace {
-  id          String              @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
-  slug        String              @unique
+  slug        String    @unique
   description String?
-  visibility  String              @default("private")
-  ownerId     String              @map("owner_id")
-  archivedAt  DateTime?           @map("archived_at")
-  deletedAt   DateTime?           @map("deleted_at")
-  createdAt   DateTime            @default(now()) @map("created_at")
-  updatedAt   DateTime            @updatedAt @map("updated_at")
-  members     WorkspaceMember[]
-  ssoConfig   WorkspaceSSOConfig?
-  contactGroups ContactGroup[]
-  files       FileItem[]
-  activities  ActivityItem[]
-  auditLogs   AuditLog[]
-  applications Application[]
+  visibility  String    @default("private")
+  ownerId     String    @map("owner_id")
+  archivedAt  DateTime? @map("archived_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  @@index([ownerId])
-  @@index([archivedAt])
+  owner     User                @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members   WorkspaceMember[]
+  ssoConfig WorkspaceSSOConfig?
+
   @@map("workspaces")
 }
 
@@ -505,11 +367,13 @@ model WorkspaceMember {
   workspaceId String    @map("workspace_id")
   userId      String    @map("user_id")
   role        String    @default("member")
-  joinedAt    DateTime  @map("joined_at")
+  joinedAt    DateTime  @default(now()) @map("joined_at")
   lastSeenAt  DateTime? @map("last_seen_at")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, userId])
   @@index([userId])
@@ -517,70 +381,31 @@ model WorkspaceMember {
 }
 
 model WorkspaceSSOConfig {
-  id                String    @id @default(uuid())
-  workspaceId       String    @unique @map("workspace_id")
-  provider          String    @default("oidc")
-  enabled           Boolean   @default(false)
-  enforceSso        Boolean   @default(false) @map("enforce_sso")
-  allowPasswordAuth Boolean   @default(true) @map("allow_password_auth")
-  autoProvision     Boolean   @default(true) @map("auto_provision")
-  allowIdpInitiated Boolean   @default(false) @map("allow_idp_initiated")
-  domainHint        String?   @map("domain_hint")
-  issuerUrl         String?   @map("issuer_url")
-  ssoUrl            String?   @map("sso_url")
-  entityId          String?   @map("entity_id")
-  clientId          String    @map("client_id")
-  clientSecret      String    @map("client_secret")
+  id                String   @id @default(uuid())
+  workspaceId       String   @unique @map("workspace_id")
+  enabled           Boolean  @default(false)
+  provider          String?
+  enforceSso        Boolean  @default(false) @map("enforce_sso")
+  allowPasswordAuth Boolean  @default(true) @map("allow_password_auth")
+  autoProvision     Boolean  @default(false) @map("auto_provision")
+  allowIdpInitiated Boolean  @default(false) @map("allow_idp_initiated")
+  domainHint        String?  @map("domain_hint")
+  issuerUrl         String?  @map("issuer_url")
+  ssoUrl            String?  @map("sso_url")
+  entityId          String?  @map("entity_id")
+  clientId          String   @map("client_id")
+  clientSecret      String   @map("client_secret")
   certificate       String?
-  allowedDomains    String?   @map("allowed_domains")
-  defaultRole       String?   @map("default_role")
-  attributeMapping  Json?     @map("attribute_mapping")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
-  workspace         Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  allowedDomains    String?  @map("allowed_domains")
+  defaultRole       String?  @map("default_role")
+  attributeMapping  Json?    @map("attribute_mapping")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@map("workspace_sso_configs")
 }
-
-model AuditLog {
-  id           String     @id @default(uuid())
-  userId       String     @map("user_id")
-  workspaceId  String     @map("workspace_id")
-  action       String     @map("action")
-  resourceType String?    @map("resource_type")
-  resourceId   String?    @map("resource_id")
-  details      Json?      @map("details")
-  ipAddress    String?    @map("ip_address")
-  userAgent    String?    @map("user_agent")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-  workspace    Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([workspaceId])
-  @@index([action])
-  @@map("audit_logs")
-}
-
-model Application {
-  id          String    @id @default(uuid())
-  workspaceId String    @map("workspace_id")
-  name        String
-  description String?
-  status      String    @default("active")
-  secret      String
-  redirectUri String?   @map("redirect_uri")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@index([workspaceId])
-  @@map("applications")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// RBAC (Roles & Permissions)
-// ═══════════════════════════════════════════════════════════════
 
 model Role {
   id          String   @id @default(uuid())
@@ -588,10 +413,11 @@ model Role {
   slug        String   @unique
   description String?
   isSystem    Boolean  @default(false) @map("is_system")
-  permissions Json?    @map("permissions")
+  permissions Json?
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-  userRoles   UserRole[]
+
+  userRoles UserRole[]
 
   @@map("roles")
 }
@@ -600,194 +426,353 @@ model UserRole {
   userId     String   @map("user_id")
   roleId     String   @map("role_id")
   assignedAt DateTime @default(now()) @map("assigned_at")
-  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
-  @@index([roleId])
   @@map("user_roles")
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CONTACTS & FAMILY
+// NEWS / PUBLICATIONS  (site public + plateforme de rédaction)
 // ═══════════════════════════════════════════════════════════════
 
-model Contact {
-  id          String               @id @default(uuid())
-  userId      String               @map("user_id")
-  email       String
-  displayName String               @map("display_name")
-  avatarUrl   String?              @map("avatar_url")
-  phone       String?
-  company     String?
-  jobTitle    String?              @map("job_title")
-  isFavorite  Boolean              @default(false) @map("is_favorite")
-  notes       String?
-  tags        String?
-  createdAt   DateTime             @default(now()) @map("created_at")
-  updatedAt   DateTime             @updatedAt @map("updated_at")
-  groups      ContactGroupMember[]
+model Article {
+  id             String        @id @default(uuid())
+  title          String
+  slug           String
+  excerpt        String?
+  content        String        @db.Text
+  type           ArticleType   @default(ARTICLE)
+  status         ArticleStatus @default(DRAFT)
+  locale         String        @default("fr")
+  categoryId     String?       @map("category_id")
+  authorId       String?       @map("author_id")
+  imageUrl       String?       @map("image_url")
+  imageAlt       String?       @map("image_alt")
+  tags           String[]      @default([])
+  viewCount      Int           @default(0) @map("view_count")
+  readTime       Int           @default(0) @map("read_time")
+  isBreaking     Boolean       @default(false) @map("is_breaking")
+  isFeatured     Boolean       @default(false) @map("is_featured")
+  isPremium      Boolean       @default(false) @map("is_premium")
+  commentsEnabled Boolean      @default(true) @map("comments_enabled")
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @map("seo_description")
+  seoKeywords    String[]      @default([]) @map("seo_keywords")
+  publishedAt    DateTime?     @map("published_at")
+  scheduledAt    DateTime?     @map("scheduled_at")
+  publishedById  String?       @map("published_by_id")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
 
-  @@index([userId, displayName])
-  @@map("contacts")
+  category          Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  author            Author?            @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  publishedBy       User?              @relation("ArticlePublisher", fields: [publishedById], references: [id], onDelete: SetNull)
+  comments          Comment[]
+  views             ArticleView[]
+  bookmarks         ArticleBookmark[]
+  dossiers          DossierArticle[]
+  socialPublications SocialPublication[]
+
+  @@unique([slug, locale])
+  @@index([status])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([publishedAt])
+  @@index([locale])
+  @@map("articles")
 }
 
-model ContactGroup {
-  id          String               @id @default(uuid())
-  workspaceId String               @map("workspace_id")
+model ArticleView {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  articleId String   @map("article_id")
+  viewedAt  DateTime @default(now()) @map("viewed_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, viewedAt])
+  @@index([articleId])
+  @@map("article_views")
+}
+
+model ArticleBookmark {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  articleId String   @map("article_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleId])
+  @@index([articleId])
+  @@map("article_bookmarks")
+}
+
+model Category {
+  id          String   @id @default(uuid())
   name        String
+  slug        String
   description String?
   color       String?
-  createdAt   DateTime             @default(now()) @map("created_at")
-  updatedAt   DateTime             @updatedAt @map("updated_at")
-  workspace   Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  contacts    ContactGroupMember[]
+  icon        String?
+  locale      String   @default("fr")
+  parentId    String?  @map("parent_id")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  @@unique([workspaceId, name])
-  @@map("contact_groups")
-}
+  parent   Category?  @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  children Category[] @relation("CategoryChildren")
+  articles Article[]
 
-model ContactGroupMember {
-  id        String       @id @default(uuid())
-  groupId   String       @map("group_id")
-  contactId String       @map("contact_id")
-  createdAt DateTime     @default(now()) @map("created_at")
-  updatedAt DateTime     @updatedAt @map("updated_at")
-  group     ContactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  contact   Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
-
-  @@unique([groupId, contactId])
-  @@index([contactId])
-  @@map("contact_group_members")
-}
-
-model FamilyMember {
-  id            String    @id @default(uuid())
-  userId        String    @map("user_id")
-  email         String
-  displayName   String    @map("display_name")
-  role          String
-  status        String
-  invitedBy     String    @map("invited_by")
-  invitedAt     DateTime  @map("invited_at")
-  joinedAt      DateTime? @map("joined_at")
-  avatarUrl     String?   @map("avatar_url")
-  phone         String?
-  relationship  String?
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-
-  @@index([userId])
-  @@index([invitedBy])
-  @@index([email])
-  @@map("family_members")
-}
-
-model Invitation {
-  id         String    @id @default(uuid())
-  email      String
-  token      String    @unique
-  type       String
-  role       String
-  message    String?
-  status     String    @default("pending")
-  invitedBy  String    @map("invited_by")
-  targetId   String?   @map("target_id")
-  acceptedAt DateTime? @map("accepted_at")
-  expiresAt  DateTime  @map("expires_at")
-  metadata   String?
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
-
-  @@index([email])
-  @@index([invitedBy])
-  @@index([expiresAt])
-  @@map("invitations")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// FILES & STORAGE
-// ═══════════════════════════════════════════════════════════════
-
-model FileItem {
-  id           String    @id @default(uuid())
-  userId       String    @map("user_id")
-  workspaceId  String    @map("workspace_id")
-  parentId     String?   @map("parent_id")
-  name         String
-  path         String
-  type         String    @default("file")
-  mimeType     String?   @map("mime_type")
-  size         BigInt    @default(0)
-  extension    String?
-  hash         String?
-  url          String?
-  thumbnailUrl String?   @map("thumbnail_url")
-  isFavorite   Boolean   @default(false) @map("is_favorite")
-  isPublic     Boolean   @default(false) @map("is_public")
-  isShared     Boolean   @default(false) @map("is_shared")
-  sharedWith   String?   @map("shared_with")
-  permissions  String?   @map("permissions")
-  description  String?
-  tags         String?
-  uploadStatus String?   @map("upload_status")
-  uploadedBy   String?   @map("uploaded_by")
-  version      Int       @default(1)
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@index([userId, path])
-  @@index([workspaceId])
+  @@unique([slug, locale])
   @@index([parentId])
-  @@map("file_items")
+  @@index([isActive])
+  @@map("categories")
+}
+
+model Author {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  avatarUrl String?  @map("avatar_url")
+  bio       String?
+  role      String?
+  email     String?  @unique
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  articles Article[]
+
+  @@map("authors")
+}
+
+model Comment {
+  id          String        @id @default(uuid())
+  articleId   String        @map("article_id")
+  userId      String?       @map("user_id")
+  authorName  String?       @map("author_name")
+  authorEmail String?       @map("author_email")
+  content     String
+  status      CommentStatus @default(pending)
+  parentId    String?       @map("parent_id")
+  likes       Int           @default(0)
+  isPinned    Boolean       @default(false) @map("is_pinned")
+  publishedAt DateTime      @default(now()) @map("published_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  article Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([articleId])
+  @@index([status])
+  @@index([userId])
+  @@map("comments")
+}
+
+model Dossier {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  description String?
+  content     String?  @db.Text
+  imageUrl    String?  @map("image_url")
+  status      ArticleStatus @default(DRAFT)
+  locale      String   @default("fr")
+  isVisible   Boolean  @default(true) @map("is_visible")
+  articleCount Int     @default(0) @map("article_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  articles DossierArticle[]
+
+  @@map("dossiers")
+}
+
+model DossierArticle {
+  id        String   @id @default(uuid())
+  dossierId String   @map("dossier_id")
+  articleId String   @map("article_id")
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  dossier Dossier @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([dossierId, articleId])
+  @@map("dossier_articles")
+}
+
+model Media {
+  id           String   @id @default(uuid())
+  originalName String   @map("original_name")
+  filename     String
+  mimeType     String?  @map("mime_type")
+  url          String
+  size         BigInt   @default(0)
+  width        Int?
+  height       Int?
+  alt          String?
+  uploadedById String?  @map("uploaded_by_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  uploadedBy User? @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([uploadedById])
+  @@map("media")
+}
+
+model Page {
+  id            String        @id @default(uuid())
+  title         String
+  slug          String        @unique
+  excerpt       String?
+  content       String?       @db.Text
+  status        ArticleStatus @default(DRAFT)
+  locale        String        @default("fr")
+  showInMenu    Boolean       @default(false) @map("show_in_menu")
+  seoTitle      String?       @map("seo_title")
+  seoDescription String?      @map("seo_description")
+  publishedAt   DateTime?     @map("published_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("pages")
+}
+
+model FooterLink {
+  id        String   @id @default(uuid())
+  category  String
+  title     String?
+  name      String
+  href      String
+  locale    String   @default("fr")
+  position  Int      @default(0)
+  isVisible Boolean  @default(true) @map("is_visible")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([locale])
+  @@index([isVisible])
+  @@map("footer_links")
+}
+
+model NewsletterSubscriber {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  locale         String    @default("fr")
+  status         String    @default("subscribed")
+  source         String?
+  subscribedAt   DateTime  @default(now()) @map("subscribed_at")
+  unsubscribedAt DateTime? @map("unsubscribed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("newsletter_subscribers")
+}
+
+model TickerItem {
+  id         String   @id @default(uuid())
+  title      String
+  href       String?
+  isBreaking Boolean  @default(false) @map("is_breaking")
+  locale     String   @default("fr")
+  position   Int      @default(0)
+  isActive   Boolean  @default(true) @map("is_active")
+  startsAt   DateTime? @map("starts_at")
+  endsAt     DateTime? @map("ends_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([locale])
+  @@index([isActive])
+  @@map("ticker_items")
 }
 
 // ═══════════════════════════════════════════════════════════════
-// BILLING & SUBSCRIPTIONS
+// ABONNEMENTS / BILLING  (page abonnement + espace utilisateur)
 // ═══════════════════════════════════════════════════════════════
 
-model BillingInfo {
-  id              String    @id @default(uuid())
-  userId          String    @unique @map("user_id")
-  customerId      String?   @map("customer_id")
-  paymentMethodId String?   @map("payment_method_id")
-  paymentMethod   String?   @map("payment_method")
-  billingEmail    String?   @map("billing_email")
-  billingAddress  String?   @map("billing_address")
-  taxId           String?   @map("tax_id")
-  currency        String    @default("EUR")
-  nextBillingDate DateTime? @map("next_billing_date")
-  lastPaymentDate DateTime? @map("last_payment_date")
-  paymentStatus   String?   @map("payment_status")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+model SubscriptionPlan {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  price       Float
+  period      String   @default("month")
+  currency    String   @default("EUR")
+  description String?
+  features    String[] @default([])
+  highlighted Boolean  @default(false)
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  @@map("billing_info")
+  subscriptions Subscription[]
+
+  @@map("subscription_plans")
 }
 
 model Subscription {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  planId      String    @map("plan_id")
-  planName    String    @map("plan_name")
-  status      String    @default("active")
-  amount      Float
-  currency    String    @default("EUR")
-  interval    String
-  startDate   DateTime  @map("start_date")
-  endDate     DateTime? @map("end_date")
-  cancelAt    DateTime? @map("cancel_at")
-  canceledAt  DateTime? @map("canceled_at")
-  trialStart  DateTime? @map("trial_start")
-  trialEnd    DateTime? @map("trial_end")
-  features    String?
-  metadata    Json?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id               String             @id @default(uuid())
+  userId           String             @map("user_id")
+  planId           String?            @map("plan_id")
+  planName         String             @map("plan_name")
+  status           SubscriptionStatus @default(active)
+  amount           Float              @default(0)
+  currency         String             @default("EUR")
+  interval         String             @default("month")
+  startDate        DateTime           @map("start_date")
+  endDate          DateTime?          @map("end_date")
+  expiresAt        DateTime?          @map("expires_at")
+  lastPaymentDate  DateTime?          @map("last_payment_date")
+  nextPaymentDate  DateTime?          @map("next_payment_date")
+  paymentMethod    String?            @map("payment_method")
+  cancelAt         DateTime?          @map("cancel_at")
+  canceledAt       DateTime?          @map("canceled_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan         SubscriptionPlan?  @relation(fields: [planId], references: [id], onDelete: SetNull)
+  transactions Transaction[]
 
   @@index([userId])
   @@index([status])
   @@map("subscriptions")
+}
+
+model BillingInfo {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  customerId      String?  @map("customer_id")
+  paymentMethodId String?  @map("payment_method_id")
+  paymentMethod   String?  @map("payment_method")
+  billingEmail    String?  @map("billing_email")
+  billingAddress  String?  @map("billing_address")
+  taxId           String?  @map("tax_id")
+  currency        String   @default("EUR")
+  paymentStatus   String?  @map("payment_status")
+  nextBillingDate DateTime? @map("next_billing_date")
+  lastPaymentDate DateTime? @map("last_payment_date")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("billing_infos")
 }
 
 model Transaction {
@@ -802,699 +787,47 @@ model Transaction {
   date           DateTime
   invoiceId      String?  @map("invoice_id")
   invoiceUrl     String?  @map("invoice_url")
-  paymentId      String?  @map("payment_id")
-  gateway        String?
-  gatewayData    String?  @map("gateway_data")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
   @@index([userId, date])
-  @@index([subscriptionId])
   @@map("transactions")
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ANIME & CONTENT
-// ═══════════════════════════════════════════════════════════════
-
-model Anime {
-  id              String      @id @default(uuid())
-  slug            String      @unique
-  title           String
-  japaneseTitle   String?     @map("japanese_title")
-  synopsis        String?
-  coverImageUrl   String?     @map("cover_image_url")
-  bannerImageUrl  String?     @map("banner_image_url")
-  trailerUrl      String?     @map("trailer_url")
-  status          AnimeStatus @default(upcoming)
-  rating          Float       @default(0)
-  ratingCount     Int         @default(0) @map("rating_count")
-  totalEpisodes   Int         @default(0) @map("total_episodes")
-  releaseYear     Int         @default(0) @map("release_year")
-  season          String?
-  source          String?
-  ageRating       String?     @map("age_rating")
-  contentType     ContentType @default(series)
-  isFeatured      Boolean     @default(false) @map("is_featured")
-  isTrending      Boolean     @default(false) @map("is_trending")
-  parentAnimeId   String?     @map("parent_anime_id")
-  metadata        Json?
-  deletedAt       DateTime?   @map("deleted_at")
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
-
-  parentAnime     Anime?      @relation("AnimeChildren", fields: [parentAnimeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  children        Anime[]     @relation("AnimeChildren")
-  genres           AnimeGenre[]
-  studios          AnimeStudio[]
-  characters       AnimeCharacter[]
-  seasons          AnimeSeason[]
-  episodes         Episode[]
-  mediaAssets      MediaAsset[]
-  reviews          Review[]
-  scheduleEntries  ScheduleEntry[]
-  watchProgresses  WatchProgress[]
-  watchlistItems   WatchlistItem[]
-  collectionEntries CollectionEntry[]
-  recommendationsFrom Recommendation[] @relation("FromAnime")
-  recommendationsTo   Recommendation[] @relation("ToAnime")
-
-  @@index([status, releaseYear])
-  @@index([isFeatured])
-  @@index([isTrending])
-  @@index([contentType])
-  @@index([parentAnimeId])
-  @@map("anime")
-}
-
-model AnimeSeason {
-  id           String    @id @default(uuid())
-  animeId      String    @map("anime_id")
-  number       Int
-  title        String?
-  episodeCount Int       @default(0) @map("episode_count")
-  airDate      String?   @map("air_date")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  anime        Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  episodes     Episode[]
-
-  @@unique([animeId, number])
-  @@map("anime_seasons")
-}
-
-model Episode {
-  id           String       @id @default(uuid())
-  animeId      String       @map("anime_id")
-  seasonId     String?      @map("season_id")
-  number       Int
-  title        String
-  synopsis     String?
-  thumbnailUrl String?      @map("thumbnail_url")
-  duration     Float        @default(0)
-  airDate      DateTime?    @map("air_date")
-  isSubbed     Boolean      @default(true) @map("is_subbed")
-  isDubbed     Boolean      @default(false) @map("is_dubbed")
-  metadata     Json?
-  deletedAt    DateTime?    @map("deleted_at")
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
-  anime        Anime        @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  season       AnimeSeason? @relation(fields: [seasonId], references: [id], onDelete: SetNull, onUpdate: Restrict)
-
-  mediaAssets      MediaAsset[]
-  watchProgress    WatchProgress[]
-  scheduleEntries  ScheduleEntry[]
-
-  @@unique([animeId, number])
-  @@index([animeId])
-  @@index([seasonId])
-  @@map("episodes")
-}
-
-model Genre {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  slug        String    @unique
-  description String?
-  deletedAt   DateTime? @map("deleted_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  anime       AnimeGenre[]
-
-  @@map("genres")
-}
-
-model Studio {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  slug        String    @unique
-  logoUrl     String?   @map("logo_url")
-  description String?
-  website     String?
-  deletedAt   DateTime? @map("deleted_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  anime       AnimeStudio[]
-
-  @@map("studios")
-}
-
-model Character {
-  id          String    @id @default(uuid())
-  name        String
-  slug        String    @unique
-  imageUrl    String?   @map("image_url")
-  description String?
-  gender      String?
-  metadata    Json?
-  deletedAt   DateTime? @map("deleted_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  anime       AnimeCharacter[]
-
-  @@map("characters")
-}
-
-model AnimeGenre {
-  animeId String @map("anime_id")
-  genreId String @map("genre_id")
-  anime   Anime  @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@id([animeId, genreId])
-  @@index([genreId])
-  @@map("anime_genres")
-}
-
-model AnimeStudio {
-  animeId  String @map("anime_id")
-  studioId String @map("studio_id")
-  anime    Anime  @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  studio   Studio @relation(fields: [studioId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@id([animeId, studioId])
-  @@index([studioId])
-  @@map("anime_studios")
-}
-
-model AnimeCharacter {
-  animeId     String    @map("anime_id")
-  characterId String    @map("character_id")
-  role        String?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  anime       Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@id([animeId, characterId])
-  @@index([characterId])
-  @@map("anime_characters")
-}
-
-model Category {
-  id          String    @id @default(uuid())
-  name        String
-  slug        String    @unique
-  description String?
-  icon        String?
-  color       String?
-  postCount   Int       @default(0) @map("post_count")
-  lastActivity DateTime? @map("last_activity")
-  parentId    String?   @map("parent_id")
-  sortOrder   Int       @default(0) @map("sort_order")
-  isActive    Boolean   @default(true) @map("is_active")
-  metadata    Json?
-  deletedAt   DateTime? @map("deleted_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  posts       ForumPost[]
-
-  @@index([parentId])
-  @@map("categories")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// COLLECTIONS
-// ═══════════════════════════════════════════════════════════════
-
-model Collection {
-  id             String               @id @default(uuid())
-  slug           String               @unique
-  title          String
-  description    String?
-  type           CollectionType       @default(editorial)
-  status         PublicationState     @default(Draft)
-  visibility     CollectionVisibility @default(private)
-  posterUrl      String?              @map("poster_url")
-  bannerUrl      String?              @map("banner_url")
-  metadataStatus MetadataStatus       @default(missing) @map("metadata_status")
-  tags           String[]             @default([])
-  updatedById    String?              @map("updated_by_id")
-  deletedAt      DateTime?            @map("deleted_at")
-  createdAt      DateTime             @default(now()) @map("created_at")
-  updatedAt      DateTime             @updatedAt @map("updated_at")
-
-  discoverEnabled  Boolean  @default(false) @map("discover_enabled")
-  discoverOrder    Int      @default(0) @map("discover_order")
-  discoverTitle    String?  @map("discover_title")
-  discoverSubtitle String?  @map("discover_subtitle")
-  discoverCta      String?  @map("discover_cta")
-  discoverHref     String?  @map("discover_href")
-
-  entries   CollectionEntry[]
-  sources   CollectionSource[]
-  updatedBy User?            @relation(fields: [updatedById], references: [id], onDelete: SetNull)
-
-  @@index([status])
-  @@index([type])
-  @@index([visibility])
-  @@index([updatedById])
-  @@index([discoverEnabled])
-  @@index([discoverOrder])
-  @@map("collections")
-}
-
-model CollectionEntry {
-  id           String     @id @default(uuid())
-  collectionId String     @map("collection_id")
-  animeId      String     @map("anime_id")
-  position     Int        @default(0)
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-
-  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  anime      Anime      @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@unique([collectionId, animeId])
-  @@index([animeId])
-  @@index([collectionId, position])
-  @@map("collection_entries")
-}
-
-model CollectionSource {
-  id           String    @id @default(uuid())
-  collectionId String    @map("collection_id")
-  provider     String
-  externalId   String?   @map("external_id")
-  status       String    @default("active")
-  lastSyncedAt DateTime? @map("last_synced_at")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-
-  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-
-  @@unique([collectionId, provider])
-  @@index([provider])
-  @@map("collection_sources")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// MEDIA & ENCODING
-// ═══════════════════════════════════════════════════════════════
-
-model MediaAsset {
-  id          String   @id @default(uuid())
-  animeId     String   @map("anime_id")
-  episodeId   String?  @map("episode_id")
-  type        String
-  filename    String
-  originalUrl String?  @map("original_url")
-  mimeType    String?  @map("mime_type")
-  size        BigInt   @default(0)
-  duration    Float    @default(0)
-  width       Int      @default(0)
-  height      Int      @default(0)
-  language    String?
-  quality     String?
-  codec       String?
-  cdnUrl      String?  @map("cdn_url")
-  status      String   @default("pending")
-  metadata    Json?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  anime       Anime    @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  episode     Episode? @relation(fields: [episodeId], references: [id], onDelete: SetNull, onUpdate: Restrict)
-
-  encodingJobs EncodingJob[]
-
-  @@index([animeId])
-  @@index([episodeId])
-  @@map("media_assets")
-}
-
-model EncodingJob {
-  id           String     @id @default(uuid())
-  mediaAssetId String     @map("media_asset_id")
-  status       String     @default("pending")
-  profile      String?
-  progress     Int        @default(0)
-  outputUrl    String?    @map("output_url")
-  startedAt    DateTime?  @map("started_at")
-  completedAt  DateTime?  @map("completed_at")
-  failedAt     DateTime?  @map("failed_at")
-  errorMessage String?    @map("error_message")
-  metadata     Json?
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@index([mediaAssetId])
-  @@index([status])
-  @@map("encoding_jobs")
-}
-
-model CdnAsset {
-  id          String   @id @default(uuid())
-  originalUrl String   @map("original_url")
-  cdnUrl      String   @map("cdn_url")
-  fileType    String?  @map("file_type")
-  fileSize    BigInt   @default(0)
-  status      String   @default("active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@map("cdn_assets")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// COMMUNITY
-// ═══════════════════════════════════════════════════════════════
-
-model ForumPost {
-  id              String     @id @default(uuid())
-  slug            String     @unique
-  type            PostType   @default(discussion)
-  title           String
-  content         String
-  excerpt         String?
-  authorId        String     @map("author_id")
-  categoryId      String?    @map("category_id")
-  tags            Json?
-  status          PostStatus @default(active)
-  isPinned        Boolean    @default(false) @map("is_pinned")
-  isLocked        Boolean    @default(false) @map("is_locked")
-  hasSpoilers     Boolean    @default(false) @map("has_spoilers")
-  viewCount       Int        @default(0) @map("view_count")
-  commentCount    Int        @default(0) @map("comment_count")
-  totalReactions  Int        @default(0) @map("total_reactions")
-  contentLinkType String?    @map("content_link_type")
-  contentLinkTitle String?   @map("content_link_title")
-  contentLinkSlug String?    @map("content_link_slug")
-  contentLinkImage String?   @map("content_link_image")
-  contentLinkYear Int?       @map("content_link_year")
-  publishedAt     DateTime   @default(now()) @map("published_at")
-  deletedAt       DateTime?  @map("deleted_at")
-  createdAt       DateTime   @default(now()) @map("created_at")
-  updatedAt       DateTime   @updatedAt @map("updated_at")
-  category        Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  author          User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  comments        Comment[]
-  reactions       PostReaction[]
-
-  @@index([authorId])
-  @@index([categoryId])
-  @@index([type])
-  @@index([status])
-  @@index([publishedAt])
-  @@map("forum_posts")
-}
-
-model PostReaction {
-  id        String       @id @default(uuid())
-  postId    String       @map("post_id")
-  userId    String       @map("user_id")
-  type      ReactionType
-  createdAt DateTime     @default(now()) @map("created_at")
-  post      ForumPost    @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, userId, type])
-  @@map("post_reactions")
-}
-
-model Review {
-  id        String    @id @default(uuid())
-  userId    String    @map("user_id")
-  animeId   String    @map("anime_id")
-  rating    Int
-  title     String?
-  content   String?
-  spoiler   Boolean   @default(false)
-  helpful   Int       @default(0)
-  deletedAt DateTime? @map("deleted_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  anime     Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  author    User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  comments  Comment[]
-
-  @@unique([userId, animeId])
-  @@index([animeId])
-  @@index([rating])
-  @@map("reviews")
-}
-
-model Comment {
-  id             String     @id @default(uuid())
-  userId         String     @map("user_id")
-  postId         String?    @map("post_id")
-  animeId        String?    @map("anime_id")
-  episodeId      String?    @map("episode_id")
-  reviewId       String?    @map("review_id")
-  parentId       String?    @map("parent_id")
-  content        String
-  status         PostStatus @default(active)
-  isSpoiler      Boolean    @default(false) @map("is_spoiler")
-  totalReactions Int        @default(0) @map("total_reactions")
-  deletedAt      DateTime?  @map("deleted_at")
-  createdAt      DateTime   @default(now()) @map("created_at")
-  updatedAt      DateTime   @updatedAt @map("updated_at")
-  author         User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  post           ForumPost? @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  review         Review?    @relation(fields: [reviewId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  reactions      CommentReaction[]
-
-  @@index([postId])
-  @@index([userId])
-  @@index([animeId])
-  @@index([reviewId])
-  @@index([parentId])
-  @@map("comments")
-}
-
-model Report { {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  targetType  String    @map("target_type")
-  targetId    String    @map("target_id")
-  reason      String
-  description String?
-  status      String    @default("pending")
-  resolvedBy  String?   @map("resolved_by")
-  resolvedAt  DateTime? @map("resolved_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-
-  @@index([userId])
-  @@index([targetType, targetId])
-  @@index([status])
-  @@map("reports")
-}
-
-model CommentReaction {
-  id        String       @id @default(uuid())
-  commentId String       @map("comment_id")
-  userId    String       @map("user_id")
-  type      ReactionType
-  createdAt DateTime     @default(now()) @map("created_at")
-  comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@unique([commentId, userId, type])
-  @@map("comment_reactions")
-}
-
-model CommunityBadge {
-  id          String   @id @default(uuid())
-  name        String
-  icon        String
-  color       String
-  description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  users       UserBadge[]
-
-  @@map("community_badges")
-}
-
-model UserBadge {
-  id        String        @id @default(uuid())
-  userId    String        @map("user_id")
-  badgeId   String        @map("badge_id")
-  earnedAt  DateTime      @default(now()) @map("earned_at")
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badge     CommunityBadge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, badgeId])
-  @@map("user_badges")
-}
-
-model CommunityAnnouncement {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  authorId  String   @map("author_id")
-  isPinned  Boolean  @default(false) @map("is_pinned")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  reactions AnnouncementReaction[]
-
-  @@map("community_announcements")
-}
-
-model AnnouncementReaction {
-  id             String                @id @default(uuid())
-  announcementId String                @map("announcement_id")
-  userId         String                @map("user_id")
-  type           ReactionType
-  createdAt      DateTime              @default(now()) @map("created_at")
-  announcement   CommunityAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
-
-  @@unique([announcementId, userId, type])
-  @@map("announcement_reactions")
-}
-
-model Recommendation {
-  id          String    @id @default(uuid())
-  fromAnimeId String    @map("from_anime_id")
-  toAnimeId   String    @map("to_anime_id")
-  authorId    String    @map("author_id")
-  description String?
-  voteCount   Int       @default(0) @map("vote_count")
-  commentCount Int      @default(0) @map("comment_count")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  fromAnime   Anime     @relation("FromAnime", fields: [fromAnimeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  toAnime     Anime     @relation("ToAnime", fields: [toAnimeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@index([fromAnimeId])
-  @@index([toAnimeId])
-  @@map("recommendations")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// WATCHLISTS & PROGRESS
-// ═══════════════════════════════════════════════════════════════
-
-model Watchlist {
-  id        String          @id @default(uuid())
-  userId    String          @map("user_id")
-  name      String
-  type      String          @default("custom")
-  createdAt DateTime        @default(now()) @map("created_at")
-  updatedAt DateTime        @updatedAt @map("updated_at")
-  items     WatchlistItem[]
-
-  @@index([userId])
-  @@map("watchlists")
-}
-
-model WatchlistItem {
-  id          String    @id @default(uuid())
-  watchlistId String    @map("watchlist_id")
-  animeId     String    @map("anime_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  watchlist   Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  anime       Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@unique([watchlistId, animeId])
-  @@index([animeId])
-  @@map("watchlist_items")
-}
-
-model WatchProgress {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  episodeId   String    @map("episode_id")
-  animeId     String    @map("anime_id")
-  progress    Float     @default(0)
-  duration    Float     @default(0)
-  percentage  Float     @default(0)
-  completed   Boolean   @default(false)
-  lastWatched DateTime  @map("last_watched")
-  watchCount  Int       @default(0) @map("watch_count")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  episode     Episode   @relation(fields: [episodeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  anime       Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  watches     WatchSession[]
-
-  @@unique([userId, episodeId])
-  @@index([userId])
-  @@index([episodeId])
-  @@index([animeId])
-  @@index([lastWatched])
-  @@map("watch_progress")
-}
-
-model WatchSession {
-  id          String         @id @default(uuid())
-  progressId  String         @map("progress_id")
-  startedAt   DateTime       @map("started_at")
-  endedAt     DateTime?      @map("ended_at")
-  progressEnd Float          @default(0) @map("progress_end")
-  completed   Boolean        @default(false)
-  createdAt   DateTime       @default(now()) @map("created_at")
-  progress    WatchProgress  @relation(fields: [progressId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@index([progressId])
-  @@map("watch_sessions")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SCHEDULING & CALENDAR
-// ═══════════════════════════════════════════════════════════════
-
-model ScheduleEntry {
-  id         String            @id @default(uuid())
-  animeId    String            @map("anime_id")
-  episodeId  String?           @map("episode_id")
-  entryType  ScheduleEntryType @map("entry_type")
-  airDay     String?           @map("air_day")
-  airTime    String?           @map("air_time")
-  airTimezone String?          @map("air_timezone")
-  region     String            @default("global")
-  season     Int?
-  startAt    DateTime          @map("start_at")
-  endAt      DateTime?         @map("end_at")
-  allDay     Boolean           @default(false) @map("all_day")
-  platform   String?
-  status     ScheduleStatus    @default(scheduled)
-  color      String?
-  metadata   Json?
-  createdAt  DateTime          @default(now()) @map("created_at")
-  updatedAt  DateTime          @updatedAt @map("updated_at")
-  anime      Anime             @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  episode    Episode?          @relation(fields: [episodeId], references: [id], onDelete: SetNull, onUpdate: Restrict)
-
-  @@index([animeId])
-  @@index([episodeId])
-  @@index([startAt])
-  @@index([entryType])
-  @@index([status])
-  @@map("schedule_entries")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// NOTIFICATIONS
+// NOTIFICATIONS  (espace utilisateur + plateforme)
 // ═══════════════════════════════════════════════════════════════
 
 model Notification {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  type      String
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  type      NotificationType
   title     String
   body      String?
   link      String?
-  read      Boolean  @default(false)
-  readAt    DateTime? @map("read_at")
+  isRead    Boolean          @default(false) @map("is_read")
+  readAt    DateTime?        @map("read_at")
   metadata  Json?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
 
-  @@index([userId, read])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
   @@index([userId, createdAt])
   @@map("notifications")
 }
 
 model NotificationTemplate {
   id        String   @id @default(uuid())
-  type      String   @unique
-  subject   String
-  body      String
-  isHtml    Boolean  @default(false) @map("is_html")
-  metadata  Json?
+  name      String
+  type      NotificationType @default(system)
+  title     String
+  body      String?
+  isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -1502,448 +835,256 @@ model NotificationTemplate {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SUPPORT & FAQ
+// ADMIN / PLATEFORME  (paramètres, SEO, clés, webhooks, audits…)
 // ═══════════════════════════════════════════════════════════════
 
-model FAQ {
-  id        String   @id @default(uuid())
-  question  String
-  answer    String
-  category  String   @default("general")
-  sortOrder Int      @default(0) @map("sort_order")
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+model SiteSetting {
+  id                String   @id @default(uuid())
+  siteName          String   @default("Etheria Times") @map("site_name")
+  siteDescription   String?  @map("site_description")
+  siteUrl           String?  @map("site_url")
+  contactEmail      String?  @map("contact_email")
+  smtpHost          String?  @map("smtp_host")
+  smtpPort          Int?     @map("smtp_port")
+  smtpUser          String?  @map("smtp_user")
+  smtpPass          String?  @map("smtp_pass")
+  fromName          String?  @map("from_name")
+  fromEmail         String?  @map("from_email")
+  maintenanceMode   Boolean  @default(false) @map("maintenance_mode")
+  registrationOpen  Boolean  @default(true) @map("registration_open")
+  commentsEnabled   Boolean  @default(true) @map("comments_enabled")
+  newsletterEnabled Boolean  @default(true) @map("newsletter_enabled")
+  analyticsEnabled  Boolean  @default(true) @map("analytics_enabled")
+  sslEnforced       Boolean  @default(false) @map("ssl_enforced")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
-  @@index([category])
-  @@map("faqs")
+  @@map("site_settings")
 }
-
-model Ticket {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  subject     String
-  description String
-  status      String    @default("open")
-  priority    String    @default("medium")
-  category    String    @default("general")
-  assignedTo  String?   @map("assigned_to")
-  resolvedAt  DateTime? @map("resolved_at")
-  closedAt    DateTime? @map("closed_at")
-  metadata    Json?
-  deletedAt   DateTime? @map("deleted_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  replies     TicketReply[]
-
-  @@index([userId])
-  @@index([status])
-  @@map("tickets")
-}
-
-model TicketReply {
-  id        String   @id @default(uuid())
-  ticketId  String   @map("ticket_id")
-  userId    String   @map("user_id")
-  content   String
-  isStaff   Boolean  @default(false) @map("is_staff")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-
-  @@index([ticketId])
-  @@index([userId])
-  @@map("ticket_replies")
-}
-
-model ContactMessage {
-  id        String    @id @default(uuid())
-  name      String
-  email     String
-  subject   String
-  message   String
-  status    String    @default("unread")
-  readAt    DateTime? @map("read_at")
-  repliedAt DateTime? @map("replied_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-
-  @@index([status])
-  @@map("contact_messages")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SETTINGS & SEO
-// ═══════════════════════════════════════════════════════════════
 
 model SystemSetting {
-  id          String   @id @default(uuid())
-  key         String   @unique
-  value       Json?
-  category    String
-  description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  key       String   @id
+  value     Json?
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@index([category])
   @@map("system_settings")
 }
 
 model SeoMeta {
-  id           String   @id @default(uuid())
-  pagePath     String   @unique @map("page_path")
-  title        String?
-  description  String?
-  keywords     String?
-  ogImage      String?  @map("og_image")
-  canonicalUrl String?  @map("canonical_url")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(uuid())
+  path          String   @unique
+  title         String?
+  description   String?
+  keywords      String[]
+  ogImage       String?  @map("og_image")
+  ogTitle       String?  @map("og_title")
+  ogDescription String?  @map("og_description")
+  twitterCard   String?  @map("twitter_card")
+  robots        String?  @default("index,follow")
+  canonicalUrl  String?  @map("canonical_url")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-  @@map("seo_meta")
-}
-
-// ═══════════════════════════════════════════════════════════════
-// INTEGRATIONS, API KEYS, DOMAINS
-// ═══════════════════════════════════════════════════════════════
-
-model Integration {
-  id           String    @id @default(uuid())
-  name         String
-  provider     String
-  type         String
-  status       String    @default("inactive")
-  config       Json?     @map("config")
-  secrets      Json?     @map("secrets")
-  metadata     Json?     @map("metadata")
-  lastSyncedAt DateTime? @map("last_synced_at")
-  lastError    String?   @map("last_error")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-
-  @@index([provider])
-  @@map("integrations")
+  @@map("seo_metas")
 }
 
 model ApiKey {
   id          String    @id @default(uuid())
   name        String
   keyHash     String    @unique @map("key_hash")
-  keyPrefix   String    @map("key_prefix")
-  userId      String    @map("user_id")
-  permissions Json?     @map("permissions")
+  keyPrefix   String?   @map("key_prefix")
+  userId      String?   @map("user_id")
+  permissions String[]  @default([])
+  usageCount  Int       @default(0) @map("usage_count")
   lastUsedAt  DateTime? @map("last_used_at")
   expiresAt   DateTime? @map("expires_at")
   revokedAt   DateTime? @map("revoked_at")
-  usageCount  BigInt    @default(0) @map("usage_count")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@map("api_keys")
 }
 
-model DomainConfig {
-  id          String    @id @default(uuid())
-  domain      String    @unique
-  isVerified  Boolean   @default(false) @map("is_verified")
-  isSsl       Boolean   @default(false) @map("is_ssl")
-  verifiedAt  DateTime? @map("verified_at")
-  sslAt       DateTime? @map("ssl_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+model Webhook {
+  id              String    @id @default(uuid())
+  name            String
+  url             String
+  events          String[]  @default([])
+  secret          String?
+  isActive        Boolean   @default(true) @map("is_active")
+  lastTriggeredAt DateTime? @map("last_triggered_at")
+  createdById     String?   @map("created_by_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  @@map("domain_configs")
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@map("webhooks")
 }
 
-model ActivityItem {
-  id          String     @id @default(uuid())
-  userId      String     @map("user_id")
-  workspaceId String     @map("workspace_id")
-  type        String
-  entityId    String?    @map("entity_id")
-  title       String?    @map("title")
-  message     String?    @map("message")
-  icon        String?
-  url         String?
-  isRead      Boolean    @default(false) @map("is_read")
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
-  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+model AuditLog {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  action       String
+  resourceType String?  @map("resource_type")
+  resourceId   String?  @map("resource_id")
+  details      Json?
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at")
 
-  @@index([userId, createdAt])
-  @@index([workspaceId])
-  @@map("activity_items")
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MEDIA SOURCE & SYNC
+// MONETISATION / PUB  (plateforme publicitaire)
 // ═══════════════════════════════════════════════════════════════
 
-model SourceConfig {
-  id         String    @id @default(uuid())
-  sourceType String    @unique @map("source_type")
-  enabled    Boolean   @default(true)
-  config     Json?
-  lastSyncAt DateTime? @map("last_sync_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
-
-  @@map("source_configs")
-}
-
-model SourceSyncLog {
-  id           String    @id @default(uuid())
-  libraryId    String    @map("library_id")
-  sourceType   String    @map("source_type")
-  status       String
-  itemsCreated Int       @default(0) @map("items_created")
-  itemsUpdated Int       @default(0) @map("items_updated")
-  itemsRemoved Int       @default(0) @map("items_removed")
-  startedAt    DateTime  @map("started_at")
-  completedAt  DateTime? @map("completed_at")
-  errorMessage String?   @map("error_message")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-
-  @@index([libraryId])
-  @@map("source_sync_logs")
-}
-
-model MediaMapping {
-  id            String   @id @default(uuid())
-  sourceType    String   @map("source_type")
-  libraryId     String   @map("library_id")
-  kamiId        String   @map("kami_id")
-  kamiTitle     String   @map("kami_title")
-  plexRatingKey String   @map("plex_rating_key")
-  plexTitle     String   @map("plex_title")
-  type          String
-  tmdbId        String?  @map("tmdb_id")
-  imdbId        String?  @map("imdb_id")
-  tvdbId        String?  @map("tvdb_id")
-  anilistId     String?  @map("anilist_id")
-  matchScore    Float    @default(0) @map("match_score")
-  lastSyncedAt  DateTime @map("last_synced_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  @@unique([sourceType, plexRatingKey])
-  @@index([libraryId])
-  @@index([kamiId])
-  @@map("media_mappings")
-}
-
-model SourceCapability {
+model AdCampaign {
   id          String   @id @default(uuid())
-  sourceType  String   @map("source_type")
-  key         String
   name        String
-  description String?
-  supported   Boolean  @default(false)
-  enabled     Boolean  @default(false)
-  version     String?
+  status      AdStatus @default(draft)
+  startDate   DateTime? @map("start_date")
+  endDate     DateTime? @map("end_date")
+  budget      Float?
+  spent       Float    @default(0)
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  createdById String?  @map("created_by_id")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  @@unique([sourceType, key])
-  @@map("source_capabilities")
+  createdBy  User?         @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  placements AdPlacement[]
+
+  @@map("ad_campaigns")
 }
 
-model SourceLog {
-  id         String   @id @default(uuid())
-  sourceType String   @map("source_type")
-  level      String
-  message    String
-  source     String
-  details    String?
-  timestamp  DateTime @default(now())
-  createdAt  DateTime @default(now()) @map("created_at")
+model AdPlacement {
+  id          String          @id @default(uuid())
+  campaignId  String          @map("campaign_id")
+  type        AdPlacementType @default(banner)
+  name        String
+  imageUrl    String?         @map("image_url")
+  linkUrl     String?         @map("link_url")
+  html        String?
+  position    String?
+  width       Int?
+  height      Int?
+  isActive    Boolean         @default(true) @map("is_active")
+  impressions Int             @default(0)
+  clicks      Int             @default(0)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
 
-  @@index([sourceType, timestamp])
-  @@index([level])
-  @@map("source_logs")
+  campaign AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("ad_placements")
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MEDIA CATALOGUE — METADATA-ONLY INDEX FROM EXTERNAL SOURCES
+// RÉSEAUX SOCIAUX  (publication automatisée)
 // ═══════════════════════════════════════════════════════════════
 
-model MediaLibrary {
-  id            String    @id @default(uuid())
-  sourceType    String    @map("source_type")
-  sourceId      String    @map("source_id")
-  externalUuid  String?   @map("external_uuid")
-  name          String
-  type          String
-  language      String?
-  agent         String?
-  scanner       String?
-  itemCount     Int       @default(0) @map("item_count")
-  isEnabled     Boolean   @default(true) @map("is_enabled")
-  lastIndexedAt DateTime? @map("last_indexed_at")
-  metadata      Json?
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+model SocialAccount {
+  id           String         @id @default(uuid())
+  platform     SocialPlatform
+  name         String
+  handle       String?
+  accessToken  String?        @map("access_token")
+  refreshToken String?        @map("refresh_token")
+  accountId    String?        @map("account_id")
+  profileUrl   String?        @map("profile_url")
+  followers    Int            @default(0)
+  isActive     Boolean        @default(true) @map("is_active")
+  lastSyncedAt DateTime?      @map("last_synced_at")
+  createdById  String?        @map("created_by_id")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
 
-  movies MediaMovie[]
-  series MediaSeries[]
+  createdBy    User?               @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  publications SocialPublication[]
 
-  @@unique([sourceType, sourceId])
-  @@index([sourceType, type])
-  @@map("media_libraries")
+  @@map("social_accounts")
 }
 
-model MediaMovie {
-  id              String    @id @default(uuid())
-  libraryId       String?   @map("library_id")
-  sourceType      String    @map("source_type")
-  sourceId        String    @map("source_id")
-  externalUuid    String?   @map("external_uuid")
-  title           String
-  originalTitle   String?   @map("original_title")
-  sortTitle       String?   @map("sort_title")
-  year            Int       @default(0)
-  releaseDate     DateTime? @map("release_date")
-  summary         String?
-  contentRating   String?   @map("content_rating")
-  studio          String?
-  country         String?
-  durationSeconds Int       @default(0) @map("duration_seconds")
-  rating          Float     @default(0)
-  audienceRating  Float?    @map("audience_rating")
-  ratingCount     Int       @default(0) @map("rating_count")
-  genres          String[]  @default([])
-  tags            String[]  @default([])
-  thumbUrl        String?   @map("thumb_url")
-  artUrl          String?   @map("art_url")
-  posterUrl       String?   @map("poster_url")
-  language        String?
-  isWatched       Boolean   @default(false) @map("is_watched")
-  viewCount       Int       @default(0) @map("view_count")
-  lastViewedAt    DateTime? @map("last_viewed_at")
-  indexedAt       DateTime  @default(now()) @map("indexed_at")
-  metadata        Json?
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+model SocialPublication {
+  id             String         @id @default(uuid())
+  accountId      String         @map("account_id")
+  articleId      String?        @map("article_id")
+  content        String
+  imageUrl       String?        @map("image_url")
+  platformPostId String?        @map("platform_post_id")
+  status         String         @default("scheduled")
+  scheduledAt    DateTime?      @map("scheduled_at")
+  publishedAt    DateTime?      @map("published_at")
+  likes          Int            @default(0)
+  comments       Int            @default(0)
+  shares         Int            @default(0)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
-  library MediaLibrary? @relation(fields: [libraryId], references: [id], onDelete: SetNull)
+  account SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  article Article?      @relation(fields: [articleId], references: [id], onDelete: SetNull)
 
-  @@unique([sourceType, sourceId])
-  @@index([libraryId])
-  @@index([year])
-  @@index([sortTitle])
-  @@index([title])
-  @@map("media_movies")
+  @@map("social_publications")
 }
 
-model MediaSeries {
-  id               String    @id @default(uuid())
-  libraryId        String?   @map("library_id")
-  sourceType       String    @map("source_type")
-  sourceId         String    @map("source_id")
-  externalUuid     String?   @map("external_uuid")
-  title            String
-  originalTitle    String?   @map("original_title")
-  sortTitle        String?   @map("sort_title")
-  year             Int       @default(0)
-  summary          String?
-  contentRating    String?   @map("content_rating")
-  network          String?
-  studio           String?
-  status           String    @default("unknown")
-  seasonCount      Int       @default(0) @map("season_count")
-  episodeCount     Int       @default(0) @map("episode_count")
-  rating           Float     @default(0)
-  audienceRating   Float?    @map("audience_rating")
-  ratingCount      Int       @default(0) @map("rating_count")
-  genres           String[]  @default([])
-  tags             String[]  @default([])
-  thumbUrl         String?   @map("thumb_url")
-  artUrl           String?   @map("art_url")
-  bannerUrl        String?   @map("banner_url")
-  language         String?
-  isWatched        Boolean   @default(false) @map("is_watched")
-  viewCount        Int       @default(0) @map("view_count")
-  lastViewedAt     DateTime? @map("last_viewed_at")
-  indexedAt        DateTime  @default(now()) @map("indexed_at")
-  metadata         Json?
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+// ═══════════════════════════════════════════════════════════════
+// INFRASTRUCTURE / STATUT  (page de statut)
+// ═══════════════════════════════════════════════════════════════
 
-  library  MediaLibrary?  @relation(fields: [libraryId], references: [id], onDelete: SetNull)
-  seasons  MediaSeason[]
-  episodes MediaEpisode[]
+model ServiceStatus {
+  id        String       @id @default(uuid())
+  name      String
+  status    ServiceState @default(operational)
+  message   String?
+  uptime    Float        @default(100)
+  updatedAt DateTime     @updatedAt @map("updated_at")
 
-  @@unique([sourceType, sourceId])
-  @@index([libraryId])
-  @@index([year])
-  @@index([sortTitle])
-  @@index([title])
-  @@index([status])
-  @@map("media_series")
+  incidents ServiceIncident[]
+
+  @@map("service_statuses")
 }
 
-model MediaSeason {
-  id           String    @id @default(uuid())
-  seriesId     String    @map("series_id")
-  sourceType   String    @map("source_type")
-  sourceId     String    @map("source_id")
-  externalUuid String?   @map("external_uuid")
-  indexNumber  Int       @map("index_number")
-  title        String?
-  summary      String?
-  episodeCount Int       @default(0) @map("episode_count")
-  year         Int?
-  thumbUrl     String?   @map("thumb_url")
-  artUrl       String?   @map("art_url")
-  indexedAt    DateTime  @default(now()) @map("indexed_at")
-  metadata     Json?
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+model ServiceIncident {
+  id         String         @id @default(uuid())
+  serviceId  String         @map("service_id")
+  status     IncidentStatus @default(investigating)
+  title      String
+  message    String?
+  startedAt  DateTime       @map("started_at")
+  resolvedAt DateTime?      @map("resolved_at")
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
 
-  series   MediaSeries    @relation(fields: [seriesId], references: [id], onDelete: Cascade)
-  episodes MediaEpisode[]
+  service ServiceStatus @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
-  @@unique([sourceType, sourceId])
-  @@unique([seriesId, indexNumber])
-  @@index([seriesId])
-  @@map("media_seasons")
+  @@index([serviceId])
+  @@map("service_incidents")
 }
 
-model MediaEpisode {
-  id              String    @id @default(uuid())
-  seriesId        String    @map("series_id")
-  seasonId        String?   @map("season_id")
-  sourceType      String    @map("source_type")
-  sourceId        String    @map("source_id")
-  externalUuid    String?   @map("external_uuid")
-  seasonIndex     Int       @map("season_index")
-  indexNumber     Int       @map("index_number")
-  title           String
-  originalTitle   String?   @map("original_title")
-  summary         String?
-  durationSeconds Int       @default(0) @map("duration_seconds")
-  rating          Float     @default(0)
-  contentRating   String?   @map("content_rating")
-  airDate         DateTime? @map("air_date")
-  isWatched       Boolean   @default(false) @map("is_watched")
-  viewCount       Int       @default(0) @map("view_count")
-  lastViewedAt    DateTime? @map("last_viewed_at")
-  thumbUrl        String?   @map("thumb_url")
-  language        String?
-  indexedAt       DateTime  @default(now()) @map("indexed_at")
-  metadata        Json?
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+// ═══════════════════════════════════════════════════════════════
+// FAQ  (page abonnement)
+// ═══════════════════════════════════════════════════════════════
 
-  series MediaSeries  @relation(fields: [seriesId], references: [id], onDelete: Cascade)
-  season MediaSeason? @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+model FAQ {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  category  String?
+  locale    String   @default("fr")
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([sourceType, sourceId])
-  @@unique([seriesId, seasonIndex, indexNumber])
-  @@index([seriesId])
-  @@index([seasonId])
-  @@index([airDate])
-  @@map("media_episodes")
+  @@map("faqs")
 }

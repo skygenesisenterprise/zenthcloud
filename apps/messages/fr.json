@@ -1,0 +1,737 @@
+{
+  "Common": {
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "submit": "Soumettre",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "yes": "Oui",
+    "no": "Non",
+    "backToTop": {
+      "label": "Retour en haut",
+      "ariaLabel": "Revenir en haut de la page"
+    }
+  },
+  "HeaderInfo": {
+    "search": "Rechercher",
+    "closeSearch": "Fermer la recherche",
+    "assistance": "Assistance",
+    "salesServices": "Services Commerciaux",
+    "phoneNumber": "Non disponible",
+    "officialSitesInfo": "Assurez-vous de vous trouver sur un site officiel de l'écosystème Sky Genesis Enterprise avant de saisir vos identifiants.",
+    "languages": {
+      "fr": "France",
+      "be_fr": "Belgique (FR)",
+      "be_nl": "Belgique (NL)",
+      "ch_fr": "Suisse (FR)",
+      "ja": "日本語"
+    }
+  },
+  "Public": {
+    "header": {
+      "brandTagline": "Une entreprise Sky Genesis Enterprise",
+      "getStarted": "Commencer",
+      "signIn": "Se connecter",
+      "pricing": "Tarification",
+      "openMenu": "Ouvrir le menu",
+      "closeMenu": "Fermer le menu"
+    },
+    "topBar": {
+      "search": "Rechercher un nom de domaine",
+      "webmail": "Webmail",
+      "myAccount": "Mon compte client",
+      "contactSales": "Contact commercial",
+      "support": "Support"
+    },
+    "navigation": {
+      "publicCloud": {
+        "label": "Public Cloud",
+        "headline": "DevOps Cloud Native, créez vos applications fiables et scalables",
+        "footer": {
+          "pricing": "Tarifs",
+          "regions": "Régions",
+          "documentation": "Documentation",
+          "roadmap": "Roadmap & Changelog"
+        },
+        "compute": {
+          "label": "Compute",
+          "description": "Déployez des ressources de calcul virtuelles évolutives à la demande."
+        },
+        "storage": {
+          "label": "Stockage",
+          "description": "Stockage objet et bloc haute performance pour toutes les charges de travail."
+        },
+        "networking": {
+          "label": "Réseau",
+          "description": "Réseaux définis par logiciel, équilibreurs de charge et IP flottantes."
+        },
+        "databases": {
+          "label": "Bases de données",
+          "description": "Bases SQL et NoSQL managées avec sauvegardes automatisées."
+        },
+        "containers": {
+          "label": "Conteneurs",
+          "description": "Kubernetes managé et registres de conteneurs."
+        },
+        "gpuAi": {
+          "label": "GPU & IA",
+          "description": "Instances GPU pour l'entraînement et l'inférence."
+        },
+        "backup": {
+          "label": "Sauvegarde",
+          "description": "Sauvegarde automatisée et restauration à un instant donné."
+        },
+        "security": {
+          "label": "Sécurité",
+          "description": "Pare-feu, chiffrement et contrôles d'identité pour vos charges de travail."
+        }
+      },
+      "privateCloud": {
+        "label": "Private Cloud",
+        "headline": "Performance, contrôle et conformité pour applications critiques",
+        "footer": {
+          "pricing": "Tarifs",
+          "compliance": "Conformité",
+          "documentation": "Documentation",
+          "roadmap": "Roadmap & Changelog"
+        },
+        "dedicatedCloud": {
+          "label": "Cloud dédié",
+          "description": "Environnements cloud isolés réservés à votre organisation."
+        },
+        "virtualization": {
+          "label": "Virtualisation",
+          "description": "Plateformes de virtualisation VMware et KVM."
+        },
+        "privateNetworking": {
+          "label": "Réseau privé",
+          "description": "Réseaux privés de couche 2 et 3 entre les régions."
+        },
+        "storage": {
+          "label": "Stockage",
+          "description": "Clusters SAN et stockage défini par logiciel pour entreprise."
+        },
+        "kubernetes": {
+          "label": "Kubernetes",
+          "description": "Clusters Kubernetes privés avec contrôle plane dédié."
+        },
+        "disasterRecovery": {
+          "label": "Reprise d'activité",
+          "description": "Environnements répliqués et basculement piloté par runbook."
+        },
+        "securityCompliance": {
+          "label": "Sécurité & conformité",
+          "description": "Contrôles et support d'audit pour charges réglementées."
+        },
+        "managedInfrastructure": {
+          "label": "Infrastructure managée",
+          "description": "Nous opérons le matériel pour que vous vous concentratiez sur votre métier."
+        }
+      },
+      "servers": {
+        "label": "Serveurs dédiés & VPS",
+        "headline": "Puissance dédiée brute pour un contrôle total au meilleur prix",
+        "footer": {
+          "pricing": "Tarifs",
+          "licences": "OS & licences",
+          "documentation": "Documentation",
+          "roadmap": "Roadmap & Changelog"
+        },
+        "dedicatedServers": {
+          "label": "Serveurs dédiés",
+          "description": "Performances bare-metal avec contrôle total du matériel."
+        },
+        "vps": {
+          "label": "VPS",
+          "description": "Serveurs privés virtuels pour petits projets et tests."
+        },
+        "compute": {
+          "label": "Compute",
+          "description": "Instances optimisées CPU pour applications exigeantes."
+        },
+        "highMemory": {
+          "label": "Mémoire haute",
+          "description": "Serveurs optimisés RAM pour bases en mémoire et analytics."
+        },
+        "storage": {
+          "label": "Stockage",
+          "description": "Serveurs de stockage dense pour archives et sauvegardes."
+        },
+        "gpu": {
+          "label": "GPU",
+          "description": "Nœuds GPU physiques pour rendu et charges IA."
+        },
+        "networking": {
+          "label": "Réseau",
+          "description": "Liens privés, BGP et cross-connects dédiés."
+        },
+        "ddosProtection": {
+          "label": "Protection DDoS",
+          "description": "Mitigation permanente pour votre infrastructure dédiée."
+        }
+      },
+      "telecom": {
+        "label": "Telecom & VoIP",
+        "headline": "Toute votre présence en ligne, en un seul endroit",
+        "footer": {
+          "pricing": "Tarifs",
+          "guides": "Guides",
+          "partner": "Devenir partenaire"
+        },
+        "footerTitle": "Arkana Telecom",
+        "footerDescription": "Propulsé par Arkana Telecom — la couche connectivité de l'écosystème ZenthCloud.",
+        "internetAccess": {
+          "label": "Accès Internet",
+          "description": "Internet professionnel symétrique fiable."
+        },
+        "dedicatedInternet": {
+          "label": "Internet dédié",
+          "description": "Connectivité fibre non partagée avec SLA garanti."
+        },
+        "privateNetworking": {
+          "label": "Réseau privé",
+          "description": "MPLS et VPN Ethernet entre vos sites."
+        },
+        "cloudConnect": {
+          "label": "Cloud Connect",
+          "description": "Liens directs de couche 2 et 3 vers ZenthCloud."
+        },
+        "ipTransit": {
+          "label": "IP & Transit",
+          "description": "Options IPv4, IPv6 et transit blendé."
+        },
+        "ddosProtection": {
+          "label": "Protection DDoS",
+          "description": "Filtrage carrier-grade avant que le trafic ne vous atteigne."
+        },
+        "enterpriseConnectivity": {
+          "label": "Connectivité entreprise",
+          "description": "WAN sur mesure pour organisations multi-sites."
+        },
+        "voiceVoip": {
+          "label": "Voix & VoIP",
+          "description": "PBX cloud, trunk SIP et communications unifiées."
+        }
+      },
+      "solutions": {
+        "label": "Solutions",
+        "headline": "Des solutions pour chaque étape de votre croissance",
+        "footer": {
+          "all": "Toutes les solutions",
+          "startups": "Startups",
+          "contact": "Contact"
+        },
+        "developers": {
+          "label": "Développeurs",
+          "description": "Outils API-first, CI/CD et environnements de dev évolutifs."
+        },
+        "startups": {
+          "label": "Startups",
+          "description": "Passez du prototype à la production sans changer de plateforme."
+        },
+        "business": {
+          "label": "Entreprises",
+          "description": "Hébergement fiable et infrastructure SaaS pour PME."
+        },
+        "enterprise": {
+          "label": "Grand compte",
+          "description": "Gouvernance, conformité et cloud hybride à l'échelle."
+        },
+        "gaming": {
+          "label": "Gaming",
+          "description": "Infrastructure basse latence pour serveurs de jeu et communautés."
+        },
+        "aiGpu": {
+          "label": "IA & GPU",
+          "description": "Clusters d'entraînement et endpoints d'inférence pour équipes IA."
+        },
+        "webEcommerce": {
+          "label": "Web & E-commerce",
+          "description": "Hébergement évolutif pour boutiques et applications web."
+        },
+        "backupDisasterRecovery": {
+          "label": "Sauvegarde & reprise d'activité",
+          "description": "Protection résiliente des données entre les régions."
+        }
+      },
+      "blog": "Blog",
+      "company": {
+        "label": "Company",
+        "headline": "À propos de ZenthCloud",
+        "footer": {
+          "about": "Qui sommes-nous",
+          "infrastructure": "Notre infrastructure",
+          "contact": "Contact"
+        },
+        "about": {
+          "label": "À propos de ZenthCloud",
+          "description": "Qui nous sommes et pourquoi nous construisons l'infrastructure."
+        },
+        "infrastructure": {
+          "label": "Notre infrastructure",
+          "description": "Le matériel, le réseau et les sites que nous opérons."
+        },
+        "dataCenters": {
+          "label": "Data centers",
+          "description": "Sites européens conçus pour la résilience."
+        },
+        "network": {
+          "label": "Réseau",
+          "description": "Notre backbone, peering et stratégie de connectivité."
+        },
+        "security": {
+          "label": "Sécurité",
+          "description": "Comment nous protégeons notre plateforme et vos données."
+        },
+        "reliability": {
+          "label": "Fiabilité",
+          "description": "Redondance, supervision et réponse aux incidents."
+        },
+        "technology": {
+          "label": "Technologie",
+          "description": "Standards ouverts et stack derrière ZenthCloud."
+        },
+        "careers": {
+          "label": "Carrières",
+          "description": "Rejoignez l'équipe qui construit le prochain cloud européen."
+        },
+        "partners": {
+          "label": "Partenaires",
+          "description": "Partenaires technologiques et commerciaux à travers l'Europe."
+        },
+        "contact": {
+          "label": "Contact",
+          "description": "Parlez à nos équipes commerciales, support ou ingénierie."
+        }
+      }
+    },
+    "home": {
+      "hero": {
+        "badge": "Nouveau",
+        "priceLabel": "À partir de",
+        "pricePeriod": "HT/mois",
+        "primaryCta": "Découvrir les offres",
+        "secondaryCta": "Parler à un conseiller",
+        "slides": [
+          {
+            "title": "L'infrastructure cloud qui grandit avec votre activité.",
+            "subtitle": "Du VPS au cloud privé, déployez et gérez votre infrastructure sur une plateforme européenne conçue pour la performance et la résilience.",
+            "bullet1": "Déployez en quelques clics depuis n'importe quelle région européenne",
+            "bullet2": "Payez à l'usage sans engagement et sans frais cachés",
+            "bullet3": "Infrastructure maîtrisée, réseau Arkana Telecom et support local",
+            "oldPrice": "€X.XX",
+            "price": "€X.XX",
+            "tagline": "Une entreprise Sky Genesis Enterprise · Infrastructure européenne · Conçue et opérée par ZenthCloud."
+          },
+          {
+            "title": "L'hébergement web qui grandit avec votre activité.",
+            "subtitle": "Eco, Business, Agencies : trois gammes conçues pour accompagner chaque étape de votre développement web.",
+            "bullet1": "Passez d'une offre à l'autre sans interruption de service",
+            "bullet2": "CMS installé en 1 clic : WordPress, PrestaShop…",
+            "bullet3": "Sécurité renforcée grâce à la technologie quantique",
+            "oldPrice": "2,59 €",
+            "price": "1,59 €",
+            "priceTtc": "1,91 €",
+            "tagline": "Hébergement web ZenthCloud · Disponible en France et en Europe."
+          },
+          {
+            "title": "Le Public Cloud pour vos applications cloud native.",
+            "subtitle": "Compute, stockage objet, Kubernetes, bases de données et pipeline data pour moderniser vos applications.",
+            "bullet1": "Instances dédiées, Discovery et GPU à la demande",
+            "bullet2": "Managed Kubernetes, Registry et Rancher",
+            "bullet3": "200 € de crédit offert pour démarrer",
+            "oldPrice": "",
+            "price": "200 € offerts",
+            "tagline": "Public Cloud ZenthCloud · Tarifs transparents à l'usage."
+          },
+          {
+            "title": "Des serveurs dédiés pour toutes les charges de travail.",
+            "subtitle": "Du VPS aux serveurs bare-metal : puissance brute, contrôle total et meilleur prix pour vos workloads critiques.",
+            "bullet1": "Processeurs Intel et AMD à haute fréquence",
+            "bullet2": "Mise en service en quelques clics",
+            "bullet3": "Protection Anti-DDoS incluse",
+            "oldPrice": "",
+            "price": "Sur mesure",
+            "tagline": "Serveurs dédiés & VPS ZenthCloud · Disponibles en Europe."
+          },
+          {
+            "title": "L'IA et le GPU pour vos projets les plus exigeants.",
+            "subtitle": "Clusters d'entraînement, endpoints d'inférence et instances GPU pour accélérer vos workloads data science.",
+            "bullet1": "NVIDIA H100, H200, L40S et L4 disponibles",
+            "bullet2": "AI Notebooks, AI Training et AI Deploy serverless",
+            "bullet3": "Infrastructure souveraine pour vos modèles",
+            "oldPrice": "",
+            "price": "À la demande",
+            "tagline": "AI & GPU ZenthCloud · Conformité européenne."
+          }
+        ]
+      },
+      "heroPromos": {
+        "publicCloud": {
+          "eyebrow": "Public Cloud",
+          "badge": "200 € de crédit offert",
+          "title": "200 € de crédit offert",
+          "description": "Des services de compute, Object Storage, kubernetes, de bases de données ou de pipeline data pour :",
+          "bullet1": "Moderniser vos applications",
+          "bullet2": "Accélérer avec une approche cloud native",
+          "bullet3": "Réaliser vos projets data et IA",
+          "extra": "Une plateforme pay-as-you-go et évolutive, pour simplifier vos développements et automatiser vos déploiements.",
+          "cta": "En profiter"
+        },
+        "riseAndGame": {
+          "eyebrow": "Serveurs dédiés",
+          "badge": "Frais d'installation offerts",
+          "title": "Serveurs Rise et Game",
+          "description": "Hébergez vos jeux, dont Palworld 1.0, sur nos serveurs dédiés.",
+          "bullet1": "Processeurs Intel et AMD Ryzen à haute fréquence",
+          "bullet2": "Mise en service en quelques clics via Game Panel",
+          "bullet3": "Anti-DDoS inclus",
+          "offerEnd": "Offre valable jusqu'au 31 août 2026",
+          "cta": "En profiter"
+        },
+        "advanceAmd": {
+          "eyebrow": "Serveurs dédiés",
+          "title": "Advance AMD EPYC 4005 « Zen 5 »",
+          "subtitle": "4 bonnes raisons de passer à la vitesse supérieure",
+          "bullet1": "Stockage PCIe Gen 4",
+          "bullet2": "Liquid cooling plus efficace",
+          "bullet3": "3 Gbit/s de bande passante publique incluse",
+          "bullet4": "100 % configurable",
+          "cta": "En savoir plus"
+        }
+      },
+      "trust": {
+        "title": "Ils nous font confiance",
+        "description": "Des milliers de développeurs et d'organisations européennes construisent sur ZenthCloud.",
+        "argument1": "Infrastructure européenne",
+        "argument2": "Prix transparents",
+        "argument3": "Support humain 24/7",
+        "argument4": "Open source friendly"
+      },
+      "productUniverse": {
+        "title": "Découvrez nos univers",
+        "description": "Quatre familles de produits pour couvrir tous vos besoins, du cloud natif à la connectivité.",
+        "publicCloud": {
+          "title": "Public Cloud",
+          "description": "Compute, stockage, Kubernetes, bases de données et IA à la demande.",
+          "link1": "Compute",
+          "link2": "Containers",
+          "link3": "Stockage",
+          "link4": "Réseau",
+          "link5": "Bases de données",
+          "link6": "GPU & IA",
+          "cta": "Explorer le Public Cloud"
+        },
+        "privateCloud": {
+          "title": "Private Cloud",
+          "description": "Environnements dédiés, virtualisation, stockage et reprise d'activité.",
+          "link1": "Cloud dédié",
+          "link2": "Virtualisation",
+          "link3": "Réseau privé",
+          "link4": "Stockage",
+          "link5": "Kubernetes privé",
+          "link6": "Reprise d'activité",
+          "cta": "Découvrir le Private Cloud"
+        },
+        "servers": {
+          "title": "Serveurs dédiés & VPS",
+          "description": "Du VPS aux serveurs bare-metal : puissance brute et contrôle total.",
+          "link1": "Serveurs dédiés",
+          "link2": "VPS",
+          "link3": "Compute",
+          "link4": "Mémoire haute",
+          "link5": "GPU",
+          "link6": "Protection DDoS",
+          "cta": "Voir les serveurs"
+        },
+        "connectivity": {
+          "title": "Telecom & Web",
+          "description": "Connectivité, hébergement web, noms de domaine et communications unifiées.",
+          "link1": "Accès Internet",
+          "link2": "Cloud Connect",
+          "link3": "VoIP & Trunk SIP",
+          "link4": "Hébergement web",
+          "link5": "Noms de domaine",
+          "link6": "E-mails",
+          "cta": "Explorer Telecom & Web"
+        }
+      },
+      "products": {
+        "title": "Nos offres du moment",
+        "description": "Des solutions clés en main pour démarrer, héberger et faire évoluer vos projets.",
+        "publicCloud": {
+          "eyebrow": "Public Cloud",
+          "badge": "200 € de crédit offert",
+          "title": "Démarrez dans le cloud avec ZenthCloud",
+          "description": "Des services de compute, stockage objet, Kubernetes, bases de données et pipeline data pour :",
+          "bullet1": "Moderniser vos applications",
+          "bullet2": "Accélérer avec une approche cloud native",
+          "bullet3": "Réaliser vos projets data et IA",
+          "cta": "En profiter"
+        },
+        "privateCloud": {
+          "eyebrow": "Private Cloud",
+          "badge": "Infrastructure dédiée",
+          "title": "Un cloud privé conçu pour les organisations",
+          "description": "Environnements isolés, virtualisation, stockage et Kubernetes avec contrôle total de votre infrastructure.",
+          "bullet1": "Réseaux privés de couche 2 et 3",
+          "bullet2": "Conformité et audit facilités",
+          "bullet3": "Reprise d'activité incluse",
+          "cta": "En savoir plus"
+        },
+        "dedicatedVps": {
+          "eyebrow": "Serveurs dédiés & VPS",
+          "badge": "Performances garanties",
+          "title": "Serveurs pour toutes les charges de travail",
+          "description": "Du VPS aux serveurs bare-metal : CPU, mémoire haute, GPU et stockage selon vos besoins.",
+          "bullet1": "Processeurs Intel et AMD à haute fréquence",
+          "bullet2": "Mise en service en quelques clics",
+          "bullet3": "Protection DDoS incluse",
+          "cta": "Configurer"
+        },
+        "telecom": {
+          "eyebrow": "Telecom & VoIP",
+          "badge": "Powered by Arkana Telecom",
+          "title": "Connectivité et communications unifiées",
+          "description": "Internet professionnel, réseaux privés, Cloud Connect et VoIP pour relier vos sites et vos utilisateurs.",
+          "bullet1": "Internet dédié fibre avec SLA",
+          "bullet2": "Cloud Connect vers ZenthCloud",
+          "bullet3": "PBX cloud et trunk SIP",
+          "cta": "Découvrir"
+        }
+      },
+      "infrastructure": {
+        "title": "Construit sur une infrastructure réelle",
+        "subtitle": "Construit et opéré par ZenthCloud",
+        "description": "ZenthCloud conçoit, déploie et opère son propre parc de calcul, stockage et réseau. Nous ne sommes pas un revendeur — nous sommes la couche infrastructure derrière vos charges de travail.",
+        "cta": "Découvrir notre infrastructure",
+        "compute": "Calcul virtuel et bare-metal entre les régions.",
+        "nvmeStorage": "Stockage bloc et objet full-flash.",
+        "networking": "25 Gbps+ vers l'hôte avec uplinks redondants.",
+        "privateNetworks": "Réseaux privés de couche 2 et 3.",
+        "dataCenters": "Sites européens conçus pour la résilience.",
+        "redundancy": "Alimentation, refroidissement et réseau redondants.",
+        "security": "Chiffrement, pare-feu et contrôles d'accès.",
+        "monitoring": "Télémétrie et alertes plateforme 24/7.",
+        "statUptime": "Disponibilité cible",
+        "statBandwidth": "Par hôte",
+        "statRegions": "Régions déployées",
+        "statSupport": "Supervision"
+      },
+      "architecture": {
+        "eyebrow": "Architecture",
+        "title": "ZenthCloud + Arkana Telecom",
+        "description": "Notre stack s'appuie sur une couche de connectivité Arkana Telecom qui amène les utilisateurs jusqu'au réseau ZenthCloud, puis vers les services de compute, stockage et Kubernetes.",
+        "bullet1": "Connectivité réseau maîtrisée de bout en bout",
+        "bullet2": "Séparation claire entre connectivité et services cloud",
+        "bullet3": "Topologie conçue pour la résilience et la latence faible",
+        "bullet4": "Interopérabilité avec vos sites et clouds existants",
+        "users": "Utilisateurs",
+        "arkanaTelecom": "Arkana Telecom",
+        "connectivityLayer": "Couche connectivité",
+        "zenthcloudNetwork": "Réseau ZenthCloud",
+        "coreEdgeBackbone": "Backbone core & edge",
+        "computeStorageK8s": "Compute / Stockage / Kubernetes",
+        "infrastructureServices": "Services infrastructure",
+        "applications": "Applications"
+      },
+      "why": {
+        "title": "Pourquoi ZenthCloud ?",
+        "description": "Une approche du cloud fondée sur la maîtrise, la transparence et la proximité.",
+        "sovereignty": {
+          "title": "Souveraineté européenne",
+          "description": "Données hébergées en Europe, infrastructure propriétaire et stack ouverte pour garder le contrôle."
+        },
+        "pricing": {
+          "title": "Prix prévisibles",
+          "description": "Pas de surprise en fin de mois : tarification transparente, sans frais d'entrée ni d'API cachés."
+        },
+        "ecology": {
+          "title": "Cloud responsable",
+          "description": "Conception efficace de nos datacenters, matériel reconditionné et engagement pour une empreinte maîtrisée."
+        },
+        "support": {
+          "title": "Support local",
+          "description": "Des équipes d'ingénieurs basées en Europe, disponibles 24/7 pour vous accompagner."
+        }
+      },
+      "solutions": {
+        "title": "Solutions",
+        "subtitle": "Qu'essayez-vous de construire ?",
+        "description": "Des solutions conçues autour d'objectifs, pas de catégories de produits.",
+        "allSolutions": "Toutes les solutions",
+        "developers": "Développeurs",
+        "developersDescription": "Environnements API-first et infrastructure CI/CD prête.",
+        "business": "Entreprises",
+        "businessDescription": "Hébergement fiable et services managés pour équipes en croissance.",
+        "enterprise": "Grand compte",
+        "enterpriseDescription": "Gouvernance, cloud hybride et plateformes conformes.",
+        "gaming": "Gaming",
+        "gamingDescription": "Infrastructure basse latence pour serveurs de jeu et communautés.",
+        "ai": "IA",
+        "aiDescription": "Compute GPU et endpoints d'inférence pour le machine learning.",
+        "web": "Web",
+        "webDescription": "Hébergement évolutif pour applications, boutiques et contenus.",
+        "infrastructure": "Infrastructure",
+        "infrastructureDescription": "Architectures multi-régions pour charges de production exigeantes.",
+        "disasterRecovery": "Reprise d'activité",
+        "disasterRecoveryDescription": "Sauvegarde, réplication et basculement entre les régions."
+      },
+      "pricing": {
+        "title": "Tarification transparente",
+        "subtitle": "Des prix transparents",
+        "description": "Payez ce que vous utilisez. Pas de frais cachés. Calculateurs de prix à venir.",
+        "popular": "Populaire",
+        "computeTitle": "Compute",
+        "computeDescription": "Cœurs virtuels, mémoire et ressources équilibrées.",
+        "computePrice": "€X.XX",
+        "computeCta": "Configurer le compute",
+        "vpsTitle": "VPS",
+        "vpsDescription": "Serveurs virtuels simples pour projets et tests.",
+        "vpsPrice": "€X.XX",
+        "vpsCta": "Voir les plans VPS",
+        "dedicatedTitle": "Dédié",
+        "dedicatedDescription": "Serveurs bare-metal pour des performances maximales.",
+        "dedicatedPrice": "Sur mesure",
+        "dedicatedCta": "Demander un devis"
+      },
+      "developers": {
+        "title": "Conçu pour les développeurs",
+        "subtitle": "Automatisez votre infrastructure",
+        "description": "ZenthCloud est programmable. Provisionnez des ressources via des API, automatisez avec Terraform et déployez sur Kubernetes sans quitter votre chaîne d'outils.",
+        "api": "API",
+        "apiDescription": "Control plane RESTful pour l'automatisation.",
+        "cli": "CLI",
+        "cliDescription": "Outils en ligne de commande pour des workflows rapides.",
+        "terraform": "Terraform",
+        "terraformDescription": "Providers infrastructure as code.",
+        "kubernetes": "Kubernetes",
+        "kubernetesDescription": "Clusters managés et intégrations.",
+        "documentation": "Documentation",
+        "documentationDescription": "Guides, références et exemples.",
+        "automation": "Automatisation",
+        "automationDescription": "CI/CD et déploiements pilotés par événements.",
+        "cta": "Explorer les outils développeurs",
+        "terminalTitle": "zenthcloud-cli"
+      },
+      "security": {
+        "title": "Conçu pour une infrastructure résiliente",
+        "subtitle": "Sécurité et résilience intégrées",
+        "description": "La sécurité et la fiabilité sont intégrées à la plateforme dès la conception. Nous intégrons la redondance à chaque couche et protégeons vos charges avec des mesures de sécurité au niveau réseau.",
+        "cta": "En savoir plus sur la sécurité",
+        "bullet1": "Alimentation, refroidissement et réseau redondants",
+        "bullet2": "Stockage chiffré et options secure boot",
+        "bullet3": "Supervision et réponse aux incidents continus",
+        "bullet4": "Contrôles de gestion des identités et accès",
+        "infrastructureRedundancy": "Redondance infrastructure",
+        "backup": "Sauvegarde",
+        "ddosProtection": "Protection DDoS",
+        "networkSecurity": "Sécurité réseau",
+        "monitoring": "Supervision",
+        "accessControl": "Contrôle d'accès",
+        "dataProtection": "Protection des données"
+      },
+      "blog": {
+        "title": "Sur le blog",
+        "description": "Réflexions sur infrastructure cloud, réseau et opérations.",
+        "allArticles": "Tous les articles",
+        "readMore": "Lire la suite",
+        "engineering": "Ingénierie",
+        "product": "Produit",
+        "network": "Réseau",
+        "security": "Sécurité",
+        "article1": "Construire une infrastructure cloud résiliente",
+        "article2": "Comprendre VPS vs Cloud Compute",
+        "article3": "Pourquoi le réseau privé compte",
+        "article4": "Comment ZenthCloud aborde la sécurité de l'infrastructure"
+      },
+      "cta": {
+        "title": "Commencez à construire sur ZenthCloud",
+        "description": "Créez un compte sur le manager client, explorez la documentation ou contactez notre équipe pour concevoir votre infrastructure.",
+        "primary": "Commencer",
+        "secondary": "Contacter les ventes",
+        "websites": "Site public : zenthcloud.com · Manager client : manager.zenthcloud.com"
+      }
+    },
+    "footer": {
+      "product": "Produit",
+      "plateforme": "Plateforme",
+      "solutions": "Solutions",
+      "developers": "Développeurs",
+      "resources": "Ressources",
+      "blog": "Blog",
+      "company": "Entreprise",
+      "about": "À propos",
+      "careers": "Carrières",
+      "contact": "Contact",
+      "legal": "Légal",
+      "privacy": "Politique de Confidentialité",
+      "terms": "Conditions d'Utilisation",
+      "security": "Sécurité",
+      "license": "Licence",
+      "copyright": "© 2026 ZenthCloud. Tous droits réservés.",
+      "documentation": "Documentation",
+      "apiReference": "Référence API",
+      "sdks": "SDKs",
+      "quickstarts": "Démarrages Rapides",
+      "statusPage": "Page de Statut",
+      "caseStudies": "Études de Cas",
+      "whitepapers": "Livres Blancs",
+      "webinars": "Webinaires",
+      "community": "Communauté",
+      "press": "Presse",
+      "partners": "Partenaires",
+      "pricingPlans": "Plans Tarifaires",
+      "freeTrial": "Essai Gratuit",
+      "enterprise": "Enterprise",
+      "cookiePolicy": "Politique des Cookies",
+      "getStarted": "Commencer",
+      "platformApi": "Plateforme API",
+      "platformOverview": "Présentation de la plateforme",
+      "pricing": "Tarification",
+      "connectApi": "Se connecter à l'API",
+      "apiDocumentation": "Documentation",
+      "developerForum": "Forum des développeurs",
+      "securityApproach": "Notre approche de la sécurité",
+      "securityPrivacy": "Sécurité et confidentialité",
+      "trustTransparency": "Confiance et transparence",
+      "customerSecurity": "Sécurité client",
+      "testimonials": "Témoignages",
+      "other": "Autre",
+      "news": "Actualités",
+      "academy": "Academy",
+      "liveStreams": "Diffusions en direct",
+      "podcast": "Podcast",
+      "rss": "RSS",
+      "constitution": "Constitution",
+      "support": "Assistance",
+      "helpCenter": "Centre d'aide",
+      "serviceStatus": "Statut des services",
+      "reportIssue": "Signaler un problème",
+      "developerSupport": "Support développeurs",
+      "brandDescription": "Nous concevons et opérons les infrastructures numériques de demain, en développant des technologies souveraines au service d'un écosystème européen durable.",
+      "missionStatement": "ZenthCloud construit une infrastructure numérique ouverte, souveraine et interopérable pour les développeurs, les organisations et les communautés.",
+      "story": "Notre histoire",
+      "utilityTitle": "Accès et confiance",
+      "utilityDescription": "Retrouvez les points d'entrée utiles, l'assistance et les repères de confiance de l'écosystème ZenthCloud.",
+      "trustTitle": "Vérification officielle",
+      "languageLabel": "Langues",
+      "newsletterTitle": "Restez connecté",
+      "newsletterDescription": "Accédez à notre actualité cloud pour ne rien manquer de nos nouveautés",
+      "newsletterEmail": "Votre adresse e-mail",
+      "newsletterButton": "Abonnez-vous à notre newsletter",
+      "newsletterLegalNotice": "ZenthCloud traite votre adresse de messagerie aux fins de vous adresser les newsletters des entités du Groupe Sky Genesis Enterprise. Vous pouvez à tout moment utiliser le lien de désabonnement intégré. En savoir plus sur la gestion de vos données et vos droits",
+      "verifyKey": "Vérifiez notre clé publique PGP pour assurer l'authenticité du site",
+      "salesServices": "Services Commerciaux",
+      "phoneNumber": "Non disponnible",
+      "emailAddress": "contact@zenthcloud.com"
+    }
+  }
+}

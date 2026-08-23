@@ -9,15 +9,15 @@ export interface DomainConfig {
 
 const DOMAINS: Record<Environment, DomainConfig> = {
   production: {
-    main: 'guilderia.com',
-    console: 'console.guilderia.com',
-    sso: 'sso.guilderia.com',
+    main: 'zenthcloud.com',
+    console: 'console.zenthcloud.com',
+    sso: 'sso.zenthcloud.com',
     protocol: 'https',
   },
   localhost: {
-    main: 'guilderia.localhost',
-    console: 'console.guilderia.localhost',
-    sso: 'sso.guilderia.localhost',
+    main: 'zenthcloud.localhost',
+    console: 'console.zenthcloud.localhost',
+    sso: 'sso.zenthcloud.localhost',
     protocol: 'http',
   },
 }

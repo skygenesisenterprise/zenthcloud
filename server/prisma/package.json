@@ -1,7 +1,7 @@
 {
-  "name": "@guilderia/prisma",
+  "name": "@zenthcloud/prisma",
   "version": "1.0.0",
-  "description": "Prisma schema and database layer for the Guilderia Database Layer.",
+  "description": "Prisma schema and database layer for the ZenthCloud Database Layer.",
   "private": true,
   "main": "schema.prisma",
   "scripts": {

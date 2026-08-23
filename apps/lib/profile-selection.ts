@@ -1,14 +1,14 @@
 import { setSharedCookie, getSharedCookie, deleteSharedCookie } from '@/lib/shared-cookie';
 
-const PROFILE_SELECTED_KEY = 'guilderia_profile_selected';
-const SELECTED_PROFILE_NAME_KEY = 'guilderia_selected_profile_name';
-const SELECTED_PROFILE_AVATAR_KEY = 'guilderia_selected_profile_avatar';
-const SELECTED_PROFILE_ID_KEY = 'guilderia_selected_profile_id';
+const PROFILE_SELECTED_KEY = 'zenthcloud_profile_selected';
+const SELECTED_PROFILE_NAME_KEY = 'zenthcloud_selected_profile_name';
+const SELECTED_PROFILE_AVATAR_KEY = 'zenthcloud_selected_profile_avatar';
+const SELECTED_PROFILE_ID_KEY = 'zenthcloud_selected_profile_id';
 
 // Cookie names for cross-subdomain sharing
-const PROFILE_SELECTED_COOKIE = 'guilderia_profile_selected';
-const PROFILE_ID_COOKIE = 'guilderia_selected_profile_id';
-const SELECTED_PROFILE_COOKIE = 'guilderia_selected_profile';
+const PROFILE_SELECTED_COOKIE = 'zenthcloud_profile_selected';
+const PROFILE_ID_COOKIE = 'zenthcloud_selected_profile_id';
+const SELECTED_PROFILE_COOKIE = 'zenthcloud_selected_profile';
 
 export interface SelectedProfileInfo {
   id: string;
