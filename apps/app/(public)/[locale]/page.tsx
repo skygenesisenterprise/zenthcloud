@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 import {
   Check,
   ArrowRight,
+  ArrowUpRight,
+  ChevronRight,
   Cloud,
   Server,
   Wifi,
@@ -25,16 +27,43 @@ import {
   Gamepad2,
   Building2,
   ServerOff,
-  ChevronRight,
   Leaf,
   Euro,
   Headphones,
   Landmark,
-  ArrowUpRight,
+  Users,
+  Radio,
+  Waypoints,
+  Layers,
+  Archive,
+  ShieldCheck,
+  Database,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/public/Container";
 import { HeroCarousel } from "@/components/public/HeroCarousel";
+
+interface SectionHeaderProps {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  align?: "center" | "left";
+}
+
+function SectionHeader({ eyebrow, title, description, align = "center" }: SectionHeaderProps) {
+  const centered = align === "center";
+  return (
+    <div className={centered ? "mx-auto mb-12 max-w-2xl text-center" : "mb-10 max-w-2xl"}>
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">{eyebrow}</span>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+        {title}
+      </h2>
+      {description && (
+        <p className="mt-3 text-muted-foreground leading-relaxed">{description}</p>
+      )}
+    </div>
+  );
+}
 
 export default async function HomePage() {
   const t = await getTranslations("Public.home");
@@ -91,6 +120,28 @@ export default async function HomePage() {
       price: t("hero.slides.4.price"),
       tagline: t("hero.slides.4.tagline"),
     },
+  ];
+
+  const partners = [
+    "NVIDIA",
+    "AMD",
+    "Intel",
+    "VMware",
+    "Kubernetes",
+    "Terraform",
+    "Ubuntu",
+    "Debian",
+    "Proxmox",
+    "Grafana",
+    "Prometheus",
+    "Let's Encrypt",
+  ];
+
+  const partnershipValues = [
+    { key: "value1", icon: Landmark },
+    { key: "value2", icon: Euro },
+    { key: "value3", icon: Headphones },
+    { key: "value4", icon: Code2 },
   ];
 
   const universes = [
@@ -150,6 +201,17 @@ export default async function HomePage() {
         { href: "/web-hosting/email", label: t("productUniverse.connectivity.link6") },
       ],
     },
+  ];
+
+  const architectureLayers = [
+    { key: "users", icon: Users },
+    { key: "arkanaTelecom", icon: Radio },
+    { key: "connectivityLayer", icon: Wifi },
+    { key: "zenthcloudNetwork", icon: Network },
+    { key: "coreEdgeBackbone", icon: Waypoints },
+    { key: "computeStorageK8s", icon: ContainerIcon },
+    { key: "infrastructureServices", icon: Server },
+    { key: "applications", icon: Boxes },
   ];
 
   const promoCards = [
@@ -224,6 +286,16 @@ export default async function HomePage() {
     { value: "24/7", label: t("infrastructure.statSupport") },
   ];
 
+  const securityFeatures = [
+    { key: "infrastructureRedundancy", icon: Layers },
+    { key: "backup", icon: Archive },
+    { key: "ddosProtection", icon: ShieldCheck },
+    { key: "networkSecurity", icon: Lock },
+    { key: "monitoring", icon: Activity },
+    { key: "accessControl", icon: Users },
+    { key: "dataProtection", icon: Database },
+  ];
+
   const solutions = [
     { title: t("solutions.developers"), description: t("solutions.developersDescription"), icon: Code2, href: "/solutions/developers" },
     { title: t("solutions.business"), description: t("solutions.businessDescription"), icon: Building2, href: "/solutions/business" },
@@ -250,6 +322,13 @@ export default async function HomePage() {
     { label: t("developers.automation"), description: t("developers.automationDescription"), icon: Zap },
   ];
 
+  const blogPosts = [
+    { title: t("blog.article1"), category: t("blog.engineering"), icon: Cpu },
+    { title: t("blog.article2"), category: t("blog.product"), icon: Boxes },
+    { title: t("blog.article3"), category: t("blog.network"), icon: Network },
+    { title: t("blog.article4"), category: t("blog.security"), icon: ShieldCheck },
+  ];
+
   return (
     <>
       {/* 1. Hero */}
@@ -258,114 +337,85 @@ export default async function HomePage() {
         priceLabel={t("hero.priceLabel")}
         pricePeriod={t("hero.pricePeriod")}
         primaryCta={t("hero.primaryCta")}
+        secondaryCta={t("hero.secondaryCta")}
         slides={heroSlides}
       />
 
-      {/* 2. Promos sous le hero */}
-      <section className="border-y border-border bg-background py-10 md:py-14">
+      {/* 2. Partnership */}
+      <section className="border-b border-border bg-background py-16 md:py-20">
         <Container>
-          <div className="grid gap-5 md:grid-cols-3 items-stretch">
-            {/* Public Cloud */}
-            <div className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-lg transition-all h-full">
-              <div>
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-sm font-bold text-primary">{t("heroPromos.publicCloud.eyebrow")}</span>
-                  <span className="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-semibold text-white">
-                    {t("heroPromos.publicCloud.badge")}
+          <SectionHeader
+            eyebrow={t("partnership.eyebrow")}
+            title={t("partnership.title")}
+            description={t("partnership.description")}
+          />
+
+          {/* Partner logo wall */}
+          <div className="mb-10">
+            <p className="mb-6 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("partnership.partnersLabel")}
+            </p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {partners.map((name) => (
+                <div
+                  key={name}
+                  className="flex items-center justify-center rounded-lg border border-border bg-card px-3 py-4 opacity-70 transition-opacity hover:opacity-100"
+                >
+                  <span className="truncate text-sm font-semibold tracking-tight text-muted-foreground">
+                    {name}
                   </span>
                 </div>
-                <h3 className="mt-2 text-lg font-bold leading-snug text-foreground">{t("heroPromos.publicCloud.title")}</h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("heroPromos.publicCloud.description")}</p>
-                <ul className="mt-3 space-y-1.5">
-                  {[1, 2, 3].map((i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                      {t(`heroPromos.publicCloud.bullet${i}`)}
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{t("heroPromos.publicCloud.extra")}</p>
-              </div>
-              <div className="mt-auto pt-6">
-                <Link href="/public-cloud" className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
-                  {t("heroPromos.publicCloud.cta")}
-                </Link>
-              </div>
+              ))}
             </div>
+          </div>
 
-            {/* Serveurs Rise et Game */}
-            <div className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-lg transition-all h-full">
-              <div>
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-sm font-bold text-primary">{t("heroPromos.riseAndGame.eyebrow")}</span>
-                  <span className="inline-flex items-center rounded-full bg-chart-4 px-2.5 py-0.5 text-[10px] font-semibold text-white">
-                    {t("heroPromos.riseAndGame.badge")}
+          {/* Value props */}
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {partnershipValues.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.key} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+                    <Icon className="h-5 w-5" />
                   </span>
+                  <p className="text-sm font-semibold text-foreground">{t(`partnership.${item.key}`)}</p>
                 </div>
-                <h3 className="mt-2 text-lg font-bold leading-snug text-foreground">{t("heroPromos.riseAndGame.title")}</h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("heroPromos.riseAndGame.description")}</p>
-                <ul className="mt-3 space-y-1.5">
-                  {[1, 2, 3].map((i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                      {t(`heroPromos.riseAndGame.bullet${i}`)}
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-3 text-xs font-semibold text-foreground">{t("heroPromos.riseAndGame.offerEnd")}</p>
-              </div>
-              <div className="mt-auto pt-6">
-                <Link href="/dedicated-servers" className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
-                  {t("heroPromos.riseAndGame.cta")}
-                </Link>
-              </div>
-            </div>
+              );
+            })}
+          </div>
 
-            {/* Advance AMD EPYC */}
-            <div className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-lg transition-all h-full">
-              <div>
-                <span className="text-sm font-bold text-primary">{t("heroPromos.advanceAmd.eyebrow")}</span>
-                <h3 className="mt-2 text-lg font-bold leading-snug text-foreground">{t("heroPromos.advanceAmd.title")}</h3>
-                <p className="mt-2 text-sm font-semibold text-foreground">{t("heroPromos.advanceAmd.subtitle")}</p>
-                <ul className="mt-3 space-y-1.5">
-                  {[1, 2, 3, 4].map((i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                      {t(`heroPromos.advanceAmd.bullet${i}`)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-auto pt-6">
-                <Link href="/dedicated-servers" className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
-                  {t("heroPromos.advanceAmd.cta")}
-                </Link>
-              </div>
-            </div>
+          {/* CTA */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+            <Button asChild>
+              <Link href="/company/partners">{t("partnership.becomePartner")} <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/company/technology">{t("partnership.ourTechnology")}</Link>
+            </Button>
           </div>
         </Container>
       </section>
 
-      {/* 3. Univers produits */}
+      {/* 3. Product universes */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <div className="mb-10 text-center">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("productUniverse.title")}</span>
-            <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{t("productUniverse.title")}</h2>
-            <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">{t("productUniverse.description")}</p>
-          </div>
+          <SectionHeader
+            eyebrow={t("productUniverse.title")}
+            title={t("productUniverse.title")}
+            description={t("productUniverse.description")}
+          />
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {universes.map((universe) => {
               const Icon = universe.icon;
               return (
                 <div
                   key={universe.key}
-                  className="group flex flex-col rounded-xl border border-border bg-card shadow-sm hover:shadow-lg transition-all overflow-hidden"
+                  className="group flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                  <div className={`h-1.5 ${universe.accent}`} />
+                  <div className={`h-1.5 rounded-t-xl ${universe.accent}`} />
                   <div className="flex flex-1 flex-col p-6">
                     <div className="flex items-center gap-3">
-                      <span className={`inline-flex h-10 w-10 items-center justify-center rounded-lg ${universe.accent.replace("bg-", "bg-")}/10 text-primary`}>
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                         <Icon className="h-5 w-5" />
                       </span>
                       <h3 className="text-lg font-bold text-foreground">{t(`productUniverse.${universe.key}.title`)}</h3>
@@ -378,10 +428,10 @@ export default async function HomePage() {
                         <li key={link.label}>
                           <Link
                             href={link.href}
-                            className="group/link inline-flex items-center gap-1 text-sm text-foreground hover:text-primary transition-colors"
+                            className="group/link inline-flex items-center gap-1 text-sm text-foreground transition-colors hover:text-primary"
                           >
                             {link.label}
-                            <ArrowUpRight className="h-3 w-3 opacity-0 -translate-y-0.5 translate-x-0.5 group-hover/link:opacity-100 group-hover/link:translate-y-0 group-hover/link:translate-x-0 transition-all" />
+                            <ArrowUpRight className="h-3 w-3 opacity-0 -translate-y-0.5 translate-x-0.5 transition-all group-hover/link:translate-x-0 group-hover/link:translate-y-0 group-hover/link:opacity-100" />
                           </Link>
                         </li>
                       ))}
@@ -389,7 +439,7 @@ export default async function HomePage() {
                     <div className="mt-auto pt-6">
                       <Link
                         href={universe.href}
-                        className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
                       >
                         {t(`productUniverse.${universe.key}.cta`)} <ArrowRight className="h-4 w-4" />
                       </Link>
@@ -402,20 +452,81 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* 4. Offres du moment */}
+      {/* 4. Architecture */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <div className="mb-10 text-center">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("products.title")}</span>
-            <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{t("products.title")}</h2>
-            <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">{t("products.description")}</p>
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            <div>
+              <SectionHeader
+                align="left"
+                eyebrow={t("architecture.eyebrow")}
+                title={t("architecture.title")}
+                description={t("architecture.description")}
+              />
+              <ul className="space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-foreground">
+                    <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    {t(`architecture.bullet${i}`)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -inset-6 rounded-3xl bg-primary/5 blur-2xl" aria-hidden="true" />
+              <div className="relative rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+                <p className="mb-6 font-mono text-xs text-muted-foreground">
+                  <span className="text-primary">$</span> zenthcloud topology
+                </p>
+                <ol className="relative space-y-4 border-l border-border pl-8">
+                  {architectureLayers.map((layer, index) => {
+                    const Icon = layer.icon;
+                    return (
+                      <li key={layer.key} className="relative">
+                        <span
+                          className={`absolute -left-9.25 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full border-2 ${
+                            index === architectureLayers.length - 1
+                              ? "border-primary bg-primary/10"
+                              : "border-border bg-background"
+                          }`}
+                        >
+                          {index === architectureLayers.length - 1 && (
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                          )}
+                        </span>
+                        <div className="flex items-center gap-3 rounded-lg border border-border bg-background px-4 py-3 shadow-sm transition-colors hover:border-primary/40">
+                          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <span className="text-sm font-medium text-foreground">
+                            {t(`architecture.${layer.key}`)}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            </div>
           </div>
+        </Container>
+      </section>
+
+      {/* 5. Featured offers */}
+      <section className="py-16 md:py-24 bg-background">
+        <Container>
+          <SectionHeader
+            eyebrow={t("products.title")}
+            title={t("products.title")}
+            description={t("products.description")}
+          />
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {promoCards.map((card) => {
               const Icon = card.icon;
               return (
-                <div key={card.title} className="group flex flex-col rounded-xl border border-border bg-card shadow-sm hover:shadow-lg transition-all overflow-hidden">
-                  <div className={`h-1.5 ${card.accent}`} />
+                <div key={card.title} className="group flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                  <div className={`h-1.5 rounded-t-xl ${card.accent}`} />
                   <div className="flex flex-1 flex-col p-6">
                     <div className="flex items-start justify-between gap-3">
                       <span className="text-xs font-bold uppercase tracking-wider text-primary">{card.eyebrow}</span>
@@ -423,7 +534,7 @@ export default async function HomePage() {
                         {card.badge}
                       </span>
                     </div>
-                    <h3 className="mt-3 text-lg font-bold leading-snug">{card.title}</h3>
+                    <h3 className="mt-3 text-lg font-bold leading-snug text-foreground">{card.title}</h3>
                     <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{card.description}</p>
                     <ul className="mt-4 space-y-2">
                       {card.bullets.map((bullet) => (
@@ -434,7 +545,7 @@ export default async function HomePage() {
                       ))}
                     </ul>
                     <div className="mt-auto pt-6">
-                      <Link href={card.href} className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+                      <Link href={card.href} className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
                         {card.cta} <ArrowRight className="h-4 w-4" />
                       </Link>
                     </div>
@@ -446,19 +557,19 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* 5. Pourquoi ZenthCloud */}
+      {/* 6. Why ZenthCloud */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <div className="mb-10 text-center">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("why.title")}</span>
-            <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{t("why.title")}</h2>
-            <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">{t("why.description")}</p>
-          </div>
+          <SectionHeader
+            eyebrow={t("why.title")}
+            title={t("why.title")}
+            description={t("why.description")}
+          />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {whyCards.map((card) => {
               const Icon = card.icon;
               return (
-                <div key={card.key} className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all">
+                <div key={card.key} className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
                   <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${card.bg} ${card.accent}`}>
                     <Icon className="h-6 w-6" />
                   </span>
@@ -471,16 +582,16 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* 6. Infrastructure */}
+      {/* 7. Infrastructure */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <div className="text-center max-w-3xl mx-auto">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("infrastructure.title")}</span>
-            <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{t("infrastructure.subtitle")}</h2>
-            <p className="mt-4 text-muted-foreground leading-relaxed">{t("infrastructure.description")}</p>
-          </div>
+          <SectionHeader
+            eyebrow={t("infrastructure.title")}
+            title={t("infrastructure.subtitle")}
+            description={t("infrastructure.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {infraCapabilities.map((cap) => {
               const Icon = cap.icon;
               return (
@@ -511,14 +622,57 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* 7. Solutions */}
+      {/* 8. Security */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
+              <SectionHeader
+                align="left"
+                eyebrow={t("security.title")}
+                title={t("security.subtitle")}
+                description={t("security.description")}
+              />
+              <ul className="space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-foreground">
+                    <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    {t(`security.bullet${i}`)}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8">
+                <Button asChild variant="outline">
+                  <Link href="/security">{t("security.cta")} <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {securityFeatures.map((feature) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={feature.key} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <p className="text-sm font-semibold text-foreground">{t(`security.${feature.key}`)}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* 9. Solutions */}
+      <section className="py-16 md:py-24 bg-background">
+        <Container>
+          <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
               <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("solutions.title")}</span>
-              <h2 className="mt-2 text-2xl md:text-3xl font-bold text-foreground">{t("solutions.subtitle")}</h2>
-              <p className="mt-2 text-muted-foreground max-w-2xl">{t("solutions.description")}</p>
+              <h2 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t("solutions.subtitle")}</h2>
+              <p className="mt-2 text-muted-foreground">{t("solutions.description")}</p>
             </div>
             <Button asChild variant="ghost" className="text-primary hover:text-primary hover:bg-primary/5">
               <Link href="/solutions">{t("solutions.allSolutions")} <ChevronRight className="ml-1 h-4 w-4" /></Link>
@@ -528,11 +682,11 @@ export default async function HomePage() {
             {solutions.map((solution) => {
               const Icon = solution.icon;
               return (
-                <Link key={solution.title} href={solution.href} className="group rounded-xl border border-border bg-card p-5 hover:border-primary hover:shadow-md transition-all">
+                <Link key={solution.title} href={solution.href} className="group rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
                   </span>
-                  <h3 className="mt-4 text-base font-bold text-foreground group-hover:text-primary transition-colors">{solution.title}</h3>
+                  <h3 className="mt-4 text-base font-bold text-foreground transition-colors group-hover:text-primary">{solution.title}</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{solution.description}</p>
                 </Link>
               );
@@ -541,41 +695,17 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* 8. Tarification */}
-      <section className="border-y border-border bg-muted py-16 md:py-24">
-        <Container>
-          <div className="mb-10 text-center">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("pricing.title")}</span>
-            <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{t("pricing.subtitle")}</h2>
-            <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">{t("pricing.description")}</p>
-          </div>
-          <div className="grid gap-5 md:grid-cols-3">
-            {pricingTiers.map((tier) => (
-              <div key={tier.name} className={`relative rounded-xl border p-6 ${tier.featured ? "border-primary bg-background shadow-lg" : "border-border bg-background shadow-sm"}`}>
-                {tier.featured && <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">{t("pricing.popular")}</span>}
-                <h3 className="text-lg font-bold text-foreground">{tier.name}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{tier.description}</p>
-                <div className="mt-5 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold tracking-tight text-foreground">{tier.price}</span>
-                  {tier.unit && <span className="text-sm text-muted-foreground">{tier.unit}</span>}
-                </div>
-                <Button asChild className="mt-6 w-full" variant={tier.featured ? "default" : "outline"}>
-                  <Link href="/pricing">{tier.cta}</Link>
-                </Button>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* 9. Développeurs */}
+      {/* 10. Developers */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("developers.title")}</span>
-              <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{t("developers.subtitle")}</h2>
-              <p className="mt-4 text-muted-foreground leading-relaxed">{t("developers.description")}</p>
+              <SectionHeader
+                align="left"
+                eyebrow={t("developers.title")}
+                title={t("developers.subtitle")}
+                description={t("developers.description")}
+              />
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {devTools.map((tool) => {
                   const Icon = tool.icon;
@@ -598,14 +728,14 @@ export default async function HomePage() {
                 </Button>
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-muted p-6 font-mono text-xs shadow-sm">
-              <div className="flex items-center gap-2 border-b border-border pb-3 mb-4">
-                <span className="h-2.5 w-2.5 rounded-full bg-destructive" />
+            <div className="rounded-xl border border-border bg-slate-950 p-6 font-mono text-xs shadow-sm">
+              <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                <span className="ml-auto text-muted-foreground">{t("developers.terminalTitle")}</span>
+                <span className="ml-auto text-slate-400">{t("developers.terminalTitle")}</span>
               </div>
-              <pre className="text-muted-foreground leading-relaxed overflow-x-auto">
+              <pre className="text-slate-300 leading-relaxed overflow-x-auto">
 {`$ zenthcloud compute create \\
     --name web-prod-01 \\
     --region eu-west \\
@@ -626,7 +756,69 @@ staging-vpc   eu-central 10.1.0.0/16`}
         </Container>
       </section>
 
-      {/* 10. CTA */}
+      {/* 11. Pricing */}
+      <section className="border-y border-border bg-muted py-16 md:py-24">
+        <Container>
+          <SectionHeader
+            eyebrow={t("pricing.title")}
+            title={t("pricing.subtitle")}
+            description={t("pricing.description")}
+          />
+          <div className="grid gap-5 md:grid-cols-3">
+            {pricingTiers.map((tier) => (
+              <div key={tier.name} className={`relative rounded-xl border p-6 ${tier.featured ? "border-primary bg-background shadow-lg" : "border-border bg-background shadow-sm"}`}>
+                {tier.featured && <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">{t("pricing.popular")}</span>}
+                <h3 className="text-lg font-bold text-foreground">{tier.name}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{tier.description}</p>
+                <div className="mt-5 flex items-baseline gap-1">
+                  <span className="text-3xl font-bold tracking-tight text-foreground">{tier.price}</span>
+                  {tier.unit && <span className="text-sm text-muted-foreground">{tier.unit}</span>}
+                </div>
+                <Button asChild className="mt-6 w-full" variant={tier.featured ? "default" : "outline"}>
+                  <Link href="/pricing">{tier.cta}</Link>
+                </Button>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* 12. Blog */}
+      <section className="py-16 md:py-24 bg-background">
+        <Container>
+          <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("blog.title")}</span>
+              <h2 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t("blog.title")}</h2>
+              <p className="mt-2 text-muted-foreground">{t("blog.description")}</p>
+            </div>
+            <Button asChild variant="ghost" className="text-primary hover:text-primary hover:bg-primary/5">
+              <Link href="/blog">{t("blog.allArticles")} <ChevronRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {blogPosts.map((post) => {
+              const Icon = post.icon;
+              return (
+                <Link key={post.title} href="/blog" className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="text-xs font-semibold text-muted-foreground">{post.category}</span>
+                  </div>
+                  <h3 className="mt-4 text-base font-bold leading-snug text-foreground group-hover:text-primary transition-colors">{post.title}</h3>
+                  <span className="mt-auto pt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                    {t("blog.readMore")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </Container>
+      </section>
+
+      {/* 13. CTA */}
       <section className="border-t border-border py-16 md:py-24 bg-muted">
         <Container>
           <div className="rounded-2xl bg-primary p-8 md:p-12 text-center text-primary-foreground">

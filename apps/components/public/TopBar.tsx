@@ -25,7 +25,7 @@ export function TopBar() {
           <span className="text-lg">ZenthCloud</span>
         </Link>
 
-        <div className="flex items-center gap-5 text-xs">
+        <div className="flex items-center gap-5 text-sm font-medium">
           <a
             href="https://mail.skygenesisenterprise.com"
             target="_blank"

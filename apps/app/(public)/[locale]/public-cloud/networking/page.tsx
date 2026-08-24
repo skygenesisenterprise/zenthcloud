@@ -35,23 +35,22 @@ export async function generateMetadata() {
 }
 
 interface SectionHeaderProps {
-  eyebrow?: string;
+  eyebrow: string;
   title: string;
   description?: string;
-  centered?: boolean;
+  align?: "center" | "left";
 }
 
-function SectionHeader({ eyebrow, title, description, centered = true }: SectionHeaderProps) {
+function SectionHeader({ eyebrow, title, description, align = "center" }: SectionHeaderProps) {
+  const centered = align === "center";
   return (
-    <div className={centered ? "text-center max-w-3xl mx-auto" : "max-w-3xl"}>
-      {eyebrow && (
-        <span className="text-xs font-bold uppercase tracking-wider text-primary">
-          {eyebrow}
-        </span>
-      )}
-      <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+    <div className={centered ? "mx-auto mb-12 max-w-2xl text-center" : "mb-10 max-w-2xl"}>
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">{eyebrow}</span>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+        {title}
+      </h2>
       {description && (
-        <p className="mt-4 text-muted-foreground leading-relaxed">{description}</p>
+        <p className="mt-3 text-muted-foreground leading-relaxed">{description}</p>
       )}
     </div>
   );
@@ -150,16 +149,16 @@ export default async function NetworkingPage() {
         aria-label={t("hero.badge")}
         className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-128"
         style={{
-          background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #0ea5e9 100%)",
+          background: "linear-gradient(135deg, #7c3aed 0%, #c026d3 35%, #f97316 100%)",
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.16),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.18),transparent_45%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(0,0,0,0.08),transparent_40%)]" />
 
         <Container className="relative flex flex-1 items-center py-16 md:py-24">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center w-full">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm border border-white/20">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 {t("hero.badge")}
               </span>
@@ -208,9 +207,13 @@ export default async function NetworkingPage() {
       {/* 2. Architecture réseau */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("architecture.title")} description={t("architecture.description")} />
+          <SectionHeader
+            eyebrow={t("architecture.eyebrow")}
+            title={t("architecture.title")}
+            description={t("architecture.description")}
+          />
 
-          <div className="mt-10 rounded-xl border border-border bg-muted p-6 md:p-10 shadow-sm">
+          <div className="rounded-xl border border-border bg-muted p-6 md:p-10 shadow-sm">
             <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
               <NetworkNode>Internet</NetworkNode>
               <NetworkLine vertical />
@@ -244,7 +247,7 @@ export default async function NetworkingPage() {
               return (
                 <div
                   key={pillar.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
@@ -282,7 +285,7 @@ export default async function NetworkingPage() {
               return (
                 <div
                   key={item.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
@@ -313,7 +316,8 @@ export default async function NetworkingPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("firewall.eyebrow")}
                 title={t("firewall.title")}
                 description={t("firewall.description")}
               />
@@ -326,7 +330,7 @@ export default async function NetworkingPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-background p-6 md:p-8 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-6 md:p-8 shadow-sm">
               <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
                 <NetworkNode>Internet</NetworkNode>
                 <NetworkLine vertical />
@@ -360,7 +364,8 @@ export default async function NetworkingPage() {
             </div>
             <div className="order-1 lg:order-2">
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("segmentation.eyebrow")}
                 title={t("segmentation.title")}
                 description={t("segmentation.description")}
               />
@@ -383,7 +388,8 @@ export default async function NetworkingPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("automation.eyebrow")}
                 title={t("automation.title")}
                 description={t("automation.description")}
               />
@@ -391,7 +397,7 @@ export default async function NetworkingPage() {
                 {automationFeatures.map((feature) => {
                   const Icon = feature.icon;
                   return (
-                    <div key={feature.label} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
+                    <div key={feature.label} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
                       <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
                         <Icon className="h-4 w-4" />
                       </span>
@@ -401,14 +407,14 @@ export default async function NetworkingPage() {
                 })}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-background p-6 font-mono text-xs shadow-sm">
-              <div className="flex items-center gap-2 border-b border-border pb-3 mb-4">
-                <span className="h-2.5 w-2.5 rounded-full bg-destructive" />
+            <div className="rounded-xl border border-border bg-slate-950 p-6 font-mono text-xs shadow-sm">
+              <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                <span className="ml-auto text-muted-foreground">api</span>
+                <span className="ml-auto text-slate-400">api</span>
               </div>
-              <pre className="text-muted-foreground leading-relaxed overflow-x-auto whitespace-pre-wrap">
+              <pre className="text-slate-300 leading-relaxed overflow-x-auto whitespace-pre-wrap">
 {`curl -X POST https://api.zenthcloud.com/v1/networks \\
   -H "Authorization: Bearer $TOKEN" \\
   -H "Content-Type: application/json" \\
@@ -422,9 +428,13 @@ export default async function NetworkingPage() {
       {/* 8. Security by architecture */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("security.title")} description={t("security.description")} />
+          <SectionHeader
+            eyebrow={t("security.eyebrow")}
+            title={t("security.title")}
+            description={t("security.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {securityItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -447,16 +457,20 @@ export default async function NetworkingPage() {
       {/* 9. Managed Networking */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("managed.title")} description={t("managed.description")} />
+          <SectionHeader
+            eyebrow={t("managed.eyebrow")}
+            title={t("managed.title")}
+            description={t("managed.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {managedLevels.map((level) => {
               const Icon = level.icon;
               const featureCount = t.raw(`managed.${level.key}.features`).length;
               return (
                 <div
                   key={level.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${level.bg} ${level.accent}`}>
                     <Icon className="h-6 w-6" />
@@ -488,7 +502,8 @@ export default async function NetworkingPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("openSource.eyebrow")}
                 title={t("openSource.title")}
                 description={t("openSource.description")}
               />
@@ -516,13 +531,17 @@ export default async function NetworkingPage() {
       {/* 11. Pricing */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("pricing.title")} description={t("pricing.description")} />
+          <SectionHeader
+            eyebrow={t("pricing.eyebrow")}
+            title={t("pricing.title")}
+            description={t("pricing.description")}
+          />
 
-          <div className="mt-10 flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             {t.raw("pricing.items").map((item: string) => (
               <span
                 key={item}
-                className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground"
+                className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground"
               >
                 {item}
               </span>
@@ -540,9 +559,9 @@ export default async function NetworkingPage() {
       {/* 12. Use cases */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("useCases.title")} />
+          <SectionHeader eyebrow={t("useCases.eyebrow")} title={t("useCases.title")} />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {useCaseIcons.map((Icon, index) => (
               <div
                 key={index}
@@ -561,15 +580,19 @@ export default async function NetworkingPage() {
       {/* 13. Cross-selling */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("crossSelling.title")} description={t("crossSelling.description")} />
+          <SectionHeader
+            eyebrow={t("crossSelling.eyebrow")}
+            title={t("crossSelling.title")}
+            description={t("crossSelling.description")}
+          />
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {crossSellItems.map((item) => {
               const Icon = item.icon;
               return (
                 <div
                   key={item.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">

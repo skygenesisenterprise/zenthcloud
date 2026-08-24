@@ -48,23 +48,22 @@ export async function generateMetadata() {
 }
 
 interface SectionHeaderProps {
-  eyebrow?: string;
+  eyebrow: string;
   title: string;
   description?: string;
-  centered?: boolean;
+  align?: "center" | "left";
 }
 
-function SectionHeader({ eyebrow, title, description, centered = true }: SectionHeaderProps) {
+function SectionHeader({ eyebrow, title, description, align = "center" }: SectionHeaderProps) {
+  const centered = align === "center";
   return (
-    <div className={centered ? "text-center max-w-3xl mx-auto" : "max-w-3xl"}>
-      {eyebrow && (
-        <span className="text-xs font-bold uppercase tracking-wider text-primary">
-          {eyebrow}
-        </span>
-      )}
-      <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+    <div className={centered ? "mx-auto mb-12 max-w-2xl text-center" : "mb-10 max-w-2xl"}>
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">{eyebrow}</span>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+        {title}
+      </h2>
       {description && (
-        <p className="mt-4 text-muted-foreground leading-relaxed">{description}</p>
+        <p className="mt-3 text-muted-foreground leading-relaxed">{description}</p>
       )}
     </div>
   );
@@ -192,18 +191,18 @@ export default async function DatabasesPage() {
       {/* 1. Hero */}
       <section
         aria-label={t("hero.badge")}
-        className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-[128]"
+        className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-128"
         style={{
-          background: "linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%)",
+          background: "linear-gradient(135deg, #7c3aed 0%, #c026d3 35%, #f97316 100%)",
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.16),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.18),transparent_45%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(0,0,0,0.08),transparent_40%)]" />
 
         <Container className="relative flex flex-1 items-center py-16 md:py-24">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center w-full">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm border border-white/20">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 {t("hero.badge")}
               </span>
@@ -252,15 +251,19 @@ export default async function DatabasesPage() {
       {/* 2. Engines */}
       <section id="engines" className="py-16 md:py-24 bg-background scroll-mt-20">
         <Container>
-          <SectionHeader title={t("engines.title")} description={t("engines.description")} />
+          <SectionHeader
+            eyebrow={t("engines.eyebrow")}
+            title={t("engines.title")}
+            description={t("engines.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {engines.map((engine) => {
               const Icon = engine.icon;
               return (
                 <div
                   key={engine.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-6 w-6" />
@@ -282,13 +285,13 @@ export default async function DatabasesPage() {
       {/* 3. Why managed */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("whyManaged.title")} />
+          <SectionHeader eyebrow={t("whyManaged.eyebrow")} title={t("whyManaged.title")} />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {whyManagedItems.map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
                   </span>
@@ -303,15 +306,15 @@ export default async function DatabasesPage() {
       {/* 4. Workloads */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("workloads.title")} />
+          <SectionHeader eyebrow={t("workloads.eyebrow")} title={t("workloads.title")} />
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
             {workloads.map((workload) => {
               const Icon = workload.icon;
               return (
                 <div
                   key={workload.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
@@ -335,7 +338,8 @@ export default async function DatabasesPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("computeIntegration.eyebrow")}
                 title={t("computeIntegration.title")}
                 description={t("computeIntegration.description")}
               />
@@ -348,7 +352,7 @@ export default async function DatabasesPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-background p-6 md:p-8 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-6 md:p-8 shadow-sm">
               <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
                 <NetworkNode>Internet</NetworkNode>
                 <NetworkLine vertical />
@@ -380,7 +384,8 @@ export default async function DatabasesPage() {
             </div>
             <div className="order-1 lg:order-2">
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("networkingIntegration.eyebrow")}
                 title={t("networkingIntegration.title")}
                 description={t("networkingIntegration.description")}
               />
@@ -399,13 +404,13 @@ export default async function DatabasesPage() {
       {/* 7. Security */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("security.title")} />
+          <SectionHeader eyebrow={t("security.eyebrow")} title={t("security.title")} />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {securityItems.map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
                   </span>
@@ -427,7 +432,8 @@ export default async function DatabasesPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("backups.eyebrow")}
                 title={t("backups.title")}
                 description={t("backups.description")}
               />
@@ -465,12 +471,16 @@ export default async function DatabasesPage() {
       {/* 9. Scaling */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("scaling.title")} description={t("scaling.description")} />
+          <SectionHeader
+            eyebrow={t("scaling.eyebrow")}
+            title={t("scaling.title")}
+            description={t("scaling.description")}
+          />
 
-          <div className="mt-10 flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-4">
             {t.raw("scaling.steps").map((step: string, index: number, steps: string[]) => (
               <React.Fragment key={step}>
-                <div className="rounded-full border border-border bg-background px-6 py-3 text-sm font-bold text-foreground shadow-sm">
+                <div className="rounded-full border border-border bg-card px-6 py-3 text-sm font-bold text-foreground shadow-sm">
                   {step}
                 </div>
                 {index < steps.length - 1 && (
@@ -485,9 +495,13 @@ export default async function DatabasesPage() {
       {/* 10. High Availability */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("highAvailability.title")} description={t("highAvailability.description")} />
+          <SectionHeader
+            eyebrow={t("highAvailability.eyebrow")}
+            title={t("highAvailability.title")}
+            description={t("highAvailability.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-3">
             {t.raw("highAvailability.items").map((item: string, index: number) => {
               const icons = [ShieldCheck, Boxes, Shield];
               const Icon = icons[index % icons.length];
@@ -511,13 +525,17 @@ export default async function DatabasesPage() {
       {/* 11. Monitoring */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("monitoring.title")} description={t("monitoring.description")} />
+          <SectionHeader
+            eyebrow={t("monitoring.eyebrow")}
+            title={t("monitoring.title")}
+            description={t("monitoring.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {monitoringMetrics.map((metric) => {
               const Icon = metric.icon;
               return (
-                <div key={metric.label} className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div key={metric.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
                   </span>
@@ -532,9 +550,9 @@ export default async function DatabasesPage() {
       {/* 12. Managed vs Self-managed */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("managedVsSelf.title")} />
+          <SectionHeader eyebrow={t("managedVsSelf.eyebrow")} title={t("managedVsSelf.title")} />
 
-          <div className="mt-10 overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full min-w-xl border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border">
@@ -563,7 +581,8 @@ export default async function DatabasesPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("developers.eyebrow")}
                 title={t("developers.title")}
                 description={t("developers.description")}
               />
@@ -571,7 +590,7 @@ export default async function DatabasesPage() {
                 {developerFeatures.map((feature) => {
                   const Icon = feature.icon;
                   return (
-                    <div key={feature.label} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
+                    <div key={feature.label} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
                       <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
                         <Icon className="h-4 w-4" />
                       </span>
@@ -581,14 +600,14 @@ export default async function DatabasesPage() {
                 })}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-background p-6 font-mono text-xs shadow-sm">
-              <div className="flex items-center gap-2 border-b border-border pb-3 mb-4">
-                <span className="h-2.5 w-2.5 rounded-full bg-destructive" />
+            <div className="rounded-xl border border-border bg-slate-950 p-6 font-mono text-xs shadow-sm">
+              <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                <span className="ml-auto text-muted-foreground">api</span>
+                <span className="ml-auto text-slate-400">api</span>
               </div>
-              <pre className="text-muted-foreground leading-relaxed overflow-x-auto whitespace-pre-wrap">
+              <pre className="text-slate-300 leading-relaxed overflow-x-auto whitespace-pre-wrap">
 {`curl -X POST https://api.zenthcloud.com/v1/databases \\
   -H "Authorization: Bearer $TOKEN" \\
   -H "Content-Type: application/json" \\
@@ -605,7 +624,8 @@ export default async function DatabasesPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("openSource.eyebrow")}
                 title={t("openSource.title")}
                 description={t("openSource.description")}
               />
@@ -633,13 +653,17 @@ export default async function DatabasesPage() {
       {/* 15. Pricing */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("pricing.title")} description={t("pricing.description")} />
+          <SectionHeader
+            eyebrow={t("pricing.eyebrow")}
+            title={t("pricing.title")}
+            description={t("pricing.description")}
+          />
 
-          <div className="mt-10 flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             {t.raw("pricing.items").map((item: string) => (
               <span
                 key={item}
-                className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground"
+                className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground"
               >
                 {item}
               </span>
@@ -660,7 +684,8 @@ export default async function DatabasesPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("migration.eyebrow")}
                 title={t("migration.title")}
                 description={t("migration.description")}
               />
@@ -700,13 +725,13 @@ export default async function DatabasesPage() {
       {/* 17. Use cases */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("useCases.title")} />
+          <SectionHeader eyebrow={t("useCases.eyebrow")} title={t("useCases.title")} />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             {useCaseIcons.map((Icon, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 shadow-sm"
+                className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm"
               >
                 <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                   <Icon className="h-4 w-4" />
@@ -721,15 +746,15 @@ export default async function DatabasesPage() {
       {/* 18. Cross-selling */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("crossSelling.title")} />
+          <SectionHeader eyebrow={t("crossSelling.eyebrow")} title={t("crossSelling.title")} />
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {crossSellItems.map((item) => {
               const Icon = item.icon;
               return (
                 <div
                   key={item.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">

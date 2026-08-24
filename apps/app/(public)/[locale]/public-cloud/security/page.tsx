@@ -52,23 +52,22 @@ export async function generateMetadata() {
 }
 
 interface SectionHeaderProps {
-  eyebrow?: string;
+  eyebrow: string;
   title: string;
   description?: string;
-  centered?: boolean;
+  align?: "center" | "left";
 }
 
-function SectionHeader({ eyebrow, title, description, centered = true }: SectionHeaderProps) {
+function SectionHeader({ eyebrow, title, description, align = "center" }: SectionHeaderProps) {
+  const centered = align === "center";
   return (
-    <div className={centered ? "text-center max-w-3xl mx-auto" : "max-w-3xl"}>
-      {eyebrow && (
-        <span className="text-xs font-bold uppercase tracking-wider text-primary">
-          {eyebrow}
-        </span>
-      )}
-      <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+    <div className={centered ? "mx-auto mb-12 max-w-2xl text-center" : "mb-10 max-w-2xl"}>
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">{eyebrow}</span>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+        {title}
+      </h2>
       {description && (
-        <p className="mt-4 text-muted-foreground leading-relaxed">{description}</p>
+        <p className="mt-3 text-muted-foreground leading-relaxed">{description}</p>
       )}
     </div>
   );
@@ -226,16 +225,16 @@ export default async function SecurityPage() {
         aria-label={t("hero.badge")}
         className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-128"
         style={{
-          background: "linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e40af 100%)",
+          background: "linear-gradient(135deg, #7c3aed 0%, #c026d3 35%, #f97316 100%)",
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.12),transparent_45%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(0,0,0,0.12),transparent_40%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.18),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(0,0,0,0.08),transparent_40%)]" />
 
         <PageContainer className="relative flex flex-1 items-center py-16 md:py-24">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center w-full">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm border border-white/20">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 {t("hero.badge")}
               </span>
@@ -282,7 +281,7 @@ export default async function SecurityPage() {
       {/* 2. Shared Responsibility */}
       <section id="shared-responsibility" className="py-16 md:py-24 bg-background scroll-mt-20">
         <PageContainer>
-          <SectionHeader title={t("sharedResponsibility.title")} description={t("sharedResponsibility.description")} />
+          <SectionHeader eyebrow={t("sharedResponsibility.eyebrow")} title={t("sharedResponsibility.title")} description={t("sharedResponsibility.description")} />
 
           <div className="mt-10 rounded-xl border border-border bg-muted p-6 md:p-10 shadow-sm">
             <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
@@ -329,7 +328,7 @@ export default async function SecurityPage() {
       {/* 3. Security at every layer */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("layers.title")} description={t("layers.description")} />
+          <SectionHeader eyebrow={t("layers.eyebrow")} title={t("layers.title")} description={t("layers.description")} />
 
           <div className="mt-10 flex flex-col items-center">
             <div className="w-full max-w-md space-y-1">
@@ -358,7 +357,7 @@ export default async function SecurityPage() {
       {/* 4. Physical infrastructure */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("physical.title")} description={t("physical.description")} />
+          <SectionHeader eyebrow={t("physical.eyebrow")} title={t("physical.title")} description={t("physical.description")} />
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {physicalItems.map((item, index) => {
@@ -384,7 +383,7 @@ export default async function SecurityPage() {
       {/* 5. Network Security */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("network.title")} description={t("network.description")} />
+          <SectionHeader eyebrow={t("network.eyebrow")} title={t("network.title")} description={t("network.description")} />
 
           <div className="mt-10 rounded-xl border border-border bg-background p-6 md:p-10 shadow-sm">
             <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
@@ -437,7 +436,8 @@ export default async function SecurityPage() {
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("networkIsolation.eyebrow")}
                 title={t("networkIsolation.title")}
                 description={t("networkIsolation.description")}
               />
@@ -464,7 +464,8 @@ export default async function SecurityPage() {
 
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("firewall.eyebrow")}
                 title={t("firewall.title")}
                 description={t("firewall.description")}
               />
@@ -517,7 +518,8 @@ export default async function SecurityPage() {
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("ddos.eyebrow")}
                 title={t("ddos.title")}
                 description={t("ddos.description")}
               />
@@ -550,7 +552,8 @@ export default async function SecurityPage() {
 
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("identity.eyebrow")}
                 title={t("identity.title")}
                 description={t("identity.description")}
               />
@@ -588,7 +591,8 @@ export default async function SecurityPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("mfa.eyebrow")}
                 title={t("mfa.title")}
                 description={t("mfa.description")}
               />
@@ -610,7 +614,8 @@ export default async function SecurityPage() {
 
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("apiSecurity.eyebrow")}
                 title={t("apiSecurity.title")}
                 description={t("apiSecurity.description")}
               />
@@ -627,14 +632,14 @@ export default async function SecurityPage() {
                   );
                 })}
               </div>
-              <div className="mt-8 rounded-xl border border-border bg-muted p-6 font-mono text-xs shadow-sm">
-                <div className="flex items-center gap-2 border-b border-border pb-3 mb-4">
-                  <span className="h-2.5 w-2.5 rounded-full bg-destructive" />
+              <div className="mt-8 rounded-xl border border-border bg-slate-950 p-6 font-mono text-xs shadow-sm">
+                <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
+                  <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                   <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
                   <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                  <span className="ml-auto text-muted-foreground">{t("apiSecurity.terminalTitle")}</span>
+                  <span className="ml-auto text-slate-400">{t("apiSecurity.terminalTitle")}</span>
                 </div>
-                <pre className="text-muted-foreground leading-relaxed overflow-x-auto whitespace-pre-wrap">
+                <pre className="text-slate-300 leading-relaxed overflow-x-auto whitespace-pre-wrap">
                   {t("apiSecurity.terminalExample")}
                 </pre>
               </div>
@@ -649,7 +654,8 @@ export default async function SecurityPage() {
           <div className="grid gap-12 lg:grid-cols-3">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("secrets.eyebrow")}
                 title={t("secrets.title")}
                 description={t("secrets.description")}
               />
@@ -668,7 +674,7 @@ export default async function SecurityPage() {
             </div>
 
             <div>
-              <SectionHeader centered={false} title={t("dataSecurity.title")} description={t("dataSecurity.description")} />
+              <SectionHeader align="left" eyebrow={t("dataSecurity.eyebrow")} title={t("dataSecurity.title")} description={t("dataSecurity.description")} />
               <div className="mt-6 space-y-3">
                 <div className="rounded-lg border border-border bg-background p-4">
                   <h4 className="text-sm font-bold text-foreground">{t("dataSecurity.atRest.title")}</h4>
@@ -686,7 +692,7 @@ export default async function SecurityPage() {
             </div>
 
             <div>
-              <SectionHeader centered={false} title={t("encryption.title")} description={t("encryption.description")} />
+              <SectionHeader align="left" eyebrow={t("encryption.eyebrow")} title={t("encryption.title")} description={t("encryption.description")} />
               <div className="mt-6 space-y-2">
                 {encryptionItems.map((item, index) => {
                   const Icon = encryptionIcons[index % encryptionIcons.length];
@@ -710,7 +716,8 @@ export default async function SecurityPage() {
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("computeIsolation.eyebrow")}
                 title={t("computeIsolation.title")}
                 description={t("computeIsolation.description")}
               />
@@ -744,7 +751,8 @@ export default async function SecurityPage() {
             <div className="space-y-10">
               <div>
                 <SectionHeader
-                  centered={false}
+                  align="left"
+                  eyebrow={t("containerSecurity.eyebrow")}
                   title={t("containerSecurity.title")}
                   description={t("containerSecurity.description")}
                 />
@@ -771,7 +779,8 @@ export default async function SecurityPage() {
 
               <div>
                 <SectionHeader
-                  centered={false}
+                  align="left"
+                  eyebrow={t("kubernetesSecurity.eyebrow")}
                   title={t("kubernetesSecurity.title")}
                   description={t("kubernetesSecurity.description")}
                 />
@@ -805,7 +814,8 @@ export default async function SecurityPage() {
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("databaseSecurity.eyebrow")}
                 title={t("databaseSecurity.title")}
                 description={t("databaseSecurity.description")}
               />
@@ -845,7 +855,8 @@ export default async function SecurityPage() {
 
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("backup.eyebrow")}
                 title={t("backup.title")}
                 description={t("backup.description")}
               />
@@ -889,7 +900,8 @@ export default async function SecurityPage() {
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("monitoring.eyebrow")}
                 title={t("monitoring.title")}
                 description={t("monitoring.description")}
               />
@@ -910,7 +922,8 @@ export default async function SecurityPage() {
 
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("audit.eyebrow")}
                 title={t("audit.title")}
                 description={t("audit.description")}
               />
@@ -951,7 +964,8 @@ export default async function SecurityPage() {
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("patchManagement.eyebrow")}
                 title={t("patchManagement.title")}
                 description={t("patchManagement.description")}
               />
@@ -984,7 +998,8 @@ export default async function SecurityPage() {
 
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("securityUpdates.eyebrow")}
                 title={t("securityUpdates.title")}
                 description={t("securityUpdates.description")}
               />
@@ -1008,7 +1023,7 @@ export default async function SecurityPage() {
       {/* 14. Security Architecture */}
       <section id="architecture" className="py-16 md:py-24 bg-background scroll-mt-20">
         <PageContainer>
-          <SectionHeader title={t("architecture.title")} description={t("architecture.description")} />
+          <SectionHeader eyebrow={t("architecture.eyebrow")} title={t("architecture.title")} description={t("architecture.description")} />
 
           <div className="mt-10 rounded-xl border border-border bg-muted p-6 md:p-10 shadow-sm">
             <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
@@ -1045,7 +1060,7 @@ export default async function SecurityPage() {
       {/* 15. Security by Default */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("securityByDefault.title")} description={t("securityByDefault.description")} />
+          <SectionHeader eyebrow={t("securityByDefault.eyebrow")} title={t("securityByDefault.title")} description={t("securityByDefault.description")} />
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {defaultItems.map((item, index) => {
@@ -1075,7 +1090,7 @@ export default async function SecurityPage() {
         <PageContainer>
           <div className="grid gap-12 lg:grid-cols-3">
             <div>
-              <SectionHeader centered={false} title={t("compliance.title")} description={t("compliance.description")} />
+              <SectionHeader align="left" eyebrow={t("compliance.eyebrow")} title={t("compliance.title")} description={t("compliance.description")} />
               <div className="mt-6 grid gap-2">
                 {complianceItems.map((item, index) => {
                   const Icon = complianceIcons[index % complianceIcons.length];
@@ -1091,7 +1106,7 @@ export default async function SecurityPage() {
             </div>
 
             <div>
-              <SectionHeader centered={false} title={t("sovereignty.title")} description={t("sovereignty.description")} />
+              <SectionHeader align="left" eyebrow={t("sovereignty.eyebrow")} title={t("sovereignty.title")} description={t("sovereignty.description")} />
               <div className="mt-6 grid gap-2">
                 {sovereigntyItems.map((item, index) => {
                   const Icon = sovereigntyIcons[index % sovereigntyIcons.length];
@@ -1107,7 +1122,7 @@ export default async function SecurityPage() {
             </div>
 
             <div>
-              <SectionHeader centered={false} title={t("openSource.title")} description={t("openSource.description")} />
+              <SectionHeader align="left" eyebrow={t("openSource.eyebrow")} title={t("openSource.title")} description={t("openSource.description")} />
               <blockquote className="mt-6 border-l-4 border-primary pl-5 text-lg font-medium text-foreground">
                 {t("openSource.quote")}
               </blockquote>
@@ -1133,7 +1148,8 @@ export default async function SecurityPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("developers.eyebrow")}
                 title={t("developers.title")}
                 description={t("developers.description")}
               />
@@ -1151,14 +1167,14 @@ export default async function SecurityPage() {
                 })}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-background p-6 font-mono text-xs shadow-sm">
-              <div className="flex items-center gap-2 border-b border-border pb-3 mb-4">
-                <span className="h-2.5 w-2.5 rounded-full bg-destructive" />
+            <div className="rounded-xl border border-border bg-slate-950 p-6 font-mono text-xs shadow-sm">
+              <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                <span className="ml-auto text-muted-foreground">{t("developers.terminalTitle")}</span>
+                <span className="ml-auto text-slate-400">{t("developers.terminalTitle")}</span>
               </div>
-              <pre className="text-muted-foreground leading-relaxed overflow-x-auto whitespace-pre-wrap">
+              <pre className="text-slate-300 leading-relaxed overflow-x-auto whitespace-pre-wrap">
                 {t("developers.terminalExample")}
               </pre>
             </div>
@@ -1169,7 +1185,7 @@ export default async function SecurityPage() {
       {/* 18. Managed Security */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("managedSecurity.title")} description={t("managedSecurity.description")} />
+          <SectionHeader eyebrow={t("managedSecurity.eyebrow")} title={t("managedSecurity.title")} description={t("managedSecurity.description")} />
 
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             {(["self", "managed", "enterprise"] as const).map((key) => {
@@ -1179,7 +1195,7 @@ export default async function SecurityPage() {
               return (
                 <div
                   key={key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-6 w-6" />
@@ -1211,7 +1227,8 @@ export default async function SecurityPage() {
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("incidentResponse.eyebrow")}
                 title={t("incidentResponse.title")}
                 description={t("incidentResponse.description")}
               />
@@ -1232,7 +1249,8 @@ export default async function SecurityPage() {
 
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("trustCenter.eyebrow")}
                 title={t("trustCenter.title")}
                 description={t("trustCenter.description")}
               />
@@ -1256,7 +1274,7 @@ export default async function SecurityPage() {
       {/* 20. Use Cases */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("useCases.title")} description={t("useCases.description")} />
+          <SectionHeader eyebrow={t("useCases.eyebrow")} title={t("useCases.title")} description={t("useCases.description")} />
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {useCases.map((item, index) => {
@@ -1280,7 +1298,7 @@ export default async function SecurityPage() {
       {/* 21. Comparison */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("comparison.title")} description={t("comparison.description")} />
+          <SectionHeader eyebrow={t("comparison.eyebrow")} title={t("comparison.title")} description={t("comparison.description")} />
 
           <div className="mt-10 overflow-x-auto">
             <table className="w-full min-w-160 border-collapse text-sm">
@@ -1314,7 +1332,7 @@ export default async function SecurityPage() {
       {/* 22. Pricing */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("pricing.title")} description={t("pricing.description")} />
+          <SectionHeader eyebrow={t("pricing.eyebrow")} title={t("pricing.title")} description={t("pricing.description")} />
 
           <div className="mt-10 grid gap-5 md:grid-cols-2">
             <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
@@ -1352,7 +1370,7 @@ export default async function SecurityPage() {
       {/* 23. Cross-selling */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("crossSelling.title")} description={t("crossSelling.description")} />
+          <SectionHeader eyebrow={t("crossSelling.eyebrow")} title={t("crossSelling.title")} description={t("crossSelling.description")} />
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {crossSellItems.map((item) => {
@@ -1360,7 +1378,7 @@ export default async function SecurityPage() {
               return (
                 <div
                   key={item.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">

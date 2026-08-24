@@ -42,23 +42,22 @@ export async function generateMetadata() {
 }
 
 interface SectionHeaderProps {
-  eyebrow?: string;
+  eyebrow: string;
   title: string;
   description?: string;
-  centered?: boolean;
+  align?: "center" | "left";
 }
 
-function SectionHeader({ eyebrow, title, description, centered = true }: SectionHeaderProps) {
+function SectionHeader({ eyebrow, title, description, align = "center" }: SectionHeaderProps) {
+  const centered = align === "center";
   return (
-    <div className={centered ? "text-center max-w-3xl mx-auto" : "max-w-3xl"}>
-      {eyebrow && (
-        <span className="text-xs font-bold uppercase tracking-wider text-primary">
-          {eyebrow}
-        </span>
-      )}
-      <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+    <div className={centered ? "mx-auto mb-12 max-w-2xl text-center" : "mb-10 max-w-2xl"}>
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">{eyebrow}</span>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+        {title}
+      </h2>
       {description && (
-        <p className="mt-4 text-muted-foreground leading-relaxed">{description}</p>
+        <p className="mt-3 text-muted-foreground leading-relaxed">{description}</p>
       )}
     </div>
   );
@@ -140,16 +139,16 @@ export default async function BackupPage() {
         aria-label={t("hero.badge")}
         className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-128"
         style={{
-          background: "linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%)",
+          background: "linear-gradient(135deg, #7c3aed 0%, #c026d3 35%, #f97316 100%)",
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.16),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.18),transparent_45%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(0,0,0,0.08),transparent_40%)]" />
 
         <PageContainer className="relative flex flex-1 items-center py-16 md:py-24">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center w-full">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm border border-white/20">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 {t("hero.badge")}
               </span>
@@ -198,9 +197,9 @@ export default async function BackupPage() {
       {/* 2. What can you protect */}
       <section id="what-can-protect" className="py-16 md:py-24 bg-background scroll-mt-20">
         <PageContainer>
-          <SectionHeader title={t("whatCanProtect.title")} />
+          <SectionHeader eyebrow={t("whatCanProtect.eyebrow")} title={t("whatCanProtect.title")} />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {protectItems.map((item, index) => {
               const icons = [Server, Server, HardDrive, Database, Container, Cloud];
               const Icon = icons[index % icons.length];
@@ -220,15 +219,15 @@ export default async function BackupPage() {
       {/* 3. Backup types */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("backupTypes.title")} />
+          <SectionHeader eyebrow={t("backupTypes.eyebrow")} title={t("backupTypes.title")} />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {backupTypes.map((type) => {
               const Icon = type.icon;
               return (
                 <div
                   key={type.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-6 w-6" />
@@ -274,14 +273,18 @@ export default async function BackupPage() {
       {/* 5. Automated backups */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("automatedBackups.title")} description={t("automatedBackups.description")} />
+          <SectionHeader
+            eyebrow={t("automatedBackups.eyebrow")}
+            title={t("automatedBackups.title")}
+            description={t("automatedBackups.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {automatedItems.map((item, index) => {
               const icons = [Clock, Clock, History, Zap, RotateCcw];
               const Icon = icons[index % icons.length];
               return (
-                <div key={item} className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div key={item} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
                   </span>
@@ -291,7 +294,7 @@ export default async function BackupPage() {
             })}
           </div>
 
-          <div className="mt-10 rounded-xl border border-border bg-background p-6 md:p-8 shadow-sm">
+          <div className="mt-10 rounded-xl border border-border bg-card p-6 md:p-8 shadow-sm">
             <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
               <NetworkNode>Production</NetworkNode>
               <NetworkLine vertical />
@@ -314,7 +317,12 @@ export default async function BackupPage() {
         <PageContainer>
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
-              <SectionHeader centered={false} title={t("retention.title")} description={t("retention.description")} />
+              <SectionHeader
+                align="left"
+                eyebrow={t("retention.eyebrow")}
+                title={t("retention.title")}
+                description={t("retention.description")}
+              />
               <div className="mt-6 rounded-xl border border-border bg-muted p-6 shadow-sm">
                 <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
                   <NetworkNode>Daily</NetworkNode>
@@ -328,7 +336,12 @@ export default async function BackupPage() {
               </div>
             </div>
             <div>
-              <SectionHeader centered={false} title={t("recovery.title")} description={t("recovery.description")} />
+              <SectionHeader
+                align="left"
+                eyebrow={t("recovery.eyebrow")}
+                title={t("recovery.title")}
+                description={t("recovery.description")}
+              />
               <div className="mt-6 space-y-2">
                 {recoveryItems.map((item, index) => {
                   const icons = [FileText, HardDrive, Server, Database, Boxes];
@@ -349,12 +362,16 @@ export default async function BackupPage() {
       {/* 7. Recovery workflow */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("recoveryWorkflow.title")} description={t("recoveryWorkflow.description")} />
+          <SectionHeader
+            eyebrow={t("recoveryWorkflow.eyebrow")}
+            title={t("recoveryWorkflow.title")}
+            description={t("recoveryWorkflow.description")}
+          />
 
-          <div className="mt-10 flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-4">
             {workflowSteps.map((step, index, steps) => (
               <React.Fragment key={step}>
-                <div className="rounded-full border border-border bg-background px-6 py-3 text-sm font-bold text-foreground shadow-sm">
+                <div className="rounded-full border border-border bg-card px-6 py-3 text-sm font-bold text-foreground shadow-sm">
                   {step}
                 </div>
                 {index < steps.length - 1 && (
@@ -387,8 +404,13 @@ export default async function BackupPage() {
         <PageContainer>
           <div className="grid gap-12 lg:grid-cols-3">
             <div>
-              <SectionHeader centered={false} title={t("isolation.title")} description={t("isolation.description")} />
-              <div className="mt-6 rounded-xl border border-border bg-background p-6 shadow-sm">
+              <SectionHeader
+                align="left"
+                eyebrow={t("isolation.eyebrow")}
+                title={t("isolation.title")}
+                description={t("isolation.description")}
+              />
+              <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
                 <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
                   <NetworkNode>Production</NetworkNode>
                   <NetworkLine vertical />
@@ -399,13 +421,13 @@ export default async function BackupPage() {
               </div>
             </div>
             <div>
-              <SectionHeader centered={false} title={t("security.title")} />
+              <SectionHeader align="left" eyebrow={t("security.eyebrow")} title={t("security.title")} />
               <div className="mt-6 space-y-2">
                 {securityItems.map((item, index) => {
                   const icons = [Lock, Lock, Shield, LayoutGrid, Network, Eye, ShieldCheck];
                   const Icon = icons[index % icons.length];
                   return (
-                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
+                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
                       <Icon className="h-4 w-4 text-primary" />
                       <p className="text-sm font-semibold text-foreground">{item}</p>
                     </div>
@@ -414,17 +436,17 @@ export default async function BackupPage() {
               </div>
             </div>
             <div>
-              <SectionHeader centered={false} title={t("encryption.title")} />
+              <SectionHeader align="left" eyebrow={t("encryption.eyebrow")} title={t("encryption.title")} />
               <div className="mt-6 space-y-3">
-                <div className="rounded-lg border border-border bg-background p-4">
+                <div className="rounded-lg border border-border bg-card p-4">
                   <h4 className="text-sm font-bold text-foreground">Encryption in transit</h4>
                   <p className="mt-1 text-sm text-muted-foreground">{t("encryption.inTransit")}</p>
                 </div>
-                <div className="rounded-lg border border-border bg-background p-4">
+                <div className="rounded-lg border border-border bg-card p-4">
                   <h4 className="text-sm font-bold text-foreground">Encryption at rest</h4>
                   <p className="mt-1 text-sm text-muted-foreground">{t("encryption.atRest")}</p>
                 </div>
-                <div className="rounded-lg border border-border bg-background p-4">
+                <div className="rounded-lg border border-border bg-card p-4">
                   <h4 className="text-sm font-bold text-foreground">Key management</h4>
                   <p className="mt-1 text-sm text-muted-foreground">{t("encryption.keyManagement")}</p>
                 </div>
@@ -438,7 +460,7 @@ export default async function BackupPage() {
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <h3 className="text-lg font-bold text-foreground">{t("databaseBackup.title")}</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("databaseBackup.description")}</p>
               <div className="mt-4">
@@ -447,7 +469,7 @@ export default async function BackupPage() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <h3 className="text-lg font-bold text-foreground">{t("computeBackup.title")}</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("computeBackup.description")}</p>
               <div className="mt-4">
@@ -456,7 +478,7 @@ export default async function BackupPage() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <h3 className="text-lg font-bold text-foreground">{t("containersBackup.title")}</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("containersBackup.description")}</p>
               <div className="mt-4">
@@ -465,7 +487,7 @@ export default async function BackupPage() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <h3 className="text-lg font-bold text-foreground">{t("storageBackup.title")}</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("storageBackup.description")}</p>
               <div className="mt-4">
@@ -483,16 +505,21 @@ export default async function BackupPage() {
         <PageContainer>
           <div className="grid gap-12 lg:grid-cols-3">
             <div>
-              <SectionHeader centered={false} title={t("threeTwoOne.title")} description={t("threeTwoOne.description")} />
+              <SectionHeader
+                align="left"
+                eyebrow={t("threeTwoOne.eyebrow")}
+                title={t("threeTwoOne.title")}
+                description={t("threeTwoOne.description")}
+              />
             </div>
             <div>
-              <SectionHeader centered={false} title={t("monitoring.title")} />
+              <SectionHeader align="left" eyebrow={t("monitoring.eyebrow")} title={t("monitoring.title")} />
               <div className="mt-6 space-y-2">
                 {monitoringItems.map((item, index) => {
                   const icons = [Check, AlertTriangle, Clock, Boxes, HardDrive];
                   const Icon = icons[index % icons.length];
                   return (
-                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
+                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
                       <Icon className="h-4 w-4 text-primary" />
                       <p className="text-sm font-semibold text-foreground">{item}</p>
                     </div>
@@ -501,13 +528,18 @@ export default async function BackupPage() {
               </div>
             </div>
             <div>
-              <SectionHeader centered={false} title={t("alerts.title")} description={t("alerts.description")} />
+              <SectionHeader
+                align="left"
+                eyebrow={t("alerts.eyebrow")}
+                title={t("alerts.title")}
+                description={t("alerts.description")}
+              />
               <div className="mt-6 space-y-2">
                 {alertItems.map((item, index) => {
                   const icons = [AlertTriangle, HardDrive, AlertTriangle, RotateCcw];
                   const Icon = icons[index % icons.length];
                   return (
-                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
+                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
                       <Icon className="h-4 w-4 text-primary" />
                       <p className="text-sm font-semibold text-foreground">{item}</p>
                     </div>
@@ -522,16 +554,16 @@ export default async function BackupPage() {
       {/* 12. Managed Backup */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("managed.title")} />
+          <SectionHeader eyebrow={t("managed.eyebrow")} title={t("managed.title")} />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {managedLevels.map((level) => {
               const Icon = level.icon;
               const featureCount = t.raw(`managed.${level.key}.features`).length;
               return (
                 <div
                   key={level.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${level.bg} ${level.accent}`}>
                     <Icon className="h-6 w-6" />
@@ -558,12 +590,16 @@ export default async function BackupPage() {
       {/* 13. Backup testing */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("backupTesting.title")} description={t("backupTesting.description")} />
+          <SectionHeader
+            eyebrow={t("backupTesting.eyebrow")}
+            title={t("backupTesting.title")}
+            description={t("backupTesting.description")}
+          />
 
-          <div className="mt-10 flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-4">
             {testingSteps.map((step, index, steps) => (
               <React.Fragment key={step}>
-                <div className="rounded-full border border-border bg-background px-6 py-3 text-sm font-bold text-foreground shadow-sm">
+                <div className="rounded-full border border-border bg-card px-6 py-3 text-sm font-bold text-foreground shadow-sm">
                   {step}
                 </div>
                 {index < steps.length - 1 && (
@@ -580,7 +616,12 @@ export default async function BackupPage() {
         <PageContainer>
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
-              <SectionHeader centered={false} title={t("disasterRecovery.title")} description={t("disasterRecovery.description")} />
+              <SectionHeader
+                align="left"
+                eyebrow={t("disasterRecovery.eyebrow")}
+                title={t("disasterRecovery.title")}
+                description={t("disasterRecovery.description")}
+              />
               <div className="mt-6 rounded-xl border border-border bg-muted p-6 shadow-sm">
                 <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
                   <NetworkNode>Primary Infrastructure</NetworkNode>
@@ -604,7 +645,7 @@ export default async function BackupPage() {
               </div>
             </div>
             <div>
-              <SectionHeader centered={false} title={t("rpoRto.title")} />
+              <SectionHeader align="left" eyebrow={t("rpoRto.eyebrow")} title={t("rpoRto.title")} />
               <div className="mt-6 space-y-4">
                 <div className="rounded-lg border border-border bg-muted p-4">
                   <h4 className="text-sm font-bold text-foreground">RPO</h4>
@@ -623,13 +664,17 @@ export default async function BackupPage() {
       {/* 15. Pricing */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("pricing.title")} description={t("pricing.description")} />
+          <SectionHeader
+            eyebrow={t("pricing.eyebrow")}
+            title={t("pricing.title")}
+            description={t("pricing.description")}
+          />
 
-          <div className="mt-10 flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             {t.raw("pricing.items").map((item: string) => (
               <span
                 key={item}
-                className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground"
+                className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground"
               >
                 {item}
               </span>
@@ -647,9 +692,9 @@ export default async function BackupPage() {
       {/* 16. Use cases */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("useCases.title")} />
+          <SectionHeader eyebrow={t("useCases.eyebrow")} title={t("useCases.title")} />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {useCaseIcons.map((Icon, index) => (
               <div
                 key={index}
@@ -668,15 +713,15 @@ export default async function BackupPage() {
       {/* 17. Cross-selling */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("crossSelling.title")} />
+          <SectionHeader eyebrow={t("crossSelling.eyebrow")} title={t("crossSelling.title")} />
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {crossSellItems.map((item) => {
               const Icon = item.icon;
               return (
                 <div
                   key={item.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">

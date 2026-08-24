@@ -45,23 +45,22 @@ export async function generateMetadata() {
 }
 
 interface SectionHeaderProps {
-  eyebrow?: string;
+  eyebrow: string;
   title: string;
   description?: string;
-  centered?: boolean;
+  align?: "center" | "left";
 }
 
-function SectionHeader({ eyebrow, title, description, centered = true }: SectionHeaderProps) {
+function SectionHeader({ eyebrow, title, description, align = "center" }: SectionHeaderProps) {
+  const centered = align === "center";
   return (
-    <div className={centered ? "text-center max-w-3xl mx-auto" : "max-w-3xl"}>
-      {eyebrow && (
-        <span className="text-xs font-bold uppercase tracking-wider text-primary">
-          {eyebrow}
-        </span>
-      )}
-      <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+    <div className={centered ? "mx-auto mb-12 max-w-2xl text-center" : "mb-10 max-w-2xl"}>
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">{eyebrow}</span>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+        {title}
+      </h2>
       {description && (
-        <p className="mt-4 text-muted-foreground leading-relaxed">{description}</p>
+        <p className="mt-3 text-muted-foreground leading-relaxed">{description}</p>
       )}
     </div>
   );
@@ -170,18 +169,18 @@ export default async function GpuAiPage() {
       {/* 1. Hero */}
       <section
         aria-label={t("hero.badge")}
-        className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-112"
+        className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-128"
         style={{
-          background: "linear-gradient(135deg, #312e81 0%, #4f46e5 50%, #7c3aed 100%)",
+          background: "linear-gradient(135deg, #7c3aed 0%, #c026d3 35%, #f97316 100%)",
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.16),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.18),transparent_45%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(0,0,0,0.08),transparent_40%)]" />
 
         <PageContainer className="relative flex flex-1 items-center py-16 md:py-24">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center w-full">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm border border-white/20">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 {t("hero.badge")}
               </span>
@@ -230,9 +229,13 @@ export default async function GpuAiPage() {
       {/* 2. Why GPU */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("whyGpu.title")} description={t("whyGpu.description")} />
+          <SectionHeader
+            eyebrow={t("whyGpu.eyebrow")}
+            title={t("whyGpu.title")}
+            description={t("whyGpu.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2">
             <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
               <h3 className="text-lg font-bold text-foreground">CPU</h3>
               <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
@@ -257,15 +260,19 @@ export default async function GpuAiPage() {
       {/* 3. GPU profiles */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("gpuProfiles.title")} description={t("gpuProfiles.description")} />
+          <SectionHeader
+            eyebrow={t("gpuProfiles.eyebrow")}
+            title={t("gpuProfiles.title")}
+            description={t("gpuProfiles.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {gpuProfiles.map((profile) => {
               const Icon = profile.icon;
               return (
                 <div
                   key={profile.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-6 w-6" />
@@ -284,15 +291,15 @@ export default async function GpuAiPage() {
       {/* 4. GPU types */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("gpuTypes.title")} />
+          <SectionHeader eyebrow={t("gpuTypes.eyebrow")} title={t("gpuTypes.title")} />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {gpuTypes.map((type) => {
               const Icon = type.icon;
               return (
                 <div
                   key={type.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
@@ -311,15 +318,15 @@ export default async function GpuAiPage() {
       {/* 5. AI workloads */}
       <section id="ai-workloads" className="border-y border-border bg-muted py-16 md:py-24 scroll-mt-20">
         <PageContainer>
-          <SectionHeader title={t("aiWorkloads.title")} />
+          <SectionHeader eyebrow={t("aiWorkloads.eyebrow")} title={t("aiWorkloads.title")} />
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
             {aiWorkloads.map((workload) => {
               const Icon = workload.icon;
               return (
                 <div
                   key={workload.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
@@ -340,9 +347,9 @@ export default async function GpuAiPage() {
       {/* 6. Generative AI */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("genAi.title")} />
+          <SectionHeader eyebrow={t("genAi.eyebrow")} title={t("genAi.title")} />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {genAiItems.map((item, index) => {
               const icons = [Brain, Box, Activity, Layers, Database, Eye];
               const Icon = icons[index % icons.length];
@@ -380,12 +387,13 @@ export default async function GpuAiPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("training.eyebrow")}
                 title={t("training.title")}
                 description={t("training.description")}
               />
             </div>
-            <div className="rounded-xl border border-border bg-background p-6 md:p-8 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-6 md:p-8 shadow-sm">
               <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
                 <NetworkNode>Dataset</NetworkNode>
                 <NetworkLine vertical />
@@ -403,7 +411,7 @@ export default async function GpuAiPage() {
           </div>
 
           <div className="mt-16 grid gap-8 md:grid-cols-3">
-            <div className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <div className="flex items-center gap-3">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                   <Container className="h-5 w-5" />
@@ -419,7 +427,7 @@ export default async function GpuAiPage() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <div className="flex items-center gap-3">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                   <HardDrive className="h-5 w-5" />
@@ -435,7 +443,7 @@ export default async function GpuAiPage() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <div className="flex items-center gap-3">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                   <Network className="h-5 w-5" />
@@ -458,9 +466,13 @@ export default async function GpuAiPage() {
       {/* 8. AI inference */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("aiInference.title")} description={t("aiInference.description")} />
+          <SectionHeader
+            eyebrow={t("aiInference.eyebrow")}
+            title={t("aiInference.title")}
+            description={t("aiInference.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {aiInferenceItems.map((item, index) => {
               const icons = [Boxes, Boxes, Network, Server, Activity, Zap];
               const Icon = icons[index % icons.length];
@@ -496,7 +508,7 @@ export default async function GpuAiPage() {
         <PageContainer>
           <div className="grid gap-12 lg:grid-cols-3">
             <div>
-              <SectionHeader centered={false} title={t("developers.title")} />
+              <SectionHeader align="left" eyebrow={t("developers.eyebrow")} title={t("developers.title")} />
               <ul className="mt-6 space-y-2">
                 {developerItems.map((item, index) => {
                   const icons = [Terminal, Container, Flame, Flame, Code2, Box, Code2, Terminal, Boxes];
@@ -511,7 +523,7 @@ export default async function GpuAiPage() {
               </ul>
             </div>
             <div>
-              <SectionHeader centered={false} title={t("preconfigured.title")} />
+              <SectionHeader align="left" eyebrow={t("preconfigured.eyebrow")} title={t("preconfigured.title")} />
               <ul className="mt-6 space-y-2">
                 {preconfiguredItems.map((item, index) => {
                   const icons = [Code2, Brain, Flame, BarChart3];
@@ -526,7 +538,7 @@ export default async function GpuAiPage() {
               </ul>
             </div>
             <div>
-              <SectionHeader centered={false} title={t("monitoring.title")} />
+              <SectionHeader align="left" eyebrow={t("monitoring.eyebrow")} title={t("monitoring.title")} />
               <ul className="mt-6 space-y-2">
                 {monitoringMetrics.map((item, index) => {
                   const icons = [Activity, Database, Flame, Zap, Cpu, Activity, Network, HardDrive];
@@ -549,7 +561,7 @@ export default async function GpuAiPage() {
         <PageContainer>
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
-              <SectionHeader centered={false} title={t("costEfficiency.title")} />
+              <SectionHeader align="left" eyebrow={t("costEfficiency.eyebrow")} title={t("costEfficiency.title")} />
               <div className="mt-6 grid gap-3">
                 {costEfficiencyItems.map((item, index) => {
                   const icons = [Code2, Brain, Flame, Server];
@@ -564,7 +576,7 @@ export default async function GpuAiPage() {
               </div>
             </div>
             <div>
-              <SectionHeader centered={false} title={t("consumptionModels.title")} />
+              <SectionHeader align="left" eyebrow={t("consumptionModels.eyebrow")} title={t("consumptionModels.title")} />
               <div className="mt-6 space-y-4">
                 {consumptionModels.map((model) => {
                   const Icon = model.icon;
@@ -587,14 +599,14 @@ export default async function GpuAiPage() {
       {/* 11. Security */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("security.title")} />
+          <SectionHeader eyebrow={t("security.eyebrow")} title={t("security.title")} />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {securityItems.map((item, index) => {
               const icons = [LayoutGrid, Network, Shield, Lock, Lock, ShieldCheck, Activity, LayoutGrid];
               const Icon = icons[index % icons.length];
               return (
-                <div key={item} className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div key={item} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
                   </span>
@@ -613,7 +625,12 @@ export default async function GpuAiPage() {
         <PageContainer>
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
-              <SectionHeader centered={false} title={t("openSource.title")} description={t("openSource.description")} />
+              <SectionHeader
+                align="left"
+                eyebrow={t("openSource.eyebrow")}
+                title={t("openSource.title")}
+                description={t("openSource.description")}
+              />
               <blockquote className="mt-6 border-l-4 border-primary pl-5 text-lg font-medium text-foreground">
                 Zenth Cloud provides the infrastructure. You choose what runs on it.
               </blockquote>
@@ -639,16 +656,16 @@ export default async function GpuAiPage() {
       {/* 13. Managed AI Infrastructure */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("managed.title")} />
+          <SectionHeader eyebrow={t("managed.eyebrow")} title={t("managed.title")} />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {managedLevels.map((level) => {
               const Icon = level.icon;
               const featureCount = t.raw(`managed.${level.key}.features`)?.length ?? 0;
               return (
                 <div
                   key={level.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${level.bg} ${level.accent}`}>
                     <Icon className="h-6 w-6" />
@@ -693,7 +710,8 @@ export default async function GpuAiPage() {
             </div>
             <div className="order-1 lg:order-2">
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("kubernetes.eyebrow")}
                 title={t("kubernetes.title")}
                 description={t("kubernetes.description")}
               />
@@ -712,13 +730,17 @@ export default async function GpuAiPage() {
       {/* 15. Pricing */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("pricing.title")} description={t("pricing.description")} />
+          <SectionHeader
+            eyebrow={t("pricing.eyebrow")}
+            title={t("pricing.title")}
+            description={t("pricing.description")}
+          />
 
-          <div className="mt-10 flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             {t.raw("pricing.items").map((item: string) => (
               <span
                 key={item}
-                className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground"
+                className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground"
               >
                 {item}
               </span>
@@ -739,7 +761,8 @@ export default async function GpuAiPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("migration.eyebrow")}
                 title={t("migration.title")}
                 description={t("migration.description")}
               />
@@ -779,13 +802,13 @@ export default async function GpuAiPage() {
       {/* 17. Use cases */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader title={t("useCases.title")} />
+          <SectionHeader eyebrow={t("useCases.eyebrow")} title={t("useCases.title")} />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {useCaseIcons.map((Icon, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 shadow-sm"
+                className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm"
               >
                 <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                   <Icon className="h-4 w-4" />
@@ -800,15 +823,15 @@ export default async function GpuAiPage() {
       {/* 18. Cross-selling */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <SectionHeader title={t("crossSelling.title")} />
+          <SectionHeader eyebrow={t("crossSelling.eyebrow")} title={t("crossSelling.title")} />
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {crossSellItems.map((item) => {
               const Icon = item.icon;
               return (
                 <div
                   key={item.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">

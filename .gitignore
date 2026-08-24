@@ -34,3 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# AI Integration 
+# Ignore the AI integration folder and its contents
+.opencode/
+.claude/
+.agents/

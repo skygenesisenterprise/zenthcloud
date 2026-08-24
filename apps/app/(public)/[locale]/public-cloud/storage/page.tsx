@@ -41,23 +41,22 @@ export async function generateMetadata() {
 }
 
 interface SectionHeaderProps {
-  eyebrow?: string;
+  eyebrow: string;
   title: string;
   description?: string;
-  centered?: boolean;
+  align?: "center" | "left";
 }
 
-function SectionHeader({ eyebrow, title, description, centered = true }: SectionHeaderProps) {
+function SectionHeader({ eyebrow, title, description, align = "center" }: SectionHeaderProps) {
+  const centered = align === "center";
   return (
-    <div className={centered ? "text-center max-w-3xl mx-auto" : "max-w-3xl"}>
-      {eyebrow && (
-        <span className="text-xs font-bold uppercase tracking-wider text-primary">
-          {eyebrow}
-        </span>
-      )}
-      <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+    <div className={centered ? "mx-auto mb-12 max-w-2xl text-center" : "mb-10 max-w-2xl"}>
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">{eyebrow}</span>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+        {title}
+      </h2>
       {description && (
-        <p className="mt-4 text-muted-foreground leading-relaxed">{description}</p>
+        <p className="mt-3 text-muted-foreground leading-relaxed">{description}</p>
       )}
     </div>
   );
@@ -160,16 +159,16 @@ export default async function StoragePage() {
         aria-label={t("hero.badge")}
         className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-128"
         style={{
-          background: "linear-gradient(135deg, #0f766e 0%, #0e7490 50%, #0369a1 100%)",
+          background: "linear-gradient(135deg, #7c3aed 0%, #c026d3 35%, #f97316 100%)",
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.16),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.18),transparent_45%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(0,0,0,0.08),transparent_40%)]" />
 
         <Container className="relative flex flex-1 items-center py-16 md:py-24">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center w-full">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm border border-white/20">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 {t("hero.badge")}
               </span>
@@ -218,20 +217,24 @@ export default async function StoragePage() {
       {/* 2. Solutions */}
       <section id="solutions" className="py-16 md:py-24 bg-background scroll-mt-20">
         <Container>
-          <SectionHeader title={t("solutions.title")} description={t("solutions.description")} />
+          <SectionHeader
+            eyebrow={t("solutions.eyebrow")}
+            title={t("solutions.title")}
+            description={t("solutions.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {solutions.map((solution) => {
               const Icon = solution.icon;
               return (
                 <div
                   key={solution.key}
-                  className="group flex flex-col rounded-xl border border-border bg-card shadow-sm hover:shadow-lg transition-all overflow-hidden"
+                  className="group flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                  <div className={`h-1.5 ${solution.accent}`} />
+                  <div className={`h-1.5 rounded-t-xl ${solution.accent}`} />
                   <div className="flex flex-1 flex-col p-6">
                     <div className="flex items-center gap-3">
-                      <span className={`inline-flex h-10 w-10 items-center justify-center rounded-lg ${solution.accent}/10 text-primary`}>
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                         <Icon className="h-5 w-5" />
                       </span>
                       <h3 className="text-lg font-bold text-foreground">
@@ -260,15 +263,19 @@ export default async function StoragePage() {
       {/* 3. Workloads */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("workloads.title")} description={t("workloads.description")} />
+          <SectionHeader
+            eyebrow={t("workloads.eyebrow")}
+            title={t("workloads.title")}
+            description={t("workloads.description")}
+          />
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
             {workloads.map((workload) => {
               const Icon = workload.icon;
               return (
                 <div
                   key={workload.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
@@ -289,15 +296,19 @@ export default async function StoragePage() {
       {/* 4. Performance */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("performance.title")} description={t("performance.description")} />
+          <SectionHeader
+            eyebrow={t("performance.eyebrow")}
+            title={t("performance.title")}
+            description={t("performance.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {performanceProfiles.map((profile) => {
               const Icon = profile.icon;
               return (
                 <div
                   key={profile.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
@@ -321,7 +332,8 @@ export default async function StoragePage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("integration.eyebrow")}
                 title={t("integration.title")}
                 description={t("integration.description")}
               />
@@ -334,7 +346,7 @@ export default async function StoragePage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-background p-6 md:p-8 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-6 md:p-8 shadow-sm">
               <div className="flex flex-col items-center gap-4 text-sm font-semibold text-foreground">
                 <div className="rounded-lg bg-primary/10 px-4 py-2 text-primary">Zenth Cloud</div>
                 <div className="h-6 w-px bg-border" />
@@ -373,7 +385,8 @@ export default async function StoragePage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("objectStorageApi.eyebrow")}
                 title={t("objectStorageApi.title")}
                 description={t("objectStorageApi.description")}
               />
@@ -391,14 +404,14 @@ export default async function StoragePage() {
                 })}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-muted p-6 font-mono text-xs shadow-sm">
-              <div className="flex items-center gap-2 border-b border-border pb-3 mb-4">
-                <span className="h-2.5 w-2.5 rounded-full bg-destructive" />
+            <div className="rounded-xl border border-border bg-slate-950 p-6 font-mono text-xs shadow-sm">
+              <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                <span className="ml-auto text-muted-foreground">{t("objectStorageApi.terminalTitle")}</span>
+                <span className="ml-auto text-slate-400">{t("objectStorageApi.terminalTitle")}</span>
               </div>
-              <pre className="text-muted-foreground leading-relaxed overflow-x-auto whitespace-pre-wrap">
+              <pre className="text-slate-300 leading-relaxed overflow-x-auto whitespace-pre-wrap">
                 {t("objectStorageApi.terminalExample")}
               </pre>
             </div>
@@ -409,13 +422,17 @@ export default async function StoragePage() {
       {/* 7. Durabilité */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("durability.title")} description={t("durability.description")} />
+          <SectionHeader
+            eyebrow={t("durability.eyebrow")}
+            title={t("durability.title")}
+            description={t("durability.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {durabilityItems.map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
                   </span>
@@ -430,9 +447,13 @@ export default async function StoragePage() {
       {/* 8. Security */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("security.title")} description={t("security.description")} />
+          <SectionHeader
+            eyebrow={t("security.eyebrow")}
+            title={t("security.title")}
+            description={t("security.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {securityItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -458,7 +479,8 @@ export default async function StoragePage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("backupNotStorage.eyebrow")}
                 title={t("backupNotStorage.title")}
                 description={t("backupNotStorage.description")}
               />
@@ -474,7 +496,7 @@ export default async function StoragePage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-background p-6 md:p-8 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-6 md:p-8 shadow-sm">
               <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
                 <div className="rounded-lg bg-primary/10 px-4 py-2 text-primary">Application</div>
                 <div className="h-6 w-px bg-border" />
@@ -504,9 +526,13 @@ export default async function StoragePage() {
       {/* 10. Scalability */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("scalability.title")} description={t("scalability.description")} />
+          <SectionHeader
+            eyebrow={t("scalability.eyebrow")}
+            title={t("scalability.title")}
+            description={t("scalability.description")}
+          />
 
-          <div className="mt-10 flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-4">
             {t.raw("scalability.steps").map((step: string, index: number, steps: string[]) => (
               <React.Fragment key={step}>
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card text-base font-bold text-foreground shadow-sm">
@@ -524,16 +550,20 @@ export default async function StoragePage() {
       {/* 11. Managed Storage */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("managed.title")} description={t("managed.description")} />
+          <SectionHeader
+            eyebrow={t("managed.eyebrow")}
+            title={t("managed.title")}
+            description={t("managed.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {managedLevels.map((level) => {
               const Icon = level.icon;
               const featureCount = level.key === "self" ? 3 : level.key === "assisted" ? 3 : 6;
               return (
                 <div
                   key={level.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${level.bg} ${level.accent}`}>
                     <Icon className="h-6 w-6" />
@@ -565,7 +595,8 @@ export default async function StoragePage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("openSource.eyebrow")}
                 title={t("openSource.title")}
                 description={t("openSource.description")}
               />
@@ -593,16 +624,20 @@ export default async function StoragePage() {
       {/* 13. Pricing */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("pricing.title")} description={t("pricing.description")} />
+          <SectionHeader
+            eyebrow={t("pricing.eyebrow")}
+            title={t("pricing.title")}
+            description={t("pricing.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {pricingTiers.map((tier) => (
               <div
                 key={tier.key}
-                className={`relative rounded-xl border p-6 ${
+                className={`relative rounded-xl border p-6 transition-all hover:-translate-y-0.5 ${
                   tier.featured
                     ? "border-primary bg-card shadow-lg"
-                    : "border-border bg-card shadow-sm"
+                    : "border-border bg-card shadow-sm hover:shadow-md"
                 }`}
               >
                 {tier.featured && (
@@ -628,9 +663,13 @@ export default async function StoragePage() {
       {/* 14. Use cases */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("useCases.title")} description={t("useCases.description")} />
+          <SectionHeader
+            eyebrow={t("useCases.eyebrow")}
+            title={t("useCases.title")}
+            description={t("useCases.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {useCaseIcons.map((Icon, index) => (
               <div
                 key={index}
@@ -649,15 +688,19 @@ export default async function StoragePage() {
       {/* 15. Cross-selling */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("crossSelling.title")} description={t("crossSelling.description")} />
+          <SectionHeader
+            eyebrow={t("crossSelling.eyebrow")}
+            title={t("crossSelling.title")}
+            description={t("crossSelling.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {crossSellItems.map((item) => {
               const Icon = item.icon;
               return (
                 <div
                   key={item.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">

@@ -44,23 +44,22 @@ export async function generateMetadata() {
 }
 
 interface SectionHeaderProps {
-  eyebrow?: string;
+  eyebrow: string;
   title: string;
   description?: string;
-  centered?: boolean;
+  align?: "center" | "left";
 }
 
-function SectionHeader({ eyebrow, title, description, centered = true }: SectionHeaderProps) {
+function SectionHeader({ eyebrow, title, description, align = "center" }: SectionHeaderProps) {
+  const centered = align === "center";
   return (
-    <div className={centered ? "text-center max-w-3xl mx-auto" : "max-w-3xl"}>
-      {eyebrow && (
-        <span className="text-xs font-bold uppercase tracking-wider text-primary">
-          {eyebrow}
-        </span>
-      )}
-      <h2 className="mt-3 text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+    <div className={centered ? "mx-auto mb-12 max-w-2xl text-center" : "mb-10 max-w-2xl"}>
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">{eyebrow}</span>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+        {title}
+      </h2>
       {description && (
-        <p className="mt-4 text-muted-foreground leading-relaxed">{description}</p>
+        <p className="mt-3 text-muted-foreground leading-relaxed">{description}</p>
       )}
     </div>
   );
@@ -193,16 +192,16 @@ export default async function ComputePage() {
         aria-label={t("hero.badge")}
         className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-128"
         style={{
-          background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #c026d3 100%)",
+          background: "linear-gradient(135deg, #7c3aed 0%, #c026d3 35%, #f97316 100%)",
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.16),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.18),transparent_45%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(0,0,0,0.08),transparent_40%)]" />
 
         <Container className="relative flex flex-1 items-center py-16 md:py-24">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center w-full">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm border border-white/20">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 {t("hero.badge")}
               </span>
@@ -251,20 +250,24 @@ export default async function ComputePage() {
       {/* 2. Choisissez votre Compute */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("computeTypes.title")} description={t("computeTypes.description")} />
+          <SectionHeader
+            eyebrow={t("computeTypes.eyebrow")}
+            title={t("computeTypes.title")}
+            description={t("computeTypes.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {computeTypes.map((type) => {
               const Icon = type.icon;
               return (
                 <div
                   key={type.key}
-                  className="group flex flex-col rounded-xl border border-border bg-card shadow-sm hover:shadow-lg transition-all overflow-hidden"
+                  className="group flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                  <div className={`h-1.5 ${type.accent}`} />
+                  <div className={`h-1.5 rounded-t-xl ${type.accent}`} />
                   <div className="flex flex-1 flex-col p-6">
                     <div className="flex items-center gap-3">
-                      <span className={`inline-flex h-10 w-10 items-center justify-center rounded-lg ${type.accent}/10 text-primary`}>
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                         <Icon className="h-5 w-5" />
                       </span>
                       <h3 className="text-lg font-bold text-foreground">
@@ -278,11 +281,12 @@ export default async function ComputePage() {
                       {t(`computeTypes.${type.key}.useCases`)}
                     </p>
                     <div className="mt-auto pt-6">
-                      <Button asChild variant="outline" className="w-full">
-                        <Link href="/pricing">
-                          {t("hero.secondaryCta")} <ArrowRight className="ml-1 h-4 w-4" />
-                        </Link>
-                      </Button>
+                      <Link
+                        href="/pricing"
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                      >
+                        {t("hero.secondaryCta")} <ArrowRight className="h-4 w-4" />
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -295,15 +299,19 @@ export default async function ComputePage() {
       {/* 3. Workloads */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("workloads.title")} description={t("workloads.description")} />
+          <SectionHeader
+            eyebrow={t("workloads.eyebrow")}
+            title={t("workloads.title")}
+            description={t("workloads.description")}
+          />
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {workloads.map((workload) => {
               const Icon = workload.icon;
               return (
                 <div
                   key={workload.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
@@ -327,9 +335,13 @@ export default async function ComputePage() {
       {/* 4. Infrastructure */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("infrastructure.title")} description={t("infrastructure.description")} />
+          <SectionHeader
+            eyebrow={t("infrastructure.eyebrow")}
+            title={t("infrastructure.title")}
+            description={t("infrastructure.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {infraItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -362,7 +374,8 @@ export default async function ComputePage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("openSource.eyebrow")}
                 title={t("openSource.title")}
                 description={t("openSource.description")}
               />
@@ -374,7 +387,7 @@ export default async function ComputePage() {
               {openSourceBenefits.map((benefit) => {
                 const Icon = benefit.icon;
                 return (
-                  <div key={benefit.label} className="flex items-start gap-3 rounded-xl border border-border bg-background p-4">
+                  <div key={benefit.label} className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                     <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
                       <Icon className="h-4 w-4" />
                     </span>
@@ -390,10 +403,14 @@ export default async function ComputePage() {
       {/* 6. Software & Licenses */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("software.title")} description={t("software.description")} />
+          <SectionHeader
+            eyebrow={t("software.eyebrow")}
+            title={t("software.title")}
+            description={t("software.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <div className="flex items-center gap-3">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <Check className="h-5 w-5" />
@@ -413,7 +430,7 @@ export default async function ComputePage() {
               </ul>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <div className="flex items-center gap-3">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
                   <Shield className="h-5 w-5" />
@@ -439,16 +456,20 @@ export default async function ComputePage() {
       {/* 7. Self-managed / Assisted / Managed */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("management.title")} description={t("management.description")} />
+          <SectionHeader
+            eyebrow={t("management.eyebrow")}
+            title={t("management.title")}
+            description={t("management.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {managementLevels.map((level) => {
               const Icon = level.icon;
               const featureCount = level.key === "self" ? 5 : level.key === "assisted" ? 5 : 7;
               return (
                 <div
                   key={level.key}
-                  className="rounded-xl border border-border bg-background p-6 shadow-sm hover:shadow-md transition-all"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${level.bg} ${level.accent}`}>
                     <Icon className="h-6 w-6" />
@@ -480,7 +501,8 @@ export default async function ComputePage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
-                centered={false}
+                align="left"
+                eyebrow={t("automation.eyebrow")}
                 title={t("automation.title")}
                 description={t("automation.description")}
               />
@@ -505,14 +527,14 @@ export default async function ComputePage() {
                 </Button>
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-muted p-6 font-mono text-xs shadow-sm">
-              <div className="flex items-center gap-2 border-b border-border pb-3 mb-4">
-                <span className="h-2.5 w-2.5 rounded-full bg-destructive" />
+            <div className="rounded-xl border border-border bg-slate-950 p-6 font-mono text-xs shadow-sm">
+              <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
                 <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                <span className="ml-auto text-muted-foreground">{t("automation.terminalTitle")}</span>
+                <span className="ml-auto text-slate-400">{t("automation.terminalTitle")}</span>
               </div>
-              <pre className="text-muted-foreground leading-relaxed overflow-x-auto whitespace-pre-wrap">
+              <pre className="text-slate-300 leading-relaxed overflow-x-auto whitespace-pre-wrap">
                 {t("automation.terminalExample")}
               </pre>
             </div>
@@ -523,13 +545,17 @@ export default async function ComputePage() {
       {/* 9. Security */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("security.title")} description={t("security.description")} />
+          <SectionHeader
+            eyebrow={t("security.eyebrow")}
+            title={t("security.title")}
+            description={t("security.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {securityFeatures.map((feature) => {
               const Icon = feature.icon;
               return (
-                <div key={feature.label} className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div key={feature.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
                   </span>
@@ -552,16 +578,20 @@ export default async function ComputePage() {
       {/* 10. Pricing */}
       <section className="py-16 md:py-24 bg-background">
         <Container>
-          <SectionHeader title={t("pricing.title")} description={t("pricing.description")} />
+          <SectionHeader
+            eyebrow={t("pricing.eyebrow")}
+            title={t("pricing.title")}
+            description={t("pricing.description")}
+          />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {pricingTiers.map((tier) => (
               <div
                 key={tier.key}
-                className={`relative rounded-xl border p-6 ${
+                className={`relative rounded-xl border p-6 transition-all hover:-translate-y-0.5 ${
                   tier.featured
                     ? "border-primary bg-card shadow-lg"
-                    : "border-border bg-card shadow-sm"
+                    : "border-border bg-card shadow-sm hover:shadow-md"
                 }`}
               >
                 {tier.featured && (
@@ -598,13 +628,17 @@ export default async function ComputePage() {
       {/* 11. Use cases */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <Container>
-          <SectionHeader title={t("useCases.title")} description={t("useCases.description")} />
+          <SectionHeader
+            eyebrow={t("useCases.eyebrow")}
+            title={t("useCases.title")}
+            description={t("useCases.description")}
+          />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {useCaseIcons.map((Icon, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 shadow-sm"
+                className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm"
               >
                 <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                   <Icon className="h-4 w-4" />
