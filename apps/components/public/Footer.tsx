@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { ArrowUpRight } from "lucide-react";
 import {
@@ -18,12 +17,12 @@ interface FooterLink {
   external?: boolean;
 }
 
-interface LinkColumnProps {
+interface FooterColumn {
   title: string;
-  links: readonly FooterLink[];
+  links: FooterLink[];
 }
 
-function LinkColumn({ title, links }: LinkColumnProps) {
+function LinkColumn({ title, links }: { title: string; links: readonly FooterLink[] }) {
   return (
     <div className="flex flex-col">
       <h3 className="text-[11px] font-semibold text-foreground mb-5 uppercase tracking-[0.18em]">
@@ -175,81 +174,22 @@ export async function Footer({ locale: initialLocale }: FooterProps) {
     ([code, label]) => ({ code, label })
   );
 
-  const platformApiLinks: FooterLink[] = [
-    { name: t("platformOverview"), href: `${prefix}/platform` },
-    { name: t("pricing"), href: `${prefix}/pricing` },
-    { name: t("connectApi"), href: "https://api.skygenesisenterprise.com", external: true },
-    { name: t("apiDocumentation"), href: "https://docs.skygenesisenterprise.com", external: true },
-    { name: t("developerForum"), href: "https://developer.skygenesisenterprise.com", external: true },
-  ];
-
-  const developerLinks: FooterLink[] = [
-    { name: t("documentation"), href: `${prefix}/developers` },
-    { name: t("apiReference"), href: `${prefix}/developers/api` },
-    { name: t("sdks"), href: `${prefix}/developers/sdks` },
-    { name: t("quickstarts"), href: `${prefix}/developers/quickstarts` },
-    { name: t("statusPage"), href: "https://status.skygenesisenterprise.com", external: true },
-  ];
-
-  const securityLinks: FooterLink[] = [
-    { name: t("securityApproach"), href: `${prefix}/security` },
-    { name: t("securityPrivacy"), href: `${prefix}/security/privacy` },
-    { name: t("trustTransparency"), href: `${prefix}/security/trust` },
-    { name: t("customerSecurity"), href: `${prefix}/security/customers` },
-  ];
-
-  const resourcesLinks: FooterLink[] = [
-    { name: t("blog"), href: `${prefix}/blog` },
-    { name: t("caseStudies"), href: `${prefix}/resources/case-studies` },
-    { name: t("whitepapers"), href: `${prefix}/resources/whitepapers` },
-    { name: t("webinars"), href: `${prefix}/resources/webinars` },
-    { name: t("community"), href: "https://forum.skygenesisenterprise.com", external: true },
-  ];
-
-  const companyLinks: FooterLink[] = [
-    { name: t("about"), href: `${prefix}/company/about` },
-    { name: t("careers"), href: `${prefix}/company/careers` },
-    { name: t("press"), href: `${prefix}/company/press` },
-    { name: t("partners"), href: `${prefix}/company/partners` },
-    { name: t("contact"), href: `${prefix}/company/contact` },
-  ];
-
-  const supportLinks: FooterLink[] = [
-    { name: t("helpCenter"), href: "https://support.zenthcloud.com", external: true },
-    { name: t("contact"), href: `${prefix}/company/contact` },
-    { name: t("serviceStatus"), href: "https://status.zenthcloud.com", external: true },
-    { name: t("reportIssue"), href: `${prefix}/support/report` },
-    { name: t("developerSupport"), href: "https://developer.zenthcloud.com", external: true },
-  ];
-
-  const legalLinks: FooterLink[] = [
-    { name: t("privacy"), href: `${prefix}/legal/privacy` },
-    { name: t("terms"), href: `${prefix}/legal/terms` },
-    { name: t("cookiePolicy"), href: `${prefix}/legal/cookies` },
-    { name: "GDPR", href: `${prefix}/legal/gdpr` },
-    { name: t("security"), href: `${prefix}/legal/security` },
-    { name: "licence", href: `${prefix}/legal/licence` },
-  ];
-
-  const otherLinks: FooterLink[] = [
-    { name: t("news"), href: `${prefix}/blog` },
-    { name: t("academy"), href: `${prefix}/academy` },
-    { name: t("liveStreams"), href: "https://live.zenthcloud.com", external: true },
-    { name: t("podcast"), href: `${prefix}/podcast` },
-    { name: t("rss"), href: `${prefix}/rss.xml` },
-    { name: t("constitution"), href: `${prefix}/constitution` },
-  ];
-
-  const footerSections = [
-    { title: t("platformApi"), links: platformApiLinks },
-    { title: t("developers"), links: developerLinks },
-    { title: t("security"), links: securityLinks },
-    { title: t("resources"), links: resourcesLinks },
-    { title: t("company"), links: companyLinks },
-    { title: t("support"), links: supportLinks },
-    { title: t("legal"), links: legalLinks },
-    { title: t("other"), links: otherLinks },
-  ];
+  const columns: FooterColumn[] = (
+    t.raw("columns") as Array<{
+      title: string;
+      links: Array<{ label: string; href: string; external?: boolean }>;
+    }>
+  ).map((column) => ({
+    title: column.title,
+    links: column.links.map((link) => {
+      const external = link.external ?? link.href.startsWith("https://");
+      return {
+        name: link.label,
+        href: external ? link.href : `${prefix}${link.href}`,
+        external,
+      };
+    }),
+  }));
 
   const socialLinks = [
     { name: "X (Twitter)", href: "https://x.com/ZenthCloud" },
@@ -268,13 +208,9 @@ export async function Footer({ locale: initialLocale }: FooterProps) {
     <footer className="bg-background text-muted-foreground border-t border-border/60 select-none">
       {/* Main link columns */}
       <div className="mx-auto max-w-7xl px-6 pt-16 pb-10 border-b border-border/50">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-10 gap-y-12">
-          {footerSections.map((section) => (
-            <LinkColumn
-              key={section.title}
-              title={section.title}
-              links={section.links}
-            />
+        <div className="grid grid-cols-2 gap-x-10 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
+          {columns.map((column) => (
+            <LinkColumn key={column.title} title={column.title} links={column.links} />
           ))}
         </div>
       </div>
@@ -309,11 +245,6 @@ export async function Footer({ locale: initialLocale }: FooterProps) {
               <p className="mt-4 text-sm text-muted-foreground">
                 {t("salesServices")}: {t("phoneNumber")}
               </p>
-              {locale === "ja" ? (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Fax: {t("faxNumber")}
-                </p>
-              ) : null}
               <p className="mt-2 text-sm text-muted-foreground">
                 Email:{" "}
                 <Link

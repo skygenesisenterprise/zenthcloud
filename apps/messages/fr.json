@@ -2615,6 +2615,477 @@
         "secondary": "Talk to an expert"
       }
     },
+    "dedicatedCloud": {
+      "meta": {
+        "title": "Dedicated Cloud | ZenthCloud",
+        "description": "Infrastructure dédiée avec une expérience cloud : ressources réservées, contrôle total, automatisation et supervision. Dedicated Cloud européen opéré par ZenthCloud."
+      },
+      "hero": {
+        "badge": "Private Cloud · Dedicated Cloud",
+        "title": "Your cloud. Your hardware. Your control.",
+        "subtitle": "Une infrastructure réservée à votre organisation, associée à la couche de gestion cloud ZenthCloud : provisioning, automatisation, réseau, sécurité et supervision.",
+        "primaryCta": "Build your Dedicated Cloud",
+        "secondaryCta": "Talk to an expert"
+      },
+      "comparison": {
+        "eyebrow": "Dedicated Cloud",
+        "title": "Pourquoi choisir le Dedicated Cloud ?",
+        "description": "Le Dedicated Cloud ne se résume pas à la sécurité : c'est une question de contrôle, de prévisibilité et de propriété des ressources.",
+        "publicLabel": "Public Cloud",
+        "dedicatedLabel": "Dedicated Cloud",
+        "rows": [
+          {
+            "label": "Compute",
+            "public": "Infrastructure partagée",
+            "dedicated": "Ressources dédiées"
+          },
+          {
+            "label": "Isolation",
+            "public": "Logique",
+            "dedicated": "Physique / dédiée"
+          },
+          {
+            "label": "Performance",
+            "public": "Variable selon la charge",
+            "dedicated": "Plus prévisible"
+          },
+          {
+            "label": "Personnalisation",
+            "public": "Standardisée",
+            "dedicated": "Élevée"
+          },
+          {
+            "label": "Contrôle",
+            "public": "Élevé",
+            "dedicated": "Très élevé"
+          },
+          {
+            "label": "Scaling",
+            "public": "Rapide",
+            "dedicated": "Planifié / matériel"
+          },
+          {
+            "label": "Modèle de coût",
+            "public": "Orienté usage",
+            "dedicated": "Orienté capacité"
+          }
+        ],
+        "note": "Le Dedicated Cloud relève du contrôle, de la prévisibilité et de la propriété des ressources — pas uniquement de la sécurité."
+      },
+      "whatIs": {
+        "eyebrow": "Définition",
+        "title": "Qu'est-ce que le Dedicated Cloud ?",
+        "description": "Entre le Public Cloud partagé et le Private Cloud entièrement personnalisé, le Dedicated Cloud réserve le matériel à votre organisation tout en conservant une couche de gestion cloud.",
+        "layers": [
+          {
+            "key": "public",
+            "title": "Public Cloud",
+            "description": "Infrastructure partagée et ressources virtuelles."
+          },
+          {
+            "key": "dedicated",
+            "title": "Dedicated Cloud",
+            "description": "Infrastructure réservée et compute dédié."
+          },
+          {
+            "key": "management",
+            "title": "Cloud management layer",
+            "description": "La couche cloud ZenthCloud au-dessus du matériel dédié."
+          }
+        ]
+      },
+      "resources": {
+        "eyebrow": "Ressources dédiées",
+        "title": "Know what powers your workloads.",
+        "description": "Des ressources réservées et prévisibles pour vos charges les plus exigeantes.",
+        "items": [
+          "CPU",
+          "RAM",
+          "NVMe / SSD",
+          "GPU",
+          "Interfaces réseau",
+          "Bande passante",
+          "Stockage",
+          "Capacité de virtualisation"
+        ]
+      },
+      "hardware": {
+        "eyebrow": "Matériel",
+        "title": "Des profils matériels adaptés",
+        "description": "Une architecture extensible pour couvrir vos besoins en compute, mémoire, stockage, GPU et réseau.",
+        "compute": {
+          "title": "Compute Optimized",
+          "description": "Pour les applications, APIs et workloads orientés CPU.",
+          "useCases": "Applications · APIs · Workloads CPU"
+        },
+        "memory": {
+          "title": "Memory Optimized",
+          "description": "Pour les bases de données, caches et analytics.",
+          "useCases": "Bases de données · Caches · Analytics"
+        },
+        "storage": {
+          "title": "Storage Optimized",
+          "description": "Pour les workloads data-intensive et les systèmes de stockage.",
+          "useCases": "Data-intensive · Stockage · Bases de données"
+        },
+        "gpu": {
+          "title": "GPU Accelerated",
+          "description": "Pour l'IA, le machine learning, l'inférence et le rendu.",
+          "useCases": "IA · ML · Inférence · Rendu"
+        }
+      },
+      "architecture": {
+        "eyebrow": "Architecture",
+        "title": "Dedicated hardware does not mean manual infrastructure.",
+        "description": "Le contrôle plane ZenthCloud orchestre compute, réseau et stockage au-dessus d'un matériel qui vous est réservé."
+      },
+      "management": {
+        "eyebrow": "Cloud Management",
+        "title": "Une expérience cloud complète",
+        "description": "Dedicated infrastructure without giving up cloud operations. Provisionnez, configurez et pilotez votre infrastructure via la plateforme ZenthCloud.",
+        "items": [
+          "Provisioning",
+          "Configuration",
+          "Monitoring",
+          "Networking",
+          "Gestion du stockage",
+          "Cycle de vie",
+          "API",
+          "CLI",
+          "Automatisation"
+        ],
+        "cta": "Découvrir le manager"
+      },
+      "control": {
+        "eyebrow": "Contrôle",
+        "title": "Full infrastructure control",
+        "description": "Un niveau de contrôle supplémentaire sur chaque couche de votre infrastructure.",
+        "items": [
+          "Profil matériel",
+          "Virtualisation",
+          "Topologie réseau",
+          "Architecture de stockage",
+          "Firewall",
+          "Réseaux privés",
+          "Placement des workloads"
+        ]
+      },
+      "isolation": {
+        "eyebrow": "Isolation",
+        "title": "Une isolation physique dédiée",
+        "description": "Votre organisation dispose de son propre matériel, séparé des autres clients.",
+        "benefits": [
+          "Isolation",
+          "Performance prévisible",
+          "Exigences de conformité",
+          "Séparation des workloads"
+        ]
+      },
+      "performance": {
+        "eyebrow": "Prévisibilité",
+        "title": "Des performances prévisibles",
+        "description": "Dedicated resources make capacity easier to predict. Les ressources réservées ne sont pas affectées par la charge des autres clients.",
+        "sharedLabel": "Ressources partagées",
+        "dedicatedLabel": "Ressources réservées"
+      },
+      "networking": {
+        "eyebrow": "Réseau",
+        "title": "Un réseau maîtrisé de bout en bout",
+        "description": "Uplinks dédiés, réseaux privés, VLAN, firewall et interconnexions pour relier vos environnements.",
+        "items": [
+          "Uplinks dédiés",
+          "Réseaux privés",
+          "VLAN",
+          "Firewall",
+          "Load balancing",
+          "Interconnects",
+          "IP publiques",
+          "Bande passante"
+        ],
+        "cta": "Découvrir le Networking"
+      },
+      "storage": {
+        "eyebrow": "Stockage",
+        "title": "Le stockage adapté à vos charges",
+        "description": "NVMe, SSD, stockage dédié ou distribué, et stockage de sauvegarde.",
+        "items": [
+          "NVMe",
+          "SSD",
+          "Stockage dédié",
+          "Stockage distribué",
+          "Stockage de backup"
+        ],
+        "cta": "Découvrir le Storage"
+      },
+      "virtualization": {
+        "eyebrow": "Virtualisation",
+        "title": "Un matériel, plusieurs workloads isolés",
+        "description": "Le matériel dédié peut héberger plusieurs machines virtuelles isolées via un hyperviseur.",
+        "note": "Le choix de l'hyperviseur est déterminé par l'architecture ZenthCloud."
+      },
+      "workloads": {
+        "eyebrow": "Workloads",
+        "title": "Une base pour vos plateformes",
+        "description": "Le Dedicated Cloud accueille containers, Kubernetes et charges GPU.",
+        "containers": {
+          "title": "Containers",
+          "description": "Run containers on infrastructure dedicated to your workloads.",
+          "cta": "Découvrir Containers"
+        },
+        "kubernetes": {
+          "title": "Kubernetes",
+          "description": "Une base potentielle pour des clusters Kubernetes privés ou des plateformes internes.",
+          "cta": "Explore Kubernetes"
+        },
+        "gpuAi": {
+          "title": "GPU & AI",
+          "description": "Accès GPU prévisible, VRAM dédiée et workloads soutenus pour le training et l'inférence.",
+          "cta": "Découvrir GPU & AI"
+        }
+      },
+      "security": {
+        "eyebrow": "Sécurité",
+        "title": "Une sécurité en couches",
+        "description": "Le matériel dédié n'est pas automatiquement sécurisé : la sécurité reste une architecture par couches.",
+        "items": [
+          "Matériel dédié",
+          "Réseau privé",
+          "Firewall",
+          "Contrôle d'accès",
+          "Monitoring",
+          "Backup"
+        ],
+        "cta": "Découvrir la sécurité"
+      },
+      "backup": {
+        "eyebrow": "Résilience",
+        "title": "Backup & Disaster Recovery",
+        "description": "Votre infrastructure dédiée bénéficie de la même stratégie de résilience que les autres environnements ZenthCloud.",
+        "cta": "Découvrir Backup"
+      },
+      "managed": {
+        "eyebrow": "Exploitation",
+        "title": "Managed ou Self-managed",
+        "description": "Vous choisissez le niveau de responsabilité que vous conservez.",
+        "self": {
+          "title": "Self-managed",
+          "description": "Vous contrôlez OS, applications, configuration et workloads.",
+          "features": [
+            "OS",
+            "Applications",
+            "Configuration",
+            "Workloads"
+          ]
+        },
+        "managed": {
+          "title": "Managed",
+          "description": "ZenthCloud gère davantage d'infrastructure et d'opérations.",
+          "features": [
+            "Infrastructure",
+            "OS",
+            "Monitoring",
+            "Patching",
+            "Backup",
+            "Networking"
+          ]
+        },
+        "fullyManaged": {
+          "title": "Fully managed",
+          "description": "ZenthCloud devient davantage responsable de l'exploitation.",
+          "features": [
+            "Exploitation",
+            "Maintenance",
+            "Supervision",
+            "Évolutions"
+          ]
+        }
+      },
+      "vsDedicatedServer": {
+        "eyebrow": "Comparaison",
+        "title": "Dedicated Cloud vs Dedicated Server",
+        "description": "Un serveur dédié est une machine. Le Dedicated Cloud est une plateforme cloud sur du matériel dédié.",
+        "serverLabel": "Dedicated Server",
+        "cloudLabel": "Dedicated Cloud",
+        "rows": [
+          {
+            "label": "Matériel",
+            "server": "Dédié",
+            "cloud": "Dédié"
+          },
+          {
+            "label": "Cloud control plane",
+            "server": "Non / limité",
+            "cloud": "Oui"
+          },
+          {
+            "label": "Provisioning",
+            "server": "Manuel",
+            "cloud": "Automatisé"
+          },
+          {
+            "label": "API",
+            "server": "Variable",
+            "cloud": "Native"
+          },
+          {
+            "label": "Cycle de vie VM",
+            "server": "Manuel",
+            "cloud": "Cloud-managed"
+          },
+          {
+            "label": "Networking",
+            "server": "Serveur-centric",
+            "cloud": "Infrastructure-centric"
+          },
+          {
+            "label": "Automatisation",
+            "server": "Limitée",
+            "cloud": "Native"
+          },
+          {
+            "label": "Scaling",
+            "server": "Matériel",
+            "cloud": "Basé sur l'infrastructure"
+          },
+          {
+            "label": "Services managés",
+            "server": "Optionnels",
+            "cloud": "Intégrés selon offre"
+          }
+        ],
+        "serverMessage": "You rent a machine.",
+        "cloudMessage": "You operate workloads on dedicated infrastructure through a cloud platform."
+      },
+      "vsPrivateCloud": {
+        "eyebrow": "Positionnement",
+        "title": "Dedicated Cloud vs Private Cloud",
+        "description": "Une progression de contrôle et de personnalisation, pas une échelle de qualité.",
+        "steps": [
+          {
+            "title": "Public Cloud",
+            "description": "Infrastructure partagée et standardisée."
+          },
+          {
+            "title": "Dedicated Cloud",
+            "description": "Infrastructure réservée, standardisée et opérée par ZenthCloud."
+          },
+          {
+            "title": "Private Cloud",
+            "description": "Environnement entièrement privé et davantage personnalisé."
+          },
+          {
+            "title": "Enterprise Infrastructure",
+            "description": "Architecture sur mesure pour des besoins spécifiques."
+          }
+        ]
+      },
+      "useCases": {
+        "eyebrow": "Cas d'usage",
+        "title": "Quand choisir le Dedicated Cloud ?",
+        "description": "Des scénarios concrets où les ressources dédiées font la différence.",
+        "items": [
+          "Applications d'entreprise",
+          "Bases de données",
+          "Clusters Kubernetes",
+          "IA / GPU",
+          "Workloads haute performance",
+          "Conformité & localisation",
+          "Infrastructure interne"
+        ]
+      },
+      "lifecycle": {
+        "eyebrow": "Cycle de vie",
+        "title": "Un cycle de vie maîtrisé",
+        "description": "ZenthCloud gère le cycle de vie complet de votre infrastructure dédiée.",
+        "steps": [
+          "Choose Hardware",
+          "Provision",
+          "Configure Network",
+          "Deploy Workloads",
+          "Monitor",
+          "Scale / Upgrade",
+          "Decommission"
+        ]
+      },
+      "upgradePath": {
+        "eyebrow": "Évolutivité",
+        "title": "Your infrastructure can evolve as your workload grows.",
+        "description": "Ajoutez du CPU, de la RAM, du stockage, du GPU ou des nœuds supplémentaires lorsque votre charge évolue.",
+        "upgrades": [
+          "More CPU",
+          "More RAM",
+          "More Storage",
+          "More GPU",
+          "More Nodes"
+        ]
+      },
+      "pricing": {
+        "eyebrow": "Tarification",
+        "title": "Un pricing orienté capacité",
+        "description": "Le coût du Dedicated Cloud combine le matériel réservé et la plateforme cloud.",
+        "items": [
+          "Hardware",
+          "CPU",
+          "RAM",
+          "Storage",
+          "GPU",
+          "Network",
+          "Managed services",
+          "Backup",
+          "Support"
+        ],
+        "note": "Les tarifs seront publiés avec le futur billing ZenthCloud."
+      },
+      "openInfrastructure": {
+        "eyebrow": "Open infrastructure",
+        "title": "Dedicated hardware without proprietary lock-in.",
+        "description": "Software d'infrastructure open source, standards ouverts et portabilité.",
+        "items": [
+          "Infrastructure open source",
+          "Standards ouverts",
+          "Écosystème Linux",
+          "Containers",
+          "Virtualisation",
+          "APIs",
+          "Portabilité"
+        ]
+      },
+      "developers": {
+        "eyebrow": "Développeurs",
+        "title": "Une expérience pour les développeurs",
+        "description": "Le Dedicated Cloud n'est pas réservé aux administrateurs système : API, CLI et Infrastructure as Code.",
+        "items": [
+          "API",
+          "CLI",
+          "Infrastructure as Code",
+          "Automatisation",
+          "CI/CD",
+          "Containers",
+          "Kubernetes"
+        ]
+      },
+      "enterprise": {
+        "eyebrow": "Entreprise",
+        "title": "Pensé pour l'entreprise",
+        "description": "Gestion centralisée, RBAC, audit et support pour vos équipes.",
+        "items": [
+          "Gestion centralisée",
+          "RBAC",
+          "Audit",
+          "Networking",
+          "Backup",
+          "Monitoring",
+          "Support",
+          "Infrastructure dédiée"
+        ]
+      },
+      "finalCta": {
+        "title": "Build infrastructure around your business.",
+        "description": "Combinez contrôle physique et expérience cloud avec le Dedicated Cloud ZenthCloud.",
+        "primary": "Design your Dedicated Cloud",
+        "secondary": "Talk to an expert"
+      }
+    },
     "security": {
       "meta": {
         "title": "Sécurité Cloud Infrastructure | ZenthCloud",
@@ -3271,77 +3742,280 @@
       }
     },
     "footer": {
-      "product": "Produit",
-      "plateforme": "Plateforme",
-      "solutions": "Solutions",
-      "developers": "Développeurs",
-      "resources": "Ressources",
-      "blog": "Blog",
-      "company": "Entreprise",
-      "about": "À propos",
-      "careers": "Carrières",
-      "contact": "Contact",
-      "legal": "Légal",
-      "privacy": "Politique de Confidentialité",
-      "terms": "Conditions d'Utilisation",
-      "security": "Sécurité",
-      "license": "Licence",
-      "copyright": "© 2026 ZenthCloud. Tous droits réservés.",
-      "documentation": "Documentation",
-      "apiReference": "Référence API",
-      "sdks": "SDKs",
-      "quickstarts": "Démarrages Rapides",
-      "statusPage": "Page de Statut",
-      "caseStudies": "Études de Cas",
-      "whitepapers": "Livres Blancs",
-      "webinars": "Webinaires",
-      "community": "Communauté",
-      "press": "Presse",
-      "partners": "Partenaires",
-      "pricingPlans": "Plans Tarifaires",
-      "freeTrial": "Essai Gratuit",
-      "enterprise": "Enterprise",
-      "cookiePolicy": "Politique des Cookies",
-      "getStarted": "Commencer",
-      "platformApi": "Plateforme API",
-      "platformOverview": "Présentation de la plateforme",
-      "pricing": "Tarification",
-      "connectApi": "Se connecter à l'API",
-      "apiDocumentation": "Documentation",
-      "developerForum": "Forum des développeurs",
-      "securityApproach": "Notre approche de la sécurité",
-      "securityPrivacy": "Sécurité et confidentialité",
-      "trustTransparency": "Confiance et transparence",
-      "customerSecurity": "Sécurité client",
-      "testimonials": "Témoignages",
-      "other": "Autre",
-      "news": "Actualités",
-      "academy": "Academy",
-      "liveStreams": "Diffusions en direct",
-      "podcast": "Podcast",
-      "rss": "RSS",
-      "constitution": "Constitution",
-      "support": "Assistance",
-      "helpCenter": "Centre d'aide",
-      "serviceStatus": "Statut des services",
-      "reportIssue": "Signaler un problème",
-      "developerSupport": "Support développeurs",
       "brandDescription": "Nous concevons et opérons les infrastructures numériques de demain, en développant des technologies souveraines au service d'un écosystème européen durable.",
-      "missionStatement": "ZenthCloud construit une infrastructure numérique ouverte, souveraine et interopérable pour les développeurs, les organisations et les communautés.",
-      "story": "Notre histoire",
-      "utilityTitle": "Accès et confiance",
-      "utilityDescription": "Retrouvez les points d'entrée utiles, l'assistance et les repères de confiance de l'écosystème ZenthCloud.",
-      "trustTitle": "Vérification officielle",
-      "languageLabel": "Langues",
       "newsletterTitle": "Restez connecté",
-      "newsletterDescription": "Accédez à notre actualité cloud pour ne rien manquer de nos nouveautés",
+      "newsletterDescription": "Accédez à notre actualité cloud pour ne rien manquer de nos nouveautés.",
       "newsletterEmail": "Votre adresse e-mail",
       "newsletterButton": "Abonnez-vous à notre newsletter",
-      "newsletterLegalNotice": "ZenthCloud traite votre adresse de messagerie aux fins de vous adresser les newsletters des entités du Groupe Sky Genesis Enterprise. Vous pouvez à tout moment utiliser le lien de désabonnement intégré. En savoir plus sur la gestion de vos données et vos droits",
+      "newsletterLegalNotice": "ZenthCloud traite votre adresse de messagerie aux fins de vous adresser les newsletters des entités du Groupe Sky Genesis Enterprise. Vous pouvez à tout moment utiliser le lien de désabonnement intégré. En savoir plus sur la gestion de vos données et vos droits.",
       "verifyKey": "Vérifiez notre clé publique PGP pour assurer l'authenticité du site",
       "salesServices": "Services Commerciaux",
       "phoneNumber": "Non disponnible",
-      "emailAddress": "contact@zenthcloud.com"
+      "emailAddress": "contact@zenthcloud.com",
+      "copyright": "© 2026 ZenthCloud. Tous droits réservés.",
+      "columns": [
+        {
+          "title": "Public Cloud",
+          "links": [
+            {
+              "label": "Compute",
+              "href": "/public-cloud/compute"
+            },
+            {
+              "label": "Conteneurs",
+              "href": "/public-cloud/containers"
+            },
+            {
+              "label": "Stockage",
+              "href": "/public-cloud/storage"
+            },
+            {
+              "label": "Réseau",
+              "href": "/public-cloud/networking"
+            },
+            {
+              "label": "Bases de données",
+              "href": "/public-cloud/databases"
+            },
+            {
+              "label": "GPU & IA",
+              "href": "/public-cloud/gpu-and-ai"
+            },
+            {
+              "label": "Sauvegarde",
+              "href": "/public-cloud/backup"
+            },
+            {
+              "label": "Sécurité",
+              "href": "/public-cloud/security"
+            }
+          ]
+        },
+        {
+          "title": "Private Cloud",
+          "links": [
+            {
+              "label": "Cloud dédié",
+              "href": "/private-cloud/dedicated-cloud"
+            },
+            {
+              "label": "Virtualisation",
+              "href": "/private-cloud/virtualization"
+            },
+            {
+              "label": "Réseau privé",
+              "href": "/private-cloud/private-networking"
+            },
+            {
+              "label": "Stockage",
+              "href": "/private-cloud/storage"
+            },
+            {
+              "label": "Kubernetes",
+              "href": "/private-cloud/kubernetes"
+            },
+            {
+              "label": "Sauvegarde",
+              "href": "/private-cloud/backup"
+            },
+            {
+              "label": "Sécurité",
+              "href": "/private-cloud/security"
+            },
+            {
+              "label": "Infrastructure managée",
+              "href": "/private-cloud/managed-infrastructure"
+            }
+          ]
+        },
+        {
+          "title": "Bare Metal",
+          "links": [
+            {
+              "label": "Serveurs dédiés",
+              "href": "/bare-metal/dedicated-servers"
+            },
+            {
+              "label": "Compute",
+              "href": "/bare-metal/compute"
+            },
+            {
+              "label": "Mémoire haute",
+              "href": "/bare-metal/high-memory"
+            },
+            {
+              "label": "Serveurs GPU",
+              "href": "/bare-metal/gpu-servers"
+            },
+            {
+              "label": "Stockage",
+              "href": "/bare-metal/storage-servers"
+            },
+            {
+              "label": "Réseau privé",
+              "href": "/bare-metal/private-networking"
+            },
+            {
+              "label": "Gestion serveur",
+              "href": "/bare-metal/server-management"
+            },
+            {
+              "label": "Protection DDoS",
+              "href": "/bare-metal/ddos-protection"
+            }
+          ]
+        },
+        {
+          "title": "Solutions",
+          "links": [
+            {
+              "label": "Développeurs",
+              "href": "/solutions/developers"
+            },
+            {
+              "label": "Agences",
+              "href": "/solutions/agencies"
+            },
+            {
+              "label": "Entreprises",
+              "href": "/solutions/business"
+            },
+            {
+              "label": "Grand compte",
+              "href": "/solutions/enterprise"
+            },
+            {
+              "label": "Gaming",
+              "href": "/solutions/gaming"
+            },
+            {
+              "label": "IA",
+              "href": "/solutions/ai"
+            },
+            {
+              "label": "Infrastructure",
+              "href": "/solutions/infrastructure"
+            },
+            {
+              "label": "Startups",
+              "href": "/solutions/startups"
+            }
+          ]
+        },
+        {
+          "title": "Hébergement Web",
+          "links": [
+            {
+              "label": "Hébergement Web",
+              "href": "/web-hosting/web-hosting"
+            },
+            {
+              "label": "Noms de domaine",
+              "href": "/web-hosting/domains"
+            },
+            {
+              "label": "E-mail",
+              "href": "/web-hosting/email"
+            },
+            {
+              "label": "WordPress",
+              "href": "/web-hosting/wordpress"
+            },
+            {
+              "label": "E-commerce",
+              "href": "/web-hosting/e-commerce"
+            },
+            {
+              "label": "Bases de données",
+              "href": "/web-hosting/databases"
+            },
+            {
+              "label": "Sauvegardes",
+              "href": "/web-hosting/backups"
+            },
+            {
+              "label": "Sécurité du site",
+              "href": "/web-hosting/website-security"
+            }
+          ]
+        },
+        {
+          "title": "Entreprise",
+          "links": [
+            {
+              "label": "À propos",
+              "href": "/company/about"
+            },
+            {
+              "label": "Infrastructure",
+              "href": "/company/infrastructure"
+            },
+            {
+              "label": "Data centers",
+              "href": "/company/data-centers"
+            },
+            {
+              "label": "Réseau",
+              "href": "/company/network"
+            },
+            {
+              "label": "Sécurité",
+              "href": "/company/security"
+            },
+            {
+              "label": "Fiabilité",
+              "href": "/company/reliability"
+            },
+            {
+              "label": "Technologie",
+              "href": "/company/technology"
+            },
+            {
+              "label": "Carrières",
+              "href": "/company/careers"
+            },
+            {
+              "label": "Partenaires",
+              "href": "/company/partners"
+            },
+            {
+              "label": "Contact",
+              "href": "/company/contact"
+            }
+          ]
+        },
+        {
+          "title": "Ressources",
+          "links": [
+            {
+              "label": "Blog",
+              "href": "/blog"
+            },
+            {
+              "label": "Changelog",
+              "href": "/changelog"
+            },
+            {
+              "label": "Documentation",
+              "href": "https://docs.zenthcloud.com",
+              "external": true
+            },
+            {
+              "label": "Statut des services",
+              "href": "https://status.zenthcloud.com",
+              "external": true
+            },
+            {
+              "label": "Mentions légales",
+              "href": "/legal"
+            },
+            {
+              "label": "Clé PGP",
+              "href": "/pgp"
+            }
+          ]
+        }
+      ]
     }
   }
 }

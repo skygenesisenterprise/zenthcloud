@@ -120,12 +120,12 @@ export const companyItems: NavItem[] = [
   { labelKey: "company.infrastructure.label", href: "/company/infrastructure", descriptionKey: "company.infrastructure.description", icon: Server },
   { labelKey: "company.dataCenters.label", href: "/company/data-centers", descriptionKey: "company.dataCenters.description", icon: MapPin },
   { labelKey: "company.network.label", href: "/company/network", descriptionKey: "company.network.description", icon: Network },
-  { labelKey: "company.security.label", href: "/security", descriptionKey: "company.security.description", icon: ShieldCheck },
+  { labelKey: "company.security.label", href: "/company/security", descriptionKey: "company.security.description", icon: ShieldCheck },
   { labelKey: "company.reliability.label", href: "/company/reliability", descriptionKey: "company.reliability.description", icon: Zap },
   { labelKey: "company.technology.label", href: "/company/technology", descriptionKey: "company.technology.description", icon: Cpu },
   { labelKey: "company.careers.label", href: "/company/careers", descriptionKey: "company.careers.description", icon: HeartHandshake },
   { labelKey: "company.partners.label", href: "/company/partners", descriptionKey: "company.partners.description", icon: Briefcase },
-  { labelKey: "company.contact.label", href: "/contact", descriptionKey: "company.contact.description", icon: Phone },
+  { labelKey: "company.contact.label", href: "/company/contact", descriptionKey: "company.contact.description", icon: Phone },
 ];
 
 export const mainNav: NavGroup[] = [
@@ -135,7 +135,7 @@ export const mainNav: NavGroup[] = [
     headlineKey: "publicCloud.headline",
     items: publicCloudItems,
     footerLinks: [
-      { labelKey: "publicCloud.footer.pricing", href: "/pricing" },
+      { labelKey: "publicCloud.footer.pricing", href: "/public-cloud/pricing" },
       { labelKey: "publicCloud.footer.regions", href: "/company/infrastructure" },
       { labelKey: "publicCloud.footer.documentation", href: "https://docs.zenthcloud.com", external: true },
       { labelKey: "publicCloud.footer.roadmap", href: "/changelog" },
@@ -147,7 +147,7 @@ export const mainNav: NavGroup[] = [
     headlineKey: "privateCloud.headline",
     items: privateCloudItems,
     footerLinks: [
-      { labelKey: "privateCloud.footer.pricing", href: "/pricing" },
+      { labelKey: "privateCloud.footer.pricing", href: "/private-cloud/pricing" },
       { labelKey: "privateCloud.footer.compliance", href: "/company/infrastructure" },
       { labelKey: "privateCloud.footer.documentation", href: "https://docs.zenthcloud.com", external: true },
       { labelKey: "privateCloud.footer.roadmap", href: "/changelog" },
@@ -159,7 +159,7 @@ export const mainNav: NavGroup[] = [
     headlineKey: "servers.headline",
     items: serversItems,
     footerLinks: [
-      { labelKey: "servers.footer.pricing", href: "/pricing" },
+      { labelKey: "servers.footer.pricing", href: "/dedicated-servers/pricing" },
       { labelKey: "servers.footer.licences", href: "/dedicated-servers" },
       { labelKey: "servers.footer.documentation", href: "https://docs.zenthcloud.com", external: true },
       { labelKey: "servers.footer.roadmap", href: "/changelog" },
@@ -173,12 +173,12 @@ export const mainNav: NavGroup[] = [
     footer: {
       title: "Arkana Telecom",
       titleKey: "telecom.footerTitle",
-      href: "https://arkana-telecom.com",
+      href: "https://arkanatelecom.com",
       description: "Powered by Arkana Telecom — the connectivity layer of the ZenthCloud ecosystem.",
       descriptionKey: "telecom.footerDescription",
     },
     footerLinks: [
-      { labelKey: "telecom.footer.pricing", href: "/pricing" },
+      { labelKey: "telecom.footer.pricing", href: "/telecom/pricing" },
       { labelKey: "telecom.footer.guides", href: "https://docs.zenthcloud.com", external: true },
       { labelKey: "telecom.footer.partner", href: "/telecom" },
     ],
@@ -191,7 +191,7 @@ export const mainNav: NavGroup[] = [
     footerLinks: [
       { labelKey: "solutions.footer.all", href: "/solutions" },
       { labelKey: "solutions.footer.startups", href: "/solutions/startups" },
-      { labelKey: "solutions.footer.contact", href: "/contact" },
+      { labelKey: "solutions.footer.contact", href: "/company/contact" },
     ],
   },
   { labelKey: "blog", href: "/blog", items: [] },
@@ -203,7 +203,7 @@ export const mainNav: NavGroup[] = [
     footerLinks: [
       { labelKey: "company.footer.about", href: "/company" },
       { labelKey: "company.footer.infrastructure", href: "/company/infrastructure" },
-      { labelKey: "company.footer.contact", href: "/contact" },
+      { labelKey: "company.footer.contact", href: "/company/contact" },
     ],
   },
 ];
