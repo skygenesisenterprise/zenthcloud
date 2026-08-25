@@ -108,7 +108,7 @@
         },
         "virtualization": {
           "label": "Virtualisation",
-          "description": "Plateformes de virtualisation VMware et KVM."
+          "description": "Machines virtuelles isolées et ressources flexibles sur infrastructure dédiée."
         },
         "privateNetworking": {
           "label": "Réseau privé",
@@ -1571,6 +1571,409 @@
         "description": "Créez votre compte et lancez votre première instance en quelques minutes.",
         "primary": "Créer une instance",
         "secondary": "Parler à un expert"
+      }
+    },
+    "pricing": {
+      "meta": {
+        "title": "Tarifs Public Cloud — Zenth Cloud",
+        "description": "Tarification transparente du Public Cloud : Compute, Stockage, Réseau, Bases de données, Containers, GPU, Backup et Sécurité. Unités de facturation claires et estimation de coûts."
+      },
+      "placeholders": {
+        "tbd": "€X.XX",
+        "notPublished": "Les prix définitifs ne sont pas encore publiés. La structure est prête à recevoir les tarifs officiels."
+      },
+      "hero": {
+        "badge": "Public Cloud",
+        "title": "Des tarifs cloud, sans mauvaise surprise.",
+        "subtitle": "Des prix simples pour une infrastructure que vous pouvez comprendre, comparer et maîtriser.",
+        "primaryCta": "Commencer à construire",
+        "secondaryCta": "Estimer vos coûts",
+        "note": "Un prix. Une source de vérité. Partout."
+      },
+      "overview": {
+        "eyebrow": "Vue d'ensemble",
+        "title": "Toutes les familles, au même endroit",
+        "description": "Chaque service est facturé selon une unité explicite. Accédez directement aux fiches tarifaires de chaque famille.",
+        "cta": "Voir les tarifs",
+        "categories": {
+          "compute": "Compute",
+          "storage": "Stockage",
+          "networking": "Réseau",
+          "databases": "Bases de données",
+          "containers": "Containers",
+          "gpu": "GPU & IA",
+          "backup": "Backup",
+          "security": "Sécurité"
+        }
+      },
+      "howPricingWorks": {
+        "eyebrow": "Comment ça marche",
+        "title": "Des modèles de facturation clairs",
+        "description": "Chaque service de Zenth Cloud suit des modèles de facturation explicites. Aucun coût caché : vous savez ce que vous payez et pourquoi.",
+        "items": [
+          {
+            "title": "Pay-as-you-go",
+            "description": "Vous payez selon votre consommation réelle, sans engagement. Idéal pour varier selon l'usage."
+          },
+          {
+            "title": "À l'heure",
+            "description": "Facturation au prorata du temps d'utilisation pour les instances et bases de données."
+          },
+          {
+            "title": "Au mois",
+            "description": "Tarif mensuel fixe ou estimé selon le service, pour une prévisibilité accrue."
+          },
+          {
+            "title": "Au Go",
+            "description": "Facturation selon la quantité de données stockées ou transférées."
+          },
+          {
+            "title": "À la requête",
+            "description": "Facturation au nombre de requêtes lorsque le modèle s'y prête."
+          },
+          {
+            "title": "À l'heure GPU",
+            "description": "Facturation par heure d'usage pour certaines charges GPU dédiées."
+          },
+          {
+            "title": "À l'instance",
+            "description": "Facturation par ressource dédiée lorsque le service le nécessite."
+          }
+        ]
+      },
+      "pricingUnits": {
+        "eyebrow": "Unités de facturation",
+        "title": "Comprendre le prix affiché",
+        "description": "Chaque prix affiche explicitement son unité, afin que vous ne voyiez jamais « €0.XX » sans savoir ce que ce montant représente.",
+        "items": [
+          "€ / heure",
+          "€ / mois",
+          "€ / Go / mois",
+          "€ / Go",
+          "€ / requête",
+          "€ / heure GPU",
+          "€ / IP / mois"
+        ],
+        "taxNote": "Les prix affichés s'entendent hors taxes, sauf mention contraire. Consultez la note fiscale ci-dessous."
+      },
+      "billingModels": {
+        "eyebrow": "Modèles de facturation",
+        "title": "Choisissez votre modèle",
+        "description": "Comparez flexibilité et prévisibilité selon la durée d'engagement. Aucune remise fictive : les conditions réelles sont communiquées au moment de la souscription.",
+        "flexibility": "Flexibilité",
+        "predictability": "Prévisibilité",
+        "discount": "Remise",
+        "models": {
+          "payg": {
+            "title": "Pay-as-you-go",
+            "description": "Payez ce que vous consommez. Flexibilité maximale, aucune avance."
+          },
+          "monthly": {
+            "title": "Mensuel",
+            "description": "Tarif fixe sur la durée du mois pour une facture prévisible."
+          },
+          "committed": {
+            "title": "Engagement",
+            "description": "Usage réservé sur une période définie, en échange d'un prix unitaire plus bas selon les conditions en vigueur."
+          },
+          "dedicated": {
+            "title": "Ressources dédiées",
+            "description": "Instances ou serveurs réservés à votre usage exclusif, facturés à la ressource."
+          }
+        }
+      },
+      "compute": {
+        "eyebrow": "Compute",
+        "title": "Tarifs Compute",
+        "description": "Des configurations équilibrées en vCPU, mémoire et stockage. Le prix horaire et l'estimation mensuelle reposent sur la même source de données.",
+        "columns": {
+          "plan": "Plan",
+          "vcpu": "vCPU",
+          "ram": "RAM",
+          "storage": "Stockage",
+          "pricePerHour": "Prix / heure",
+          "estimatedMonthly": "Estimation / mois"
+        },
+        "cta": "Configurer le compute",
+        "note": "Estimation mensuelle basée sur 730 heures d'utilisation. Actualisée instantanément par le calculateur."
+      },
+      "storage": {
+        "eyebrow": "Stockage",
+        "title": "Tarifs Stockage",
+        "description": "Selon le volume stocké et les opérations incluses. Le prix est affiché par Go par mois.",
+        "columns": {
+          "type": "Type",
+          "pricePerGb": "Prix / Go / mois",
+          "minimum": "Minimum",
+          "includedOps": "Opérations incluses",
+          "note": "Coûts additionnels"
+        },
+        "cta": "Voir le stockage",
+        "note": "Compléments tarifaires (requêtes, transfert sortant) affichés dès qu'ils sont configurés."
+      },
+      "networking": {
+        "eyebrow": "Réseau",
+        "title": "Tarifs Réseau",
+        "description": "Séparation claire entre le trafic inclus et le trafic facturé. Jamais de « trafic gratuit » sans définir précisément ce qui est inclus.",
+        "columns": {
+          "item": "Élément",
+          "unit": "Unité",
+          "status": "Statut",
+          "price": "Prix",
+          "included": "Inclus",
+          "charged": "Facturé"
+        },
+        "includedLabel": "Inclus",
+        "chargedLabel": "Facturé",
+        "cta": "Voir le réseau",
+        "note": "Le trafic sortant au-delà du quota inclus est facturé. Le trafic entrant et le réseau privé sont inclus dans le plan."
+      },
+      "databases": {
+        "eyebrow": "Bases de données",
+        "title": "Tarifs Bases de données",
+        "description": "La facturation combine le compute de la base, le stockage, les backups et la haute disponibilité. Le calcul final est présenté comme une estimation mensuelle.",
+        "columns": {
+          "engine": "Moteur",
+          "tier": "Niveau",
+          "vcpu": "vCPU",
+          "ram": "RAM",
+          "storage": "Stockage",
+          "ha": "Haute dispo",
+          "pricePerHour": "Prix / heure"
+        },
+        "cta": "Voir les bases de données",
+        "note": "Estimation : base + stockage + backup = coût mensuel. Les backups peuvent être facturés séparément."
+      },
+      "containers": {
+        "eyebrow": "Containers",
+        "title": "Tarifs Containers",
+        "description": "La facturation suit le modèle réel des containers (CPU, RAM, exécution) et non un modèle Kubernetes ou VM par défaut.",
+        "columns": {
+          "tier": "Niveau",
+          "cpu": "CPU",
+          "ram": "RAM",
+          "pricePerHour": "Prix / heure"
+        },
+        "cta": "Voir les containers",
+        "note": "Stockage, réseau et requêtes associés présentés selon le modèle de facturation retenu."
+      },
+      "gpu": {
+        "eyebrow": "GPU & IA",
+        "title": "Tarifs GPU & IA",
+        "description": "Une tarification particulièrement transparente, car les coûts GPU peuvent rapidement devenir importants. Prix affiché en € / heure GPU.",
+        "columns": {
+          "gpu": "GPU",
+          "vram": "VRAM",
+          "vcpu": "vCPU",
+          "ram": "RAM",
+          "pricePerGpuHour": "Prix / heure GPU"
+        },
+        "cta": "Voir GPU & IA",
+        "note": "Service en cours de préparation. Sa disponibilité sera annoncée séparément.",
+        "comingSoon": "Bientôt disponible"
+      },
+      "backup": {
+        "eyebrow": "Backup",
+        "title": "Tarifs Backup",
+        "description": "Le coût est estimé à partir du volume stocké, de la rétention et de la fréquence. Le backup n'est pas ajouté par défaut à tous les services.",
+        "columns": {
+          "tier": "Niveau",
+          "pricePerGb": "Prix / Go / mois",
+          "minimum": "Minimum",
+          "retention": "Rétention"
+        },
+        "cta": "Voir le backup",
+        "note": "Estimation : stockage de backup × rétention = coût estimé."
+      },
+      "security": {
+        "eyebrow": "Sécurité",
+        "title": "Tarifs Sécurité",
+        "description": "Séparer ce qui est inclus, ce qui est optionnel et ce qui est facturé à l'usage. Rien n'est facturé artificiellement.",
+        "included": "Inclus",
+        "optional": "Optionnel",
+        "usageBased": "À l'usage",
+        "columns": {
+          "item": "Fonctionnalité",
+          "class": "Classe",
+          "price": "Prix",
+          "included": "Contenu inclus"
+        },
+        "cta": "Voir la sécurité",
+        "note": "Le firewall de base et la protection DDoS en périphérie sont inclus avec le réseau. Les services avancés, lorsqu'ils existent, sont clairement séparés."
+      },
+      "includedVsExtra": {
+        "eyebrow": "Inclus vs extra",
+        "title": "Ce qui est inclus, ce qui est en plus",
+        "description": "Aucune mauvaise surprise : chaque service déclare ses inclusions et ses coûts additionnels.",
+        "included": {
+          "title": "Inclus",
+          "items": [
+            "Accès API",
+            "Console cloud",
+            "Réseau de base",
+            "Monitoring"
+          ]
+        },
+        "optional": {
+          "title": "Optionnel",
+          "items": [
+            "Stockage additionnel",
+            "IP supplémentaires",
+            "Services avancés"
+          ]
+        },
+        "usageBased": {
+          "title": "À l'usage",
+          "items": [
+            "Trafic réseau",
+            "Requêtes",
+            "Usage compute"
+          ]
+        }
+      },
+      "freeServices": {
+        "eyebrow": "Inclus sans coût additionnel",
+        "title": "Services inclus",
+        "description": "Le terme « gratuit » n'est utilisé que lorsqu'il n'y a ni condition ni limite notable.",
+        "note": "Au-delà de l'usage inclus, les conditions tarifaires s'appliquent.",
+        "items": [
+          {
+            "id": "api",
+            "label": "API access",
+            "included": "Accès illimité aux API",
+            "additional": "—"
+          },
+          {
+            "id": "console",
+            "label": "Console cloud",
+            "included": "Accès complet à la console",
+            "additional": "—"
+          },
+          {
+            "id": "basicNetworking",
+            "label": "Réseau de base",
+            "included": "Réseau privé inclus",
+            "additional": "Facturé au-delà du quota inclus"
+          },
+          {
+            "id": "monitoring",
+            "label": "Monitoring",
+            "included": "Monitoring de base",
+            "additional": "Alertes avancées facturées séparément quand elles sont disponibles"
+          },
+          {
+            "id": "firewall",
+            "label": "Firewall de base",
+            "included": "Règles de base",
+            "additional": "Sécurité avancée facturée séparément"
+          },
+          {
+            "id": "ipv6",
+            "label": "IPv6",
+            "included": "Connectivité IPv6",
+            "additional": "—"
+          }
+        ],
+        "columns": {
+          "service": "Service",
+          "included": "Usage inclus",
+          "additional": "Usage additionnel"
+        }
+      },
+      "compare": {
+        "eyebrow": "Comparatif",
+        "title": "Comparer les services",
+        "description": "Un aperçu des unités de facturation et du caractère « à l'usage » de chaque famille. Les montants détaillés figurent dans les sections dédiées, à partir de la même source de données.",
+        "columns": {
+          "service": "Service",
+          "unit": "Unité de facturation",
+          "usageBased": "À l'usage"
+        },
+        "yes": "Oui",
+        "no": "Non",
+        "available": "Disponible",
+        "comingSoon": "Bientôt disponible"
+      },
+      "estimate": {
+        "eyebrow": "Estimation",
+        "title": "Estimation mensuelle",
+        "description": "Le calcul suivant est une estimation fondée sur une convention d'utilisation, jamais une facture finale.",
+        "compute": "Compute",
+        "storage": "Stockage",
+        "network": "Réseau",
+        "backup": "Backup",
+        "total": "Total estimé",
+        "perMonth": "/ mois",
+        "estimated": "Estimé",
+        "note": "Le coût réel dépend de votre consommation. « Estimé » signifie toujours une approximation, pas une garantie.",
+        "hoursNote": "Estimation mensuelle basée sur 730 heures / mois."
+      },
+      "calculator": {
+        "eyebrow": "Calculateur",
+        "title": "Estimez le coût de votre configuration",
+        "description": "Choisissez vos paramètres : le calcul est mis à jour instantanément, sans rechargement. Les cartes et le calculateur partagent les mêmes données tarifaires.",
+        "calcTitle": "Votre configuration",
+        "calcSubtitle": "Compute, stockage, réseau",
+        "computeLabel": "Compute",
+        "storageLabel": "Stockage",
+        "networkLabel": "Réseau",
+        "estimateTitle": "Estimation",
+        "perHour": "À l'heure",
+        "perDay": "Par jour",
+        "perMonth": "Par mois",
+        "perYear": "Par an",
+        "notConfigured": "Prix à annoncer",
+        "dependsOnUsage": "Coût réel dépendant de la consommation. Les prix non publiés sont marqués « à annoncer ».",
+        "computeNone": "Aucune configuration de compute disponible.",
+        "storageNone": "Aucun stockage"
+      },
+      "billingTransparency": {
+        "eyebrow": "Transparence",
+        "title": "Une facturation transparente",
+        "description": "La tarification est présentée avec son unité de facturation et ses conditions applicables.",
+        "items": [
+          "Unités de facturation claires",
+          "Visibilité de l'usage",
+          "Facturation détaillée",
+          "Prix prévisibles"
+        ],
+        "note": "Le système de facturation demeure la source de vérité de la facture réelle. Cette page décrit le pricing ; le billing produit la facture."
+      },
+      "taxCurrency": {
+        "eyebrow": "Devise & taxes",
+        "title": "Devise, période et taxes",
+        "description": "La localisation du site prend en charge plusieurs devises. Les prix proviennent exclusivement de la source tarifaire officielle — aucune conversion avec un taux fictif.",
+        "currency": "Devise : EUR par défaut (USD et autres selon disponibilité).",
+        "taxes": "Les prix affichés sont hors taxes, sauf mention explicite contraire. La TVA applicable dépend de la localisation.",
+        "billingPeriod": "Période : les conversions mensuelles suivent une règle unique (730 heures / mois).",
+        "rounding": "Les calculs internes conservent une précision élevée ; seul l'affichage arrondit."
+      },
+      "costControl": {
+        "eyebrow": "Maîtrise des coûts",
+        "title": "Maîtrisez vos coûts",
+        "description": "Des mécanismes pour garder le contrôle de votre facture cloud.",
+        "availableNow": {
+          "title": "Disponible maintenant",
+          "items": [
+            "Budgets",
+            "Limites d'usage",
+            "Alertes",
+            "Monitoring"
+          ]
+        },
+        "comingSoon": {
+          "title": "Bientôt disponible",
+          "items": [
+            "Extinction automatique",
+            "Cycle de vie des ressources"
+          ]
+        }
+      },
+      "finalCta": {
+        "title": "Construisez avec un prix que vous comprenez.",
+        "description": "Un prix unique, une source de vérité, partout dans Zenth Cloud.",
+        "primary": "Commencer à construire",
+        "secondary": "Explorer le Public Cloud"
       }
     },
     "storage": {
@@ -3760,6 +4163,953 @@
         "title": "Build infrastructure around your business.",
         "description": "Combinez contrôle physique et expérience cloud avec le Dedicated Cloud ZenthCloud.",
         "primary": "Design your Dedicated Cloud",
+        "secondary": "Talk to an expert"
+      }
+    },
+    "virtualization": {
+      "meta": {
+        "title": "Virtualisation Private Cloud | ZenthCloud",
+        "description": "Comment la virtualisation transforme une infrastructure physique en ressources cloud flexibles : hyperviseur, resource pools, machines virtuelles, isolation, stockage et réseau virtuels."
+      },
+      "hero": {
+        "badge": "Private Cloud · Virtualisation",
+        "title": "Turn infrastructure into flexibility.",
+        "subtitle": "La virtualisation est la couche qui transforme une infrastructure physique dédiée en ressources cloud : machines virtuelles isolées, allouées par logiciel, pilotées par API, CLI et console.",
+        "primaryCta": "Explore Private Cloud",
+        "secondaryCta": "Talk to an expert",
+        "visualServer": "Physical Server",
+        "visualHypervisor": "Hypervisor",
+        "visualVm": "VM"
+      },
+      "pipeline": {
+        "eyebrow": "Architecture",
+        "title": "From hardware to cloud.",
+        "description": "Chaque couche a un rôle : le matériel fournit la capacité, la virtualisation l'abstrait, les pools l'organisent et les machines virtuelles la consomment.",
+        "physical": "Physical Hardware",
+        "hypervisor": "Hypervisor Layer",
+        "pools": "Resource Pools",
+        "compute": "Compute",
+        "memory": "Memory",
+        "storage": "Storage",
+        "vms": "Virtual Machines",
+        "workloads": "Workloads",
+        "note": "La virtualisation est la couche d'abstraction entre le matériel physique et vos workloads."
+      },
+      "explorer": {
+        "eyebrow": "Explore",
+        "title": "Explorez la stack, couche par couche.",
+        "description": "Sélectionnez une couche pour comprendre son rôle, ses ressources, ses responsabilités et ses dépendances.",
+        "copy": {
+          "role": "Rôle",
+          "resources": "Ressources",
+          "responsibilities": "Responsabilités",
+          "dependencies": "Dépendances"
+        },
+        "layers": [
+          {
+            "key": "physical",
+            "label": "Physical Infrastructure",
+            "role": "Fournit la capacité brute : CPU, mémoire, stockage et réseau physiques.",
+            "resources": "Serveurs, disques, interfaces réseau, alimentation, réseau physique.",
+            "responsibilities": "Capacité, maintenance matérielle, remplacements.",
+            "dependencies": "Datacenters, réseau physique, énergie."
+          },
+          {
+            "key": "virtualization",
+            "label": "Virtualization Layer",
+            "role": "Abstrait le matériel et expose des ressources virtuelles cohérentes.",
+            "resources": "Hyperviseur, scheduler de ressources, drivers virtuels.",
+            "responsibilities": "Isolation, allocation, gestion du cycle de vie des machines virtuelles.",
+            "dependencies": "Infrastructure physique."
+          },
+          {
+            "key": "pool",
+            "label": "Resource Pool",
+            "role": "Regroupe les ressources de plusieurs hôtes en un réservoir commun.",
+            "resources": "CPU, mémoire et stockage agrégés du cluster.",
+            "responsibilities": "Allocation aux machines virtuelles, planification de capacité.",
+            "dependencies": "Virtualization layer et clusters."
+          },
+          {
+            "key": "vm",
+            "label": "Virtual Machine",
+            "role": "Une unité de calcul isolée : vCPU, RAM, disques et interfaces réseau virtuels.",
+            "resources": "vCPU, RAM, virtual disks, network interfaces, operating system.",
+            "responsibilities": "Exécuter vos applications et services de manière isolée.",
+            "dependencies": "Resource pool, stockage et réseau virtuels."
+          },
+          {
+            "key": "application",
+            "label": "Application",
+            "role": "Le workload final : ce que vos équipes déploient et utilisent.",
+            "resources": "Code, données, dépendances applicatives.",
+            "responsibilities": "Comportement métier, sécurité applicative, cycle de vie du service.",
+            "dependencies": "Machine virtuelle et services sous-jacents."
+          }
+        ]
+      },
+      "whatIs": {
+        "eyebrow": "Définition",
+        "title": "Qu'est-ce que la virtualisation ?",
+        "description": "Un serveur physique peut être divisé en plusieurs environnements virtuels isolés, chacun disposant de ses propres ressources.",
+        "intro": "La virtualisation ne se résume pas à « faire plusieurs VMs » : elle abstrait les ressources physiques et les expose comme des ressources logiques, configurables et pilotées par logiciel.",
+        "points": [
+          "Chaque VM dispose de son propre système d'exploitation",
+          "Les ressources sont allouées et ajustées par logiciel",
+          "Les environnements restent isolés les uns des autres",
+          "L'infrastructure physique reste gérée comme un tout"
+        ],
+        "server": "Physical Server",
+        "hypervisor": "Hypervisor",
+        "vm1": "VM 1",
+        "vm2": "VM 2",
+        "vm3": "VM 3"
+      },
+      "vms": {
+        "eyebrow": "Machines virtuelles",
+        "title": "La VM : une ressource cloud complète",
+        "description": "Une machine virtuelle est une unité de calcul isolée composée de ressources virtuelles que vous configurez et pilotez.",
+        "components": [
+          {
+            "label": "vCPU",
+            "description": "Puissance de calcul virtuelle"
+          },
+          {
+            "label": "RAM",
+            "description": "Mémoire vive allouée"
+          },
+          {
+            "label": "Virtual Disks",
+            "description": "Stockage attaché à la VM"
+          },
+          {
+            "label": "Network Interfaces",
+            "description": "Connectivité réseau virtuelle"
+          },
+          {
+            "label": "Operating System",
+            "description": "Système d'exploitation invité"
+          }
+        ],
+        "exampleLabel": "Exemple de VM",
+        "example": [
+          {
+            "resource": "vCPU",
+            "value": "4"
+          },
+          {
+            "resource": "RAM",
+            "value": "8 GB"
+          },
+          {
+            "resource": "Disk",
+            "value": "100 GB"
+          },
+          {
+            "resource": "Network",
+            "value": "1 interface"
+          }
+        ],
+        "note": "Exemple pédagogique : les configurations commerciales seront définies avec le futur catalogue ZenthCloud."
+      },
+      "hypervisor": {
+        "eyebrow": "Hyperviseur",
+        "title": "Le rôle de l'hyperviseur",
+        "description": "L'hyperviseur est la couche logicielle qui s'exécute entre le matériel et les machines virtuelles, et qui partage les ressources physiques entre elles.",
+        "hardware": "Hardware",
+        "name": "Hypervisor",
+        "vm": "VM",
+        "management": "Management",
+        "items": [
+          {
+            "title": "CPU scheduling",
+            "description": "Répartit le temps de calcul entre les machines virtuelles."
+          },
+          {
+            "title": "Memory allocation",
+            "description": "Alloue et isole la mémoire entre les environnements."
+          },
+          {
+            "title": "Virtual devices",
+            "description": "Expose des périphériques virtuels aux VMs."
+          },
+          {
+            "title": "Isolation",
+            "description": "Sépare les environnements les uns des autres."
+          },
+          {
+            "title": "Resource management",
+            "description": "Gère la capacité et les politiques d'allocation."
+          }
+        ]
+      },
+      "abstraction": {
+        "eyebrow": "Abstraction",
+        "title": "Des ressources physiques aux ressources virtuelles",
+        "description": "Chaque ressource physique est exposée sous forme de ressource virtuelle, configurable indépendamment du matériel.",
+        "message": "C'est cette abstraction qui rend une infrastructure physique flexible : les ressources deviennent logiques, donc reconfigurables.",
+        "rows": [
+          {
+            "physical": "CPU",
+            "virtual": "vCPU"
+          },
+          {
+            "physical": "RAM",
+            "virtual": "Virtual Memory"
+          },
+          {
+            "physical": "Disk",
+            "virtual": "Virtual Disk"
+          },
+          {
+            "physical": "NIC",
+            "virtual": "Virtual Network Interface"
+          },
+          {
+            "physical": "Hardware",
+            "virtual": "Virtual Machine"
+          }
+        ]
+      },
+      "pools": {
+        "eyebrow": "Resource pools",
+        "title": "Regrouper les ressources pour les allouer",
+        "description": "Les ressources de plusieurs hôtes physiques peuvent être regroupées logiquement dans un pool, puis allouées aux machines virtuelles selon les besoins.",
+        "note": "Le pool simplifie la planification de capacité : on raisonne en capacité agrégée plutôt qu'en machine individuelle.",
+        "host": "Host",
+        "pool": "Resource Pool",
+        "vm": "VM"
+      },
+      "clusters": {
+        "eyebrow": "Clusters",
+        "title": "Le cluster de virtualisation",
+        "description": "Un cluster regroupe plusieurs hôtes pour offrir une capacité agrégée et des opérations cohérentes sur l'ensemble.",
+        "cluster": "Cluster",
+        "host1": "Host A",
+        "host2": "Host B",
+        "host3": "Host C",
+        "vms": "VMs",
+        "objectives": [
+          {
+            "title": "Scalabilité",
+            "description": "Ajouter des hôtes étend la capacité du cluster."
+          },
+          {
+            "title": "Agrégation des ressources",
+            "description": "Les ressources de tous les hôtes sont mutualisées."
+          },
+          {
+            "title": "Maintenance",
+            "description": "Intervenir sur un hôte sans arrêter la capacité globale."
+          },
+          {
+            "title": "Résilience",
+            "description": "La défaillance d'un hôte n'isole pas ses workloads."
+          },
+          {
+            "title": "Placement des workloads",
+            "description": "Choisir le meilleur hôte pour chaque machine virtuelle."
+          }
+        ]
+      },
+      "lifecycle": {
+        "eyebrow": "Cycle de vie",
+        "title": "Le cycle de vie d'une machine virtuelle",
+        "description": "Chaque VM passe par des étapes standard, du provisioning à la suppression.",
+        "steps": [
+          "Create",
+          "Provision",
+          "Configure",
+          "Run",
+          "Resize",
+          "Snapshot / Backup",
+          "Stop",
+          "Delete"
+        ],
+        "note": "Les opérations disponibles exactes (resize, snapshot, etc.) suivent les capacités réelles de la plateforme ZenthCloud."
+      },
+      "isolation": {
+        "eyebrow": "Isolation",
+        "title": "Des frontières contrôlées entre les workloads",
+        "description": "L'isolation s'applique à plusieurs niveaux, du matériel jusqu'au workload lui-même.",
+        "message": "Virtualization creates controlled boundaries between workloads.",
+        "layers": [
+          "Physical Isolation",
+          "Hypervisor Isolation",
+          "Virtual Hardware",
+          "Network Isolation",
+          "Workload Isolation"
+        ]
+      },
+      "compute": {
+        "title": "Virtualisation CPU",
+        "description": "Le CPU physique est partagé entre les machines virtuelles par un scheduler, qui expose des vCPU.",
+        "physical": "Physical CPU",
+        "scheduler": "Scheduler",
+        "vcpu": "vCPU",
+        "vm": "VM",
+        "tradeoffs": [
+          {
+            "title": "Overcommit",
+            "description": "La somme des vCPU peut dépasser le nombre de cœurs physiques : c'est un choix de configuration, à définir selon les workloads."
+          },
+          {
+            "title": "Performance",
+            "description": "La performance perçue dépend du partage et de la contention éventuelle."
+          },
+          {
+            "title": "Densité",
+            "description": "Plus de VMs par hôte, au prix d'une planification plus fine."
+          },
+          {
+            "title": "Scheduling",
+            "description": "Le scheduler répartit le temps CPU selon les priorités et les politiques."
+          }
+        ]
+      },
+      "memory": {
+        "title": "Virtualisation mémoire",
+        "description": "La mémoire physique est gérée par la couche de virtualisation et exposée comme mémoire virtuelle à chaque VM.",
+        "physical": "Physical RAM",
+        "management": "Memory Management",
+        "virtual": "Virtual RAM",
+        "vm": "VM",
+        "concepts": [
+          {
+            "title": "Allocation",
+            "description": "Chaque VM reçoit une quantité de mémoire définie."
+          },
+          {
+            "title": "Isolation",
+            "description": "La mémoire d'une VM n'est pas accessible aux autres."
+          },
+          {
+            "title": "Memory pressure",
+            "description": "Une capacité insuffisante crée de la pression sur les hôtes."
+          },
+          {
+            "title": "Planification",
+            "description": "La capacité mémoire se planifie à l'échelle du pool."
+          }
+        ]
+      },
+      "storage": {
+        "eyebrow": "Stockage",
+        "title": "La virtualisation du stockage",
+        "description": "Le stockage physique est organisé par une couche de stockage et exposé aux VMs sous forme de disques virtuels.",
+        "physical": "Physical Storage",
+        "layer": "Storage Layer",
+        "disk": "Virtual Disk",
+        "vm": "VM",
+        "features": [
+          {
+            "title": "Virtual disks",
+            "description": "Des disques logiques attachables à n'importe quelle VM."
+          },
+          {
+            "title": "Storage pools",
+            "description": "La capacité de plusieurs supports est agrégée."
+          },
+          {
+            "title": "Snapshots",
+            "description": "Des états intermédiaires pour la récupération opérationnelle."
+          },
+          {
+            "title": "Backup integration",
+            "description": "Les données sont protégées indépendamment de la VM."
+          }
+        ],
+        "cta": "Découvrir le stockage Public Cloud"
+      },
+      "network": {
+        "eyebrow": "Réseau",
+        "title": "La virtualisation du réseau",
+        "description": "Le réseau physique est abstrait en réseaux virtuels, segmentés et configurés par logiciel.",
+        "features": [
+          {
+            "title": "Réseaux virtuels",
+            "description": "Des réseaux logiques isolés entre eux."
+          },
+          {
+            "title": "Interfaces virtuelles",
+            "description": "Chaque VM se connecte via des interfaces dédiées."
+          },
+          {
+            "title": "Segmentation",
+            "description": "Découper l'infrastructure en zones isolées."
+          },
+          {
+            "title": "Routing & firewall",
+            "description": "Le trafic est routé et filtré par la plateforme."
+          }
+        ],
+        "cta": "Découvrir le réseau ZenthCloud"
+      },
+      "switching": {
+        "title": "Virtual Switching",
+        "physical": "Physical Network",
+        "nic": "Physical NIC",
+        "switch": "Virtual Switch",
+        "vm1": "VM 1",
+        "vm2": "VM 2",
+        "vm3": "VM 3",
+        "note": "Le commutateur virtuel interconnecte les VMs d'un même hôte et les relie au réseau physique."
+      },
+      "security": {
+        "eyebrow": "Sécurité",
+        "title": "La sécurité à chaque couche",
+        "description": "La virtualisation crée des frontières utiles, mais la sécurité reste une architecture par couches.",
+        "items": [
+          "Isolation",
+          "Contrôle d'accès",
+          "Segmentation réseau",
+          "Séparation de la gestion",
+          "Patching"
+        ],
+        "message": "La virtualisation seule n'est pas un mécanisme de sécurité complet : chaque couche ajoute ses propres contrôles.",
+        "layers": [
+          "Hardware",
+          "Hypervisor",
+          "Virtual Network",
+          "VM",
+          "Application"
+        ]
+      },
+      "resilience": {
+        "eyebrow": "Résilience",
+        "title": "HA & Live Migration",
+        "description": "La virtualisation structure la résilience : que se passe-t-il quand un hôte tombe ou doit être maintenu ?"
+      },
+      "ha": {
+        "title": "High Availability",
+        "description": "En cas de panne d'un hôte, les machines virtuelles peuvent être relancées selon la politique de la plateforme.",
+        "vm": "VM",
+        "failure": "Host Failure",
+        "recovery": "Recovery / Restart",
+        "available": "Available Service",
+        "note": "Les mécanismes exacts (redémarrage automatique, répartition) dépendent de l'architecture finale de la plateforme : ils seront précisés avec le lancement."
+      },
+      "migration": {
+        "title": "Live Migration",
+        "description": "Déplacer une VM entre deux hôtes sans interrompre le service, par exemple pour une maintenance.",
+        "status": "Planned capability",
+        "hostA": "Host A",
+        "moving": "VM Migration",
+        "hostB": "Host B",
+        "benefits": [
+          "Maintenance sans interruption",
+          "Cycle de vie du matériel",
+          "Équilibrage des workloads",
+          "Réduction des temps d'arrêt"
+        ],
+        "note": "Fonctionnalité prévue : elle ne sera présentée comme disponible qu'une fois l'infrastructure en capacité de la supporter réellement."
+      },
+      "scheduling": {
+        "eyebrow": "Scheduling",
+        "title": "Le placement des machines virtuelles",
+        "description": "Un scheduler évalue les demandes et choisit l'hôte le plus adapté pour chaque VM.",
+        "steps": [
+          "VM Request",
+          "Scheduler",
+          "Available Resources",
+          "Host Selection",
+          "VM Placement"
+        ],
+        "criteria": [
+          "CPU",
+          "RAM",
+          "Storage",
+          "Network",
+          "Availability",
+          "Policies"
+        ]
+      },
+      "automation": {
+        "eyebrow": "Automatisation",
+        "title": "Une virtualisation pilotée par logiciel",
+        "description": "Utilisateurs, APIs et CLI pilotent la couche de virtualisation à travers le contrôle plane du Private Cloud.",
+        "cta": "Découvrir le Compute Public Cloud",
+        "flowLabel": "Automation",
+        "steps": [
+          "User / API / CLI",
+          "Private Cloud Control Plane",
+          "Virtualization Layer",
+          "Cluster",
+          "VM"
+        ]
+      },
+      "selfService": {
+        "title": "Self-service",
+        "steps": [
+          "Customer",
+          "Cloud Console",
+          "Create VM",
+          "Virtualization Platform",
+          "Running VM"
+        ]
+      },
+      "comparison": {
+        "eyebrow": "Comparaison",
+        "title": "Public Cloud vs Private Cloud",
+        "description": "Une comparaison pédagogique pour situer l'offre Private Cloud de ZenthCloud.",
+        "publicLabel": "Public Cloud",
+        "privateLabel": "Private Cloud",
+        "rows": [
+          {
+            "label": "Matériel",
+            "public": "Partagé / géré par le provider",
+            "private": "Dédié"
+          },
+          {
+            "label": "Virtualisation",
+            "public": "Gérée par le provider",
+            "private": "Environnement dédié"
+          },
+          {
+            "label": "Contrôle",
+            "public": "Au niveau du service",
+            "private": "Au niveau de l'infrastructure"
+          },
+          {
+            "label": "Isolation",
+            "public": "Logique",
+            "private": "Infrastructure dédiée"
+          },
+          {
+            "label": "Personnalisation",
+            "public": "Dépend du produit",
+            "private": "Flexibilité accrue"
+          }
+        ],
+        "note": "Le Public Cloud n'est pas toujours « matériel partagé » : certaines offres dédiées existent. Cette comparaison reflète l'offre standard."
+      },
+      "vsBareMetal": {
+        "eyebrow": "Comparaison",
+        "title": "Virtualisation vs Bare Metal",
+        "description": "Deux approches légitimes : la virtualisation ajoute de la flexibilité, le bare metal maximise la simplicité et la prévisibilité.",
+        "virtualizationLabel": "Virtualisation",
+        "bareMetalLabel": "Bare Metal",
+        "virtualizationSteps": [
+          "Hardware",
+          "Hypervisor",
+          "VMs"
+        ],
+        "bareMetalSteps": [
+          "Hardware",
+          "Operating System",
+          "Application"
+        ],
+        "rows": [
+          {
+            "label": "Flexibilité",
+            "virtualization": "Élevée",
+            "bareMetal": "Limitée"
+          },
+          {
+            "label": "Densité",
+            "virtualization": "Plusieurs workloads par serveur",
+            "bareMetal": "Un workload par serveur"
+          },
+          {
+            "label": "Isolation",
+            "virtualization": "Logique / virtualisée",
+            "bareMetal": "Physique"
+          },
+          {
+            "label": "Performance",
+            "virtualization": "Très bonne, avec un léger overhead",
+            "bareMetal": "Maximale"
+          },
+          {
+            "label": "Provisioning",
+            "virtualization": "Rapide et automatisé",
+            "bareMetal": "Plus lent / matériel"
+          },
+          {
+            "label": "Complexité opérationnelle",
+            "virtualization": "Plateforme à opérer",
+            "bareMetal": "OS à opérer directement"
+          }
+        ],
+        "note": "Le choix dépend de vos workloads : la virtualisation apporte flexibilité et densité, le bare metal simplicité et prévisibilité."
+      },
+      "whenUse": {
+        "eyebrow": "Choix",
+        "title": "Quand utiliser la virtualisation ?",
+        "description": "Une aide au choix honnête : chaque approche a ses cas d'usage naturels.",
+        "virtualization": {
+          "title": "Virtualisation",
+          "description": "Idéale quand la flexibilité et la densité comptent.",
+          "items": [
+            "Applications web",
+            "Bases de données",
+            "Environnements de développement",
+            "Services internes",
+            "Applications métier",
+            "Infrastructures multi-services",
+            "Workloads isolés",
+            "Environnements de test"
+          ]
+        },
+        "bareMetal": {
+          "title": "Bare Metal",
+          "description": "Pertinent quand la performance brute ou le matériel spécifique priment.",
+          "items": [
+            "Exigences de performance extrêmes",
+            "Workloads liés au matériel",
+            "Accélérateurs spécialisés",
+            "Performance dédiée prévisible",
+            "Contraintes de licences",
+            "Workloads à très fort I/O"
+          ]
+        },
+        "cta": "Découvrir le Dedicated Cloud"
+      },
+      "licensing": {
+        "eyebrow": "Licences",
+        "title": "Plusieurs couches de licences",
+        "description": "Dans un environnement virtualisé, chaque couche peut avoir son propre modèle de licence.",
+        "layers": [
+          "Infrastructure",
+          "Hypervisor",
+          "Operating System",
+          "Database / Middleware",
+          "Application"
+        ],
+        "models": [
+          {
+            "title": "Provider Managed",
+            "description": "ZenthCloud fournit et gère la licence."
+          },
+          {
+            "title": "BYOL",
+            "description": "Bring Your Own License : le client apporte sa licence lorsqu'elle est autorisée."
+          },
+          {
+            "title": "License Included",
+            "description": "La licence est intégrée au prix de la ressource."
+          },
+          {
+            "title": "License Optional",
+            "description": "La ressource peut être déployée avec ou sans licence supplémentaire."
+          }
+        ],
+        "note": "Les modèles réellement proposés et les licences applicables seront précisés avec le catalogue de licences ZenthCloud. Aucune licence spécifique n'est annoncée ici sans validation commerciale et juridique."
+      },
+      "images": {
+        "eyebrow": "Images OS",
+        "title": "Du template au système d'exploitation",
+        "description": "Les machines virtuelles démarrent depuis des images et templates standardisés.",
+        "steps": [
+          "Virtualization",
+          "VM Template",
+          "Operating System",
+          "Configured VM"
+        ],
+        "catalog": [
+          "Linux",
+          "Windows",
+          "Autres OS supportés"
+        ],
+        "note": "Le catalogue d'images détaillé (distributions et versions) sera publié avec la plateforme."
+      },
+      "templates": {
+        "eyebrow": "Templates",
+        "title": "Des environnements standardisés",
+        "description": "Un template capture une configuration reproductible, déployable en quelques clics.",
+        "steps": [
+          "Template",
+          "Configuration",
+          "Clone / Deploy",
+          "VM"
+        ],
+        "useCases": [
+          "Développement",
+          "Production",
+          "Environnements standard",
+          "Workloads internes"
+        ]
+      },
+      "snapshots": {
+        "eyebrow": "Snapshots",
+        "title": "Snapshot : un état à un instant donné",
+        "description": "Un snapshot capture l'état d'une VM à un moment précis, pour la récupération opérationnelle ou le clonage.",
+        "vm": "VM",
+        "snapshot": "Snapshot",
+        "state": "Point-in-time state",
+        "clone": "Recovery / Clone",
+        "snapshotTitle": "Snapshot",
+        "snapshotDescription": "Un mécanisme de récupération opérationnelle : rapide, local à la plateforme, pensé pour revenir à un état connu.",
+        "backupTitle": "Backup",
+        "backupDescription": "Un mécanisme de protection des données : indépendant de la VM, conçu pour la restauration après perte.",
+        "note": "Un snapshot n'est pas un backup : il ne remplace pas une stratégie de sauvegarde indépendante.",
+        "cta": "Découvrir le Backup"
+      },
+      "monitoring": {
+        "eyebrow": "Monitoring",
+        "title": "Observer la virtualisation",
+        "description": "Le monitoring suit chaque niveau de la stack : cluster, hôtes, machines virtuelles et ressources.",
+        "steps": [
+          "Cluster",
+          "Host",
+          "VM",
+          "Resources"
+        ],
+        "metrics": [
+          "CPU",
+          "Mémoire",
+          "Stockage",
+          "Réseau",
+          "Health"
+        ]
+      },
+      "operations": {
+        "eyebrow": "Opérations",
+        "title": "Les opérations d'infrastructure",
+        "description": "La virtualisation simplifie certaines opérations : provisionner, surveiller, maintenir, faire évoluer, remplacer.",
+        "steps": [
+          "Provision",
+          "Monitor",
+          "Maintain",
+          "Upgrade",
+          "Replace"
+        ],
+        "lifecycle": [
+          "New Hardware",
+          "Cluster Expansion",
+          "Workload Placement",
+          "Production",
+          "Maintenance",
+          "Retirement"
+        ],
+        "note": "Le cycle de vie du matériel s'intègre à celui du cluster : la capacité se renouvelle sans redéployer chaque workload individuellement."
+      },
+      "scalability": {
+        "eyebrow": "Scalabilité",
+        "title": "Deux façons de faire évoluer",
+        "description": "La virtualisation permet d'évoluer à deux niveaux, mais ne remplace pas une stratégie d'architecture applicative.",
+        "vertical": {
+          "title": "Vertical Scaling",
+          "description": "Augmenter les ressources d'une VM existante.",
+          "vm": "VM",
+          "more": "More CPU / RAM"
+        },
+        "horizontal": {
+          "title": "Horizontal Scaling",
+          "description": "Ajouter plusieurs VMs derrière un service.",
+          "vm": "VM"
+        }
+      },
+      "efficiency": {
+        "eyebrow": "Efficacité",
+        "title": "Une meilleure utilisation des ressources",
+        "description": "La virtualisation améliore l'utilisation du matériel quand les workloads sont correctement consolidés.",
+        "benefits": [
+          "Consolidation",
+          "Utilisation",
+          "Provisioning",
+          "Isolation",
+          "Allocation"
+        ],
+        "message": "Virtualization can improve hardware utilization when workloads are appropriately consolidated."
+      },
+      "performance": {
+        "eyebrow": "Performance",
+        "title": "Le compromis honnête de la virtualisation",
+        "description": "La virtualisation apporte beaucoup, mais elle n'efface pas la physique : elle introduit une couche supplémentaire.",
+        "benefitsLabel": "Ce que la virtualisation apporte",
+        "tradeoffs": [
+          "Flexibilité",
+          "Isolation",
+          "Automatisation",
+          "Densité"
+        ],
+        "overheadLabel": "Ce qu'elle coûte",
+        "overheadDescription": "Overhead de virtualisation et contention possibles sur les ressources partagées. La performance réelle dépend de chaque workload.",
+        "factors": [
+          "Workload",
+          "Matériel",
+          "Configuration",
+          "Stockage",
+          "Réseau"
+        ],
+        "note": "La virtualisation ne promet pas une performance identique au bare metal : elle promet de la flexibilité."
+      },
+      "architecture": {
+        "eyebrow": "Vue d'ensemble",
+        "title": "L'architecture complète du Private Cloud",
+        "description": "Du contrôle plane jusqu'au matériel physique, chaque niveau joue un rôle dans l'expérience cloud.",
+        "privateCloud": "Private Cloud",
+        "controlPlane": "Control Plane",
+        "virtualizationLayer": "Virtualization Layer",
+        "cluster1": "Cluster A",
+        "cluster2": "Cluster B",
+        "cluster3": "Cluster C",
+        "vm": "VM",
+        "physical": "Physical Infrastructure"
+      },
+      "stack": {
+        "eyebrow": "Stack technique",
+        "title": "La stack de virtualisation, de bas en haut",
+        "description": "Une explication technique couche par couche : chaque niveau s'appuie sur le précédent.",
+        "layers": [
+          {
+            "title": "Hardware",
+            "description": "La capacité physique : CPU, mémoire, stockage, réseau."
+          },
+          {
+            "title": "Firmware",
+            "description": "Le microcode qui initialise le matériel."
+          },
+          {
+            "title": "Hypervisor",
+            "description": "La couche qui partage le matériel entre les VMs."
+          },
+          {
+            "title": "Virtual Networking",
+            "description": "Les réseaux et commutateurs virtuels."
+          },
+          {
+            "title": "Virtual Storage",
+            "description": "Les disques et pools de stockage virtuels."
+          },
+          {
+            "title": "Virtual Machines",
+            "description": "Les unités de calcul isolées."
+          },
+          {
+            "title": "Operating Systems",
+            "description": "Les systèmes d'exploitation invités."
+          },
+          {
+            "title": "Applications",
+            "description": "Vos workloads et services."
+          }
+        ]
+      },
+      "control": {
+        "eyebrow": "Responsabilités",
+        "title": "Qui contrôle quoi ?",
+        "description": "Une séparation claire des responsabilités entre le client et ZenthCloud.",
+        "customer": {
+          "title": "Le client contrôle",
+          "items": [
+            "Configuration des VMs",
+            "Systèmes d'exploitation",
+            "Applications",
+            "Configuration réseau",
+            "Stockage"
+          ]
+        },
+        "zenth": {
+          "title": "ZenthCloud gère",
+          "items": [
+            "Infrastructure physique",
+            "Plateforme de virtualisation",
+            "Opérations matérielles",
+            "Opérations de la plateforme"
+          ]
+        },
+        "note": "Cette séparation s'adapte au modèle Private Cloud retenu : certains environnements donnent au client davantage de contrôle."
+      },
+      "dedicated": {
+        "eyebrow": "Dedicated Cloud",
+        "title": "La virtualisation sur du matériel dédié",
+        "description": "Le Dedicated Cloud combine la flexibilité de la virtualisation et la propriété d'une infrastructure réservée.",
+        "message": "Private infrastructure doesn't have to mean rigid infrastructure.",
+        "cta": "Découvrir le Dedicated Cloud",
+        "steps": [
+          "Dedicated Hardware",
+          "Private Virtualization Cluster",
+          "Customer Resource Pool",
+          "Customer Workloads"
+        ]
+      },
+      "cloudExperience": {
+        "eyebrow": "Expérience",
+        "title": "La complexité reste en dessous, l'expérience reste simple",
+        "description": "Toute la complexité de la virtualisation est abstraite derrière une interface simple.",
+        "steps": [
+          "Complex infrastructure",
+          "Abstraction",
+          "Automation",
+          "Simple interface",
+          "Cloud experience"
+        ],
+        "message": "The complexity stays underneath. The experience stays simple."
+      },
+      "developerTools": {
+        "eyebrow": "API / CLI / IaC",
+        "title": "Des outils pour les développeurs",
+        "description": "API, CLI et Infrastructure as Code pilotent la virtualisation sans passer par l'interface graphique.",
+        "steps": [
+          "Developer",
+          "API / CLI / IaC",
+          "Cloud Control Plane",
+          "Virtualization",
+          "Infrastructure"
+        ],
+        "terminalTitle": "zenthcloud-cli",
+        "terminalExample": "$ zenthcloud vm create \\\n    --name web-prod-01 \\\n    --vcpu 4 \\\n    --ram 8 \\\n    --disk 100 \\\n    --image ubuntu-24.04\n\nCreating virtual machine...\nVM web-prod-01 is running."
+      },
+      "future": {
+        "eyebrow": "Feuille de route",
+        "title": "Les évolutions futures",
+        "description": "Des capacités prévues pour la plateforme, présentées explicitement comme futures.",
+        "badge": "Future",
+        "items": [
+          "Clusters plus larges",
+          "Automatisation accrue",
+          "Scheduling avancé",
+          "Virtualisation GPU",
+          "Orchestration renforcée",
+          "Observabilité approfondie"
+        ],
+        "note": "Chaque capacité future sera confirmée avec la roadmap officielle ZenthCloud."
+      },
+      "related": {
+        "eyebrow": "En savoir plus",
+        "title": "Explorer l'écosystème ZenthCloud",
+        "description": "La virtualisation s'inscrit dans une infrastructure plus large.",
+        "links": [
+          {
+            "label": "Dedicated Cloud",
+            "href": "/private-cloud/dedicated-cloud"
+          },
+          {
+            "label": "Infrastructure",
+            "href": "/company/infrastructure"
+          },
+          {
+            "label": "Datacenters",
+            "href": "/company/data-centers"
+          },
+          {
+            "label": "Réseau",
+            "href": "/company/network"
+          },
+          {
+            "label": "Compute",
+            "href": "/public-cloud/compute"
+          },
+          {
+            "label": "Stockage",
+            "href": "/public-cloud/storage"
+          },
+          {
+            "label": "Networking",
+            "href": "/public-cloud/networking"
+          },
+          {
+            "label": "Backup",
+            "href": "/public-cloud/backup"
+          }
+        ]
+      },
+      "finalCta": {
+        "title": "Flexible infrastructure. Controlled hardware.",
+        "description": "La virtualisation transforme votre infrastructure physique en ressources cloud flexibles, sans abandonner le contrôle.",
+        "primary": "Explore Private Cloud",
         "secondary": "Talk to an expert"
       }
     },
