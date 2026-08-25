@@ -664,6 +664,683 @@
         "websites": "Site public : zenthcloud.com · Manager client : manager.zenthcloud.com"
       }
     },
+    "about": {
+      "meta": {
+        "title": "À propos de ZenthCloud | Cloud infrastructure Europe",
+        "description": "Qui est ZenthCloud ? Découvrez notre mission, notre vision, notre philosophie et la manière dont nous construisons une infrastructure cloud européenne transparente."
+      },
+      "hero": {
+        "badge": "ZenthCloud",
+        "title": "Construire l'infrastructure de ce qui vient ensuite.",
+        "subtitle": "ZenthCloud est une entreprise d'infrastructure cloud qui développe des services permettant aux développeurs et aux entreprises de déployer, gérer et faire évoluer leurs infrastructures en Europe.",
+        "primaryCta": "Explorer ZenthCloud",
+        "secondaryCta": "Découvrir notre vision"
+      },
+      "whatIs": {
+        "eyebrow": "Qu'est-ce que ZenthCloud ?",
+        "title": "Une plateforme d'infrastructure cloud",
+        "description": "ZenthCloud développe une plateforme intégrée qui couvre l'ensemble des besoins en infrastructure : du calcul au stockage, du réseau à la sécurité.",
+        "intro": "ZenthCloud développe une plateforme d'infrastructure complète : calcul, stockage, réseau, conteneurs, bases de données, GPU, sauvegarde et sécurité. Notre rôle est de fournir les briques que les équipes techniques utilisent pour construire et faire fonctionner leurs systèmes, sur du matériel que nous concevons et opérons nous-mêmes.",
+        "platforms": [
+          {
+            "title": "Public Cloud",
+            "description": "Des services cloud mutualisés et élastiques, accessibles à la demande, pour déployer des workloads sans gérer le matériel sous-jacent."
+          },
+          {
+            "title": "Private Cloud",
+            "description": "Des environnements dédiés à une organisation, pour conserver le contrôle et l'isolation nécessaires aux charges sensibles."
+          },
+          {
+            "title": "Dedicated Cloud",
+            "description": "Des ressources physiques dédiées, avec la souplesse du cloud et la garantie d'un matériel réservé à vos workloads."
+          }
+        ],
+        "capabilities": [
+          "Networking",
+          "Compute",
+          "Storage",
+          "Bases de données",
+          "Containers",
+          "GPU & AI",
+          "Backup",
+          "Security"
+        ]
+      },
+      "whyExists": {
+        "eyebrow": "Pourquoi ZenthCloud existe",
+        "title": "Des réponses à des problèmes concrets",
+        "description": "Nous avons construit ZenthCloud autour des difficultés que nous observons dans l'utilisation des infrastructures modernes.",
+        "problems": [
+          {
+            "title": "La complexité de l'infrastructure",
+            "description": "Les systèmes modernes empilent de plus en plus de couches. Nous croyons que la complexité doit être réduite par la conception, pas simplement absorbée par l'utilisateur."
+          },
+          {
+            "title": "La dépendance aux plateformes propriétaires",
+            "description": "Les clients peuvent devenir fortement dépendants d'écosystèmes fermés. Nous voulons des technologies ouvertes et des données portables."
+          },
+          {
+            "title": "Le manque de transparence",
+            "description": "Il est parfois difficile de savoir où et comment ses workloads s'exécutent. Nous voulons une infrastructure dont le fonctionnement est compréhensible."
+          },
+          {
+            "title": "La fragmentation",
+            "description": "Calcul, réseau, stockage, sécurité et supervision sont trop souvent traités comme des systèmes séparés. Nous cherchons à les faire fonctionner comme un ensemble cohérent."
+          },
+          {
+            "title": "L'expérience développeur",
+            "description": "L'infrastructure devrait être programmable et accessible, pas un assemblage de portails disparates et d'outils contradictoires."
+          }
+        ]
+      },
+      "philosophy": {
+        "eyebrow": "Notre philosophie",
+        "title": "Des principes qui guident chaque décision",
+        "description": "Notre manière de construire repose sur quelques convictions fortes sur ce qu'une infrastructure cloud doit être.",
+        "principles": [
+          {
+            "title": "Une infrastructure compréhensible",
+            "description": "L'utilisateur doit pouvoir comprendre ce qu'il utilise : comment cela fonctionne, où cela s'exécute et pourquoi."
+          },
+          {
+            "title": "L'automatisation d'abord",
+            "description": "Les opérations répétitives doivent être automatisables par conception, jamais réservées à quelques initiés."
+          },
+          {
+            "title": "Des standards ouverts",
+            "description": "Nous privilégions les technologies ouvertes et interopérables, pour éviter les dépendances inutiles."
+          },
+          {
+            "title": "La sécurité par conception",
+            "description": "La sécurité est intégrée dès la conception de l'infrastructure, pas ajoutée en couche tardive."
+          },
+          {
+            "title": "Le développeur d'abord",
+            "description": "Les APIs, la CLI et les outils font partie de l'infrastructure, pas des options ajoutées après coup."
+          },
+          {
+            "title": "Une infrastructure flexible",
+            "description": "Chaque client doit pouvoir adapter son infrastructure à ses besoins, sans modèle imposé."
+          }
+        ]
+      },
+      "approach": {
+        "eyebrow": "Notre approche",
+        "title": "Du matériel à l'expérience développeur",
+        "description": "Nous ne voulons pas seulement proposer une interface devant des serveurs. Nous cherchons à construire une couche cohérente de l'infrastructure physique jusqu'à l'expérience utilisateur.",
+        "layers": [
+          {
+            "title": "Hardware",
+            "description": "Des machines et des composants que nous sélectionnons et opérons."
+          },
+          {
+            "title": "Infrastructure",
+            "description": "Le réseau, le stockage et les services de base qui relient et font fonctionner le matériel."
+          },
+          {
+            "title": "Platform",
+            "description": "Les services cloud qui rendent l'infrastructure consommable : calcul, conteneurs, bases de données."
+          },
+          {
+            "title": "Services",
+            "description": "Les couches de gestion : sauvegarde, sécurité, supervision, facturation."
+          },
+          {
+            "title": "Developer Experience",
+            "description": "La façon dont les équipes interagissent avec le tout : console, CLI, API, documentation."
+          }
+        ]
+      },
+      "hardwareToCloud": {
+        "eyebrow": "De l'infrastructure physique au cloud",
+        "title": "Comprendre ce qu'il y a sous l'interface",
+        "description": "Nous croyons qu'un fournisseur de cloud doit connaître l'infrastructure qui se trouve sous l'interface qu'il propose.",
+        "message": "Nous croyons qu'un fournisseur de cloud doit comprendre l'infrastructure située sous l'interface.",
+        "layers": [
+          {
+            "title": "Physical Infrastructure",
+            "description": "Les data centers et le matériel physique sur lesquels tout repose."
+          },
+          {
+            "title": "Networking",
+            "description": "Le réseau qui relie machines, régions et utilisateurs."
+          },
+          {
+            "title": "Compute",
+            "description": "Les ressources de calcul qui exécutent les workloads."
+          },
+          {
+            "title": "Storage",
+            "description": "Les données, leur durabilité et leur disponibilité."
+          },
+          {
+            "title": "Virtualization",
+            "description": "La couche qui découpe et isole les ressources physiques."
+          },
+          {
+            "title": "Cloud Control Plane",
+            "description": "L'orchestration qui provisionne, supervise et opère les ressources."
+          },
+          {
+            "title": "APIs / CLI",
+            "description": "Les interfaces par lesquelles les utilisateurs pilotent le cloud."
+          },
+          {
+            "title": "Customer Workloads",
+            "description": "Ce que les clients exécutent réellement au sommet de la chaîne."
+          }
+        ]
+      },
+      "buildingInfrastructure": {
+        "eyebrow": "Construire notre propre infrastructure",
+        "title": "Nous construisons progressivement notre maîtrise",
+        "description": "Notre ambition est de maîtriser davantage de couches de l'infrastructure au fil du temps, de la conception matérielle à l'automatisation complète.",
+        "message": "Nous sommes en train de construire vers une maîtrise croissante de chaque couche.",
+        "items": [
+          {
+            "title": "Hardware",
+            "description": "Nous progressons vers une sélection et une intégration matérielle de plus en plus maîtrisées."
+          },
+          {
+            "title": "Networking",
+            "description": "Notre objectif est de piloter davantage la couche réseau, de l'acheminement à la connectivité."
+          },
+          {
+            "title": "Virtualization",
+            "description": "Nous construisons vers une couche de virtualisation maîtrisée de bout en bout."
+          },
+          {
+            "title": "Storage",
+            "description": "Nous travaillons à des systèmes de stockage dont nous maîtrisons le comportement et la durabilité."
+          },
+          {
+            "title": "Orchestration",
+            "description": "Nous automatisons progressivement le provisionnement et la gestion des ressources."
+          },
+          {
+            "title": "Control Plane",
+            "description": "Notre ambition est un plan de contrôle unique et cohérent sur l'ensemble des services."
+          },
+          {
+            "title": "Automation",
+            "description": "Chaque opération répétitive est une opportunité d'automatisation que nous cherchons à saisir."
+          },
+          {
+            "title": "Monitoring",
+            "description": "Nous construisons une supervision fine de l'infrastructure, du matériel jusqu'aux workloads."
+          }
+        ]
+      },
+      "openSource": {
+        "eyebrow": "Open source",
+        "title": "L'open source au cœur de notre approche",
+        "description": "L'open source n'est pas une fin en soi. C'est un moyen de rendre l'infrastructure plus transparente, plus auditables et plus durable.",
+        "quote": "L'open source donne à l'infrastructure une chance d'être inspectée, améliorée et comprise.",
+        "benefits": [
+          {
+            "title": "Transparence",
+            "description": "Le code ouvert expose ce que fait réellement l'infrastructure."
+          },
+          {
+            "title": "Auditabilité",
+            "description": "Chacun peut vérifier, auditer et évaluer les briques utilisées."
+          },
+          {
+            "title": "Collaboration",
+            "description": "Les retours de la communauté améliorent la qualité et la robustesse."
+          },
+          {
+            "title": "Portabilité",
+            "description": "Les standards ouverts facilitent le déplacement des workloads."
+          },
+          {
+            "title": "Innovation",
+            "description": "Les technologies ouvertes progressent plus vite, portées par des écosystèmes actifs."
+          },
+          {
+            "title": "Contrôle technologique",
+            "description": "Maîtriser les fondations évite d'être captif d'un fournisseur unique."
+          }
+        ],
+        "cta": "Explorer nos repositories GitHub"
+      },
+      "developerFirst": {
+        "eyebrow": "Developer first",
+        "title": "Conçu pour les développeurs",
+        "description": "ZenthCloud est pensé comme une infrastructure programmable. Les APIs, la CLI et les outils d'infrastructure as code sont des citoyens de première classe.",
+        "features": [
+          {
+            "title": "API-first",
+            "description": "Chaque service est pilotable par API, dès sa conception."
+          },
+          {
+            "title": "Automatisation",
+            "description": "Les opérations courantes sont scriptables et répétables."
+          },
+          {
+            "title": "CLI",
+            "description": "Une interface en ligne de commande cohérente pour interagir avec l'ensemble des services."
+          },
+          {
+            "title": "Infrastructure as Code",
+            "description": "L'infrastructure est décrite, versionnée et déployable comme du code."
+          },
+          {
+            "title": "CI/CD",
+            "description": "Une intégration propre aux pipelines d'intégration et de déploiement continus."
+          },
+          {
+            "title": "Observabilité",
+            "description": "Des métriques et des logs accessibles pour comprendre ce qui s'exécute."
+          }
+        ],
+        "cta": "Explorer la documentation"
+      },
+      "ecosystem": {
+        "eyebrow": "Écosystème",
+        "title": "Un écosystème cohérent",
+        "description": "ZenthCloud cherche à construire un écosystème de services interconnectés, plutôt qu'une collection de produits indépendants.",
+        "domains": [
+          {
+            "title": "Infrastructure",
+            "description": "Les fondations sur lesquelles reposent tous les services.",
+            "items": [
+              "Compute",
+              "Storage",
+              "Network",
+              "Dedicated"
+            ]
+          },
+          {
+            "title": "Platform",
+            "description": "Les couches qui rendent l'infrastructure exploitable.",
+            "items": [
+              "Containers",
+              "Kubernetes",
+              "Databases",
+              "AI / GPU"
+            ]
+          },
+          {
+            "title": "Services",
+            "description": "Les services transverses qui protègent et opèrent l'ensemble.",
+            "items": [
+              "Backup",
+              "Security",
+              "Monitoring"
+            ]
+          }
+        ]
+      },
+      "sge": {
+        "eyebrow": "Sky Genesis Enterprise",
+        "title": "Notre place au sein de l'écosystème SGE",
+        "description": "ZenthCloud est la branche infrastructure et cloud computing de l'écosystème Sky Genesis Enterprise.",
+        "intro": "ZenthCloud est développé au sein de l'écosystème Sky Genesis Enterprise, qui regroupe plusieurs projets et entreprises autour d'une vision commune. ZenthCloud y occupe un rôle précis : concevoir, déployer et opérer l'infrastructure cloud et les services de calcul.",
+        "entities": [
+          {
+            "name": "Zenth Cloud",
+            "description": "La branche infrastructure et services cloud de l'écosystème."
+          },
+          {
+            "name": "Arkana Telecom",
+            "description": "La couche connectivité de l'écosystème, qui relie les utilisateurs au réseau ZenthCloud."
+          },
+          {
+            "name": "Autres projets SGE",
+            "description": "Les autres projets et initiatives de l'écosystème Sky Genesis Enterprise."
+          }
+        ],
+        "note": "Les relations entre les entités seront précisées à mesure que la structure de l'écosystème sera officiellement définie."
+      },
+      "europe": {
+        "eyebrow": "Pourquoi l'Europe",
+        "title": "Une infrastructure pensée pour l'Europe",
+        "description": "Nous voulons construire une infrastructure cloud européenne, proche de nos utilisateurs et fondée sur des technologies ouvertes.",
+        "themes": [
+          {
+            "title": "Proximité",
+            "description": "Une infrastructure proche de ses utilisateurs, pour des latences faibles et un support accessible."
+          },
+          {
+            "title": "Souveraineté technologique",
+            "description": "La capacité à maîtriser les briques critiques de son infrastructure."
+          },
+          {
+            "title": "Protection des données",
+            "description": "Des données hébergées dans des environnements soumis au droit européen."
+          },
+          {
+            "title": "Infrastructures locales",
+            "description": "Des data centers et des réseaux ancrés sur le territoire européen."
+          },
+          {
+            "title": "Technologies ouvertes",
+            "description": "Une préférence pour les standards et les briques ouvertes."
+          },
+          {
+            "title": "Compétitivité européenne",
+            "description": "Contribuer à une offre cloud européenne viable et crédible."
+          }
+        ]
+      },
+      "transparency": {
+        "eyebrow": "Transparence",
+        "title": "Savoir ce que vous exécutez",
+        "description": "Nous voulons offrir davantage de visibilité sur notre infrastructure, notre architecture et nos pratiques opérationnelles.",
+        "message": "L'infrastructure devient plus fiable lorsqu'on peut la comprendre.",
+        "items": [
+          {
+            "title": "Documentation",
+            "description": "Une documentation technique détaillée de nos services et de nos APIs."
+          },
+          {
+            "title": "Security",
+            "description": "Nos pratiques de sécurité, publiées et actualisées."
+          },
+          {
+            "title": "Reliability",
+            "description": "Notre philosophie de fiabilité et nos pratiques opérationnelles."
+          },
+          {
+            "title": "Infrastructure",
+            "description": "Notre architecture et nos data centers."
+          }
+        ],
+        "upcoming": "Status, Trust Center et documentation API seront publiés prochainement."
+      },
+      "reliability": {
+        "eyebrow": "Fiabilité",
+        "title": "La fiabilité comme philosophie",
+        "description": "La fiabilité ne dépend pas d'une seule technologie. Elle repose sur une combinaison de redondance, de supervision, de sauvegarde et d'automatisation.",
+        "pillars": [
+          {
+            "title": "Redondance",
+            "description": "Des chemins et des composants redondants pour limiter les points uniques."
+          },
+          {
+            "title": "Supervision",
+            "description": "Une observation continue de l'infrastructure pour détecter tôt les anomalies."
+          },
+          {
+            "title": "Sauvegarde",
+            "description": "Des sauvegardes régulières, testées et vérifiables."
+          },
+          {
+            "title": "Récupération",
+            "description": "Des procédures de restauration éprouvées, pensées avant l'incident."
+          },
+          {
+            "title": "Automatisation",
+            "description": "Des opérations standardisées et reproductibles, sans intervention manuelle fragile."
+          },
+          {
+            "title": "Gestion d'incidents",
+            "description": "Des processus clairs pour communiquer et résoudre rapidement."
+          }
+        ],
+        "backupCta": "Découvrir le backup",
+        "securityCta": "Découvrir la sécurité"
+      },
+      "security": {
+        "eyebrow": "Sécurité",
+        "title": "La sécurité dans l'architecture",
+        "description": "Nous considérons la sécurité comme une composante de l'infrastructure, pas comme une option ajoutée après coup.",
+        "message": "La sécurité fait partie de l'infrastructure, pas d'une couche optionnelle ajoutée plus tard.",
+        "cta": "En savoir plus sur notre sécurité"
+      },
+      "vision": {
+        "eyebrow": "Notre vision",
+        "title": "Où nous allons",
+        "description": "Notre ambition est de faire évoluer ZenthCloud d'une infrastructure cloud vers un écosystème d'infrastructure intégrée.",
+        "steps": [
+          {
+            "title": "Infrastructure",
+            "description": "Les fondations physiques et logiques."
+          },
+          {
+            "title": "Cloud Platform",
+            "description": "Des services cloud cohérents au-dessus de ces fondations."
+          },
+          {
+            "title": "Developer Platform",
+            "description": "Une plateforme pensée comme un outil pour les développeurs."
+          },
+          {
+            "title": "Integrated Infrastructure Ecosystem",
+            "description": "Un écosystème d'infrastructure intégré, programmable et ouvert."
+          }
+        ],
+        "today": {
+          "title": "Aujourd'hui",
+          "items": [
+            "Des services cloud : calcul, stockage, réseau, conteneurs",
+            "Des briques open source et des standards ouverts",
+            "Une infrastructure européenne en construction",
+            "Une approche API-first et automatisable"
+          ]
+        },
+        "ambition": {
+          "title": "Notre ambition",
+          "items": [
+            "Une infrastructure de plus en plus maîtrisée, du matériel au plan de contrôle",
+            "Davantage d'automatisation et d'infrastructure programmable",
+            "Des technologies ouvertes tout au long de la chaîne",
+            "Des capacités dédiées à l'IA et aux workloads exigeants",
+            "Une plateforme d'entreprise complète et intégrée"
+          ]
+        }
+      },
+      "longTerm": {
+        "eyebrow": "Vision à long terme",
+        "title": "Une infrastructure complète, maîtrisée de bout en bout",
+        "description": "Notre objectif à long terme est de couvrir l'ensemble de la chaîne, du data center jusqu'à la plateforme cloud.",
+        "message": "Nous construisons progressivement une infrastructure capable de couvrir l'ensemble de la chaîne, du data center jusqu'à la plateforme cloud.",
+        "items": [
+          {
+            "title": "Compute",
+            "description": "Des ressources de calcul variées, du VPS au GPU."
+          },
+          {
+            "title": "Storage",
+            "description": "Des systèmes de stockage durables et performants."
+          },
+          {
+            "title": "Network",
+            "description": "Une connectivité maîtrisée, des data centers aux régions."
+          },
+          {
+            "title": "Security",
+            "description": "La sécurité intégrée à chaque couche."
+          },
+          {
+            "title": "Automation",
+            "description": "L'automatisation des opérations et du cycle de vie."
+          },
+          {
+            "title": "Cloud Platform",
+            "description": "Un plan de contrôle unifié au-dessus de l'ensemble."
+          }
+        ]
+      },
+      "people": {
+        "eyebrow": "Les équipes",
+        "title": "Construit par des spécialistes",
+        "description": "ZenthCloud est le fruit du travail d'ingénieurs, de développeurs, de spécialistes de l'infrastructure, de la sécurité et du support.",
+        "cta": "Rencontrer l'équipe",
+        "teams": [
+          {
+            "title": "Ingénieurs",
+            "description": "Ceux qui conçoivent et construisent les systèmes."
+          },
+          {
+            "title": "Développeurs",
+            "description": "Ceux qui transforment les besoins en produits et en outils."
+          },
+          {
+            "title": "Spécialistes infrastructure",
+            "description": "Ceux qui opèrent le réseau, le stockage et le calcul."
+          },
+          {
+            "title": "Spécialistes sécurité",
+            "description": "Ceux qui protègent la plateforme et ses utilisateurs."
+          },
+          {
+            "title": "Équipes support",
+            "description": "Ceux qui accompagnent les clients au quotidien."
+          },
+          {
+            "title": "Équipes produit",
+            "description": "Ceux qui définissent la direction des services."
+          }
+        ]
+      },
+      "careers": {
+        "eyebrow": "Carrières",
+        "title": "Construire l'infrastructure avec nous",
+        "description": "Nous recherchons des personnes passionnées par l'infrastructure, le réseau, la sécurité et les outils développeurs.",
+        "cta": "Voir les postes ouverts",
+        "domains": [
+          {
+            "title": "Software Engineering",
+            "description": "Construire les services et les outils de la plateforme."
+          },
+          {
+            "title": "Cloud Engineering",
+            "description": "Concevoir les services cloud et leur cycle de vie."
+          },
+          {
+            "title": "Infrastructure",
+            "description": "Opérer et faire évoluer les fondations physiques et logiques."
+          },
+          {
+            "title": "Networking",
+            "description": "Concevoir et opérer la connectivité de bout en bout."
+          },
+          {
+            "title": "Cybersécurité",
+            "description": "Sécuriser la plateforme et ses clients."
+          },
+          {
+            "title": "DevOps / SRE",
+            "description": "Automatiser, fiabiliser et superviser les opérations."
+          },
+          {
+            "title": "Product",
+            "description": "Définir et prioriser ce que nous construisons."
+          },
+          {
+            "title": "Support",
+            "description": "Accompagner les clients dans leurs projets."
+          }
+        ]
+      },
+      "customers": {
+        "eyebrow": "Clients",
+        "title": "Ils nous font confiance",
+        "description": "Nous mettrons prochainement en ligne des témoignages, des études de cas et des retours d'expérience de nos clients.",
+        "items": [
+          {
+            "title": "Témoignages",
+            "description": "Les retours de nos clients, publiés avec leur accord."
+          },
+          {
+            "title": "Études de cas",
+            "description": "Des exemples concrets d'infrastructures construites sur ZenthCloud."
+          },
+          {
+            "title": "Retours d'expérience",
+            "description": "Les leçons tirées de mises en production réelles."
+          }
+        ]
+      },
+      "partners": {
+        "eyebrow": "Partenaires",
+        "title": "Un écosystème de partenaires",
+        "description": "Nous construisons des partenariats technologiques, académiques et open source pour enrichir notre plateforme.",
+        "items": [
+          {
+            "title": "Partenaires technologiques",
+            "description": "Les éditeurs et fournisseurs qui enrichissent notre plateforme."
+          },
+          {
+            "title": "Partenaires infrastructure",
+            "description": "Les acteurs qui opèrent et étendent notre présence physique."
+          },
+          {
+            "title": "Partenaires académiques",
+            "description": "Les collaborations avec les universités et centres de recherche."
+          },
+          {
+            "title": "Communautés open source",
+            "description": "Les projets et communautés avec lesquels nous construisons."
+          }
+        ],
+        "cta": "Devenir partenaire"
+      },
+      "timeline": {
+        "eyebrow": "Notre parcours",
+        "title": "Construire étape par étape",
+        "description": "ZenthCloud se développe de manière progressive. Nous partagerons les étapes clés de notre histoire lorsqu'elles seront officiellement établies."
+      },
+      "facts": {
+        "eyebrow": "Faits institutionnels",
+        "title": "Informations clés",
+        "description": "Les informations institutionnelles vérifiées de ZenthCloud. Les détails complémentaires seront ajoutés dès qu'ils seront officiellement établis.",
+        "items": [
+          {
+            "label": "Entreprise",
+            "value": "Zenth Cloud"
+          },
+          {
+            "label": "Activité principale",
+            "value": "Cloud infrastructure & services cloud computing"
+          },
+          {
+            "label": "Écosystème",
+            "value": "Sky Genesis Enterprise"
+          },
+          {
+            "label": "Régions",
+            "value": "Europe"
+          }
+        ]
+      },
+      "contact": {
+        "eyebrow": "Contact",
+        "title": "Écrivez-nous",
+        "description": "Quelle que soit votre question, nous avons une équipe pour vous répondre.",
+        "categories": [
+          {
+            "title": "Ventes",
+            "description": "Pour discuter d'un projet ou d'un besoin spécifique."
+          },
+          {
+            "title": "Questions techniques",
+            "description": "Pour être accompagné sur l'architecture et les services."
+          },
+          {
+            "title": "Partenariats",
+            "description": "Pour explorer les collaborations technologiques ou commerciales."
+          },
+          {
+            "title": "Presse",
+            "description": "Pour les demandes média et institutionnelles."
+          },
+          {
+            "title": "Carrières",
+            "description": "Pour rejoindre l'équipe."
+          }
+        ],
+        "cta": "Contacter ZenthCloud"
+      },
+      "finalCta": {
+        "title": "Construisons ce qui vient ensuite.",
+        "description": "Découvrez comment ZenthCloud peut accompagner vos projets d'infrastructure.",
+        "primary": "Explorer ZenthCloud",
+        "secondary": "Nous contacter"
+      }
+    },
     "compute": {
       "meta": {
         "title": "Compute Cloud | ZenthCloud",
@@ -4016,6 +4693,2125 @@
           ]
         }
       ]
+    },
+    "infrastructure": {
+      "meta": {
+        "title": "Infrastructure ZenthCloud | Architecture cloud Europe",
+        "description": "Comment ZenthCloud est construit et opéré : data centers, matériel, réseau, calcul, stockage, control plane, sécurité et observabilité. Une infrastructure cloud européenne, couche par couche."
+      },
+      "hero": {
+        "badge": "ZenthCloud Infrastructure",
+        "title": "Construite à partir de l'infrastructure.",
+        "subtitle": "ZenthCloud est une plateforme construite autour de plusieurs couches : infrastructure physique, réseau, calcul, stockage, control plane, sécurité et observabilité.",
+        "primaryCta": "Explorer ZenthCloud",
+        "secondaryCta": "Explorer notre architecture"
+      },
+      "glance": {
+        "eyebrow": "L'infrastructure en un coup d'œil",
+        "title": "Bien plus qu'une interface web",
+        "description": "ZenthCloud n'est pas seulement une console de gestion. C'est une plateforme organisée en couches, du matériel physique jusqu'aux services consommés par les clients.",
+        "intro": "L'architecture ci-dessous est conceptuelle : elle représente la façon dont nous organisons l'infrastructure, et évoluera au fil de sa mise en œuvre.",
+        "columns": [
+          {
+            "title": "Infrastructure physique",
+            "description": "Les fondations matérielles sur lesquelles tout repose.",
+            "items": [
+              "Datacenter",
+              "Hardware",
+              "Network",
+              "Power"
+            ]
+          },
+          {
+            "title": "Couche plateforme",
+            "description": "La couche qui transforme le matériel en ressources consommables.",
+            "items": [
+              "Control Plane",
+              "APIs",
+              "Automation"
+            ]
+          },
+          {
+            "title": "Couche services",
+            "description": "Les services exposés aux clients au-dessus de l'infrastructure.",
+            "items": [
+              "Compute",
+              "Storage",
+              "Database",
+              "Containers",
+              "Backup",
+              "Security"
+            ]
+          }
+        ]
+      },
+      "hardwareToCloud": {
+        "eyebrow": "Du matériel au cloud",
+        "title": "Nous construisons les couches situées sous l'expérience cloud",
+        "description": "Une plateforme cloud est une chaîne de couches qui travaillent ensemble. Chaque couche a un rôle précis, et toutes doivent être comprises pour être opérées correctement.",
+        "message": "Nous construisons les couches situées sous l'expérience cloud.",
+        "layers": [
+          {
+            "title": "Physical Infrastructure",
+            "description": "Les data centers et l'environnement physique."
+          },
+          {
+            "title": "Hardware",
+            "description": "Les serveurs, le stockage et les équipements réseau."
+          },
+          {
+            "title": "Network",
+            "description": "La connectivité entre les machines, les régions et les utilisateurs."
+          },
+          {
+            "title": "Compute",
+            "description": "La capacité de calcul mise à disposition des workloads."
+          },
+          {
+            "title": "Storage",
+            "description": "Les données, leur durabilité et leur disponibilité."
+          },
+          {
+            "title": "Virtualization",
+            "description": "La couche qui découpe et isole les ressources physiques."
+          },
+          {
+            "title": "Control Plane",
+            "description": "L'orchestration qui provisionne et supervise les ressources."
+          },
+          {
+            "title": "APIs / CLI",
+            "description": "Les interfaces par lesquelles les utilisateurs pilotent le cloud."
+          },
+          {
+            "title": "Customer Workloads",
+            "description": "Ce que les clients exécutent au sommet de la chaîne."
+          }
+        ],
+        "ownershipTitle": "Comment chaque couche est couverte",
+        "ownershipItems": [
+          {
+            "title": "Opérée par ZenthCloud",
+            "description": "Les couches dont nous assurons le fonctionnement au quotidien."
+          },
+          {
+            "title": "Construite par ZenthCloud",
+            "description": "Les couches que nous concevons et développons en interne."
+          },
+          {
+            "title": "Intégrée par ZenthCloud",
+            "description": "Les composants que nous assemblons et interconnectons nous-mêmes."
+          },
+          {
+            "title": "Fournie par des partenaires",
+            "description": "Les briques fournies par nos partenaires d'infrastructure."
+          }
+        ]
+      },
+      "datacenters": {
+        "eyebrow": "Data centers",
+        "title": "Une infrastructure physique maîtrisée",
+        "description": "L'infrastructure physique est le socle de la plateforme : alimentation, refroidissement, sécurité, connectivité et redondance.",
+        "intro": "Les régions et localisations officielles de nos data centers n'ont pas encore été publiées. Notre architecture est conçue pour accueillir plusieurs régions, chacune regroupant les ressources nécessaires à l'exécution des services.",
+        "items": [
+          {
+            "title": "Alimentation",
+            "description": "Une alimentation électrique dimensionnée et sécurisée pour les équipements."
+          },
+          {
+            "title": "Refroidissement",
+            "description": "Des systèmes de refroidissement adaptés à la densité des équipements."
+          },
+          {
+            "title": "Sécurité physique",
+            "description": "Un contrôle d'accès strict aux zones techniques."
+          },
+          {
+            "title": "Connectivité",
+            "description": "Des points de connexion réseau vers l'extérieur."
+          },
+          {
+            "title": "Redondance",
+            "description": "Des chemins et des alimentations redondants pour limiter les points uniques."
+          },
+          {
+            "title": "Infrastructure rack",
+            "description": "L'organisation physique des racks, du câblage et de la distribution."
+          }
+        ],
+        "architectureTitle": "Architecture de région",
+        "architectureItems": [
+          "Datacenter",
+          "Compute",
+          "Storage",
+          "Network",
+          "Services"
+        ]
+      },
+      "hardware": {
+        "eyebrow": "Hardware",
+        "title": "Des catégories matérielles structurées",
+        "description": "Notre infrastructure s'organise autour de grandes catégories matérielles. Les modèles précis seront publiés au fur et à mesure de leur validation.",
+        "items": [
+          {
+            "title": "Compute",
+            "description": "Les serveurs de calcul qui exécutent les workloads des clients."
+          },
+          {
+            "title": "Storage",
+            "description": "Les serveurs de stockage qui hébergent les données et leurs sauvegardes."
+          },
+          {
+            "title": "Network",
+            "description": "Les équipements réseau : routage, commutation et connectivité."
+          },
+          {
+            "title": "GPU",
+            "description": "L'infrastructure d'accélération pour les workloads d'IA et de calcul intensif."
+          },
+          {
+            "title": "Backup",
+            "description": "L'infrastructure dédiée aux sauvegardes et à la restauration."
+          }
+        ]
+      },
+      "compute": {
+        "eyebrow": "Compute",
+        "title": "Une capacité de calcul organisée en couches",
+        "description": "Le calcul transforme la puissance physique des serveurs en ressources cloud consommables, isolées et pilotables.",
+        "steps": [
+          "Physical Host",
+          "Compute Layer",
+          "Virtual Machines",
+          "Customer Workloads"
+        ],
+        "note": "Le choix de la technologie de virtualisation n'est pas encore officialisé. Notre architecture sépare clairement la couche matérielle de la couche de virtualisation.",
+        "cta": "Découvrir le compute"
+      },
+      "storage": {
+        "eyebrow": "Storage",
+        "title": "Le stockage comme couche d'infrastructure",
+        "description": "Le stockage est une couche d'infrastructure à part entière, organisée en catégories aux usages distincts.",
+        "types": [
+          {
+            "title": "Block Storage",
+            "description": "Des volumes attachés aux instances, pour les données exigeantes en performances."
+          },
+          {
+            "title": "Object Storage",
+            "description": "Un stockage de fichiers et d'objets, scalable et accessible par API."
+          },
+          {
+            "title": "Local Storage",
+            "description": "Le stockage local des serveurs, pour les workloads qui l'exploitent."
+          },
+          {
+            "title": "Backup Storage",
+            "description": "Un stockage dédié aux sauvegardes, distinct de la production."
+          }
+        ],
+        "concepts": [
+          {
+            "title": "Durabilité",
+            "description": "La capacité du stockage à préserver les données dans le temps."
+          },
+          {
+            "title": "Disponibilité",
+            "description": "La capacité à accéder aux données lorsque nécessaire."
+          },
+          {
+            "title": "Performance",
+            "description": "Le débit et la latence offerts aux workloads."
+          },
+          {
+            "title": "Réplication",
+            "description": "La duplication des données pour se protéger des pannes."
+          },
+          {
+            "title": "Backup",
+            "description": "La protection des données contre la perte et les erreurs."
+          }
+        ],
+        "cta": "Découvrir le stockage"
+      },
+      "network": {
+        "eyebrow": "Network",
+        "title": "Un réseau construit en couches",
+        "description": "Le réseau relie l'ensemble des composants de la plateforme. Il est organisé en couches, de l'accès public jusqu'aux réseaux internes.",
+        "steps": [
+          "Internet",
+          "Edge",
+          "Core Network"
+        ],
+        "networks": [
+          {
+            "title": "Public Network",
+            "description": "La connectivité publique vers les workloads exposés."
+          },
+          {
+            "title": "Private Network",
+            "description": "Les réseaux privés isolés entre les ressources des clients."
+          },
+          {
+            "title": "Management Network",
+            "description": "Le réseau dédié à l'administration de l'infrastructure."
+          },
+          {
+            "title": "Storage Network",
+            "description": "Le réseau dédié aux échanges de données de stockage."
+          }
+        ],
+        "items": [
+          {
+            "title": "Routage",
+            "description": "L'acheminement du trafic entre les réseaux."
+          },
+          {
+            "title": "Commutation",
+            "description": "La commutation des trames au sein des réseaux locaux."
+          },
+          {
+            "title": "Firewalls",
+            "description": "Le filtrage du trafic aux points de passage."
+          },
+          {
+            "title": "Réseaux privés",
+            "description": "L'isolation réseau entre les tenants et les services."
+          },
+          {
+            "title": "VLAN",
+            "description": "La segmentation logique des réseaux physiques."
+          },
+          {
+            "title": "Load balancing",
+            "description": "La répartition du trafic entre plusieurs ressources."
+          },
+          {
+            "title": "Connectivité",
+            "description": "Les liaisons vers l'extérieur et entre les sites."
+          },
+          {
+            "title": "Gestion IP",
+            "description": "L'allocation et la gestion des adresses IP."
+          }
+        ],
+        "cta": "Découvrir le networking"
+      },
+      "controlPlane": {
+        "eyebrow": "Control Plane",
+        "title": "Le cerveau de la plateforme",
+        "description": "Une infrastructure cloud moderne repose sur un control plane : la couche qui orchestre les ressources, applique les décisions et expose les interfaces.",
+        "intro": "Le control plane est conçu comme la couche centrale qui relie les interfaces utilisateurs à l'infrastructure sous-jacente. C'est lui qui transforme une demande API en ressources réellement provisionnées.",
+        "responsibilities": [
+          {
+            "title": "Provisioning",
+            "description": "La création des ressources à la demande."
+          },
+          {
+            "title": "Cycle de vie",
+            "description": "La gestion des ressources de leur création à leur suppression."
+          },
+          {
+            "title": "Allocation",
+            "description": "La répartition des ressources physiques entre les demandes."
+          },
+          {
+            "title": "Réseau",
+            "description": "La configuration des réseaux et de la connectivité."
+          },
+          {
+            "title": "Contrôle d'accès",
+            "description": "L'authentification et l'autorisation des utilisateurs et des services."
+          },
+          {
+            "title": "Supervision",
+            "description": "La collecte d'état et la détection des anomalies."
+          },
+          {
+            "title": "Facturation",
+            "description": "L'intégration de la consommation dans le suivi d'usage."
+          }
+        ],
+        "responsibilitiesLabel": "Responsabilités conçues"
+      },
+      "apiFirst": {
+        "eyebrow": "API-first",
+        "title": "Plusieurs interfaces, un seul control plane",
+        "description": "La console web, la CLI et l'API sont des interfaces vers la même couche de contrôle. L'infrastructure reste pilotable par programme, quelle que soit l'interface utilisée.",
+        "message": "L'interface peut changer. L'API d'infrastructure reste la fondation."
+      },
+      "automation": {
+        "eyebrow": "Automatisation",
+        "title": "L'automatisation comme principe fondamental",
+        "description": "Les opérations répétitives doivent être automatisables. L'infrastructure as code pilote le control plane via l'API, qui applique les changements sur l'infrastructure.",
+        "steps": [
+          "Infrastructure as Code",
+          "API",
+          "Control Plane",
+          "Infrastructure"
+        ],
+        "items": [
+          {
+            "title": "Provisioning",
+            "description": "La création automatisée des ressources."
+          },
+          {
+            "title": "Déploiement",
+            "description": "La mise en service automatisée des services."
+          },
+          {
+            "title": "Mise à l'échelle",
+            "description": "L'adaptation des ressources à la demande."
+          },
+          {
+            "title": "Configuration",
+            "description": "La gestion automatisée de la configuration."
+          },
+          {
+            "title": "Sauvegardes",
+            "description": "L'exécution planifiée et automatisée des sauvegardes."
+          },
+          {
+            "title": "Supervision",
+            "description": "La collecte et l'analyse automatisées de la télémétrie."
+          },
+          {
+            "title": "Cycle de vie",
+            "description": "Le suivi automatisé des ressources tout au long de leur vie."
+          }
+        ]
+      },
+      "resourceManagement": {
+        "eyebrow": "Gestion des ressources",
+        "title": "Du matériel physique aux ressources cloud",
+        "description": "La plateforme transforme des ressources physiques en ressources cloud consommables. Chaque abstraction suit le même principe : capacité physique, regroupement, puis exposition sous forme de ressource pilotable.",
+        "steps": [
+          "Physical CPU",
+          "Compute Capacity",
+          "Instance",
+          "Workload"
+        ],
+        "resources": [
+          "CPU",
+          "RAM",
+          "Storage",
+          "Network",
+          "GPU"
+        ]
+      },
+      "multiTenancy": {
+        "eyebrow": "Multi-tenancy",
+        "title": "Plusieurs clients, une plateforme",
+        "description": "Le multi-tenancy permet à plusieurs clients d'utiliser la même plateforme, avec des mécanismes d'isolation, de quotas et de permissions.",
+        "items": [
+          {
+            "title": "Isolation",
+            "description": "La séparation des ressources et des données entre les tenants."
+          },
+          {
+            "title": "Quotas",
+            "description": "Des limites de consommation par tenant."
+          },
+          {
+            "title": "Permissions",
+            "description": "Le contrôle des accès aux ressources."
+          },
+          {
+            "title": "Réseau",
+            "description": "La segmentation réseau entre les tenants."
+          },
+          {
+            "title": "Allocation",
+            "description": "La répartition équitable des ressources physiques."
+          }
+        ],
+        "logical": {
+          "title": "Isolation logique",
+          "description": "La séparation des ressources par la couche de virtualisation et les mécanismes logiciels. C'est le modèle du Public Cloud."
+        },
+        "physical": {
+          "title": "Isolation physique",
+          "description": "La séparation par du matériel dédié à un client. C'est le modèle du Dedicated Cloud et du Private Cloud."
+        }
+      },
+      "dedicated": {
+        "eyebrow": "Infrastructure dédiée",
+        "title": "Plusieurs modèles, selon les besoins",
+        "description": "Selon le niveau de contrôle et d'isolation requis, ZenthCloud peut proposer plusieurs modèles d'infrastructure.",
+        "models": [
+          {
+            "title": "Public Cloud",
+            "description": "Des ressources partagées entre plusieurs clients, isolées par la plateforme.",
+            "label": "Infrastructure partagée"
+          },
+          {
+            "title": "Dedicated Cloud",
+            "description": "Des ressources physiques dédiées, avec la souplesse du cloud.",
+            "label": "Infrastructure dédiée"
+          },
+          {
+            "title": "Private Cloud",
+            "description": "Un environnement privé pour une organisation, avec un contrôle renforcé.",
+            "label": "Environnement privé"
+          }
+        ],
+        "cta": "Découvrir le dedicated cloud"
+      },
+      "services": {
+        "eyebrow": "Les services au-dessus de l'infrastructure",
+        "title": "Des couches de service construites sur le socle",
+        "description": "Conteneurs, bases de données, GPU et sauvegardes sont des services construits au-dessus de l'infrastructure : ils réutilisent le calcul, le stockage et le réseau de la plateforme.",
+        "items": [
+          {
+            "title": "Containers",
+            "description": "L'exécution de workloads conteneurisés, de l'orchestration au stockage persistant.",
+            "chain": "Container runtime",
+            "cta": "Découvrir les containers",
+            "href": "/public-cloud/containers"
+          },
+          {
+            "title": "Bases de données",
+            "description": "Des bases de données construites sur le calcul, le stockage et le réseau de la plateforme.",
+            "chain": "Database Platform",
+            "cta": "Découvrir les bases de données",
+            "href": "/public-cloud/databases"
+          },
+          {
+            "title": "GPU & AI",
+            "description": "Une infrastructure d'accélération pour les workloads d'IA et de calcul intensif.",
+            "chain": "AI Platform",
+            "cta": "Découvrir le GPU & AI",
+            "href": "/public-cloud/gpu-and-ai"
+          },
+          {
+            "title": "Backup",
+            "description": "Une infrastructure de sauvegarde distincte de la production, pour protéger les données.",
+            "chain": "Backup System",
+            "cta": "Découvrir le backup",
+            "href": "/public-cloud/backup"
+          }
+        ]
+      },
+      "security": {
+        "eyebrow": "Architecture de sécurité",
+        "title": "La sécurité en profondeur",
+        "description": "La sécurité est une propriété transversale de l'infrastructure : elle se déploie à chaque couche, du physique jusqu'aux données.",
+        "layers": [
+          "Physical",
+          "Network",
+          "Platform",
+          "Identity",
+          "Workload",
+          "Data",
+          "Backup"
+        ],
+        "message": "Chaque couche de l'infrastructure est un maillon de la sécurité d'ensemble. Aucune certification n'est annoncée tant qu'elle n'est pas officiellement obtenue.",
+        "cta": "En savoir plus sur notre sécurité"
+      },
+      "observability": {
+        "eyebrow": "Observabilité",
+        "title": "Comprendre ce qui se passe",
+        "description": "L'observabilité est la capacité à comprendre l'état de l'infrastructure grâce à sa télémétrie : logs, métriques et événements.",
+        "steps": [
+          "Infrastructure",
+          "Telemetry",
+          "Logs / Metrics / Events",
+          "Observability",
+          "Alerts / Operations"
+        ],
+        "note": "Nous construisons progressivement cette capacité, de la collecte de télémétrie jusqu'aux alertes opérationnelles."
+      },
+      "operations": {
+        "eyebrow": "Operations",
+        "title": "Une infrastructure qui s'opère en continu",
+        "description": "Une plateforme cloud est un système opérationnel, pas seulement une collection de serveurs. Elle exige supervision, maintenance, planification et réaction aux incidents.",
+        "message": "L'infrastructure cloud est un système opérationnel, pas seulement une collection de serveurs.",
+        "items": [
+          {
+            "title": "Supervision",
+            "description": "L'observation continue de l'infrastructure."
+          },
+          {
+            "title": "Maintenance",
+            "description": "Les opérations d'entretien planifiées."
+          },
+          {
+            "title": "Planification de capacité",
+            "description": "L'anticipation des besoins de ressources."
+          },
+          {
+            "title": "Gestion d'incidents",
+            "description": "La détection, la communication et la résolution des incidents."
+          },
+          {
+            "title": "Correctifs",
+            "description": "L'application des mises à jour de sécurité et de stabilité."
+          },
+          {
+            "title": "Cycle de vie",
+            "description": "Le suivi des équipements de leur arrivée à leur retrait."
+          },
+          {
+            "title": "Remplacement matériel",
+            "description": "Le remplacement des équipements en fin de vie ou en panne."
+          }
+        ]
+      },
+      "resilience": {
+        "eyebrow": "Résilience",
+        "title": "Prévoir les pannes plutôt que les découvrir",
+        "description": "La résilience se construit par la redondance, la détection, la récupération, la planification et un cycle de vie maîtrisé des équipements.",
+        "cards": [
+          {
+            "title": "Redondance",
+            "description": "Des ressources dupliquées pour qu'une panne n'interrompe pas le service.",
+            "steps": [
+              "Service",
+              "Resource A / Resource B",
+              "Service"
+            ]
+          },
+          {
+            "title": "Pannes & récupération",
+            "description": "Un parcours de réaction clair, de la détection à la restauration du service.",
+            "steps": [
+              "Failure",
+              "Detection",
+              "Isolation",
+              "Recovery",
+              "Validation",
+              "Service restored"
+            ]
+          },
+          {
+            "title": "Gestion de capacité",
+            "description": "La planification physique derrière l'abstraction cloud.",
+            "steps": [
+              "Demand",
+              "Capacity Planning",
+              "Hardware",
+              "Provisioning",
+              "Available Capacity"
+            ]
+          },
+          {
+            "title": "Cycle de vie de l'infrastructure",
+            "description": "Chaque équipement suit un parcours complet, de l'achat au décommissionnement.",
+            "steps": [
+              "Procure",
+              "Rack",
+              "Configure",
+              "Provision",
+              "Operate",
+              "Monitor",
+              "Maintain",
+              "Upgrade",
+              "Decommission"
+            ]
+          }
+        ]
+      },
+      "transformation": {
+        "eyebrow": "Du matériel au service",
+        "title": "Chaque ressource cloud repose sur du matériel physique",
+        "description": "Derrière chaque instance, chaque volume et chaque service se trouve une chaîne de transformation qui part du serveur physique.",
+        "message": "Chaque ressource cloud repose, au final, sur de l'infrastructure physique.",
+        "steps": [
+          "Server",
+          "Resource Pool",
+          "Cloud Capacity",
+          "Service",
+          "Customer Workload"
+        ]
+      },
+      "principles": {
+        "eyebrow": "Principes d'infrastructure",
+        "title": "Six principes qui guident notre infrastructure",
+        "description": "Ces principes structurent la manière dont nous concevons, construisons et opérons la plateforme.",
+        "items": [
+          {
+            "title": "Automation first",
+            "description": "Réduire les opérations manuelles au strict nécessaire."
+          },
+          {
+            "title": "Observable by default",
+            "description": "Pouvoir comprendre ce qui se passe, à chaque instant."
+          },
+          {
+            "title": "Secure by design",
+            "description": "Intégrer la sécurité à chaque couche, dès la conception."
+          },
+          {
+            "title": "Resilient by architecture",
+            "description": "Prévoir les pannes plutôt que les découvrir."
+          },
+          {
+            "title": "API first",
+            "description": "Tout ce qui peut être automatisé doit pouvoir l'être."
+          },
+          {
+            "title": "Open where possible",
+            "description": "Favoriser les technologies et les standards ouverts."
+          }
+        ]
+      },
+      "openTechnologies": {
+        "eyebrow": "Technologies ouvertes",
+        "title": "Des briques ouvertes, choisies avec intention",
+        "description": "Nous privilégions les technologies ouvertes non pas pour faire technique, mais parce qu'elles servent nos principes : transparence, portabilité et maîtrise.",
+        "items": [
+          {
+            "title": "Linux",
+            "description": "Le socle système de la quasi-totalité de la plateforme."
+          },
+          {
+            "title": "Open source",
+            "description": "Des briques auditées, améliorables et maîtrisables."
+          },
+          {
+            "title": "Standards ouverts",
+            "description": "Des interfaces interopérables, sans dépendance captive."
+          },
+          {
+            "title": "APIs",
+            "description": "Une infrastructure pilotable par programme."
+          },
+          {
+            "title": "Containers",
+            "description": "Une exécution portable et isolée des workloads."
+          },
+          {
+            "title": "Virtualisation",
+            "description": "L'abstraction des ressources physiques en ressources logiques."
+          },
+          {
+            "title": "Automatisation",
+            "description": "Des opérations reproductibles et scriptables."
+          }
+        ]
+      },
+      "transparency": {
+        "eyebrow": "Transparence",
+        "title": "Une infrastructure documentée",
+        "description": "Nous publions ce que nous pouvons honnêtement documenter : architecture, services et pratiques opérationnelles. Les éléments pas encore publics ne sont pas affichés.",
+        "items": [
+          {
+            "title": "Documentation d'architecture",
+            "description": "La description des couches et de leurs interactions."
+          },
+          {
+            "title": "Status",
+            "description": "L'état de disponibilité des services (à venir)."
+          },
+          {
+            "title": "Incidents",
+            "description": "Les comptes-rendus des incidents passés (à venir)."
+          },
+          {
+            "title": "Maintenances",
+            "description": "Les opérations planifiées annoncées à l'avance."
+          },
+          {
+            "title": "Régions",
+            "description": "Les localisations de nos data centers (à venir)."
+          },
+          {
+            "title": "Documentation des services",
+            "description": "Les guides et références de chaque service."
+          },
+          {
+            "title": "Documentation sécurité",
+            "description": "Nos pratiques de sécurité et leur évolution."
+          }
+        ],
+        "cta": "Explorer notre documentation"
+      },
+      "evolution": {
+        "eyebrow": "Évolution de l'architecture",
+        "title": "Une architecture qui évolue",
+        "description": "L'infrastructure n'est jamais figée : elle se développe, s'étend et se transforme. Nous distinguons clairement ce qui existe de ce qui est planifié.",
+        "current": {
+          "title": "Aujourd'hui",
+          "items": [
+            "Une plateforme organisée en couches, du matériel aux services",
+            "Des services cloud : calcul, stockage, réseau, conteneurs",
+            "Des briques open source et des standards ouverts",
+            "Une infrastructure européenne en construction"
+          ]
+        },
+        "roadmap": {
+          "title": "Feuille de route",
+          "items": [
+            "De nouvelles régions et de nouveaux data centers",
+            "Un matériel plus varié, du compute au GPU",
+            "De nouveaux services au-dessus de l'infrastructure",
+            "Un control plane toujours plus unifié et automatisé"
+          ]
+        }
+      },
+      "finalCta": {
+        "title": "Construit pour l'infrastructure derrière votre prochaine idée.",
+        "description": "Découvrez comment ZenthCloud construit et opère son infrastructure, couche par couche.",
+        "primary": "Explorer ZenthCloud",
+        "secondary": "Découvrir nos services"
+      }
+    },
+    "dataCenters": {
+      "meta": {
+        "title": "Data centers ZenthCloud | Infrastructure cloud Europe",
+        "description": "Où s'exécute ZenthCloud : régions, data centers, connectivité, alimentation, refroidissement, sécurité physique et résidence des données. Une infrastructure cloud européenne, sans données fictives."
+      },
+      "hero": {
+        "badge": "ZenthCloud Data Centers",
+        "title": "Là où votre cloud s'exécute, cela compte.",
+        "subtitle": "Les data centers sont la fondation physique des services ZenthCloud. Localisation, connectivité, alimentation et refroidissement définissent ce que la plateforme peut offrir.",
+        "primaryCta": "Explorer ZenthCloud",
+        "secondaryCta": "Découvrir notre infrastructure"
+      },
+      "network": {
+        "eyebrow": "Notre réseau de data centers",
+        "title": "Conçu pour s'étendre à travers les régions",
+        "description": "L'organisation physique de la plateforme repose sur un modèle simple : des régions, chacune regroupant des data centers, eux-mêmes porteurs du calcul, du stockage et du réseau.",
+        "intro": "Les régions et localisations officielles n'ont pas encore été publiées. L'architecture ci-dessous est conceptuelle : elle décrit la structure vers laquelle nous construisons.",
+        "regionsTitle": "Conçu pour s'étendre à travers les régions",
+        "regionLabel": "Région",
+        "datacenterLabel": "Data center"
+      },
+      "regionVsDC": {
+        "eyebrow": "Région ou data center",
+        "title": "Deux notions distinctes, complémentaires",
+        "description": "Une région est un concept logique, un data center une réalité physique. Leur distinction structure la façon dont nous organisons la plateforme.",
+        "region": {
+          "title": "Région",
+          "description": "Zone géographique logique regroupant une ou plusieurs infrastructures, leurs services et leur connectivité."
+        },
+        "datacenter": {
+          "title": "Data center",
+          "description": "Infrastructure physique dans laquelle les équipements sont hébergés : serveurs, réseau, alimentation et refroidissement."
+        }
+      },
+      "inside": {
+        "eyebrow": "À l'intérieur d'un data center",
+        "title": "Une infrastructure complète, bien au-delà des serveurs",
+        "description": "Un data center regroupe l'ensemble des fonctions nécessaires au fonctionnement continu des équipements.",
+        "items": [
+          {
+            "title": "Power",
+            "description": "L'alimentation électrique des équipements."
+          },
+          {
+            "title": "Cooling",
+            "description": "Le refroidissement des charges thermiques."
+          },
+          {
+            "title": "Network",
+            "description": "La connectivité interne et externe."
+          },
+          {
+            "title": "Racks",
+            "description": "L'organisation physique des équipements."
+          },
+          {
+            "title": "Physical Security",
+            "description": "Le contrôle des accès aux zones techniques."
+          },
+          {
+            "title": "Operations",
+            "description": "Les opérations de maintenance et de supervision."
+          }
+        ],
+        "rackItems": [
+          "Compute",
+          "Storage",
+          "Network"
+        ]
+      },
+      "power": {
+        "eyebrow": "Power",
+        "title": "L'alimentation, fondation de la disponibilité",
+        "description": "Chaque équipement dépend d'une chaîne d'alimentation continue, de la source électrique jusqu'au serveur.",
+        "steps": [
+          "Source électrique",
+          "Distribution d'alimentation",
+          "UPS",
+          "Alimentation rack",
+          "Serveurs"
+        ],
+        "note": "Nous ne publions pas encore de spécifications précises (niveaux de redondance, autonomie). Le modèle présenté reste architectural tant que ces éléments ne sont pas confirmés."
+      },
+      "cooling": {
+        "eyebrow": "Cooling",
+        "title": "Le refroidissement, une contrainte physique",
+        "description": "Les équipements produisent de la chaleur qui doit être évacuée pour garantir leur fonctionnement et leur durée de vie.",
+        "steps": [
+          "Serveurs",
+          "Chaleur",
+          "Infrastructure de refroidissement",
+          "Environnement contrôlé"
+        ],
+        "items": [
+          {
+            "title": "CPU",
+            "description": "Les processeurs produisent une charge thermique importante."
+          },
+          {
+            "title": "GPU",
+            "description": "Les accélérateurs concentrent une forte densité de chaleur."
+          },
+          {
+            "title": "Storage",
+            "description": "Les baies de stockage dégagent de la chaleur en continu."
+          },
+          {
+            "title": "Network",
+            "description": "Les équipements réseau participent à la charge thermique."
+          }
+        ],
+        "note": "Aucune technologie de refroidissement précise n'est annoncée sans validation."
+      },
+      "connectivity": {
+        "eyebrow": "Connectivité réseau",
+        "title": "Des data centers reliés au monde",
+        "description": "La connectivité relie les data centers à Internet et entre eux. Elle est organisée de l'accès externe jusqu'aux réseaux internes.",
+        "steps": [
+          "Internet",
+          "Connectivité externe",
+          "Réseau Edge",
+          "Data Center"
+        ],
+        "subLabel": "Réseaux internes",
+        "items": [
+          {
+            "title": "Connectivité upstream",
+            "description": "Les liaisons vers les réseaux de transit."
+          },
+          {
+            "title": "Connectivité Internet",
+            "description": "L'accès public aux services hébergés."
+          },
+          {
+            "title": "Réseaux privés",
+            "description": "Les liaisons privées entre les ressources des clients."
+          },
+          {
+            "title": "Connectivité inter-data centers",
+            "description": "Les liaisons entre les sites."
+          },
+          {
+            "title": "Peering",
+            "description": "Les échanges directs de trafic avec les réseaux partenaires."
+          },
+          {
+            "title": "Chemins redondants",
+            "description": "Plusieurs chemins pour limiter les points de rupture."
+          }
+        ]
+      },
+      "interDC": {
+        "eyebrow": "Réseau inter-data centers",
+        "title": "Des sites reliés entre eux",
+        "description": "Un réseau privé ou backbone peut relier les data centers entre eux, au-delà de la simple connectivité Internet.",
+        "steps": [
+          "Data Center A",
+          "Réseau privé / backbone",
+          "Data Center B"
+        ],
+        "uses": [
+          {
+            "title": "Réplication",
+            "description": "La duplication des données entre sites."
+          },
+          {
+            "title": "Backup",
+            "description": "Des sauvegardes hébergées sur un site distinct."
+          },
+          {
+            "title": "Mobilité des workloads",
+            "description": "Le déplacement des charges de travail entre sites."
+          },
+          {
+            "title": "Reprise après sinistre",
+            "description": "La continuité en cas de panne d'un site."
+          },
+          {
+            "title": "Synchronisation des services",
+            "description": "La cohérence des services répartis."
+          }
+        ],
+        "note": "La mobilité automatique des workloads entre data centers n'est pas annoncée tant qu'elle n'est pas réellement implémentée.",
+        "usesLabel": "Usages potentiels"
+      },
+      "physicalSecurity": {
+        "eyebrow": "Sécurité physique",
+        "title": "L'accès aux équipements est contrôlé",
+        "description": "La sécurité physique protège les équipements et les données qu'ils hébergent, de l'entrée de l'installation jusqu'aux zones techniques.",
+        "steps": [
+          "Facility",
+          "Accès contrôlé",
+          "Zones équipements",
+          "Infrastructure"
+        ],
+        "note": "L'accès physique à l'infrastructure est contrôlé par les installations qui hébergent les équipements. Les mécanismes détaillés ne sont pas rendus publics."
+      },
+      "racks": {
+        "eyebrow": "Rack infrastructure",
+        "title": "Le rack, unité d'organisation physique",
+        "description": "Les équipements sont organisés en racks, unités physiques standard qui regroupent réseau, calcul, stockage et alimentation.",
+        "items": [
+          "Network",
+          "Compute",
+          "Storage",
+          "Power",
+          "Management"
+        ],
+        "note": "Aucun standard de rack précis n'est annoncé sans validation. Le modèle présenté est générique."
+      },
+      "capacity": {
+        "eyebrow": "Capacité",
+        "title": "Des data centers aux ressources cloud",
+        "description": "Les data centers fournissent la capacité physique qui devient, après abstraction, les ressources cloud consommées par les clients.",
+        "items": [
+          {
+            "key": "compute",
+            "title": "Compute",
+            "description": "La capacité de calcul qui alimente les instances et les workloads.",
+            "steps": [
+              "Data Center",
+              "Serveurs physiques",
+              "Pool de calcul",
+              "Ressources cloud",
+              "Workloads clients"
+            ],
+            "cta": "Découvrir le compute",
+            "href": "/public-cloud/compute"
+          },
+          {
+            "key": "storage",
+            "title": "Storage",
+            "description": "L'infrastructure de stockage qui héberge les données et les sauvegardes.",
+            "steps": [
+              "Data Center",
+              "Infrastructure de stockage",
+              "Pools de stockage",
+              "Stockage cloud",
+              "Données clients"
+            ],
+            "cta": "Découvrir le stockage",
+            "href": "/public-cloud/storage"
+          },
+          {
+            "key": "gpu",
+            "title": "GPU",
+            "description": "L'infrastructure d'accélération pour les workloads d'IA et de calcul intensif.",
+            "steps": [
+              "Densité de puissance",
+              "Refroidissement",
+              "Réseau",
+              "Débit de stockage",
+              "Planification GPU"
+            ],
+            "cta": "Découvrir le GPU & AI",
+            "href": "/public-cloud/gpu-and-ai"
+          }
+        ],
+        "note": "Aucune capacité totale n'est publiée sans donnée officielle."
+      },
+      "residency": {
+        "eyebrow": "Résidence des données",
+        "title": "La localisation des données compte",
+        "description": "L'endroit où s'exécute votre infrastructure peut avoir des implications pour vos workloads, votre gouvernance et vos exigences réglementaires.",
+        "message": "Là où se situe l'infrastructure peut compter pour vos workloads, votre gouvernance et vos exigences réglementaires.",
+        "items": [
+          {
+            "title": "Localisation géographique",
+            "description": "L'endroit physique où les données sont hébergées."
+          },
+          {
+            "title": "Exigences réglementaires",
+            "description": "Les obligations liées au cadre juridique applicable."
+          },
+          {
+            "title": "Résidence des données",
+            "description": "Le choix de conserver les données dans une zone donnée."
+          },
+          {
+            "title": "Placement des workloads",
+            "description": "La capacité à choisir où s'exécutent les charges."
+          },
+          {
+            "title": "Politiques d'organisation",
+            "description": "Les règles internes des clients sur la localisation."
+          }
+        ],
+        "note": "La présence d'un data center dans un pays ne constitue pas en soi une garantie de conformité juridique."
+      },
+      "placement": {
+        "eyebrow": "Placement des workloads",
+        "title": "Choisir une localisation",
+        "description": "La sélection d'une région ou d'une localisation est une capacité en préparation. Elle permettra aux clients de placer leurs ressources là où elles doivent s'exécuter.",
+        "steps": [
+          "Client",
+          "Sélection de la région",
+          "Data Center",
+          "Ressources",
+          "Workload"
+        ],
+        "note": "La sélection d'une région par le client est présentée ici à titre conceptuel : elle sera disponible à mesure que le catalogue régional sera publié."
+      },
+      "availability": {
+        "eyebrow": "Disponibilité",
+        "title": "Plusieurs infrastructures pour un service",
+        "description": "La disponibilité d'un service peut reposer sur plusieurs infrastructures. Nous distinguons clairement les concepts afin de ne rien annoncer au-delà de ce qui est réel.",
+        "items": [
+          {
+            "title": "Redondance d'infrastructure",
+            "description": "Plusieurs ressources ou sites pour un même service."
+          },
+          {
+            "title": "Disponibilité du service",
+            "description": "La capacité du service à répondre aux demandes."
+          },
+          {
+            "title": "Reprise après sinistre",
+            "description": "La restauration après une panne majeure."
+          }
+        ],
+        "note": "Aucun SLA ou pourcentage de disponibilité n'est annoncé sans donnée officielle."
+      },
+      "disasterRecovery": {
+        "eyebrow": "Reprise après sinistre",
+        "title": "Le rôle des data centers dans la résilience",
+        "description": "La résilience s'appuie sur des sauvegardes et des réplications vers une infrastructure secondaire, puis sur la capacité à restaurer.",
+        "steps": [
+          "Production",
+          "Backup / Réplication",
+          "Infrastructure secondaire",
+          "Restauration"
+        ],
+        "note": "Aucun RPO/RTO n'est annoncé sans définition officielle.",
+        "cta": "Découvrir le backup"
+      },
+      "operations": {
+        "eyebrow": "Operations data center",
+        "title": "Une plateforme aussi fiable que ses opérations",
+        "description": "Les data centers exigent des opérations continues : déploiement, maintenance, supervision, planification et gestion d'incidents.",
+        "message": "Une plateforme cloud n'est aussi fiable que l'infrastructure et les opérations qui la soutiennent.",
+        "steps": [
+          "Plan",
+          "Deploy",
+          "Operate",
+          "Monitor",
+          "Maintain",
+          "Upgrade"
+        ],
+        "items": [
+          {
+            "title": "Déploiement matériel",
+            "description": "L'installation des équipements dans les racks."
+          },
+          {
+            "title": "Maintenance",
+            "description": "Les opérations d'entretien planifiées."
+          },
+          {
+            "title": "Supervision",
+            "description": "L'observation continue de l'état des équipements."
+          },
+          {
+            "title": "Planification de capacité",
+            "description": "L'anticipation des besoins physiques."
+          },
+          {
+            "title": "Remplacement",
+            "description": "Le remplacement des équipements défaillants."
+          },
+          {
+            "title": "Opérations réseau",
+            "description": "La gestion de la connectivité et du routage."
+          },
+          {
+            "title": "Gestion d'incidents",
+            "description": "La détection et la résolution des incidents."
+          }
+        ]
+      },
+      "monitoring": {
+        "eyebrow": "Monitoring",
+        "title": "Observer l'infrastructure à tous les niveaux",
+        "description": "La supervision couvre chaque niveau, de l'installation physique jusqu'aux services exposés aux clients.",
+        "steps": [
+          "Facility",
+          "Power",
+          "Cooling",
+          "Network",
+          "Hardware",
+          "Platform",
+          "Services"
+        ],
+        "note": "Aucune métrique fictive n'est affichée : les données de supervision seront publiées lorsqu'elles seront réelles.",
+        "cta": "Découvrir notre infrastructure"
+      },
+      "lifecycle": {
+        "eyebrow": "Cycle de vie matériel",
+        "title": "Chaque équipement a un cycle de vie",
+        "description": "Du procurement au décommissionnement, chaque équipement suit un parcours maîtrisé qui conditionne la fiabilité de la plateforme.",
+        "steps": [
+          "Procurement",
+          "Déploiement",
+          "Configuration",
+          "Production",
+          "Maintenance",
+          "Upgrade",
+          "Décommissionnement"
+        ]
+      },
+      "sustainability": {
+        "eyebrow": "Durabilité",
+        "title": "L'efficacité, une considération structurante",
+        "description": "À mesure que notre infrastructure grandit, son efficacité devient une considération importante, du matériel à l'exploitation.",
+        "message": "L'efficacité est une considération importante à mesure que notre infrastructure grandit.",
+        "items": [
+          {
+            "title": "Efficacité énergétique",
+            "description": "Réduire la consommation liée à l'exploitation."
+          },
+          {
+            "title": "Cycle de vie matériel",
+            "description": "Prolonger la durée d'usage des équipements."
+          },
+          {
+            "title": "Efficacité de la virtualisation",
+            "description": "Mutualiser les ressources pour un meilleur taux d'utilisation."
+          },
+          {
+            "title": "Utilisation des ressources",
+            "description": "Éviter le gaspillage de capacité."
+          },
+          {
+            "title": "Efficacité du refroidissement",
+            "description": "Maîtriser la charge thermique des installations."
+          }
+        ],
+        "note": "Aucun chiffre (PUE, part d'énergie renouvelable, neutralité carbone) n'est publié sans donnée officielle."
+      },
+      "europe": {
+        "eyebrow": "Infrastructure européenne",
+        "title": "Une infrastructure pensée pour l'Europe",
+        "description": "ZenthCloud développe son infrastructure en Europe : localisation des équipements, connectivité, résidence des données et services cloud.",
+        "items": [
+          {
+            "title": "Infrastructure",
+            "description": "Des équipements situés en Europe."
+          },
+          {
+            "title": "Connectivité",
+            "description": "Des réseaux reliant les sites européens."
+          },
+          {
+            "title": "Résidence des données",
+            "description": "Des données hébergées dans des environnements européens."
+          },
+          {
+            "title": "Services cloud",
+            "description": "Une plateforme cloud ancrée en Europe."
+          }
+        ],
+        "note": "L'infrastructure européenne est en construction : sa couverture actuelle et son expansion future seront documentées séparément."
+      },
+      "expansion": {
+        "eyebrow": "Expansion de l'infrastructure",
+        "title": "Une architecture capable de croître",
+        "description": "L'infrastructure est conçue pour évoluer par étapes, de la capacité physique existante vers de nouvelles régions.",
+        "steps": [
+          "Aujourd'hui",
+          "Planification de capacité",
+          "Nouveau matériel",
+          "Nouveaux racks",
+          "Nouvelles installations",
+          "Nouvelles régions"
+        ],
+        "note": "Chaque étape sera documentée au fur et à mesure qu'elle sera engagée : rien n'est présenté comme déjà réalisé sans l'être."
+      },
+      "fromRackToCloud": {
+        "eyebrow": "Du rack au cloud",
+        "title": "D'un rack à une plateforme cloud",
+        "description": "Une infrastructure physique concrète devient progressivement une plateforme cloud abstraite, par une succession d'abstractions.",
+        "steps": [
+          "Rack",
+          "Cluster",
+          "Pool de ressources",
+          "Data Center",
+          "Région",
+          "Plateforme cloud"
+        ]
+      },
+      "location": {
+        "eyebrow": "Pourquoi la localisation compte",
+        "title": "Le choix d'une localisation est un compromis",
+        "description": "La localisation d'un data center influence plusieurs dimensions. Chaque choix implique des compromis : aucune localisation n'est universellement « meilleure ».",
+        "items": [
+          {
+            "title": "Latence",
+            "description": "La proximité réduit les temps de réponse."
+          },
+          {
+            "title": "Résidence des données",
+            "description": "L'endroit où les données sont hébergées."
+          },
+          {
+            "title": "Disponibilité",
+            "description": "Les infrastructures disponibles autour de la localisation."
+          },
+          {
+            "title": "Connectivité",
+            "description": "L'accès aux réseaux et aux échanges de trafic."
+          },
+          {
+            "title": "Reprise après sinistre",
+            "description": "La possibilité de s'appuyer sur des sites distants."
+          },
+          {
+            "title": "Coût",
+            "description": "Le coût de l'infrastructure varie selon les localisations."
+          },
+          {
+            "title": "Placement des workloads",
+            "description": "La capacité à choisir où exécuter les charges."
+          }
+        ]
+      },
+      "choosing": {
+        "eyebrow": "Choisir une région",
+        "title": "Une structure pour comparer les régions",
+        "description": "Le catalogue régional n'est pas encore publié. Cette structure accueillera les données réelles dès qu'elles seront disponibles.",
+        "items": [
+          "Localisation",
+          "Latence",
+          "Services",
+          "Disponibilité",
+          "Considérations de conformité"
+        ],
+        "note": "Aucun comparateur régional n'est affiché tant que les données officielles ne sont pas publiées."
+      },
+      "transparency": {
+        "eyebrow": "Transparence",
+        "title": "Une communication publique sur l'infrastructure",
+        "description": "Nous publions les informations réelles sur notre infrastructure, sans données fictives. Le statut en temps réel sera ajouté lorsqu'un système dédié sera disponible.",
+        "items": [
+          {
+            "title": "Statut opérationnel",
+            "description": "L'état de disponibilité des services (à venir)."
+          },
+          {
+            "title": "Maintenances",
+            "description": "Les opérations planifiées annoncées à l'avance."
+          },
+          {
+            "title": "Incidents",
+            "description": "Les comptes-rendus des incidents passés (à venir)."
+          },
+          {
+            "title": "Régions",
+            "description": "Les localisations officielles (à venir)."
+          },
+          {
+            "title": "Services",
+            "description": "Les services disponibles dans chaque zone."
+          },
+          {
+            "title": "Évolutions de l'infrastructure",
+            "description": "Les mises à jour sur les déploiements."
+          }
+        ],
+        "cta": "Découvrir notre infrastructure"
+      },
+      "architecture": {
+        "eyebrow": "Architecture",
+        "title": "Vue d'ensemble",
+        "description": "De la plateforme cloud jusqu'aux équipements physiques, l'architecture relie les services aux ressources qui les font fonctionner.",
+        "note": "Architecture conceptuelle : elle décrit la structure vers laquelle nous construisons, pas nécessairement l'état déployé actuel."
+      },
+      "finalCta": {
+        "title": "Découvrez ce qui alimente votre cloud.",
+        "description": "Explorez comment ZenthCloud organise son infrastructure physique, de la région jusqu'au serveur.",
+        "primary": "Explorer ZenthCloud",
+        "secondary": "Explorer notre infrastructure"
+      }
+    },
+    "network": {
+      "meta": {
+        "title": "Réseau ZenthCloud | Architecture réseau cloud Europe",
+        "description": "Comment le réseau relie l'infrastructure ZenthCloud : edge, core, backbone, réseaux privés, sécurité réseau, routage et observabilité. Une vue institutionnelle, sans données fictives."
+      },
+      "hero": {
+        "badge": "ZenthCloud Network",
+        "title": "Tout est connecté. Par conception.",
+        "subtitle": "Le réseau est la couche qui relie les utilisateurs, les régions, les data centers, le calcul, le stockage et les services de ZenthCloud.",
+        "primaryCta": "Explorer ZenthCloud",
+        "secondaryCta": "Découvrir notre infrastructure"
+      },
+      "glance": {
+        "eyebrow": "Le réseau en un coup d'œil",
+        "title": "Une couche qui relie toute la plateforme",
+        "description": "De l'accès public jusqu'aux workloads, le réseau traverse toutes les couches de l'infrastructure.",
+        "intro": "L'architecture ci-dessous est conceptuelle : elle décrit la structure vers laquelle nous construisons. Elle sera mise à jour à mesure que l'architecture réelle sera officialisée."
+      },
+      "why": {
+        "eyebrow": "Pourquoi le réseau compte",
+        "title": "Le réseau conditionne l'expérience cloud",
+        "description": "Le réseau influence directement la manière dont les services sont perçus, protégés et capables d'évoluer.",
+        "message": "Un cloud est un système distribué. C'est le réseau qui le fait se comporter comme tel.",
+        "items": [
+          {
+            "title": "Latence",
+            "description": "La distance et la topologie influencent les temps de réponse."
+          },
+          {
+            "title": "Disponibilité",
+            "description": "Le réseau est un facteur central de la continuité de service."
+          },
+          {
+            "title": "Sécurité",
+            "description": "Le réseau est un périmètre et un outil de contrôle d'accès."
+          },
+          {
+            "title": "Performance",
+            "description": "Le débit et la qualité de service conditionnent les workloads."
+          },
+          {
+            "title": "Évolutivité",
+            "description": "Un réseau bien conçu absorbe la croissance sans se réinventer."
+          },
+          {
+            "title": "Isolation des workloads",
+            "description": "La segmentation protège les charges les unes des autres."
+          },
+          {
+            "title": "Mouvement des données",
+            "description": "Le réseau transporte les données entre les services et les régions."
+          }
+        ]
+      },
+      "layers": {
+        "eyebrow": "Les couches du réseau",
+        "title": "Un réseau organisé en couches",
+        "description": "Chaque couche a un rôle précis, de l'accès Internet jusqu'aux services exposés aux clients.",
+        "items": [
+          "Internet",
+          "Edge",
+          "Core / Backbone",
+          "Data Center Network",
+          "Private Network",
+          "Virtual Network",
+          "Workloads",
+          "Services"
+        ]
+      },
+      "edge": {
+        "eyebrow": "Edge",
+        "title": "La frontière entre ZenthCloud et Internet",
+        "description": "L'edge est la couche située à la frontière du réseau : c'est là que le trafic entre et sort de la plateforme.",
+        "steps": [
+          "Internet",
+          "Edge",
+          "Zenth Cloud"
+        ],
+        "items": [
+          {
+            "title": "Ingress",
+            "description": "L'entrée du trafic vers la plateforme."
+          },
+          {
+            "title": "Egress",
+            "description": "La sortie du trafic vers Internet."
+          },
+          {
+            "title": "Routing",
+            "description": "L'acheminement du trafic aux frontières."
+          },
+          {
+            "title": "Protection DDoS",
+            "description": "L'atténuation des attaques par déni de service."
+          },
+          {
+            "title": "Firewall",
+            "description": "Le filtrage du trafic entrant."
+          },
+          {
+            "title": "Load balancing",
+            "description": "La répartition du trafic entrant."
+          }
+        ],
+        "note": "Les mécanismes précis déployés à l'edge seront documentés à mesure qu'ils seront opérationnels."
+      },
+      "core": {
+        "eyebrow": "Core network",
+        "title": "Le réseau interne de la plateforme",
+        "description": "Le core network relie les infrastructures entre elles et assure la communication interne, indépendamment du trafic public.",
+        "objectives": [
+          {
+            "title": "Connectivité",
+            "description": "Relier les régions, les data centers et les services."
+          },
+          {
+            "title": "Redondance",
+            "description": "Plusieurs chemins pour limiter les points uniques."
+          },
+          {
+            "title": "Routage prévisible",
+            "description": "Un acheminement stable et compréhensible."
+          },
+          {
+            "title": "Évolutivité",
+            "description": "Une capacité à grandir avec la plateforme."
+          }
+        ]
+      },
+      "dcNetwork": {
+        "eyebrow": "Réseau de data center",
+        "title": "Le réseau à l'intérieur du data center",
+        "description": "Chaque data center dispose d'un réseau interne qui relie le calcul, le stockage et la gestion.",
+        "items": [
+          {
+            "title": "Commutation",
+            "description": "La commutation des trames entre les équipements."
+          },
+          {
+            "title": "Routage",
+            "description": "L'acheminement entre les sous-réseaux internes."
+          },
+          {
+            "title": "Segmentation",
+            "description": "La séparation logique des trafics."
+          },
+          {
+            "title": "Uplinks",
+            "description": "Les liaisons vers le réseau du site."
+          },
+          {
+            "title": "Connectivité de gestion",
+            "description": "L'accès d'administration aux équipements."
+          }
+        ],
+        "fabricTitle": "Architecture de référence",
+        "fabricNote": "Une architecture de type spine/leaf est une direction architecturale possible. Elle n'est pas présentée comme l'architecture actuelle tant qu'elle n'est pas validée.",
+        "cta": "Découvrir nos data centers"
+      },
+      "publicNet": {
+        "eyebrow": "Réseau public",
+        "title": "La connectivité publique des services",
+        "description": "Le réseau public expose les services aux clients via Internet, depuis l'entrée du trafic jusqu'aux ressources.",
+        "steps": [
+          "Client",
+          "Internet",
+          "Edge",
+          "Réseau public",
+          "Services cloud"
+        ],
+        "items": [
+          {
+            "title": "IP publique",
+            "description": "L'adressage public des ressources exposées."
+          },
+          {
+            "title": "Ingress",
+            "description": "L'entrée du trafic vers les services."
+          },
+          {
+            "title": "Egress",
+            "description": "La sortie du trafic depuis les ressources."
+          },
+          {
+            "title": "Routing",
+            "description": "L'acheminement du trafic public."
+          },
+          {
+            "title": "Firewall",
+            "description": "Le filtrage du trafic vers les ressources."
+          }
+        ],
+        "cta": "Découvrir le networking"
+      },
+      "privateNet": {
+        "eyebrow": "Réseau privé",
+        "title": "La communication isolée entre ressources",
+        "description": "Les réseaux privés permettent aux ressources d'un même client de communiquer sans passer par Internet.",
+        "items": [
+          {
+            "title": "Communication interne",
+            "description": "Des échanges directs entre les ressources."
+          },
+          {
+            "title": "Isolation",
+            "description": "Une séparation stricte avec les autres clients."
+          },
+          {
+            "title": "Segmentation",
+            "description": "Des réseaux découpés selon les besoins."
+          },
+          {
+            "title": "Adressage privé",
+            "description": "Une plage d'adresses dédiée au réseau."
+          }
+        ],
+        "note": "Les fonctionnalités de réseau privé seront présentées à mesure de leur disponibilité réelle."
+      },
+      "managementNet": {
+        "eyebrow": "Réseau de management",
+        "title": "La séparation des opérations internes",
+        "description": "Les opérations internes — administration, supervision, configuration — sont séparées autant que possible des workloads clients.",
+        "steps": [
+          "Management",
+          "Infrastructure",
+          "Hosts / Network / Storage"
+        ],
+        "note": "Les détails sensibles du réseau de management ne sont pas rendus publics."
+      },
+      "storageNet": {
+        "eyebrow": "Réseau de stockage",
+        "title": "La communication calcul-stockage",
+        "description": "Le calcul et le stockage échangent en continu des données. Ce trafic impose des contraintes spécifiques au réseau.",
+        "items": [
+          {
+            "title": "Débit",
+            "description": "Un volume de données élevé à transporter."
+          },
+          {
+            "title": "Latence",
+            "description": "Des temps de réponse faibles pour les échanges."
+          },
+          {
+            "title": "Isolation",
+            "description": "Une séparation des trafics internes."
+          },
+          {
+            "title": "Fiabilité",
+            "description": "Des chemins stables pour les données."
+          }
+        ]
+      },
+      "interRegion": {
+        "eyebrow": "Réseau inter-régions",
+        "title": "Relier les régions entre elles",
+        "description": "Un réseau inter-régions permet aux infrastructures réparties de communiquer et de se renforcer mutuellement.",
+        "uses": [
+          {
+            "title": "Réplication",
+            "description": "La duplication des données entre régions."
+          },
+          {
+            "title": "Backup",
+            "description": "Des sauvegardes hébergées dans une autre région."
+          },
+          {
+            "title": "Reprise après sinistre",
+            "description": "La continuité en cas de panne régionale."
+          },
+          {
+            "title": "Services distribués",
+            "description": "Des services répartis sur plusieurs régions."
+          },
+          {
+            "title": "Communication des workloads",
+            "description": "Des échanges entre charges situées dans des régions différentes."
+          }
+        ],
+        "note": "Une migration automatique des workloads entre régions n'est pas annoncée tant qu'elle n'est pas implémentée."
+      },
+      "segmentation": {
+        "eyebrow": "Segmentation réseau",
+        "title": "Des réseaux séparés, des objectifs distincts",
+        "description": "Le réseau est segmenté en zones aux objectifs différents, pour la sécurité et la clarté opérationnelle.",
+        "objectives": [
+          {
+            "title": "Isolation",
+            "description": "Séparer les trafics qui n'ont pas à se croiser."
+          },
+          {
+            "title": "Sécurité",
+            "description": "Réduire la surface d'attaque de chaque zone."
+          },
+          {
+            "title": "Séparation opérationnelle",
+            "description": "Distinguer le public, le privé et la gestion."
+          },
+          {
+            "title": "Réduction du rayon d'explosion",
+            "description": "Limiter l'impact d'un incident à sa zone."
+          }
+        ]
+      },
+      "security": {
+        "eyebrow": "Sécurité réseau",
+        "title": "La sécurité réseau en profondeur",
+        "description": "La sécurité réseau se déploie en plusieurs couches, de la frontière jusqu'aux workloads.",
+        "steps": [
+          "Internet",
+          "Edge",
+          "Firewall",
+          "Segmentation",
+          "Réseau privé",
+          "Workload"
+        ],
+        "items": [
+          {
+            "title": "Firewall",
+            "description": "Le filtrage du trafic aux points de passage."
+          },
+          {
+            "title": "ACL",
+            "description": "Des listes de contrôle d'accès sur les réseaux."
+          },
+          {
+            "title": "Security groups",
+            "description": "Des règles appliquées aux ressources."
+          },
+          {
+            "title": "Contrôles de routage",
+            "description": "La maîtrise des chemins empruntés par le trafic."
+          },
+          {
+            "title": "Isolation réseau",
+            "description": "La séparation des environnements."
+          }
+        ],
+        "note": "Chaque mécanisme sera documenté à mesure de sa disponibilité réelle dans la plateforme.",
+        "cta": "En savoir plus sur notre sécurité"
+      },
+      "traffic": {
+        "eyebrow": "Flux de trafic",
+        "title": "Chaque flux suit un chemin",
+        "description": "Les différents types de trafic empruntent des chemins différents à travers le réseau.",
+        "flow1": {
+          "title": "Trafic entrant public",
+          "steps": [
+            "Utilisateur",
+            "Internet",
+            "Edge",
+            "Load Balancer",
+            "Application",
+            "Base de données"
+          ]
+        },
+        "flow2": {
+          "title": "Communication interne",
+          "steps": [
+            "Application",
+            "Réseau privé",
+            "Base de données"
+          ]
+        }
+      },
+      "loadBalancing": {
+        "eyebrow": "Load balancing",
+        "title": "Répartir le trafic entre les ressources",
+        "description": "Le load balancing distribue le trafic entre plusieurs ressources pour la disponibilité et la scalabilité.",
+        "steps": [
+          "Trafic",
+          "Load Balancer",
+          "Application",
+          "Application",
+          "Application"
+        ],
+        "items": [
+          {
+            "title": "Distribution du trafic",
+            "description": "La répartition des requêtes entre les instances."
+          },
+          {
+            "title": "Disponibilité",
+            "description": "La poursuite du service malgré une instance en panne."
+          },
+          {
+            "title": "Évolutivité",
+            "description": "L'ajout de capacité derrière un point d'entrée unique."
+          }
+        ],
+        "note": "Aucun type précis de load balancer n'est annoncé sans validation."
+      },
+      "routing": {
+        "eyebrow": "Routage",
+        "title": "Acheminer le trafic à destination",
+        "description": "Le routage détermine le chemin emprunté par le trafic entre sa source et sa destination.",
+        "items": [
+          "Public",
+          "Private",
+          "Regional",
+          "Management"
+        ],
+        "note": "Les protocoles de routage utilisés seront documentés à mesure de leur officialisation."
+      },
+      "ipAddressing": {
+        "eyebrow": "Adressage IP",
+        "title": "Des plans d'adressage distincts",
+        "description": "L'adressage distingue les adresses publiques, privées et internes, sans jamais exposer les plages internes réelles.",
+        "steps": [
+          "Public",
+          "Edge",
+          "Réseau privé",
+          "Workload"
+        ],
+        "items": [
+          {
+            "title": "IP publiques",
+            "description": "L'adressage visible depuis Internet."
+          },
+          {
+            "title": "IP privées",
+            "description": "L'adressage des réseaux clients."
+          },
+          {
+            "title": "Adressage interne",
+            "description": "L'adressage des infrastructures internes, non publié."
+          }
+        ]
+      },
+      "automation": {
+        "eyebrow": "Automatisation réseau",
+        "title": "Un réseau pilotable par programme",
+        "description": "Le réseau est conçu pour être automatisé, de la configuration à l'application des règles.",
+        "steps": [
+          "Développeur",
+          "API / CLI / IaC",
+          "Network Control Plane",
+          "Infrastructure réseau"
+        ],
+        "uses": [
+          {
+            "title": "Provisioning",
+            "description": "La création automatisée des réseaux."
+          },
+          {
+            "title": "Routage",
+            "description": "La configuration des chemins."
+          },
+          {
+            "title": "Réseaux privés",
+            "description": "La création des réseaux clients."
+          },
+          {
+            "title": "Règles firewall",
+            "description": "L'application des règles de filtrage."
+          },
+          {
+            "title": "Gestion IP",
+            "description": "L'allocation des adresses."
+          },
+          {
+            "title": "Load balancing",
+            "description": "La configuration des répartiteurs."
+          }
+        ]
+      },
+      "controlPlane": {
+        "eyebrow": "Network control plane",
+        "title": "La couche qui pilote le réseau",
+        "description": "Le control plane réseau traduit les demandes des API en configuration appliquée à la couche matérielle.",
+        "steps": [
+          "Network API",
+          "Network Control Plane",
+          "Routing / Firewall / Provisioning",
+          "Network Fabric"
+        ]
+      },
+      "observability": {
+        "eyebrow": "Observabilité",
+        "title": "Comprendre ce qui circule",
+        "description": "L'observabilité du réseau repose sur les données collectées : métriques, logs, événements et flux.",
+        "steps": [
+          "Réseau",
+          "Métriques / Logs / Événements / Flux",
+          "Observabilité",
+          "Alertes"
+        ],
+        "note": "Seules les données réellement collectées seront publiées, sans métrique fictive."
+      },
+      "operations": {
+        "eyebrow": "Operations réseau",
+        "title": "La fiabilité réseau est une discipline opérationnelle",
+        "description": "Le réseau exige des opérations continues : supervision, maintenance, configuration et gestion d'incidents.",
+        "message": "La fiabilité réseau est une discipline opérationnelle.",
+        "items": [
+          {
+            "title": "Supervision",
+            "description": "L'observation continue de l'état du réseau."
+          },
+          {
+            "title": "Maintenance",
+            "description": "Les opérations d'entretien planifiées."
+          },
+          {
+            "title": "Configuration",
+            "description": "La gestion des changements de configuration."
+          },
+          {
+            "title": "Gestion d'incidents",
+            "description": "La détection et la résolution des incidents."
+          },
+          {
+            "title": "Planification de capacité",
+            "description": "L'anticipation des besoins de trafic."
+          },
+          {
+            "title": "Troubleshooting",
+            "description": "Le diagnostic des anomalies."
+          },
+          {
+            "title": "Upgrades",
+            "description": "L'évolution des équipements et des versions."
+          }
+        ]
+      },
+      "resilience": {
+        "eyebrow": "Résilience réseau",
+        "title": "Prévoir les pannes réseau",
+        "description": "La résilience réseau repose sur la redondance, la gestion des pannes et la planification de capacité.",
+        "cards": [
+          {
+            "title": "Redondance",
+            "description": "Des chemins multiples pour éviter les points uniques de défaillance.",
+            "steps": [
+              "Service",
+              "Chemin A / Chemin B",
+              "Réseau"
+            ]
+          },
+          {
+            "title": "Gestion des pannes",
+            "description": "Un parcours de réaction clair, de la détection à la validation.",
+            "steps": [
+              "Panne réseau",
+              "Détection",
+              "Isolation",
+              "Reroutage / Récupération",
+              "Validation"
+            ]
+          },
+          {
+            "title": "Planification de capacité",
+            "description": "Anticiper la croissance du trafic avant d'ajouter de la capacité.",
+            "steps": [
+              "Croissance du trafic",
+              "Planification",
+              "Expansion réseau",
+              "Liens additionnels",
+              "Infrastructure additionnelle"
+            ]
+          }
+        ],
+        "note": "Le terme « fully redundant » n'est pas utilisé sans une architecture qui le démontre."
+      },
+      "latency": {
+        "eyebrow": "Latence",
+        "title": "La distance est un facteur architectural",
+        "description": "La latence est influencée par la distance et la topologie. Elle guide le placement des workloads et la conception des services.",
+        "steps": [
+          "Utilisateur",
+          "Région la plus proche",
+          "Workload"
+        ],
+        "note": "Aucune valeur de latence fictive n'est affichée : les mesures réelles seront publiées lorsqu'elles seront disponibles."
+      },
+      "audiences": {
+        "eyebrow": "Réseau selon les publics",
+        "title": "Le réseau côté développeurs et côté entreprises",
+        "description": "Le réseau sert des besoins différents selon les publics, du développeur individuel à l'entreprise.",
+        "developers": {
+          "title": "Pour les développeurs",
+          "items": [
+            {
+              "title": "Réseau privé",
+              "description": "Isoler et connecter ses ressources."
+            },
+            {
+              "title": "IP publiques",
+              "description": "Exposer ses services."
+            },
+            {
+              "title": "Firewall",
+              "description": "Contrôler le trafic."
+            },
+            {
+              "title": "Load balancer",
+              "description": "Répartir la charge."
+            },
+            {
+              "title": "DNS",
+              "description": "Nommer ses ressources."
+            },
+            {
+              "title": "API",
+              "description": "Piloter le réseau par programme."
+            }
+          ]
+        },
+        "enterprise": {
+          "title": "Pour les entreprises",
+          "items": [
+            {
+              "title": "Segmentation",
+              "description": "Des environnements séparés par besoin."
+            },
+            {
+              "title": "Connectivité privée",
+              "description": "Des liaisons dédiées entre les sites."
+            },
+            {
+              "title": "Routage prévisible",
+              "description": "Des chemins stables et compréhensibles."
+            },
+            {
+              "title": "Contrôle d'accès",
+              "description": "Une gestion fine des permissions."
+            },
+            {
+              "title": "Gestion centralisée",
+              "description": "Une vue d'ensemble des réseaux."
+            },
+            {
+              "title": "Connectivité hybride",
+              "description": "Relier l'existant au cloud."
+            }
+          ],
+          "note": "Aucun service de connectivité dédié (MPLS, Direct Connect, ExpressRoute, VPN, SD-WAN) n'est annoncé tant qu'il n'est pas réellement disponible."
+        }
+      },
+      "hybrid": {
+        "eyebrow": "Connectivité hybride",
+        "title": "Relier l'infrastructure existante au cloud",
+        "description": "La connectivité hybride permet à l'infrastructure d'un client de communiquer avec ses ressources cloud de manière sécurisée.",
+        "steps": [
+          "Infrastructure client",
+          "Connexion sécurisée",
+          "Zenth Cloud",
+          "Workloads cloud"
+        ],
+        "note": "Section conceptuelle : les mécanismes concrets seront présentés à mesure de leur disponibilité."
+      },
+      "openNetworking": {
+        "eyebrow": "Networking ouvert",
+        "title": "Une philosophie technologique cohérente",
+        "description": "Notre approche du réseau repose sur des technologies ouvertes et standard, choisies pour leur prévisibilité et leur interopérabilité.",
+        "items": [
+          {
+            "title": "Standards ouverts",
+            "description": "Des protocoles standardisés et interopérables."
+          },
+          {
+            "title": "Linux networking",
+            "description": "Des fondations réseau ancrées dans l'écosystème Linux."
+          },
+          {
+            "title": "Automatisation",
+            "description": "Une configuration reproductible et scriptable."
+          },
+          {
+            "title": "APIs",
+            "description": "Un réseau pilotable par programme."
+          },
+          {
+            "title": "Protocoles standard",
+            "description": "Des technologies éprouvées et documentées."
+          },
+          {
+            "title": "Infrastructure as Code",
+            "description": "Un réseau décrit et versionné comme du code."
+          }
+        ]
+      },
+      "evolution": {
+        "eyebrow": "Évolution du réseau",
+        "title": "Un réseau qui grandit",
+        "description": "Le réseau évolue par étapes, de la capacité actuelle vers davantage de régions, de capacité et d'automatisation.",
+        "current": {
+          "title": "Aujourd'hui",
+          "items": [
+            "Une architecture réseau en couches, de l'edge au data center",
+            "Des réseaux privés et une segmentation en place",
+            "Une automatisation progressive de la configuration",
+            "Une infrastructure européenne en construction"
+          ]
+        },
+        "roadmap": {
+          "title": "Feuille de route",
+          "items": [
+            "De nouvelles régions et de nouveaux data centers",
+            "Davantage de capacité réseau et de connectivité",
+            "Une automatisation réseau étendue",
+            "Un backbone inter-régions renforcé",
+            "Davantage d'interconnexions avec l'écosystème"
+          ]
+        }
+      },
+      "transparency": {
+        "eyebrow": "Transparence",
+        "title": "Une communication publique sur le réseau",
+        "description": "Nous publions les informations réelles sur notre réseau, sans données fictives ni détails sensibles.",
+        "items": [
+          {
+            "title": "Statut réseau",
+            "description": "L'état de disponibilité du réseau (à venir)."
+          },
+          {
+            "title": "Incidents",
+            "description": "Les comptes-rendus des incidents (à venir)."
+          },
+          {
+            "title": "Maintenances",
+            "description": "Les opérations planifiées annoncées à l'avance."
+          },
+          {
+            "title": "Documentation d'architecture",
+            "description": "La description des couches et de leurs interactions."
+          },
+          {
+            "title": "Statut des régions",
+            "description": "L'état des infrastructures régionales (à venir)."
+          },
+          {
+            "title": "Informations de connectivité",
+            "description": "Les points de connexion publiés à mesure qu'ils existent."
+          }
+        ]
+      },
+      "relations": {
+        "eyebrow": "Lien avec l'infrastructure",
+        "title": "Le réseau relie ce que l'infrastructure héberge",
+        "description": "Les data centers fournissent les localisations physiques. Le réseau les connecte. L'infrastructure assemble le tout.",
+        "message": "Les data centers fournissent les localisations physiques. Le réseau les connecte.",
+        "items": [
+          {
+            "title": "Data centers",
+            "description": "Où l'infrastructure physique existe.",
+            "cta": "Découvrir nos data centers",
+            "href": "/company/data-centers"
+          },
+          {
+            "title": "Infrastructure",
+            "description": "Comment l'infrastructure complète est assemblée.",
+            "cta": "Découvrir notre infrastructure",
+            "href": "/company/infrastructure"
+          },
+          {
+            "title": "Networking",
+            "description": "Quelles capacités réseau les clients peuvent utiliser.",
+            "cta": "Découvrir le networking",
+            "href": "/public-cloud/networking"
+          }
+        ]
+      },
+      "architecture": {
+        "eyebrow": "Architecture réseau",
+        "title": "Vue d'ensemble",
+        "description": "De l'Internet jusqu'aux workloads, l'architecture réseau relie chaque couche de la plateforme.",
+        "note": "Architecture conceptuelle : elle décrit la structure vers laquelle nous construisons, pas nécessairement l'état déployé actuel."
+      },
+      "finalCta": {
+        "title": "Connectez votre infrastructure à ce qui vient ensuite.",
+        "description": "Découvrez comment ZenthCloud relie ses régions, ses data centers et ses services.",
+        "primary": "Explorer ZenthCloud",
+        "secondary": "Explorer le networking"
+      }
     }
   }
 }

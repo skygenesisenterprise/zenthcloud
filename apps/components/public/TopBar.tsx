@@ -27,7 +27,7 @@ export function TopBar() {
 
         <div className="flex items-center gap-5 text-sm font-medium">
           <a
-            href="https://mail.skygenesisenterprise.com"
+            href="https://webmail.zenthcloud.com"
             target="_blank"
             rel="noreferrer"
             className="hover:text-primary-foreground/80 transition-colors"
@@ -44,13 +44,13 @@ export function TopBar() {
             {t("myAccount")}
           </a>
           <Link
-            href="/contact"
+            href="/company/contact"
             className="hover:text-primary-foreground/80 transition-colors"
           >
             {t("contactSales")}
           </Link>
           <a
-            href="https://support.skygenesisenterprise.com"
+            href="https://support.zenthcloud.com"
             target="_blank"
             rel="noreferrer"
             className="hover:text-primary-foreground/80 transition-colors"

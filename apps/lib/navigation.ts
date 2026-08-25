@@ -116,7 +116,7 @@ export const solutionsItems: NavItem[] = [
 ];
 
 export const companyItems: NavItem[] = [
-  { labelKey: "company.about.label", href: "/company", descriptionKey: "company.about.description", icon: Users },
+  { labelKey: "company.about.label", href: "/company/about", descriptionKey: "company.about.description", icon: Users },
   { labelKey: "company.infrastructure.label", href: "/company/infrastructure", descriptionKey: "company.infrastructure.description", icon: Server },
   { labelKey: "company.dataCenters.label", href: "/company/data-centers", descriptionKey: "company.dataCenters.description", icon: MapPin },
   { labelKey: "company.network.label", href: "/company/network", descriptionKey: "company.network.description", icon: Network },
@@ -201,7 +201,7 @@ export const mainNav: NavGroup[] = [
     headlineKey: "company.headline",
     items: companyItems,
     footerLinks: [
-      { labelKey: "company.footer.about", href: "/company" },
+      { labelKey: "company.footer.about", href: "/company/about" },
       { labelKey: "company.footer.infrastructure", href: "/company/infrastructure" },
       { labelKey: "company.footer.contact", href: "/company/contact" },
     ],
