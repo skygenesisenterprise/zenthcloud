@@ -17,6 +17,17 @@
     "backToTop": {
       "label": "Retour en haut",
       "ariaLabel": "Revenir en haut de la page"
+    },
+    "supportWidget": {
+      "label": "Support",
+      "ariaLabel": "Ouvrir la chatbox de support",
+      "title": "Support ZenthCloud",
+      "online": "Nous sommes en ligne",
+      "welcome": "Bonjour 👋 Comment pouvons-nous vous aider ?",
+      "autoReply": "Merci pour votre message. Un membre de notre équipe vous répondra très prochainement.",
+      "inputPlaceholder": "Écrivez votre message…",
+      "send": "Envoyer",
+      "closeChat": "Fermer la chatbox"
     }
   },
   "HeaderInfo": {
@@ -662,6 +673,362 @@
         "primary": "Commencer",
         "secondary": "Contacter les ventes",
         "websites": "Site public : zenthcloud.com · Manager client : manager.zenthcloud.com"
+      }
+    },
+    "homeRedesign": {
+      "meta": {
+        "title": "ZenthCloud — Cloud infrastructure, prête pour la suite.",
+        "description": "Compute, stockage, réseau, private cloud, VPS, bare metal, Cloud PCs et services connectés — le tout sur une infrastructure européenne, piloté depuis une console unique."
+      },
+      "hero": {
+        "eyebrow": "Infrastructure Cloud Européenne",
+        "title": "Infrastructure Cloud conçu pour l'avenir.",
+        "subtitle": "Compute, stockage, réseau, cloud privé et infrastructure dédiée — unifiés au sein d'une seule plateforme.",
+        "primaryCta": "Explorer la plateforme",
+        "primaryHref": "/public-cloud",
+        "secondaryCta": "Découvrir l'infrastructure",
+        "secondaryHref": "/company/infrastructure"
+      },
+      "socialProof": {
+        "quote": "Nous avons déployé notre plateforme complète depuis une console unique, sans dépendre du matériel devant nous.",
+        "quoteAuthor": "— Une équipe infra hébergée sur ZenthCloud",
+        "stats": [
+          {
+            "value": "99.99%",
+            "label": "Disponibilité cible"
+          },
+          {
+            "value": "25 Gbps+",
+            "label": "Uplink vers l'hôte"
+          },
+          {
+            "value": "Europe",
+            "label": "Infrastructure opérée"
+          },
+          {
+            "value": "24/7",
+            "label": "Support local"
+          }
+        ],
+        "partnersLabel": "Construit avec des technologies ouvertes",
+        "partners": [
+          "Kubernetes",
+          "Terraform",
+          "NVIDIA",
+          "AMD",
+          "Intel",
+          "Proxmox",
+          "Grafana",
+          "Prometheus"
+        ]
+      },
+      "platform": {
+        "eyebrow": "Cloud Platform",
+        "title": "Tout ce qu'il faut pour construire.",
+        "description": "Quatre familles de produits pour couvrir vos besoins, du cloud natif à la connectivité — avec une console pour tout piloter.",
+        "cards": {
+          "publicCloud": {
+            "title": "Public Cloud",
+            "description": "Compute, stockage, réseau et bases de données à la demande.",
+            "cta": "Explorer le Public Cloud",
+            "href": "/public-cloud"
+          },
+          "privateCloud": {
+            "title": "Private Cloud",
+            "description": "Infrastructure isolée, virtualisation et environnements contrôlés.",
+            "cta": "Explorer le Private Cloud",
+            "href": "/private-cloud"
+          },
+          "vpsBareMetal": {
+            "title": "VPS & Bare Metal",
+            "description": "Serveurs virtuels flexibles ou ressources physiques dédiées.",
+            "cta": "Découvrir VPS & Bare Metal",
+            "href": "/dedicated-servers"
+          },
+          "cloudPcs": {
+            "title": "Cloud PCs",
+            "description": "Votre espace de travail complet, accessible depuis n'importe où.",
+            "cta": "Découvrir les Cloud PCs",
+            "href": "/cloud-pcs"
+          }
+        }
+      },
+      "publicCloud": {
+        "eyebrow": "Public Cloud",
+        "title": "Construisez sans limites d'infrastructure.",
+        "description": "Une plateforme cloud modulaire pour assembler compute, stockage, réseau et données selon vos besoins.",
+        "features": {
+          "compute": {
+            "title": "Compute",
+            "description": "Instances virtuelles évolutives pour toutes vos charges de travail."
+          },
+          "storage": {
+            "title": "Stockage",
+            "description": "Stockage objet et bloc haute performance."
+          },
+          "networking": {
+            "title": "Réseau",
+            "description": "Réseaux définis par logiciel et IP flottantes."
+          },
+          "databases": {
+            "title": "Bases de données",
+            "description": "Bases SQL et NoSQL managées et sauvegardées."
+          }
+        },
+        "cta": "Explorer le Public Cloud"
+      },
+      "privateCloud": {
+        "eyebrow": "Private Cloud & Virtualisation",
+        "title": "Votre infrastructure. Vos règles.",
+        "description": "Des environnements dédiés et isolés, pensés pour les organisations exigeantes.",
+        "highlights": [
+          {
+            "title": "Isolation",
+            "description": "Ressources et réseaux réservés à votre organisation."
+          },
+          {
+            "title": "Contrôle",
+            "description": "Pleine maîtrise de la configuration et des accès."
+          },
+          {
+            "title": "Performance",
+            "description": "Matériel dédié pour des performances constantes."
+          },
+          {
+            "title": "Personnalisation",
+            "description": "Environnements conçus autour de vos exigences."
+          }
+        ],
+        "values": [
+          "Gouvernance",
+          "Conformité",
+          "Réseaux privés",
+          "Backup"
+        ],
+        "items": [
+          {
+            "title": "Private Cloud",
+            "description": "Cloud dédié et hautes performances."
+          },
+          {
+            "title": "Virtualisation",
+            "description": "Machines virtuelles isolées et flexibles."
+          },
+          {
+            "title": "Infrastructure dédiée",
+            "description": "Ressources physiques réservées."
+          },
+          {
+            "title": "Environnements managés",
+            "description": "Nous opérons le matériel, vous vous concentrez sur vos services."
+          }
+        ],
+        "cta": "Explorer le Private Cloud"
+      },
+      "servers": {
+        "eyebrow": "VPS & Bare Metal",
+        "title": "La puissance, au choix.",
+        "description": "Choisissez la flexibilité d'un VPS ou la puissance brute d'un serveur dédié, pour le développement comme pour la production.",
+        "items": [
+          {
+            "title": "VPS",
+            "description": "Serveurs virtuels souples et économiques, déployés en quelques secondes.",
+            "points": [
+              "Mise en service instantanée",
+              "Ressources évolutives",
+              "Idéal dev & production"
+            ],
+            "cta": "Explorer les VPS",
+            "href": "/vps"
+          },
+          {
+            "title": "Bare Metal",
+            "description": "Ressources physiques 100 % dédiées pour des performances maximales.",
+            "points": [
+              "Puissance brute garantie",
+              "Contrôle total du matériel",
+              "Pour charges exigeantes"
+            ],
+            "cta": "Explorer le Bare Metal",
+            "href": "/dedicated-servers"
+          }
+        ]
+      },
+      "cloudPcs": {
+        "eyebrow": "Cloud PCs",
+        "title": "Un ordinateur qui vous suit.",
+        "subtitle": "Accédez à votre espace de travail complet depuis presque n'importe où, sans dépendre du matériel devant vous.",
+        "concept": "L'appareil n'est que le point d'accès. Votre espace de travail vit dans le cloud.",
+        "useCases": {
+          "workstation": {
+            "title": "Cloud Workstation",
+            "description": "Pour les applications professionnelles et créatives."
+          },
+          "gaming": {
+            "title": "Cloud Gaming",
+            "description": "Pour une machine distante haute performance."
+          },
+          "developer": {
+            "title": "Developer Cloud PC",
+            "description": "Un environnement de développement accessible de partout."
+          },
+          "enterprise": {
+            "title": "Enterprise Cloud PC",
+            "description": "Des postes de travail centralisés pour vos collaborateurs."
+          }
+        }
+      },
+      "connectivity": {
+        "eyebrow": "Networking & Telecom",
+        "title": "Connectez tout.",
+        "description": "ZenthCloud ne fournit pas uniquement du compute : il apporte aussi la connectivité qui entoure votre infrastructure.",
+        "items": [
+          {
+            "title": "Cloud Networking",
+            "description": "Réseaux définis par logiciel et routage avancé."
+          },
+          {
+            "title": "Secure Access",
+            "description": "Accès sécurisé à vos ressources."
+          },
+          {
+            "title": "VPN",
+            "description": "Tunnels chiffrés vers votre infrastructure."
+          },
+          {
+            "title": "VoIP",
+            "description": "Téléphonie d'entreprise et trunk SIP."
+          },
+          {
+            "title": "Numéros de téléphone",
+            "description": "Numéros locaux et internationaux."
+          },
+          {
+            "title": "Messaging",
+            "description": "Services de messagerie et de communication."
+          }
+        ],
+        "users": "Utilisateurs",
+        "cta": "Explorer Networking & Telecom"
+      },
+      "console": {
+        "eyebrow": "ZenthCloud Console",
+        "title": "Une plateforme. Tout sous contrôle.",
+        "description": "Gérez infrastructure, réseau, sécurité et services depuis un plan de contrôle unique.",
+        "items": [
+          {
+            "title": "Infrastructure",
+            "icon": "server"
+          },
+          {
+            "title": "Ressources cloud",
+            "icon": "cloud"
+          },
+          {
+            "title": "Réseaux",
+            "icon": "network"
+          },
+          {
+            "title": "Sécurité",
+            "icon": "shield"
+          },
+          {
+            "title": "Monitoring",
+            "icon": "activity"
+          },
+          {
+            "title": "Facturation",
+            "icon": "billing"
+          },
+          {
+            "title": "Telecom",
+            "icon": "phone"
+          },
+          {
+            "title": "API",
+            "icon": "code"
+          },
+          {
+            "title": "Automatisation",
+            "icon": "zap"
+          }
+        ],
+        "cta": "Explorer la Console"
+      },
+      "builtFor": {
+        "eyebrow": "Conçu pour",
+        "title": "Conçu pour la façon dont vous travaillez.",
+        "description": "Des profils et une architecture qui s'adaptent à chaque usage, du développeur à l'infrastructure critique.",
+        "profiles": {
+          "developers": {
+            "title": "Développeurs",
+            "description": "Déployez une infrastructure sans complexité inutile.",
+            "cta": "Explorer les outils développeurs",
+            "href": "/solutions/developers"
+          },
+          "businesses": {
+            "title": "Entreprises",
+            "description": "Offrez à vos équipes une infrastructure sécurisée et évolutive.",
+            "cta": "Explorer les solutions entreprises",
+            "href": "/solutions/business"
+          },
+          "enterprise": {
+            "title": "Grands comptes",
+            "description": "Construisez des environnements dédiés autour de vos exigences.",
+            "cta": "Explorer les solutions grand compte",
+            "href": "/solutions/enterprise"
+          },
+          "aiCompute": {
+            "title": "IA & Compute",
+            "description": "Accédez à une infrastructure pensée pour les charges exigeantes.",
+            "cta": "Explorer IA & GPU",
+            "href": "/solutions/ai-gpu"
+          }
+        }
+      },
+      "architecture": {
+        "eyebrow": "Architecture",
+        "title": "De l'infrastructure à l'application.",
+        "description": "Chaque couche s'articule pour former une plateforme cohérente, du data center jusqu'à vos services.",
+        "platform": "Plateforme ZenthCloud",
+        "compute": "Compute",
+        "storage": "Storage",
+        "network": "Network",
+        "virtualization": "Virtualisation",
+        "infrastructure": "Infrastructure",
+        "datacenters": "Data centers"
+      },
+      "why": {
+        "eyebrow": "Pourquoi ZenthCloud",
+        "title": "Une plateforme conçue pour durer.",
+        "reasons": [
+          {
+            "title": "Infrastructure européenne",
+            "description": "Opérée en Europe, proche de vos utilisateurs."
+          },
+          {
+            "title": "Sécurité par conception",
+            "description": "Intégrée à toute la plateforme."
+          },
+          {
+            "title": "Technologies ouvertes",
+            "description": "Standards ouverts et interopérables."
+          },
+          {
+            "title": "Prix prévisibles",
+            "description": "Des ressources et des tarifs transparents."
+          },
+          {
+            "title": "Conçu pour passer à l'échelle",
+            "description": "D'un VPS à une infrastructure dédiée."
+          }
+        ]
+      },
+      "finalCta": {
+        "title": "Construisez votre infrastructure avec ZenthCloud.",
+        "subtitle": "Commencez avec une seule ressource. Passez à l'échelle d'une infrastructure entière.",
+        "primary": "Commencer",
+        "secondary": "Contacter les ventes"
       }
     },
     "about": {

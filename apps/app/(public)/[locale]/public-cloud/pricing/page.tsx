@@ -99,70 +99,28 @@ export default async function PricingPage() {
   return (
     <>
       {/* 1. Hero */}
-      <section
-        aria-label={t("hero.badge")}
-        className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-128"
-        style={{
-          background: "linear-gradient(135deg, #7c3aed 0%, #c026d3 35%, #f97316 100%)",
-        }}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.18),transparent_45%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(0,0,0,0.08),transparent_40%)]" />
-
-        <Container className="relative flex flex-1 items-center py-16 md:py-24">
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center w-full">
-            <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                <Sparkles className="h-3.5 w-3.5" />
-                {t("hero.badge")}
-              </span>
-              <h1 className="mt-6 text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-balance">
-                {t("hero.title")}
-              </h1>
-              <p className="mt-5 text-base md:text-lg text-white/90 leading-relaxed max-w-xl">
-                {t("hero.subtitle")}
-              </p>
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
-                  <Link href="/public-cloud/compute">
-                    {t("hero.primaryCta")} <ArrowRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/10 hover:text-white">
-                  <Link href="#calculator">{t("hero.secondaryCta")}</Link>
-                </Button>
-              </div>
-              <p className="mt-4 text-xs text-white/60">{t("hero.note")}</p>
-            </div>
-
-            {/* Estimator mockup */}
-            <div className="hidden lg:flex items-center justify-center">
-              <div className="relative w-full max-w-md">
-                <div className="absolute -inset-8 rounded-3xl bg-white/10 blur-3xl" aria-hidden="true" />
-                <div className="relative rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm p-6 shadow-2xl">
-                  <p className="mb-4 font-mono text-xs text-white/70">
-                    <span className="text-white">€</span> zenthcloud cost estimator
-                  </p>
-                  <dl className="space-y-3">
-                    {[
-                      ["Compute", "€X.XX"],
-                      ["Stockage", "€X.XX"],
-                      ["Réseau", "€X.XX"],
-                      ["Total / mois", "€X.XX"],
-                    ].map(([label, value]) => (
-                      <div
-                        key={label}
-                        className="flex items-center justify-between rounded-lg bg-white/10 px-4 py-3"
-                      >
-                        <dt className="text-sm text-white/80">{label}</dt>
-                        <dd className="font-bold text-white">{value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              </div>
-            </div>
+      <section aria-label={t("hero.badge")} className="border-b border-border bg-background">
+        <Container className="flex flex-col items-center py-20 text-center md:py-28">
+          <span className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
+            {t("hero.badge")}
+          </span>
+          <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight text-balance text-foreground md:text-6xl">
+            {t("hero.title")}
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+            {t("hero.subtitle")}
+          </p>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+            <Button asChild size="lg">
+              <Link href="/public-cloud/compute">
+                {t("hero.primaryCta")} <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="#calculator">{t("hero.secondaryCta")}</Link>
+            </Button>
           </div>
+          <p className="mt-4 text-xs text-muted-foreground">{t("hero.note")}</p>
         </Container>
       </section>
 

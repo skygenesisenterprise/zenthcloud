@@ -18,7 +18,6 @@ import {
   Database,
   Eye,
   Flame,
-  GitBranch,
   Globe,
   HardDrive,
   Layers,
@@ -167,61 +166,26 @@ export default async function GpuAiPage() {
   return (
     <>
       {/* 1. Hero */}
-      <section
-        aria-label={t("hero.badge")}
-        className="relative flex flex-col overflow-hidden text-white min-h-112 md:min-h-128"
-        style={{
-          background: "linear-gradient(135deg, #7c3aed 0%, #c026d3 35%, #f97316 100%)",
-        }}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.18),transparent_45%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(0,0,0,0.08),transparent_40%)]" />
-
-        <PageContainer className="relative flex flex-1 items-center py-16 md:py-24">
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center w-full">
-            <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                <Sparkles className="h-3.5 w-3.5" />
-                {t("hero.badge")}
-              </span>
-              <h1 className="mt-6 text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-balance">
-                {t("hero.title")}
-              </h1>
-              <p className="mt-5 text-base md:text-lg text-white/90 leading-relaxed max-w-xl">
-                {t("hero.subtitle")}
-              </p>
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
-                  <Link href="https://manager.zenthcloud.com" target="_blank" rel="noreferrer">
-                    {t("hero.primaryCta")}
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/10 hover:text-white">
-                  <Link href="#ai-workloads">{t("hero.secondaryCta")}</Link>
-                </Button>
-              </div>
-            </div>
-
-            <div className="hidden lg:flex items-center justify-center">
-              <div className="relative w-full max-w-md aspect-square">
-                <div className="absolute inset-0 rounded-full bg-white/10 blur-3xl" />
-                <div className="relative h-full w-full rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm p-8 shadow-2xl">
-                  <div className="flex h-full flex-col items-center justify-center gap-6">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-white/15 border border-white/20 shadow-xl">
-                      <Brain className="h-12 w-12 text-white" />
-                    </div>
-                    <div className="flex gap-6">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white/10 border border-white/15">
-                        <Flame className="h-8 w-8 text-white/90" />
-                      </div>
-                      <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white/10 border border-white/15">
-                        <Layers className="h-8 w-8 text-white/90" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+      <section aria-label={t("hero.badge")} className="border-b border-border bg-background">
+        <PageContainer className="flex flex-col items-center py-20 text-center md:py-28">
+          <span className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
+            {t("hero.badge")}
+          </span>
+          <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight text-balance text-foreground md:text-6xl">
+            {t("hero.title")}
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+            {t("hero.subtitle")}
+          </p>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+            <Button asChild size="lg">
+              <Link href="https://manager.zenthcloud.com" target="_blank" rel="noreferrer">
+                {t("hero.primaryCta")}
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="#ai-workloads">{t("hero.secondaryCta")}</Link>
+            </Button>
           </div>
         </PageContainer>
       </section>
