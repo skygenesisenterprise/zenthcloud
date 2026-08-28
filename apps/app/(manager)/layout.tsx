@@ -20,9 +20,9 @@ export default function ManagerLayout({
   return (
     <SidebarProvider>
       <ManagerSidebar />
-      <SidebarInset>
+      <SidebarInset className="h-svh overflow-hidden md:h-[calc(100svh-1rem)]">
         <ManagerHeader />
-        <main className="flex-1">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto bg-background">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
