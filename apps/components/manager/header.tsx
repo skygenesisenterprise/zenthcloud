@@ -293,7 +293,7 @@ function TerminalDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
             <p
               key={line.id}
               className={cn(
-                "whitespace-pre-wrap break-words",
+                "whitespace-pre-wrap wrap-break-words",
                 line.type === "command" && "text-emerald-300",
                 line.type === "error" && "text-red-400",
                 line.type === "output" && "text-zinc-200",

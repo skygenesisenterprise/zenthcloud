@@ -22,7 +22,7 @@ import {
   Plus,
   Server,
   ShieldCheck,
-  Sunrise,
+  WalletCards,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -241,7 +241,7 @@ const navServiceMenus: ServiceMenu[] = [
   },
   {
     title: "Sunrise",
-    icon: Sunrise,
+    icon: WalletCards,
     rootHref: "/dash/sunrise",
     sections: [
       {
