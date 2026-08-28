@@ -3153,12 +3153,17 @@
         "primaryCta": "Deploy a container",
         "secondaryCta": "Explore the platform"
       },
-      "codeToApp": {
+      "workflow": {
         "eyebrow": "Workflow",
-        "title": "From code to running application"
+        "title": "From code to running application",
+        "description": "Fournissez votre image, configurez vos ressources et déployez en quelques étapes."
+      },
+      "features": {
+        "eyebrow": "Fonctionnalités",
+        "title": "Core features",
+        "description": "Tout ce qu'il faut pour déployer et exploiter vos containers en production."
       },
       "deploy": {
-        "eyebrow": "Déploiement",
         "title": "Deploy your containers",
         "description": "Fournissez votre image, configurez vos ressources et déployez en quelques étapes."
       },
@@ -3522,6 +3527,10 @@
         "title": "AI + Networking",
         "description": "Réseau privé, isolation et communication interne pour vos services AI.",
         "cta": "Discover Networking"
+      },
+      "ecosystem": {
+        "eyebrow": "Écosystème",
+        "title": "Construisez votre stack IA"
       },
       "aiInference": {
         "eyebrow": "Inférence",
@@ -3903,6 +3912,10 @@
         "title": "Backup + Storage",
         "description": "Primary storage keeps your workload running. Backup gives you a way back.",
         "cta": "Discover Storage"
+      },
+      "ecosystem": {
+        "eyebrow": "Écosystème",
+        "title": "Backup pour chaque service"
       },
       "threeTwoOne": {
         "eyebrow": "3-2-1",

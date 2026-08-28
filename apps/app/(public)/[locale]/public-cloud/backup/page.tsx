@@ -4,9 +4,7 @@ import { getTranslations } from "next-intl/server";
 import {
   AlertTriangle,
   Archive,
-  ArrowDownToLine,
   ArrowRight,
-  ArrowUpRight,
   Boxes,
   Camera,
   Check,
@@ -30,6 +28,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Container as PageContainer } from "@/components/public/Container";
+import { DiagramPanel, FlowConnector, FlowHub, FlowNode } from "@/components/public/flow-diagram";
+
+// Prefix internal links with the active locale, mirroring the Header/Footer convention.
+function localizeHref(href: string, locale: string): string {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("#")) return href;
+  if (href === `/${locale}` || href.startsWith(`/${locale}/`)) return href;
+  return `/${locale}${href.startsWith("/") ? href : `/${href}`}`;
+}
+
+// Uniform button styling for CTA sections: white background, primary text, no state change on hover.
+const WHITE_BUTTON_CLASSES = "bg-white text-primary hover:bg-white hover:text-primary font-semibold";
 
 export async function generateMetadata() {
   const t = await getTranslations("Public.backup.meta");
@@ -62,26 +71,12 @@ function SectionHeader({ eyebrow, title, description, align = "center" }: Sectio
   );
 }
 
-function NetworkNode({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div
-      className={`rounded-lg border border-border bg-muted px-4 py-3 text-center text-sm font-semibold text-foreground shadow-sm ${className}`}
-    >
-      {children}
-    </div>
-  );
-}
-
-function NetworkLine({ vertical = false }: { vertical?: boolean }) {
-  return (
-    <div
-      className={`bg-border ${vertical ? "h-6 w-px mx-auto" : "h-px w-8"}`}
-      aria-hidden="true"
-    />
-  );
-}
-
-export default async function BackupPage() {
+export default async function BackupPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("Public.backup");
 
   const protectItems = t.raw("whatCanProtect.items") as string[];
@@ -122,6 +117,13 @@ export default async function BackupPage() {
     RotateCcw,
   ];
 
+  const backupLinks = [
+    { key: "databaseBackup", icon: Database, href: "/public-cloud/databases" },
+    { key: "computeBackup", icon: Server, href: "/public-cloud/compute" },
+    { key: "containersBackup", icon: Container, href: "/public-cloud/containers" },
+    { key: "storageBackup", icon: HardDrive, href: "/public-cloud/storage" },
+  ];
+
   const crossSellItems = [
     { key: "compute", icon: Server, href: "/public-cloud/compute" },
     { key: "storage", icon: HardDrive, href: "/public-cloud/storage" },
@@ -131,10 +133,12 @@ export default async function BackupPage() {
     { key: "gpuAi", icon: Zap, href: "/public-cloud/gpu-and-ai" },
   ];
 
+  const retentionSequence = ["Daily", "7 days", "30 days", "Long-term"];
+
   return (
     <>
       {/* 1. Hero */}
-      <section aria-label={t("hero.badge")} className="border-b border-border bg-background">
+      <section aria-label={t("hero.title")} className="border-b border-border bg-background">
         <PageContainer className="flex flex-col items-center py-20 text-center md:py-28">
           <span className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
             {t("hero.badge")}
@@ -148,7 +152,7 @@ export default async function BackupPage() {
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
             <Button asChild size="lg">
               <Link href="https://manager.zenthcloud.com" target="_blank" rel="noreferrer">
-                {t("hero.primaryCta")}
+                {t("hero.primaryCta")} <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>
             <Button asChild variant="outline">
@@ -158,8 +162,8 @@ export default async function BackupPage() {
         </PageContainer>
       </section>
 
-      {/* 2. What can you protect */}
-      <section id="what-can-protect" className="py-16 md:py-24 bg-background scroll-mt-20">
+      {/* 2. Ce que vous protégez */}
+      <section id="what-can-protect" className="border-y border-border bg-muted py-16 md:py-24 scroll-mt-20">
         <PageContainer>
           <SectionHeader eyebrow={t("whatCanProtect.eyebrow")} title={t("whatCanProtect.title")} />
 
@@ -170,18 +174,52 @@ export default async function BackupPage() {
               return (
                 <div key={item} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <p className="text-sm font-semibold text-foreground">{item}</p>
                 </div>
               );
             })}
           </div>
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-sm font-semibold text-muted-foreground">{t("useCases.title")} :</span>
+            {useCaseIcons.map((Icon, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground"
+              >
+                <Icon className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                {t(`useCases.items.${index}`)}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-16 grid gap-5 border-t border-border pt-16 md:grid-cols-2">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+                  <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <h3 className="text-lg font-bold text-foreground">{t("humanError.title")}</h3>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{t("humanError.description")}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+                  <Shield className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <h3 className="text-lg font-bold text-foreground">{t("infrastructureFailure.title")}</h3>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{t("infrastructureFailure.description")}</p>
+            </div>
+          </div>
         </PageContainer>
       </section>
 
-      {/* 3. Backup types */}
-      <section className="border-y border-border bg-muted py-16 md:py-24">
+      {/* 3. Types de backup & architecture */}
+      <section className="py-16 md:py-24 bg-background">
         <PageContainer>
           <SectionHeader eyebrow={t("backupTypes.eyebrow")} title={t("backupTypes.title")} />
 
@@ -189,12 +227,9 @@ export default async function BackupPage() {
             {backupTypes.map((type) => {
               const Icon = type.icon;
               return (
-                <div
-                  key={type.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                >
+                <div key={type.key} className="rounded-xl border border-border bg-card p-6 shadow-sm">
                   <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-6 w-6" />
+                    <Icon className="h-6 w-6" aria-hidden="true" />
                   </span>
                   <h3 className="mt-4 text-lg font-bold text-foreground">{t(`backupTypes.${type.key}.title`)}</h3>
                   <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
@@ -208,78 +243,57 @@ export default async function BackupPage() {
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {t("backupTypes.difference")}
           </p>
-        </PageContainer>
-      </section>
 
-      {/* 4. Architecture Backup */}
-      <section className="py-16 md:py-24 bg-background">
-        <PageContainer>
-          <div className="rounded-xl border border-border bg-muted p-6 md:p-10 shadow-sm">
-            <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
-              <NetworkNode>Production</NetworkNode>
-              <NetworkLine vertical />
-              <div className="grid w-full max-w-lg grid-cols-3 gap-3">
-                <NetworkNode>Compute</NetworkNode>
-                <NetworkNode>Storage</NetworkNode>
-                <NetworkNode>Database</NetworkNode>
-              </div>
-              <NetworkLine vertical />
-              <div className="rounded-lg bg-primary px-6 py-3 text-center text-sm font-bold text-primary-foreground shadow-sm">
-                Backup
-              </div>
-              <NetworkLine vertical />
-              <NetworkNode>Backup Storage</NetworkNode>
+          <div className="mt-16 border-t border-border pt-16">
+            <div className="mx-auto max-w-2xl">
+              <DiagramPanel label={`${t("backupTypes.title")} — ${t("whatCanProtect.title")}`}>
+                <FlowNode icon={Server}>Production</FlowNode>
+                <FlowConnector />
+                <div className="grid grid-cols-3 gap-3">
+                  <FlowNode variant="card" icon={Server}>Compute</FlowNode>
+                  <FlowNode variant="card" icon={HardDrive}>Storage</FlowNode>
+                  <FlowNode variant="card" icon={Database}>Database</FlowNode>
+                </div>
+                <FlowConnector />
+                <FlowHub icon={Archive}>Backup</FlowHub>
+                <FlowConnector />
+                <FlowNode icon={Cloud}>Backup Storage</FlowNode>
+              </DiagramPanel>
+            </div>
+
+            <div className="mt-10 rounded-xl border border-border bg-muted p-6 text-center shadow-sm">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("threeTwoOne.eyebrow")}</span>
+              <h3 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">{t("threeTwoOne.title")}</h3>
+              <p className="mt-3 text-muted-foreground leading-relaxed">{t("threeTwoOne.description")}</p>
             </div>
           </div>
         </PageContainer>
       </section>
 
-      {/* 5. Automated backups */}
+      {/* 4. Automatisation & rétention */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader
-            eyebrow={t("automatedBackups.eyebrow")}
-            title={t("automatedBackups.title")}
-            description={t("automatedBackups.description")}
-          />
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {automatedItems.map((item, index) => {
-              const icons = [Clock, Clock, History, Zap, RotateCcw];
-              const Icon = icons[index % icons.length];
-              return (
-                <div key={item} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <p className="text-sm font-semibold text-foreground">{item}</p>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-10 rounded-xl border border-border bg-card p-6 md:p-8 shadow-sm">
-            <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
-              <NetworkNode>Production</NetworkNode>
-              <NetworkLine vertical />
-              <NetworkNode>Backup Policy</NetworkNode>
-              <NetworkLine vertical />
-              <div className="grid w-full max-w-xs grid-cols-1 gap-3">
-                <NetworkNode>Schedule</NetworkNode>
-                <NetworkNode>Retention</NetworkNode>
-                <NetworkNode>Destination</NetworkNode>
-              </div>
-              <NetworkLine vertical />
-              <NetworkNode>Backup Storage</NetworkNode>
-            </div>
-          </div>
-        </PageContainer>
-      </section>
-
-      {/* 6. Retention + Recovery */}
-      <section className="py-16 md:py-24 bg-background">
-        <PageContainer>
           <div className="grid gap-12 lg:grid-cols-2">
+            <div>
+              <SectionHeader
+                align="left"
+                eyebrow={t("automatedBackups.eyebrow")}
+                title={t("automatedBackups.title")}
+                description={t("automatedBackups.description")}
+              />
+              <div className="mt-6 grid gap-3">
+                {automatedItems.map((item, index) => {
+                  const icons = [Clock, Clock, History, Zap, RotateCcw];
+                  const Icon = icons[index % icons.length];
+                  return (
+                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
+                      <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+                      <p className="text-sm font-semibold text-foreground">{item}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
             <div>
               <SectionHeader
                 align="left"
@@ -287,18 +301,43 @@ export default async function BackupPage() {
                 title={t("retention.title")}
                 description={t("retention.description")}
               />
-              <div className="mt-6 rounded-xl border border-border bg-muted p-6 shadow-sm">
-                <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
-                  <NetworkNode>Daily</NetworkNode>
-                  <NetworkLine vertical />
-                  <NetworkNode>7 days</NetworkNode>
-                  <NetworkLine vertical />
-                  <NetworkNode>30 days</NetworkNode>
-                  <NetworkLine vertical />
-                  <NetworkNode>Long-term</NetworkNode>
-                </div>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                {retentionSequence.map((label, index, steps) => (
+                  <React.Fragment key={label}>
+                    <FlowNode>{label}</FlowNode>
+                    {index < steps.length - 1 && (
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                    )}
+                  </React.Fragment>
+                ))}
               </div>
             </div>
+          </div>
+
+          <div className="mt-16 border-t border-border pt-16">
+            <div className="mx-auto max-w-2xl">
+              <DiagramPanel label={`${t("automatedBackups.title")} — ${t("automatedBackups.description")}`}>
+                <FlowNode icon={Server}>Production</FlowNode>
+                <FlowConnector />
+                <FlowHub icon={Settings}>Backup Policy</FlowHub>
+                <FlowConnector />
+                <div className="grid grid-cols-3 gap-3">
+                  <FlowNode variant="card" icon={Clock}>Schedule</FlowNode>
+                  <FlowNode variant="card" icon={History}>Retention</FlowNode>
+                  <FlowNode variant="card" icon={HardDrive}>Destination</FlowNode>
+                </div>
+                <FlowConnector />
+                <FlowNode icon={Cloud}>Backup Storage</FlowNode>
+              </DiagramPanel>
+            </div>
+          </div>
+        </PageContainer>
+      </section>
+
+      {/* 5. Récupération */}
+      <section className="py-16 md:py-24 bg-background">
+        <PageContainer>
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
             <div>
               <SectionHeader
                 align="left"
@@ -312,58 +351,34 @@ export default async function BackupPage() {
                   const Icon = icons[index % icons.length];
                   return (
                     <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3">
-                      <Icon className="h-4 w-4 text-primary" />
+                      <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
                       <p className="text-sm font-semibold text-foreground">{item}</p>
                     </div>
                   );
                 })}
               </div>
             </div>
-          </div>
-        </PageContainer>
-      </section>
-
-      {/* 7. Recovery workflow */}
-      <section className="border-y border-border bg-muted py-16 md:py-24">
-        <PageContainer>
-          <SectionHeader
-            eyebrow={t("recoveryWorkflow.eyebrow")}
-            title={t("recoveryWorkflow.title")}
-            description={t("recoveryWorkflow.description")}
-          />
-
-          <div className="flex flex-col items-center gap-4">
-            {workflowSteps.map((step, index, steps) => (
-              <React.Fragment key={step}>
-                <div className="rounded-full border border-border bg-card px-6 py-3 text-sm font-bold text-foreground shadow-sm">
-                  {step}
-                </div>
-                {index < steps.length - 1 && (
-                  <ArrowDownToLine className="h-5 w-5 text-muted-foreground" />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        </PageContainer>
-      </section>
-
-      {/* 8. Human error + Infrastructure failure */}
-      <section className="py-16 md:py-24 bg-background">
-        <PageContainer>
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-foreground">{t("humanError.title")}</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("humanError.description")}</p>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-foreground">{t("infrastructureFailure.title")}</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("infrastructureFailure.description")}</p>
+            <div>
+              <SectionHeader
+                align="left"
+                eyebrow={t("recoveryWorkflow.eyebrow")}
+                title={t("recoveryWorkflow.title")}
+                description={t("recoveryWorkflow.description")}
+              />
+              <DiagramPanel label={`${t("recoveryWorkflow.title")} — ${t("recoveryWorkflow.description")}`}>
+                {workflowSteps.map((step, index) => (
+                  <React.Fragment key={step}>
+                    <FlowNode>{step}</FlowNode>
+                    {index < workflowSteps.length - 1 && <FlowConnector />}
+                  </React.Fragment>
+                ))}
+              </DiagramPanel>
             </div>
           </div>
         </PageContainer>
       </section>
 
-      {/* 9. Isolation + Security + Encryption */}
+      {/* 6. Sécurité, isolation & chiffrement */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
           <div className="grid gap-12 lg:grid-cols-3">
@@ -374,15 +389,13 @@ export default async function BackupPage() {
                 title={t("isolation.title")}
                 description={t("isolation.description")}
               />
-              <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
-                <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
-                  <NetworkNode>Production</NetworkNode>
-                  <NetworkLine vertical />
-                  <NetworkNode>Backup System</NetworkNode>
-                  <NetworkLine vertical />
-                  <NetworkNode>Separate Backup Storage</NetworkNode>
-                </div>
-              </div>
+              <DiagramPanel label={`${t("isolation.title")} — ${t("isolation.description")}`}>
+                <FlowNode icon={Server}>Production</FlowNode>
+                <FlowConnector />
+                <FlowNode icon={ShieldCheck}>Backup System</FlowNode>
+                <FlowConnector />
+                <FlowHub icon={Cloud}>Separate Backup Storage</FlowHub>
+              </DiagramPanel>
             </div>
             <div>
               <SectionHeader align="left" eyebrow={t("security.eyebrow")} title={t("security.title")} />
@@ -392,7 +405,7 @@ export default async function BackupPage() {
                   const Icon = icons[index % icons.length];
                   return (
                     <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
-                      <Icon className="h-4 w-4 text-primary" />
+                      <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
                       <p className="text-sm font-semibold text-foreground">{item}</p>
                     </div>
                   );
@@ -420,62 +433,10 @@ export default async function BackupPage() {
         </PageContainer>
       </section>
 
-      {/* 10. Cross-product links */}
+      {/* 7. Surveillance & alertes */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <h3 className="text-lg font-bold text-foreground">{t("databaseBackup.title")}</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("databaseBackup.description")}</p>
-              <div className="mt-4">
-                <Link href="/public-cloud/databases" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
-                  {t("databaseBackup.cta")} <ArrowUpRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <h3 className="text-lg font-bold text-foreground">{t("computeBackup.title")}</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("computeBackup.description")}</p>
-              <div className="mt-4">
-                <Link href="/public-cloud/compute" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
-                  {t("computeBackup.cta")} <ArrowUpRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <h3 className="text-lg font-bold text-foreground">{t("containersBackup.title")}</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("containersBackup.description")}</p>
-              <div className="mt-4">
-                <Link href="/public-cloud/containers" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
-                  {t("containersBackup.cta")} <ArrowUpRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <h3 className="text-lg font-bold text-foreground">{t("storageBackup.title")}</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t("storageBackup.description")}</p>
-              <div className="mt-4">
-                <Link href="/public-cloud/storage" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
-                  {t("storageBackup.cta")} <ArrowUpRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </PageContainer>
-      </section>
-
-      {/* 11. 3-2-1 + Monitoring + Alerts */}
-      <section className="border-y border-border bg-muted py-16 md:py-24">
-        <PageContainer>
-          <div className="grid gap-12 lg:grid-cols-3">
-            <div>
-              <SectionHeader
-                align="left"
-                eyebrow={t("threeTwoOne.eyebrow")}
-                title={t("threeTwoOne.title")}
-                description={t("threeTwoOne.description")}
-              />
-            </div>
+          <div className="grid gap-12 lg:grid-cols-2">
             <div>
               <SectionHeader align="left" eyebrow={t("monitoring.eyebrow")} title={t("monitoring.title")} />
               <div className="mt-6 space-y-2">
@@ -483,8 +444,8 @@ export default async function BackupPage() {
                   const icons = [Check, AlertTriangle, Clock, Boxes, HardDrive];
                   const Icon = icons[index % icons.length];
                   return (
-                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
-                      <Icon className="h-4 w-4 text-primary" />
+                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3">
+                      <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
                       <p className="text-sm font-semibold text-foreground">{item}</p>
                     </div>
                   );
@@ -503,8 +464,8 @@ export default async function BackupPage() {
                   const icons = [AlertTriangle, HardDrive, AlertTriangle, RotateCcw];
                   const Icon = icons[index % icons.length];
                   return (
-                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
-                      <Icon className="h-4 w-4 text-primary" />
+                    <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3">
+                      <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
                       <p className="text-sm font-semibold text-foreground">{item}</p>
                     </div>
                   );
@@ -515,8 +476,8 @@ export default async function BackupPage() {
         </PageContainer>
       </section>
 
-      {/* 12. Managed Backup */}
-      <section className="py-16 md:py-24 bg-background">
+      {/* 8. Gestion & validation */}
+      <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
           <SectionHeader eyebrow={t("managed.eyebrow")} title={t("managed.title")} />
 
@@ -525,12 +486,9 @@ export default async function BackupPage() {
               const Icon = level.icon;
               const featureCount = t.raw(`managed.${level.key}.features`).length;
               return (
-                <div
-                  key={level.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                >
+                <div key={level.key} className="rounded-xl border border-border bg-card p-6 shadow-sm">
                   <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${level.bg} ${level.accent}`}>
-                    <Icon className="h-6 w-6" />
+                    <Icon className="h-6 w-6" aria-hidden="true" />
                   </span>
                   <h3 className="mt-4 text-base font-bold text-foreground">{t(`managed.${level.key}.title`)}</h3>
                   <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
@@ -539,7 +497,7 @@ export default async function BackupPage() {
                   <ul className="mt-4 space-y-2">
                     {Array.from({ length: featureCount }, (_, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                         {t(`managed.${level.key}.features.${i}`)}
                       </li>
                     ))}
@@ -548,37 +506,32 @@ export default async function BackupPage() {
               );
             })}
           </div>
-        </PageContainer>
-      </section>
 
-      {/* 13. Backup testing */}
-      <section className="border-y border-border bg-muted py-16 md:py-24">
-        <PageContainer>
-          <SectionHeader
-            eyebrow={t("backupTesting.eyebrow")}
-            title={t("backupTesting.title")}
-            description={t("backupTesting.description")}
-          />
+          <div className="mt-16 border-t border-border pt-16">
+            <SectionHeader
+              eyebrow={t("backupTesting.eyebrow")}
+              title={t("backupTesting.title")}
+              description={t("backupTesting.description")}
+            />
 
-          <div className="flex flex-col items-center gap-4">
-            {testingSteps.map((step, index, steps) => (
-              <React.Fragment key={step}>
-                <div className="rounded-full border border-border bg-card px-6 py-3 text-sm font-bold text-foreground shadow-sm">
-                  {step}
-                </div>
-                {index < steps.length - 1 && (
-                  <ArrowDownToLine className="h-5 w-5 text-muted-foreground" />
-                )}
-              </React.Fragment>
-            ))}
+            <div className="mx-auto max-w-2xl">
+              <DiagramPanel label={`${t("backupTesting.title")} — ${t("backupTesting.description")}`}>
+                {testingSteps.map((step, index) => (
+                  <React.Fragment key={step}>
+                    <FlowNode>{step}</FlowNode>
+                    {index < testingSteps.length - 1 && <FlowConnector />}
+                  </React.Fragment>
+                ))}
+              </DiagramPanel>
+            </div>
           </div>
         </PageContainer>
       </section>
 
-      {/* 14. Disaster Recovery + RPO/RTO */}
+      {/* 9. Reprise d'activité */}
       <section className="py-16 md:py-24 bg-background">
         <PageContainer>
-          <div className="grid gap-12 lg:grid-cols-2">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
             <div>
               <SectionHeader
                 align="left"
@@ -586,22 +539,20 @@ export default async function BackupPage() {
                 title={t("disasterRecovery.title")}
                 description={t("disasterRecovery.description")}
               />
-              <div className="mt-6 rounded-xl border border-border bg-muted p-6 shadow-sm">
-                <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
-                  <NetworkNode>Primary Infrastructure</NetworkNode>
-                  <NetworkLine vertical />
-                  <NetworkNode>Backup</NetworkNode>
-                  <NetworkLine vertical />
-                  <NetworkNode>Recovery Infrastructure</NetworkNode>
-                </div>
-              </div>
+              <DiagramPanel label={`${t("disasterRecovery.title")} — ${t("disasterRecovery.description")}`}>
+                <FlowNode icon={Server}>Primary Infrastructure</FlowNode>
+                <FlowConnector />
+                <FlowHub icon={Archive}>Backup</FlowHub>
+                <FlowConnector />
+                <FlowNode icon={RotateCcw}>Recovery Infrastructure</FlowNode>
+              </DiagramPanel>
               <div className="mt-6 grid gap-2">
                 {drItems.map((item, index) => {
                   const icons = [Archive, RotateCcw, Check];
                   const Icon = icons[index % icons.length];
                   return (
                     <div key={item} className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3">
-                      <Icon className="h-4 w-4 text-primary" />
+                      <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
                       <p className="text-sm font-semibold text-foreground">{item}</p>
                     </div>
                   );
@@ -625,110 +576,111 @@ export default async function BackupPage() {
         </PageContainer>
       </section>
 
-      {/* 15. Pricing */}
+      {/* 10. Passer à l'action */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
         <PageContainer>
-          <SectionHeader
-            eyebrow={t("pricing.eyebrow")}
-            title={t("pricing.title")}
-            description={t("pricing.description")}
-          />
+          <SectionHeader eyebrow={t("ecosystem.eyebrow")} title={t("ecosystem.title")} />
 
-          <div className="flex flex-wrap justify-center gap-2">
-            {t.raw("pricing.items").map((item: string) => (
-              <span
-                key={item}
-                className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-
-          <div className="mt-10 flex justify-center">
-            <Button asChild variant="outline" size="lg">
-              <Link href="/pricing">{t("pricing.cta")}</Link>
-            </Button>
-          </div>
-        </PageContainer>
-      </section>
-
-      {/* 16. Use cases */}
-      <section className="py-16 md:py-24 bg-background">
-        <PageContainer>
-          <SectionHeader eyebrow={t("useCases.eyebrow")} title={t("useCases.title")} />
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {useCaseIcons.map((Icon, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm"
-              >
-                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-                  <Icon className="h-4 w-4" />
-                </span>
-                <p className="text-sm font-semibold text-foreground">{t(`useCases.items.${index}`)}</p>
-              </div>
-            ))}
-          </div>
-        </PageContainer>
-      </section>
-
-      {/* 17. Cross-selling */}
-      <section className="border-y border-border bg-muted py-16 md:py-24">
-        <PageContainer>
-          <SectionHeader eyebrow={t("crossSelling.eyebrow")} title={t("crossSelling.title")} />
-
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {crossSellItems.map((item) => {
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {backupLinks.map((item) => {
               const Icon = item.icon;
               return (
-                <div
+                <Link
                   key={item.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  href={localizeHref(item.href, locale)}
+                  className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
-                      <Icon className="h-5 w-5" />
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
                     </span>
-                    <h3 className="text-lg font-bold text-foreground">
-                      {t(`crossSelling.${item.key}.label`)}
-                    </h3>
+                    <h3 className="text-lg font-bold text-foreground">{t(`${item.key}.title`)}</h3>
                   </div>
                   <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                    {t(`crossSelling.${item.key}.description`)}
+                    {t(`${item.key}.description`)}
                   </p>
-                  <div className="mt-4">
-                    <Link
-                      href={item.href}
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
-                    >
-                      {t(`crossSelling.${item.key}.cta`)} <ArrowUpRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
-                </div>
+                  <span className="mt-auto pt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                    {t(`${item.key}.cta`)} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                </Link>
               );
             })}
           </div>
-        </PageContainer>
-      </section>
 
-      {/* 18. CTA final */}
-      <section className="py-16 md:py-24 bg-background">
-        <PageContainer>
-          <div className="rounded-2xl bg-primary p-8 md:p-12 text-center text-primary-foreground">
+          <div className="mt-16 border-t border-border pt-16">
+            <SectionHeader
+              eyebrow={t("pricing.eyebrow")}
+              title={t("pricing.title")}
+              description={t("pricing.description")}
+            />
+
+            <div className="flex flex-wrap justify-center gap-2">
+              {t.raw("pricing.items").map((item: string) => (
+                <span
+                  key={item}
+                  className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-10 flex justify-center">
+              <Button asChild size="lg" className={WHITE_BUTTON_CLASSES}>
+                <Link href={localizeHref("/pricing", locale)}>
+                  {t("pricing.cta")} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-16 border-t border-border pt-16">
+            <SectionHeader eyebrow={t("crossSelling.eyebrow")} title={t("crossSelling.title")} />
+
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {crossSellItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.key}
+                    href={localizeHref(item.href, locale)}
+                    className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+                        <Icon className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      <h3 className="text-lg font-bold text-foreground">
+                        {t(`crossSelling.${item.key}.label`)}
+                      </h3>
+                    </div>
+                    <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                      {t(`crossSelling.${item.key}.description`)}
+                    </p>
+                    <span className="mt-auto pt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                      {t(`crossSelling.${item.key}.cta`)} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-16 rounded-2xl bg-primary p-8 text-center text-primary-foreground md:p-12">
             <h2 className="text-2xl md:text-3xl font-bold">{t("finalCta.title")}</h2>
             <p className="mt-4 mx-auto max-w-2xl text-primary-foreground/80">
               {t("finalCta.description")}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
+              <Button asChild size="lg" className={WHITE_BUTTON_CLASSES}>
                 <Link href="https://manager.zenthcloud.com" target="_blank" rel="noreferrer">
                   {t("finalCta.primary")}
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/10 hover:text-white">
-                <Link href="/contact">{t("finalCta.secondary")}</Link>
+              <Button asChild size="lg" className={WHITE_BUTTON_CLASSES}>
+                <Link href={localizeHref("/contact", locale)}>
+                  {t("finalCta.secondary")}
+                </Link>
               </Button>
             </div>
           </div>

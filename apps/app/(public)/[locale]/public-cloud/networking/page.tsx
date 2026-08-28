@@ -3,13 +3,13 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import {
   ArrowRight,
-  ArrowUpRight,
   Boxes,
   Check,
   Cloud,
   Code2,
   Database,
   Globe,
+  HardDrive,
   LayoutGrid,
   Lock,
   Network,
@@ -22,7 +22,18 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Container } from "@/components/public/Container";
+import { Container as PageContainer } from "@/components/public/Container";
+import { DiagramPanel, FlowConnector, FlowHub, FlowNode } from "@/components/public/flow-diagram";
+
+// Prefix internal links with the active locale, mirroring the Header/Footer convention.
+function localizeHref(href: string, locale: string): string {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("#")) return href;
+  if (href === `/${locale}` || href.startsWith(`/${locale}/`)) return href;
+  return `/${locale}${href.startsWith("/") ? href : `/${href}`}`;
+}
+
+// Uniform button styling for CTA sections: white background, primary text, no state change on hover.
+const WHITE_BUTTON_CLASSES = "bg-white text-primary hover:bg-white hover:text-primary font-semibold";
 
 export async function generateMetadata() {
   const t = await getTranslations("Public.networking.meta");
@@ -55,26 +66,12 @@ function SectionHeader({ eyebrow, title, description, align = "center" }: Sectio
   );
 }
 
-function NetworkNode({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div
-      className={`rounded-lg border border-border bg-muted px-4 py-3 text-center text-sm font-semibold text-foreground shadow-sm ${className}`}
-    >
-      {children}
-    </div>
-  );
-}
-
-function NetworkLine({ vertical = false }: { vertical?: boolean }) {
-  return (
-    <div
-      className={`bg-border ${vertical ? "h-6 w-px mx-auto" : "h-px w-8"}`}
-      aria-hidden="true"
-    />
-  );
-}
-
-export default async function NetworkingPage() {
+export default async function NetworkingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("Public.networking");
 
   const pillars = [
@@ -144,8 +141,8 @@ export default async function NetworkingPage() {
   return (
     <>
       {/* 1. Hero */}
-      <section aria-label={t("hero.badge")} className="border-b border-border bg-background">
-        <Container className="flex flex-col items-center py-20 text-center md:py-28">
+      <section aria-label={t("hero.title")} className="border-b border-border bg-background">
+        <PageContainer className="flex flex-col items-center py-20 text-center md:py-28">
           <span className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
             {t("hero.badge")}
           </span>
@@ -158,63 +155,62 @@ export default async function NetworkingPage() {
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
             <Button asChild size="lg">
               <Link href="https://manager.zenthcloud.com" target="_blank" rel="noreferrer">
-                {t("hero.primaryCta")}
+                {t("hero.primaryCta")} <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/public-cloud/compute">{t("hero.secondaryCta")}</Link>
+              <Link href={localizeHref("/public-cloud/compute", locale)}>
+                {t("hero.secondaryCta")}
+              </Link>
             </Button>
           </div>
-        </Container>
+        </PageContainer>
       </section>
 
       {/* 2. Architecture réseau */}
-      <section className="py-16 md:py-24 bg-background">
-        <Container>
+      <section className="border-y border-border bg-muted py-16 md:py-24">
+        <PageContainer>
           <SectionHeader
             eyebrow={t("architecture.eyebrow")}
             title={t("architecture.title")}
             description={t("architecture.description")}
           />
 
-          <div className="rounded-xl border border-border bg-muted p-6 md:p-10 shadow-sm">
-            <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
-              <NetworkNode>Internet</NetworkNode>
-              <NetworkLine vertical />
-              <NetworkNode>Public Network</NetworkNode>
-              <NetworkLine vertical />
-              <NetworkNode>Load Balancer</NetworkNode>
-              <NetworkLine vertical />
-              <div className="grid w-full max-w-lg grid-cols-2 gap-4">
-                <NetworkNode>Compute</NetworkNode>
-                <NetworkNode>Compute</NetworkNode>
+          <div className="mx-auto max-w-2xl">
+            <DiagramPanel label={`${t("architecture.title")} — ${t("architecture.description")}`}>
+              <FlowNode icon={Globe}>Internet</FlowNode>
+              <FlowConnector />
+              <FlowNode icon={Network}>Public Network</FlowNode>
+              <FlowConnector />
+              <FlowHub icon={Zap}>Load Balancer</FlowHub>
+              <FlowConnector />
+              <div className="grid grid-cols-2 gap-3">
+                <FlowNode variant="card" icon={Server}>Compute</FlowNode>
+                <FlowNode variant="card" icon={Server}>Compute</FlowNode>
               </div>
-              <NetworkLine vertical />
-              <NetworkNode>Private Network</NetworkNode>
-              <NetworkLine vertical />
-              <div className="grid w-full max-w-lg grid-cols-2 gap-4">
-                <NetworkNode>Storage</NetworkNode>
-                <NetworkNode>Database</NetworkNode>
+              <FlowConnector />
+              <FlowNode icon={Lock}>Private Network</FlowNode>
+              <FlowConnector />
+              <div className="grid grid-cols-2 gap-3">
+                <FlowNode variant="card" icon={HardDrive}>Storage</FlowNode>
+                <FlowNode variant="card" icon={Database}>Database</FlowNode>
               </div>
-            </div>
+            </DiagramPanel>
           </div>
-        </Container>
+        </PageContainer>
       </section>
 
       {/* 3. Piliers Networking */}
-      <section className="border-y border-border bg-muted py-16 md:py-24">
-        <Container>
+      <section className="py-16 md:py-24 bg-background">
+        <PageContainer>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {pillars.map((pillar) => {
               const Icon = pillar.icon;
               const itemCount = t.raw(`${pillar.key}.items`).length;
               return (
-                <div
-                  key={pillar.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                >
+                <div key={pillar.key} className="rounded-xl border border-border bg-card p-6 shadow-sm">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <h3 className="mt-4 text-base font-bold text-foreground">
                     {t(`${pillar.key}.title`)}
@@ -225,7 +221,7 @@ export default async function NetworkingPage() {
                   <ul className="mt-4 grid grid-cols-1 gap-2">
                     {Array.from({ length: itemCount }, (_, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                         {t(`${pillar.key}.items.${i}`)}
                       </li>
                     ))}
@@ -237,46 +233,12 @@ export default async function NetworkingPage() {
               );
             })}
           </div>
-        </Container>
+        </PageContainer>
       </section>
 
-      {/* 4. Network for Compute / Storage / Databases */}
-      <section className="py-16 md:py-24 bg-background">
-        <Container>
-          <div className="grid gap-8 md:grid-cols-3">
-            {networkFor.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <h3 className="text-lg font-bold text-foreground">{t(`${item.key}.title`)}</h3>
-                  </div>
-                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                    {t(`${item.key}.description`)}
-                  </p>
-                  <div className="mt-4">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={item.href}>
-                        {t(`${item.key}.cta`)} <ArrowRight className="ml-1 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Container>
-      </section>
-
-      {/* 5. Firewall diagram */}
+      {/* 4. Firewall & segmentation */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
-        <Container>
+        <PageContainer>
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
@@ -286,47 +248,36 @@ export default async function NetworkingPage() {
                 description={t("firewall.description")}
               />
               <div className="mt-8">
-                <Button asChild variant="outline">
-                  <Link href="/public-cloud/security">
-                    {t("security.title")} <ArrowRight className="ml-1 h-4 w-4" />
+                <Button asChild className={WHITE_BUTTON_CLASSES}>
+                  <Link href={localizeHref("/public-cloud/security", locale)}>
+                    {t("security.title")} <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </Button>
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-6 md:p-8 shadow-sm">
-              <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
-                <NetworkNode>Internet</NetworkNode>
-                <NetworkLine vertical />
-                <div className="rounded-lg bg-primary px-6 py-3 text-center text-sm font-bold text-primary-foreground shadow-sm">
-                  Firewall
-                </div>
-                <NetworkLine vertical />
-                <div className="grid w-full max-w-xs grid-cols-1 gap-3">
-                  <NetworkNode>HTTPS → Application</NetworkNode>
-                  <NetworkNode>SSH → Administration</NetworkNode>
-                  <NetworkNode>DENY → Everything else</NetworkNode>
-                </div>
+            <DiagramPanel label={`${t("firewall.title")} — ${t("firewall.description")}`}>
+              <FlowNode icon={Globe}>Internet</FlowNode>
+              <FlowConnector />
+              <FlowHub icon={Shield}>Firewall</FlowHub>
+              <FlowConnector />
+              <div className="grid grid-cols-1 gap-3">
+                <FlowNode>HTTPS → Application</FlowNode>
+                <FlowNode>SSH → Administration</FlowNode>
+                <FlowNode>DENY → Everything else</FlowNode>
               </div>
-            </div>
+            </DiagramPanel>
           </div>
-        </Container>
-      </section>
 
-      {/* 6. Segmentation diagram */}
-      <section className="py-16 md:py-24 bg-background">
-        <Container>
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-            <div className="order-2 lg:order-1 rounded-xl border border-border bg-muted p-6 md:p-8 shadow-sm">
-              <div className="flex flex-col items-center gap-3 text-sm font-semibold text-foreground">
-                <NetworkNode>Public Zone</NetworkNode>
-                <NetworkLine vertical />
-                <NetworkNode>Application Zone</NetworkNode>
-                <NetworkLine vertical />
-                <NetworkNode>Database Zone</NetworkNode>
-              </div>
-            </div>
-            <div className="order-1 lg:order-2">
+          <div className="mt-16 grid gap-12 border-t border-border pt-16 lg:grid-cols-2 lg:items-center">
+            <DiagramPanel label={`${t("segmentation.title")} — ${t("segmentation.description")}`}>
+              <FlowNode icon={Globe}>Public Zone</FlowNode>
+              <FlowConnector />
+              <FlowHub icon={Code2}>Application Zone</FlowHub>
+              <FlowConnector />
+              <FlowNode icon={Database}>Database Zone</FlowNode>
+            </DiagramPanel>
+            <div>
               <SectionHeader
                 align="left"
                 eyebrow={t("segmentation.eyebrow")}
@@ -336,19 +287,63 @@ export default async function NetworkingPage() {
               <ul className="mt-6 space-y-2">
                 {t.raw("segmentation.items").map((item: string, index: number) => (
                   <li key={index} className="flex items-start gap-2 text-sm text-foreground">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
           </div>
-        </Container>
+        </PageContainer>
       </section>
 
-      {/* 7. Automation */}
+      {/* 5. Réseau pour vos services */}
+      <section className="py-16 md:py-24 bg-background">
+        <PageContainer>
+          <div className="grid gap-5 md:grid-cols-3">
+            {networkFor.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.key}
+                  href={localizeHref(item.href, locale)}
+                  className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <h3 className="text-lg font-bold text-foreground">{t(`${item.key}.title`)}</h3>
+                  </div>
+                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                    {t(`${item.key}.description`)}
+                  </p>
+                  <span className="mt-auto pt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                    {t(`${item.key}.cta`)} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-sm font-semibold text-muted-foreground">{t("useCases.title")} :</span>
+            {useCaseIcons.map((Icon, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-xs text-muted-foreground"
+              >
+                <Icon className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                {t(`useCases.items.${index}`)}
+              </span>
+            ))}
+          </div>
+        </PageContainer>
+      </section>
+
+      {/* 6. Automatisation */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
-        <Container>
+        <PageContainer>
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
@@ -363,7 +358,7 @@ export default async function NetworkingPage() {
                   return (
                     <div key={feature.label} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
                       <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
-                        <Icon className="h-4 w-4" />
+                        <Icon className="h-4 w-4" aria-hidden="true" />
                       </span>
                       <p className="text-sm font-semibold text-foreground">{feature.label}</p>
                     </div>
@@ -379,19 +374,19 @@ export default async function NetworkingPage() {
                 <span className="ml-auto text-slate-400">api</span>
               </div>
               <pre className="text-slate-300 leading-relaxed overflow-x-auto whitespace-pre-wrap">
-{`curl -X POST https://api.zenthcloud.com/v1/networks \\
-  -H "Authorization: Bearer $TOKEN" \\
-  -H "Content-Type: application/json" \\
+{`curl -X POST https://api.zenthcloud.com/v1/networks \\\\
+  -H "Authorization: Bearer $TOKEN" \\\\
+  -H "Content-Type: application/json" \\\\
   -d '{"name":"prod-vpc","cidr":"10.0.0.0/16"}'`}
               </pre>
             </div>
           </div>
-        </Container>
+        </PageContainer>
       </section>
 
-      {/* 8. Security by architecture */}
+      {/* 7. Sécurité & transparence */}
       <section className="py-16 md:py-24 bg-background">
-        <Container>
+        <PageContainer>
           <SectionHeader
             eyebrow={t("security.eyebrow")}
             title={t("security.title")}
@@ -404,7 +399,7 @@ export default async function NetworkingPage() {
               return (
                 <div key={item.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <p className="text-sm font-semibold text-foreground">{item.label}</p>
                 </div>
@@ -415,55 +410,8 @@ export default async function NetworkingPage() {
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {t("security.responsibility")}
           </p>
-        </Container>
-      </section>
 
-      {/* 9. Managed Networking */}
-      <section className="border-y border-border bg-muted py-16 md:py-24">
-        <Container>
-          <SectionHeader
-            eyebrow={t("managed.eyebrow")}
-            title={t("managed.title")}
-            description={t("managed.description")}
-          />
-
-          <div className="grid gap-5 md:grid-cols-3">
-            {managedLevels.map((level) => {
-              const Icon = level.icon;
-              const featureCount = t.raw(`managed.${level.key}.features`).length;
-              return (
-                <div
-                  key={level.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${level.bg} ${level.accent}`}>
-                    <Icon className="h-6 w-6" />
-                  </span>
-                  <h3 className="mt-4 text-base font-bold text-foreground">
-                    {t(`managed.${level.key}.title`)}
-                  </h3>
-                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                    {t(`managed.${level.key}.description`)}
-                  </p>
-                  <ul className="mt-4 space-y-2">
-                    {Array.from({ length: featureCount }, (_, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        {t(`managed.${level.key}.features.${i}`)}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-        </Container>
-      </section>
-
-      {/* 10. Open source */}
-      <section className="py-16 md:py-24 bg-background">
-        <Container>
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+          <div className="mt-16 grid gap-12 border-t border-border pt-16 lg:grid-cols-2 lg:items-center">
             <div>
               <SectionHeader
                 align="left"
@@ -481,7 +429,7 @@ export default async function NetworkingPage() {
                 return (
                   <div key={benefit.label} className="flex items-start gap-3 rounded-xl border border-border bg-muted p-4">
                     <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <p className="text-sm font-semibold text-foreground">{benefit.label}</p>
                   </div>
@@ -489,12 +437,51 @@ export default async function NetworkingPage() {
               })}
             </div>
           </div>
-        </Container>
+        </PageContainer>
       </section>
 
-      {/* 11. Pricing */}
+      {/* 8. Niveaux de gestion */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
-        <Container>
+        <PageContainer>
+          <SectionHeader
+            eyebrow={t("managed.eyebrow")}
+            title={t("managed.title")}
+            description={t("managed.description")}
+          />
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {managedLevels.map((level) => {
+              const Icon = level.icon;
+              const featureCount = t.raw(`managed.${level.key}.features`).length;
+              return (
+                <div key={level.key} className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                  <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${level.bg} ${level.accent}`}>
+                    <Icon className="h-6 w-6" aria-hidden="true" />
+                  </span>
+                  <h3 className="mt-4 text-base font-bold text-foreground">
+                    {t(`managed.${level.key}.title`)}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                    {t(`managed.${level.key}.description`)}
+                  </p>
+                  <ul className="mt-4 space-y-2">
+                    {Array.from({ length: featureCount }, (_, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                        {t(`managed.${level.key}.features.${i}`)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </PageContainer>
+      </section>
+
+      {/* 9. Tarifs */}
+      <section className="py-16 md:py-24 bg-background">
+        <PageContainer>
           <SectionHeader
             eyebrow={t("pricing.eyebrow")}
             title={t("pricing.title")}
@@ -505,7 +492,7 @@ export default async function NetworkingPage() {
             {t.raw("pricing.items").map((item: string) => (
               <span
                 key={item}
-                className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground"
+                className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs text-muted-foreground"
               >
                 {item}
               </span>
@@ -513,37 +500,18 @@ export default async function NetworkingPage() {
           </div>
 
           <div className="mt-10 flex justify-center">
-            <Button asChild variant="outline" size="lg">
-              <Link href="/pricing">{t("pricing.cta")}</Link>
+            <Button asChild size="lg" className={WHITE_BUTTON_CLASSES}>
+              <Link href={localizeHref("/pricing", locale)}>
+                {t("pricing.cta")} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
             </Button>
           </div>
-        </Container>
+        </PageContainer>
       </section>
 
-      {/* 12. Use cases */}
-      <section className="py-16 md:py-24 bg-background">
-        <Container>
-          <SectionHeader eyebrow={t("useCases.eyebrow")} title={t("useCases.title")} />
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {useCaseIcons.map((Icon, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm"
-              >
-                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-                  <Icon className="h-4 w-4" />
-                </span>
-                <p className="text-sm font-semibold text-foreground">{t(`useCases.items.${index}`)}</p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* 13. Cross-selling */}
+      {/* 10. Passer à l'action */}
       <section className="border-y border-border bg-muted py-16 md:py-24">
-        <Container>
+        <PageContainer>
           <SectionHeader
             eyebrow={t("crossSelling.eyebrow")}
             title={t("crossSelling.title")}
@@ -554,13 +522,14 @@ export default async function NetworkingPage() {
             {crossSellItems.map((item) => {
               const Icon = item.icon;
               return (
-                <div
+                <Link
                   key={item.key}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  href={localizeHref(item.href, locale)}
+                  className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
-                      <Icon className="h-5 w-5" />
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
                     </span>
                     <h3 className="text-lg font-bold text-foreground">
                       {t(`crossSelling.${item.key}.label`)}
@@ -569,41 +538,33 @@ export default async function NetworkingPage() {
                   <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
                     {t(`crossSelling.${item.key}.description`)}
                   </p>
-                  <div className="mt-4">
-                    <Link
-                      href={item.href}
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
-                    >
-                      {t(`crossSelling.${item.key}.cta`)} <ArrowUpRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
-                </div>
+                  <span className="mt-auto pt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                    {t(`crossSelling.${item.key}.cta`)} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                </Link>
               );
             })}
           </div>
-        </Container>
-      </section>
 
-      {/* 14. CTA final */}
-      <section className="py-16 md:py-24 bg-background">
-        <Container>
-          <div className="rounded-2xl bg-primary p-8 md:p-12 text-center text-primary-foreground">
+          <div className="mt-16 rounded-2xl bg-primary p-8 text-center text-primary-foreground md:p-12">
             <h2 className="text-2xl md:text-3xl font-bold">{t("finalCta.title")}</h2>
             <p className="mt-4 mx-auto max-w-2xl text-primary-foreground/80">
               {t("finalCta.description")}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
+              <Button asChild size="lg" className={WHITE_BUTTON_CLASSES}>
                 <Link href="https://manager.zenthcloud.com" target="_blank" rel="noreferrer">
                   {t("finalCta.primary")}
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/10 hover:text-white">
-                <Link href="/public-cloud/compute">{t("finalCta.secondary")}</Link>
+              <Button asChild size="lg" className={WHITE_BUTTON_CLASSES}>
+                <Link href={localizeHref("/public-cloud/compute", locale)}>
+                  {t("finalCta.secondary")}
+                </Link>
               </Button>
             </div>
           </div>
-        </Container>
+        </PageContainer>
       </section>
     </>
   );
