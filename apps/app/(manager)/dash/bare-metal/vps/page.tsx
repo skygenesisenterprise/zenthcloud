@@ -3,12 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  Activity,
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
   Circle,
   Cpu,
+  Database,
+  Gamepad2,
+  Globe,
   HardDrive,
   MapPin,
   MemoryStick,
@@ -19,7 +21,9 @@ import {
   RotateCcw,
   Search,
   Server,
+  Shield,
   Square,
+  Swords,
   Terminal,
   type LucideIcon,
 } from "lucide-react";
@@ -32,6 +36,15 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +62,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -72,6 +86,7 @@ import {
   STATUS_META,
   fetchVpsList,
   type Vps,
+  type VpsDedicatedServer,
   type VpsStatus,
   type VpsUsage,
 } from "@/lib/mock/vps";
@@ -240,6 +255,7 @@ function VpsDesktopTable({ vpsList, onNotice }: VpsListProps) {
             <TableHead>IP address</TableHead>
             <TableHead>Operating System</TableHead>
             <TableHead>Region</TableHead>
+            <TableHead>Dedicated Server</TableHead>
             <TableHead>Uptime</TableHead>
             <TableHead>Usage</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -271,6 +287,16 @@ function VpsDesktopTable({ vpsList, onNotice }: VpsListProps) {
               </TableCell>
               <TableCell>{vps.os}</TableCell>
               <TableCell className="text-xs text-muted-foreground">{vps.region}</TableCell>
+              <TableCell>
+                {vps.dedicated ? (
+                  <span className="flex items-center gap-1.5">
+                    <HardDrive className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <span className="truncate text-xs font-medium">{vps.dedicated.name}</span>
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">—</span>
+                )}
+              </TableCell>
               <TableCell className="tabular-nums">{vps.uptime}</TableCell>
               <TableCell>
                 <UsageIndicator usage={vps.usage} />
@@ -342,6 +368,14 @@ function VpsMobileCards({ vpsList, onNotice }: VpsListProps) {
               </p>
               <p className="mt-0.5 tabular-nums">{vps.uptime}</p>
             </div>
+            {vps.dedicated ? (
+              <div className="col-span-2">
+                <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                  Dedicated Server
+                </p>
+                <p className="mt-0.5 truncate text-xs font-medium">{vps.dedicated.name}</p>
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-3 border-t border-border pt-3">
@@ -434,6 +468,244 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/* Création de VPS (dialog)                                             */
+/* ------------------------------------------------------------------ */
+
+const CREATE_TEMPLATES = [
+  {
+    value: "minecraft",
+    label: "Game server — Minecraft",
+    description: "OpenJDK tuned for your survival worlds",
+    icon: Gamepad2,
+    plan: "VPS-4",
+    flavor: "Elite",
+  },
+  {
+    value: "palworld",
+    label: "Game server — Palworld",
+    description: "Dedicated session with auto-restart",
+    icon: Swords,
+    plan: "VPS-8",
+    flavor: "Performance",
+  },
+  {
+    value: "web",
+    label: "Web / App",
+    description: "Reverse proxy & containers ready",
+    icon: Globe,
+    plan: "VPS-2",
+    flavor: "Comfort",
+  },
+  {
+    value: "database",
+    label: "Database",
+    description: "Optimized for MySQL / PostgreSQL",
+    icon: Database,
+    plan: "VPS-4",
+    flavor: "Comfort",
+  },
+  {
+    value: "vpn",
+    label: "VPN",
+    description: "WireGuard / OpenVPN gateway",
+    icon: Shield,
+    plan: "VPS-1",
+    flavor: "Starter",
+  },
+  {
+    value: "general",
+    label: "General purpose",
+    description: "Balanced resources, no preset",
+    icon: Server,
+    plan: "VPS-2",
+    flavor: "Starter",
+  },
+] as const;
+
+/**
+ * Jeu de données : images système disponibles pour provisionner la machine.
+ */
+const OS_DESCRIPTIONS: Record<string, string> = {
+  "Ubuntu 24.04": "LTS — a great all-round choice",
+  "Debian 13": "Minimal and stable base image",
+  "AlmaLinux 9": "Enterprise-grade, RHEL compatible",
+  "Rocky Linux 9": "Community-driven RHEL build",
+  "Windows Server 2022": "For .NET & Windows workloads",
+};
+
+const DEFAULT_OS = OPERATING_SYSTEMS[0];
+
+interface CreateVpsDialogProps {
+  dedicatedServers: VpsDedicatedServer[];
+  onNotice: (message: string) => void;
+}
+
+function CreateVpsDialog({ dedicatedServers, onNotice }: CreateVpsDialogProps) {
+  const [open, setOpen] = React.useState(false);
+  const [name, setName] = React.useState("");
+  const [region, setRegion] = React.useState(REGIONS[0]);
+  const [templateValue, setTemplateValue] = React.useState<string>(CREATE_TEMPLATES[0].value);
+  const [os, setOs] = React.useState<string>(DEFAULT_OS);
+  const [dedicated, setDedicated] = React.useState("none");
+
+  const template =
+    CREATE_TEMPLATES.find((item) => item.value === templateValue) ?? CREATE_TEMPLATES[0];
+  const TemplateIcon = template.icon;
+
+  const availableServers = dedicatedServers.filter((server) => server.region === region);
+
+  const osDescription = OS_DESCRIPTIONS[os] ?? "Deploy this system image on the new VPS.";
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const serverLabel =
+      dedicated !== "none" ? `, associated to dedicated server ${dedicated}` : "";
+    onNotice(
+      `Creating VPS ${name.trim() || template.label} with OS ${os} (${template.plan} · ${template.flavor})${serverLabel}… (demo action)`,
+    );
+    setOpen(false);
+    setName("");
+    setOs(DEFAULT_OS);
+    setDedicated("none");
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus className="size-4" />
+          Create VPS
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Create a VPS</DialogTitle>
+          <DialogDescription>
+            Pick a template and, if available, associate the machine with one of your dedicated
+            servers.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="vps-name">Name</Label>
+            <Input
+              id="vps-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="e.g. vps-minecraft-01"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label>Template</Label>
+              <Select value={templateValue} onValueChange={setTemplateValue}>
+                <SelectTrigger className="w-full" aria-label="VPS template">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CREATE_TEMPLATES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Region</Label>
+              <Select
+                value={region}
+                onValueChange={(value) => {
+                  setRegion(value);
+                  setDedicated("none");
+                }}
+              >
+                <SelectTrigger className="w-full" aria-label="Region">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {REGIONS.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Aperçu du template sélectionné */}
+          <div className="flex items-center gap-3 rounded-md border border-border bg-muted/30 p-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+              <TemplateIcon className="size-4.5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{template.label}</p>
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                {template.description}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Recommended plan: {template.plan} · {template.flavor}
+              </p>
+            </div>
+          </div>
+
+          {/* Jeu de données : choix de l'OS à installer */}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="vps-os">Operating system</Label>
+            <Select value={os} onValueChange={setOs}>
+              <SelectTrigger id="vps-os" className="w-full" aria-label="Operating system">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {OPERATING_SYSTEMS.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{osDescription}</p>
+          </div>
+
+          {/* Serveur dédié associé (si présent) */}
+          <div className="flex flex-col gap-1.5">
+            <Label>Dedicated server</Label>
+            <Select value={dedicated} onValueChange={setDedicated}>
+              <SelectTrigger className="w-full" aria-label="Dedicated server">
+                <SelectValue placeholder="No dedicated server" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No dedicated server</SelectItem>
+                {availableServers.map((server) => (
+                  <SelectItem key={server.name} value={server.name}>
+                    {server.name} · {server.model}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {availableServers.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                No dedicated servers available in {region}.
+              </p>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <Button type="submit">Create VPS</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
+
 type Phase = "loading" | "ready" | "error";
 
 export default function VpsPage() {
@@ -488,7 +760,7 @@ export default function VpsPage() {
     .filter((vps) => {
       const matchesQuery =
         normalizedQuery.length === 0 ||
-        [vps.name, vps.os, vps.region, vps.plan, vps.flavor, vps.ip]
+        [vps.name, vps.os, vps.region, vps.plan, vps.flavor, vps.ip, vps.dedicated?.name]
           .join(" ")
           .toLowerCase()
           .includes(normalizedQuery);
@@ -519,6 +791,15 @@ export default function VpsPage() {
   const vcpuTotal = vpsList.reduce((sum, vps) => sum + vps.vcpu, 0);
   const ramTotal = vpsList.reduce((sum, vps) => sum + vps.ramGb, 0);
   const storageTotal = vpsList.reduce((sum, vps) => sum + vps.storageGb, 0);
+
+  const dedicatedServers = Array.from(
+    new Map(
+      vpsList
+        .map((vps) => vps.dedicated)
+        .filter((server): server is VpsDedicatedServer => Boolean(server))
+        .map((server) => [server.name, server]),
+    ).values(),
+  );
 
   const statTiles: {
     label: string;
@@ -560,12 +841,7 @@ export default function VpsPage() {
             Manage your virtual private servers
           </p>
         </div>
-        <Button asChild>
-          <Link href="/order/check-in">
-            <Plus className="size-4" />
-            Create VPS
-          </Link>
-        </Button>
+        <CreateVpsDialog dedicatedServers={dedicatedServers} onNotice={showNotice} />
       </div>
 
       {notice && (

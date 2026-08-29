@@ -9,7 +9,6 @@ import {
   ArrowRight,
   Boxes,
   Check,
-  CheckCircle2,
   Cpu,
   HardDrive,
   MapPin,
@@ -22,7 +21,6 @@ import {
   Search,
   Server,
   Wrench,
-  XCircle,
   type LucideIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +57,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DEDICATED_CLOUDS,
+  REGIONS,
+  STATUS_META,
+  type DcStatus,
+  type DedicatedCloud,
+} from "@/lib/mock/dedicated-cloud";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
@@ -94,162 +99,10 @@ const formatSectionLabel = (section: string) =>
     .join(" ");
 
 /* ------------------------------------------------------------------ */
-/* Types & données de démonstration                                    */
+/* Données de démonstration (partagées depuis @/lib/mock)               */
+/* DEDICATED_CLOUDS, STATUS_META, REGIONS, types depuis                 */
+/* @/lib/mock/dedicated-cloud                                           */
 /* ------------------------------------------------------------------ */
-
-type DcStatus = "operational" | "warning" | "degraded" | "maintenance";
-
-interface DedicatedCloud {
-  id: string;
-  name: string;
-  environment: string;
-  region: string;
-  status: DcStatus;
-  hosts: number;
-  vcpu: number;
-  ramGb: number;
-  storageTb: number;
-  vms: number;
-  networks: number;
-  publicIps: number;
-}
-
-const DEDICATED_CLOUDS: DedicatedCloud[] = [
-  {
-    id: "dc-lux-01",
-    name: "DC-LUX-01",
-    environment: "Production · Critical applications",
-    region: "Strasbourg (SBG5)",
-    status: "operational",
-    hosts: 4,
-    vcpu: 128,
-    ramGb: 768,
-    storageTb: 24,
-    vms: 26,
-    networks: 3,
-    publicIps: 12,
-  },
-  {
-    id: "dc-lux-02",
-    name: "DC-LUX-02",
-    environment: "Staging & pre-production",
-    region: "Strasbourg (SBG5)",
-    status: "warning",
-    hosts: 2,
-    vcpu: 64,
-    ramGb: 384,
-    storageTb: 8,
-    vms: 11,
-    networks: 2,
-    publicIps: 5,
-  },
-  {
-    id: "dc-fra-01",
-    name: "DC-FRA-01",
-    environment: "Production · ERP & databases",
-    region: "Gravelines (GRA7)",
-    status: "operational",
-    hosts: 6,
-    vcpu: 192,
-    ramGb: 1152,
-    storageTb: 36,
-    vms: 38,
-    networks: 4,
-    publicIps: 20,
-  },
-  {
-    id: "dc-de-01",
-    name: "DC-DE-01",
-    environment: "Disaster recovery",
-    region: "Frankfurt (DE1)",
-    status: "maintenance",
-    hosts: 3,
-    vcpu: 96,
-    ramGb: 576,
-    storageTb: 18,
-    vms: 14,
-    networks: 2,
-    publicIps: 8,
-  },
-  {
-    id: "dc-uk-01",
-    name: "DC-UK-01",
-    environment: "Production · Edge services",
-    region: "London (UK1)",
-    status: "operational",
-    hosts: 5,
-    vcpu: 160,
-    ramGb: 960,
-    storageTb: 30,
-    vms: 31,
-    networks: 3,
-    publicIps: 16,
-  },
-  {
-    id: "dc-pl-01",
-    name: "DC-PL-01",
-    environment: "Analytics & big data",
-    region: "Warsaw (WAW1)",
-    status: "degraded",
-    hosts: 4,
-    vcpu: 128,
-    ramGb: 512,
-    storageTb: 48,
-    vms: 9,
-    networks: 2,
-    publicIps: 6,
-  },
-  {
-    id: "dc-lux-03",
-    name: "DC-LUX-03",
-    environment: "Sandbox & experiments",
-    region: "Strasbourg (SBG5)",
-    status: "operational",
-    hosts: 1,
-    vcpu: 16,
-    ramGb: 64,
-    storageTb: 2,
-    vms: 3,
-    networks: 1,
-    publicIps: 1,
-  },
-];
-
-const STATUS_META: Record<
-  DcStatus,
-  { label: string; dot: string; badge: string; iconClass: string; icon: LucideIcon }
-> = {
-  operational: {
-    label: "Operational",
-    dot: "bg-emerald-500",
-    badge: "border-emerald-500/25 bg-emerald-500/15 text-emerald-500",
-    iconClass: "bg-emerald-500/15 text-emerald-500",
-    icon: CheckCircle2,
-  },
-  warning: {
-    label: "Warning",
-    dot: "bg-amber-500",
-    badge: "border-amber-500/25 bg-amber-500/15 text-amber-500",
-    iconClass: "bg-amber-500/15 text-amber-500",
-    icon: AlertTriangle,
-  },
-  degraded: {
-    label: "Degraded",
-    dot: "bg-red-500",
-    badge: "border-red-500/25 bg-red-500/15 text-red-500",
-    iconClass: "bg-red-500/15 text-red-500",
-    icon: XCircle,
-  },
-  maintenance: {
-    label: "Maintenance",
-    dot: "bg-sky-500",
-    badge: "border-sky-500/25 bg-sky-500/15 text-sky-500",
-    iconClass: "bg-sky-500/15 text-sky-500",
-    icon: Wrench,
-  },
-};
-
-const REGIONS = Array.from(new Set(DEDICATED_CLOUDS.map((cloud) => cloud.region)));
 
 interface CapacityItem {
   key: string;

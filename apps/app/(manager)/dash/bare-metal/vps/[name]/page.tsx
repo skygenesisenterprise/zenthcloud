@@ -8,21 +8,32 @@ import {
   AlertTriangle,
   Archive,
   ArrowLeft,
+  Bell,
   Clock,
   Copy,
   Cpu,
+  Download,
+  Folder,
+  Gauge,
   HardDrive,
+  KeyRound,
+  Lock,
   MemoryStick,
   MoreHorizontal,
   Network,
   Play,
+  Plus,
+  Power,
   RefreshCw,
   RotateCcw,
+  RotateCw,
+  Save,
   Server,
   Settings,
+  Shield,
   Square,
   Terminal,
-  Wrench,
+  Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -49,7 +60,17 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { STATUS_META, fetchVps, type Vps, type VpsStatus } from "@/lib/mock/vps";
 import { cn } from "@/lib/utils";
@@ -151,30 +172,669 @@ function IpRow({ label, value, onCopy }: IpRowProps) {
   );
 }
 
-interface ComingSoonProps {
-  label: string;
-  onBack: () => void;
+interface SectionCardProps {
+  title: string;
+  subtitle?: string;
+  icon?: React.ElementType;
+  children: React.ReactNode;
+  className?: string;
 }
 
-function ComingSoon({ label, onBack }: ComingSoonProps) {
+function SectionCard({ title, subtitle, icon: Icon, children, className }: SectionCardProps) {
   return (
-    <div className="mt-2 rounded-lg border border-border bg-card">
-      <Empty className="px-6 py-16">
-        <EmptyMedia variant="icon">
-          <Wrench className="size-6" />
-        </EmptyMedia>
-        <EmptyHeader>
-          <EmptyTitle>{label} is coming soon</EmptyTitle>
-          <EmptyDescription>
-            This section will be available in the next iteration of the VPS manager.
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <Button variant="outline" onClick={onBack}>
-            Back to Overview
+    <section
+      className={cn("rounded-lg border border-border bg-card p-5", className)}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-semibold">{title}</h2>
+          {subtitle ? <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p> : null}
+        </div>
+        {Icon ? <Icon className="size-4 text-muted-foreground" aria-hidden="true" /> : null}
+      </div>
+      <div className="mt-4">{children}</div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Panels de gestion utilisables                                       */
+/* ------------------------------------------------------------------ */
+
+interface PanelProps {
+  vps: Vps;
+  onNotice: (message: string) => void;
+}
+
+function ConsolePanel({ vps, onNotice }: PanelProps) {
+  const [connected, setConnected] = React.useState(true);
+  const [input, setInput] = React.useState("");
+  const [lines, setLines] = React.useState<string[]>([
+    `${vps.os} 6.8.0-51-generic`,
+    "Welcome to your virtual private server",
+    `${vps.name} login: __`,// connected
+  ]);
+
+  const runCommand = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const command = input.trim();
+    if (!command) return;
+    setLines((prev) => [
+      ...prev,
+      `root@${vps.name}:~# ${command}`,
+      `[demo] command executed on ${vps.os} — no output (simulation).`,
+    ]);
+    setInput("");
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <SectionCard title="Console" subtitle={`Web terminal for ${vps.name}`} icon={Terminal}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span
+              className={cn("size-2 rounded-full", connected ? "bg-emerald-500" : "bg-muted-foreground")}
+              aria-hidden="true"
+            />
+            {connected ? "Connected" : "Disconnected"}
+          </div>
+          <Button
+            size="sm"
+            variant={connected ? "outline" : "default"}
+            onClick={() => {
+              setConnected((value) => !value);
+              onNotice(
+                connected
+                  ? `Disconnecting from ${vps.name}… (demo action)`
+                  : `Connecting to ${vps.name}… (demo action)`,
+              );
+            }}
+          >
+            <Power className="size-4" />
+            {connected ? "Disconnect" : "Connect"}
           </Button>
-        </EmptyContent>
-      </Empty>
+        </div>
+
+        <div className="mt-4 rounded-md border border-border bg-[#0b0f19] p-3 font-mono text-xs text-emerald-300">
+          <div className="flex h-56 flex-col justify-end gap-1 overflow-y-auto">
+            {lines.map((line, index) => (
+              <pre key={index} className="whitespace-pre-wrap wrap-break-words">
+                {line}
+              </pre>
+            ))}
+          </div>
+          <form onSubmit={runCommand} className="mt-2 flex items-center gap-2">
+            <span className="shrink-0">root@{vps.name}:~#</span>
+            <Input
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              disabled={!connected}
+              placeholder={connected ? "Type a command and press Enter" : "Reconnect to type"}
+              aria-label="Console command"
+              className="h-7 border-transparent bg-transparent font-mono text-emerald-300 placeholder:text-emerald-300/40 focus:border-transparent focus-visible:ring-0"
+            />
+          </form>
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
+
+function ComputePanel({ vps, onNotice }: PanelProps) {
+  const [vcpu, setVcpu] = React.useState(String(vps.vcpu));
+  const [ram, setRam] = React.useState(String(vps.ramGb));
+  const [disk, setDisk] = React.useState(String(vps.storageGb));
+
+  const apply = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onNotice(
+      `Resizing ${vps.name} to ${vcpu} vCPU · ${ram} GB RAM · ${disk} GB — a reboot will be scheduled (demo action).`,
+    );
+  };
+
+  return (
+    <div className="grid gap-6 xl:grid-cols-2">
+      <SectionCard title="Compute resources" subtitle="Adjust vCPU, RAM and disk" icon={Cpu}>
+        <form onSubmit={apply} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label>vCPU</Label>
+            <Select value={vcpu} onValueChange={setVcpu}>
+              <SelectTrigger className="w-full" aria-label="vCPU">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 4, 6, 8, 12, 16].map((value) => (
+                  <SelectItem key={value} value={String(value)}>
+                    {value} vCPU
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>RAM</Label>
+            <Select value={ram} onValueChange={setRam}>
+              <SelectTrigger className="w-full" aria-label="RAM">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[4, 8, 16, 32, 64].map((value) => (
+                  <SelectItem key={value} value={String(value)}>
+                    {value} GB
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Disk</Label>
+            <Select value={disk} onValueChange={setDisk}>
+              <SelectTrigger className="w-full" aria-label="Disk size">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[80, 160, 320, 480, 640].map((value) => (
+                  <SelectItem key={value} value={String(value)}>
+                    {value} GB {vps.storageType}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
+            <p className="text-xs text-muted-foreground">Changes require a reboot.</p>
+            <Button type="submit">
+              <Save className="size-4" />
+              Apply changes
+            </Button>
+          </div>
+        </form>
+      </SectionCard>
+
+      <SectionCard title="Current usage" subtitle="Live resource load" icon={Activity}>
+        <div className="flex flex-col gap-4">
+          <UsageRow label={`CPU · ${vps.vcpu} vCPU`} value={vps.usage.cpu} barClass={usageBarClass(vps.usage.cpu)} />
+          <UsageRow label={`RAM · ${vps.ramGb} GB`} value={vps.usage.ram} barClass={usageBarClass(vps.usage.ram)} />
+          <UsageRow
+            label={`Disk · ${vps.storageGb} GB ${vps.storageType}`}
+            value={vps.usage.disk}
+            barClass={usageBarClass(vps.usage.disk)}
+          />
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
+
+function StoragePanel({ vps, onNotice }: PanelProps) {
+  const volumes = [
+    { id: "system", label: "System volume", size: `${vps.storageGb} GB ${vps.storageType}`, usage: vps.usage.disk },
+    { id: "additional", label: "Additional volume", size: "40 GB NVMe", usage: 22 },
+  ];
+  const [newSize, setNewSize] = React.useState(String(vps.storageGb));
+
+  const resize = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onNotice(`Expanding the system volume of ${vps.name} to ${newSize} GB… (demo action)`);
+  };
+
+  return (
+    <div className="grid gap-6 xl:grid-cols-2">
+      <SectionCard title="Storage" subtitle="Attached volumes" icon={HardDrive}>
+        <ul className="flex flex-col gap-3">
+          {volumes.map((volume) => (
+            <li
+              key={volume.id}
+              className="flex items-center justify-between gap-3 rounded-md border border-border p-3"
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <Folder className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{volume.label}</p>
+                  <p className="text-xs text-muted-foreground">{volume.size} · {volume.usage}% used</p>
+                </div>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Actions for ${volume.label}`}
+                    title={`Actions for ${volume.label}`}
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      onNotice(`Formatting ${volume.label} requires confirmation — destructive (demo action)`);
+                    }}
+                  >
+                    <RotateCw className="size-4 text-muted-foreground" />
+                    Format
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      onNotice(`Detaching ${volume.label} from ${vps.name} (demo action)`);
+                    }}
+                  >
+                    <Trash2 className="size-4 text-muted-foreground" />
+                    Remove
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </li>
+          ))}
+        </ul>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => onNotice(`Attaching a new volume to ${vps.name}… (demo action)`)}
+        >
+          <Plus className="size-4" />
+          Add volume
+        </Button>
+      </SectionCard>
+
+      <SectionCard title="Expand storage" subtitle="Resize the system volume" icon={Save}>
+        <form onSubmit={resize} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label>New size</Label>
+            <Select value={newSize} onValueChange={setNewSize}>
+              <SelectTrigger className="w-full" aria-label="New disk size">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[80, 160, 320, 480, 640].map((value) => (
+                  <SelectItem key={value} value={String(value)}>
+                    {value} GB {vps.storageType}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Expansion is applied on the next reboot.</p>
+          </div>
+          <Button type="submit">
+            <Save className="size-4" />
+            Resize
+          </Button>
+        </form>
+      </SectionCard>
+    </div>
+  );
+}
+
+function NetworkingPanel({ vps, onNotice }: PanelProps) {
+  const gateway = vps.ip.split(".").slice(0, 3).join(".") + ".1";
+  const [rules, setRules] = React.useState([
+    { id: "r1", port: "22", src: "0.0.0.0/0", action: "Allow", enabled: true },
+    { id: "r2", port: "80/443", src: "0.0.0.0/0", action: "Allow", enabled: true },
+    { id: "r3", port: "3306", src: "192.168.1.0/24", action: "Allow", enabled: false },
+  ]);
+
+  const toggleRule = (id: string) =>
+    setRules((prev) => prev.map((rule) => (rule.id === id ? { ...rule, enabled: !rule.enabled } : rule)));
+
+  return (
+    <div className="flex flex-col gap-6">
+      <SectionCard title="Public addressing" subtitle="IP addresses of this VPS" icon={Network}>
+        <div className="flex flex-col gap-1">
+          <IpRow label="IPv4" value={vps.ip} onCopy={onNotice} />
+          <IpRow label="IPv6" value={vps.ipv6} onCopy={onNotice} />
+          <IpRow label="Gateway" value={gateway} onCopy={onNotice} />
+        </div>
+        <div className="mt-3 border-t border-border pt-4 text-xs text-muted-foreground">
+          DNS servers: <span className="font-mono">1.1.1.1</span> ·{" "}
+          <span className="font-mono">9.9.9.9</span>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Firewall" subtitle="Inbound rules — toggle on the fly" icon={Shield}>
+        <ul className="flex flex-col gap-2">
+          {rules.map((rule) => (
+            <li key={rule.id} className="flex items-center justify-between gap-3 rounded-md border border-border p-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium">
+                  <span className="font-mono">{rule.port}</span>{" "}
+                  <span className="text-muted-foreground">← {rule.src}</span>
+                </p>
+                <p className="text-xs text-muted-foreground">{rule.action} inbound</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={rule.enabled} onCheckedChange={() => toggleRule(rule.id)} />
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Delete rule for port ${rule.port}`}
+                  onClick={() => onNotice(`Firewall rule for port ${rule.port} deleted (demo action)`)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => onNotice(`Adding a firewall rule for ${vps.name}… (demo action)`)}
+        >
+          <Plus className="size-4" />
+          Add rule
+        </Button>
+      </SectionCard>
+    </div>
+  );
+}
+
+function SnapshotsPanel({ vps, onNotice }: PanelProps) {
+  const [snapshots, setSnapshots] = React.useState([
+    { id: "s1", name: "before-upgrade", created: "2 days ago", size: "4 GB" },
+    { id: "s2", name: "daily-2026-08-28", created: "1 day ago", size: "4 GB" },
+  ]);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <SectionCard title="Snapshots" subtitle="Point-in-time copies of the system disk" icon={RotateCcw}>
+        <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
+          <p className="text-xs text-muted-foreground">{snapshots.length} snapshot(s) stored</p>
+          <Button
+            onClick={() => {
+              setSnapshots((prev) => [
+                { id: `s${Date.now()}`, name: `manual-${new Date().toISOString().slice(0, 10)}`, created: "just now", size: "4 GB" },
+                ...prev,
+              ]);
+              onNotice(`Creating a snapshot of ${vps.name}… (demo action)`);
+            }}
+          >
+            <Plus className="size-4" />
+            Create snapshot
+          </Button>
+        </div>
+        <ul className="mt-3 flex flex-col gap-2">
+          {snapshots.map((snapshot) => (
+            <li key={snapshot.id} className="flex items-center justify-between gap-3 rounded-md border border-border p-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{snapshot.name}</p>
+                <p className="text-xs text-muted-foreground">{snapshot.created} · {snapshot.size}</p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNotice(`Restoring snapshot ${snapshot.name} on ${vps.name}… (demo action)`)}
+                >
+                  <RotateCw className="size-3.5" />
+                  Restore
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Delete snapshot ${snapshot.name}`}
+                  onClick={() => {
+                    setSnapshots((prev) => prev.filter((item) => item.id !== snapshot.id));
+                    onNotice(`Snapshot ${snapshot.name} deleted (demo action)`);
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </SectionCard>
+    </div>
+  );
+}
+
+function BackupsPanel({ vps, onNotice }: PanelProps) {
+  const [enabled, setEnabled] = React.useState(true);
+  const [schedule, setSchedule] = React.useState("daily");
+  const [retention, setRetention] = React.useState("7");
+
+  return (
+    <div className="flex flex-col gap-6">
+      <SectionCard title="Automated backups" subtitle={`Snapshot schedule & retention for ${vps.name}`} icon={Archive}>
+        <div className="flex items-center justify-between gap-3 rounded-md border border-border p-3">
+          <div>
+            <p className="text-sm font-medium">Automated backups</p>
+            <p className="text-xs text-muted-foreground">{enabled ? "Enabled" : "Disabled"}</p>
+          </div>
+          <Switch checked={enabled} onCheckedChange={setEnabled} />
+        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label>Schedule</Label>
+            <Select value={schedule} onValueChange={setSchedule}>
+              <SelectTrigger className="w-full" aria-label="Backup schedule">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[
+                  { value: "daily", label: "Daily" },
+                  { value: "weekly", label: "Weekly" },
+                  { value: "never", label: "Never" },
+                ].map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Retention</Label>
+            <Select value={retention} onValueChange={setRetention}>
+              <SelectTrigger className="w-full" aria-label="Backup retention">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {["3", "7", "14", "30"].map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value} days
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <Button
+          className="mt-4"
+          onClick={() => onNotice(`Running a manual backup of ${vps.name}… (demo action)`)}
+        >
+          <Download className="size-4" />
+          Back up now
+        </Button>
+      </SectionCard>
+    </div>
+  );
+}
+
+function MonitoringPanel({ vps, onNotice }: PanelProps) {
+  const [email, setEmail] = React.useState("admin@example.com");
+  const [cpuThreshold, setCpuThreshold] = React.useState("90");
+
+  return (
+    <div className="flex flex-col gap-6">
+      <SectionCard title="Live usage" subtitle="Sampled every 5 minutes, kept for 24 hours" icon={Gauge}>
+        <div className="flex flex-col gap-4">
+          <UsageRow label={`CPU · ${vps.vcpu} vCPU`} value={vps.usage.cpu} barClass={usageBarClass(vps.usage.cpu)} />
+          <UsageRow label={`RAM · ${vps.ramGb} GB`} value={vps.usage.ram} barClass={usageBarClass(vps.usage.ram)} />
+          <UsageRow
+            label={`Disk · ${vps.storageGb} GB ${vps.storageType}`}
+            value={vps.usage.disk}
+            barClass={usageBarClass(vps.usage.disk)}
+          />
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Alerts" subtitle="Notify me when a metric is exceeded" icon={Bell}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label>Email</Label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="alert@example.com"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>CPU threshold</Label>
+            <Select value={cpuThreshold} onValueChange={setCpuThreshold}>
+              <SelectTrigger className="w-full" aria-label="CPU alert threshold">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {["70", "80", "90", "95"].map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value}%
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <Button
+          className="mt-4"
+          onClick={() => onNotice(`Alert rule saved — email ${email}, CPU > ${cpuThreshold}% (demo action)`)}
+        >
+          <Save className="size-4" />
+          Save alerts
+        </Button>
+      </SectionCard>
+    </div>
+  );
+}
+
+function SecurityPanel({ vps, onNotice }: PanelProps) {
+  const [rootLogin, setRootLogin] = React.useState(false);
+  const [passwordAuth, setPasswordAuth] = React.useState(false);
+  const [twoFactor, setTwoFactor] = React.useState(true);
+  const keys = [
+    { id: "k1", name: "work-laptop", fingerprint: "SHA256:aj2b…c9" , added: "3 months ago" },
+    { id: "k2", name: "ci-runner", fingerprint: "SHA256:q5qk…d1" , added: "1 month ago" },
+  ];
+
+  return (
+    <div className="flex flex-col gap-6">
+      <SectionCard title="SSH keys" subtitle="Authorized keys for root access" icon={KeyRound}>
+        <ul className="flex flex-col gap-2">
+          {keys.map((key) => (
+            <li key={key.id} className="flex items-center justify-between gap-3 rounded-md border border-border p-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium">{key.name}</p>
+                <p className="truncate font-mono text-xs text-muted-foreground">{key.fingerprint}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="hidden text-xs text-muted-foreground sm:inline">{key.added}</span>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Remove SSH key ${key.name}`}
+                  onClick={() => onNotice(`Removing SSH key ${key.name}… (demo action)`)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => onNotice(`Adding an SSH key to ${vps.name}… (demo action)`)}
+        >
+          <Plus className="size-4" />
+          Add SSH key
+        </Button>
+      </SectionCard>
+
+      <SectionCard title="Access control" subtitle="Tune how credentials are handled" icon={Lock}>
+        {[
+          { id: "root", label: "Root SSH login", desc: "Allow direct root via SSH", enabled: rootLogin, set: setRootLogin },
+          { id: "pwd", label: "Password authentication", desc: "Permit password-based logins", enabled: passwordAuth, set: setPasswordAuth },
+          { id: "2fa", label: "Two-factor authentication", desc: "Require 2FA on the web console", enabled: twoFactor, set: setTwoFactor },
+        ].map((option) => (
+          <div
+            key={option.id}
+            className="flex items-center justify-between gap-3 border-b border-border py-3"
+          >
+            <div>
+              <p className="text-sm font-medium">{option.label}</p>
+              <p className="text-xs text-muted-foreground">{option.desc}</p>
+            </div>
+            <Switch checked={option.enabled} onCheckedChange={option.set} />
+          </div>
+        ))}
+      </SectionCard>
+    </div>
+  );
+}
+
+function SettingsPanel({ vps, onNotice }: PanelProps) {
+  const [newName, setNewName] = React.useState(vps.name);
+  const [kernelReboot, setKernelReboot] = React.useState(false);
+
+  const rename = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onNotice(`Renaming ${vps.name} to ${newName.trim() || vps.name}… (demo action)`);
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <SectionCard title="General" subtitle="Rename or reconfigure this VPS" icon={Settings}>
+        <form onSubmit={rename} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="vps-rename">Name</Label>
+            <Input id="vps-rename" value={newName} onChange={(event) => setNewName(event.target.value)} />
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-md border border-border p-3">
+            <div>
+              <p className="text-sm font-medium">Reboot on kernel upgrade</p>
+              <p className="text-xs text-muted-foreground">Automatically reboot after a kernel update</p>
+            </div>
+            <Switch checked={kernelReboot} onCheckedChange={setKernelReboot} />
+          </div>
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onNotice(`Reinstalling ${vps.name} requires confirmation — destructive (demo action)`)}
+            >
+              <RotateCw className="size-4" />
+              Reinstall OS
+            </Button>
+            <Button type="submit">
+              <Save className="size-4" />
+              Save
+            </Button>
+          </div>
+        </form>
+      </SectionCard>
+
+      <SectionCard
+        title="Danger zone"
+        subtitle="Irreversible actions"
+        icon={AlertTriangle}
+        className="border-red-500/30"
+      >
+        <div className="flex items-center justify-between gap-3 rounded-md border border-red-500/30 bg-red-500/5 p-3">
+          <div>
+            <p className="text-sm font-medium text-red-500">Delete this VPS</p>
+            <p className="text-xs text-muted-foreground">This permanently removes {vps.name} and its data.</p>
+          </div>
+          <Button
+            variant="destructive"
+            onClick={() => onNotice(`Deleting ${vps.name} requires confirmation — destructive (demo action)`)}
+          >
+            Delete VPS
+          </Button>
+        </div>
+      </SectionCard>
     </div>
   );
 }
@@ -605,6 +1265,31 @@ export default function VpsDetailPage() {
             </div>
 
             <div className="flex flex-col gap-6">
+              {/* Serveur dédié associé */}
+              {vps.dedicated ? (
+                <section
+                  className="rounded-lg border border-border bg-card p-5"
+                  aria-label="Associated dedicated server"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-sm font-semibold">Dedicated Server</h2>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        This VPS is provisioned on your dedicated server
+                      </p>
+                    </div>
+                    <Server className="size-4 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                  <p className="mt-4 truncate text-sm font-semibold">{vps.dedicated.name}</p>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                    <DetailRow label="Model" value={vps.dedicated.model} />
+                    <DetailRow label="Reference" value={vps.dedicated.reference} />
+                    <DetailRow label="Region" value={vps.dedicated.region} />
+                    <DetailRow label="Server IP" value={vps.dedicated.ip} />
+                  </dl>
+                </section>
+              ) : null}
+
               {/* Adresses IP */}
               <section className="rounded-lg border border-border bg-card p-5" aria-label="IP addresses">
                 <div className="flex items-center justify-between">
@@ -667,11 +1352,33 @@ export default function VpsDetailPage() {
           </div>
         </TabsContent>
 
-        {VPS_TABS.filter((item) => item !== "overview").map((item) => (
-          <TabsContent key={item} value={item} className="mt-2">
-            <ComingSoon label={formatTabLabel(item)} onBack={() => setTab("overview")} />
-          </TabsContent>
-        ))}
+        <TabsContent value="console" className="mt-2">
+          <ConsolePanel vps={vps} onNotice={showNotice} />
+        </TabsContent>
+        <TabsContent value="compute" className="mt-2">
+          <ComputePanel vps={vps} onNotice={showNotice} />
+        </TabsContent>
+        <TabsContent value="storage" className="mt-2">
+          <StoragePanel vps={vps} onNotice={showNotice} />
+        </TabsContent>
+        <TabsContent value="networking" className="mt-2">
+          <NetworkingPanel vps={vps} onNotice={showNotice} />
+        </TabsContent>
+        <TabsContent value="snapshots" className="mt-2">
+          <SnapshotsPanel vps={vps} onNotice={showNotice} />
+        </TabsContent>
+        <TabsContent value="backups" className="mt-2">
+          <BackupsPanel vps={vps} onNotice={showNotice} />
+        </TabsContent>
+        <TabsContent value="monitoring" className="mt-2">
+          <MonitoringPanel vps={vps} onNotice={showNotice} />
+        </TabsContent>
+        <TabsContent value="security" className="mt-2">
+          <SecurityPanel vps={vps} onNotice={showNotice} />
+        </TabsContent>
+        <TabsContent value="settings" className="mt-2">
+          <SettingsPanel vps={vps} onNotice={showNotice} />
+        </TabsContent>
       </Tabs>
     </main>
   );

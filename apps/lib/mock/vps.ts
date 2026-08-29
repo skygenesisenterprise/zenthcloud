@@ -14,6 +14,18 @@ export interface VpsUsage {
   disk: number;
 }
 
+/**
+ * Serveur dédié associé à un VPS (colonisation / service managé).
+ * Absente lorsque le VPS n'est rattaché à aucun serveur dédié.
+ */
+export interface VpsDedicatedServer {
+  name: string;
+  reference: string;
+  model: string;
+  region: string;
+  ip: string;
+}
+
 export interface Vps {
   id: string;
   name: string;
@@ -31,6 +43,7 @@ export interface Vps {
   uptime: string;
   createdAt: string;
   usage: VpsUsage;
+  dedicated?: VpsDedicatedServer;
 }
 
 export const VPS_LIST: Vps[] = [
@@ -51,6 +64,13 @@ export const VPS_LIST: Vps[] = [
     uptime: "34 days",
     createdAt: "Jan 14, 2026",
     usage: { cpu: 38, ram: 62, disk: 41 },
+    dedicated: {
+      name: "ns5150503.ip-51-161-204.eu",
+      reference: "1805904sd",
+      model: "RISE-1",
+      region: "Frankfurt (DE1)",
+      ip: "51.161.204.9",
+    },
   },
   {
     id: "vps-production-02",
@@ -87,6 +107,13 @@ export const VPS_LIST: Vps[] = [
     uptime: "12 days",
     createdAt: "Mar 02, 2026",
     usage: { cpu: 61, ram: 38, disk: 52 },
+    dedicated: {
+      name: "ns5034493.ip-145-239-55.eu",
+      reference: "1752210sd",
+      model: "ADV-2",
+      region: "Strasbourg (SBG5)",
+      ip: "145.239.55.203",
+    },
   },
   {
     id: "vps-worker-eu",
@@ -159,6 +186,13 @@ export const VPS_LIST: Vps[] = [
     uptime: "6 days",
     createdAt: "Jun 09, 2026",
     usage: { cpu: 92, ram: 64, disk: 58 },
+    dedicated: {
+      name: "ns5922291.ip-54-37-129.eu",
+      reference: "1802488sd",
+      model: "RISE-2",
+      region: "Gravelines (GRA7)",
+      ip: "54.37.129.44",
+    },
   },
   {
     id: "vps-legacy-db",
@@ -177,6 +211,13 @@ export const VPS_LIST: Vps[] = [
     uptime: "—",
     createdAt: "Nov 22, 2025",
     usage: { cpu: 0, ram: 0, disk: 0 },
+    dedicated: {
+      name: "ns7427399.ip-54-38-208.eu",
+      reference: "1690324sd",
+      model: "STOR-2",
+      region: "Gravelines (GRA7)",
+      ip: "54.38.208.120",
+    },
   },
   {
     id: "vps-monitoring",
