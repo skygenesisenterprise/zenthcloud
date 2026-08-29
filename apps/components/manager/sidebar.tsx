@@ -3,18 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
-  Archive,
-  Brain,
   Building2,
   ChevronsUpDown,
   Cloud,
-  Container,
-  Database,
   ExternalLink,
   Globe,
-  HardDrive,
   LayoutDashboard,
   Lock,
   Network,
@@ -43,6 +39,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -56,6 +70,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { allServices } from "@/lib/mock/services";
 
 /* ------------------------------------------------------------------ */
 /* Configuration de navigation                                         */
@@ -155,7 +170,11 @@ const navServiceMenus: ServiceMenu[] = [
         items: [
           { title: "Veeam Enterprise", href: "/dash/private-cloud/veeam-enterprise" },
           { title: "HYCU", href: "/dash/private-cloud/hycu", badge: "Nouveau" },
-          { title: "Managed Veeam for VCD", href: "/dash/private-cloud/veeam-vcd", badge: "Nouveau" },
+          {
+            title: "Managed Veeam for VCD",
+            href: "/dash/private-cloud/veeam-vcd",
+            badge: "Nouveau",
+          },
           {
             title: "Backup Licenses",
             href: "/dash/private-cloud/backup-licenses",
@@ -384,68 +403,192 @@ const footerLinks: FooterLink[] = [
 /* Sélecteur d'organisation (workspace)                                */
 /* ------------------------------------------------------------------ */
 
-const organisations = [
+interface Organisation {
+  name: string;
+  role: string;
+}
+
+const defaultOrganisations: Organisation[] = [
   { name: "ZenthCloud", role: "Propriétaire" },
   { name: "Équipe Cloud", role: "Administrateur" },
   { name: "Projet Client A", role: "Membre" },
 ];
 
-function OrganizationSwitcher() {
-  const [current, setCurrent] = React.useState(organisations[0]);
+const organisationRoles = ["Propriétaire", "Administrateur", "Membre", "Collaborateur"];
+
+/* Dialog d'ajout d'une organisation */
+function AddOrganisationDialog({
+  open,
+  onOpenChange,
+  onAdd,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAdd: (org: Organisation) => void;
+}) {
+  const [name, setName] = React.useState("");
+  const [role, setRole] = React.useState(organisationRoles[0]);
+
+  const handleSubmit = () => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    onAdd({ name: trimmed, role });
+    setName("");
+    setRole(organisationRoles[0]);
+    onOpenChange(false);
+  };
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <Building2 className="size-4" />
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{current.name}</span>
-                <span className="truncate text-xs text-muted-foreground">{current.role}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-64" align="start" side="bottom" sideOffset={4}>
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Organisations
-            </DropdownMenuLabel>
-            <DropdownMenuGroup>
-              {organisations.map((org) => (
-                <DropdownMenuItem
-                  key={org.name}
-                  className="gap-2 p-2"
-                  onSelect={() => setCurrent(org)}
-                >
-                  <div className="flex size-6 items-center justify-center rounded-sm border">
-                    <Building2 className="size-3.5 shrink-0" />
-                  </div>
-                  <span className="flex-1 truncate">{org.name}</span>
-                  <span className="text-xs text-muted-foreground">{org.role}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem className="gap-2 p-2">
-                <div className="flex size-6 items-center justify-center rounded-sm border bg-transparent">
-                  <Plus className="size-3.5" />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Ajouter une organisation</DialogTitle>
+          <DialogDescription>
+            Créez une nouvelle organisation pour y regrouper vos services, projets et
+            collaborateurs.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="org-name">Nom de l'organisation</Label>
+            <Input
+              id="org-name"
+              placeholder="Ex : Projet Client B"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSubmit();
+              }}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Mon rôle</Label>
+            <Select value={role} onValueChange={setRole}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {organisationRoles.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Annuler
+          </Button>
+          <Button type="button" onClick={handleSubmit} disabled={!name.trim()}>
+            Créer l'organisation
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function OrganizationSwitcher() {
+  const [organisations, setOrganisations] = React.useState(defaultOrganisations);
+  const [current, setCurrent] = React.useState(defaultOrganisations[0]);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+
+  const handleAdd = (org: Organisation) => {
+    setOrganisations((prev) => [...prev, org]);
+    setCurrent(org);
+  };
+
+  return (
+    <>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              >
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <Building2 className="size-4" />
                 </div>
-                <span className="font-medium text-muted-foreground">
-                  Ajouter une organisation
-                </span>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">{current.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">{current.role}</span>
+                </div>
+                <ChevronsUpDown
+                  className={cn(
+                    "ml-auto size-4 text-muted-foreground transition-transform duration-200",
+                    menuOpen && "rotate-180"
+                  )}
+                />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              forceMount
+              align="start"
+              side="bottom"
+              sideOffset={4}
+              className="min-w-0 border-0 bg-transparent p-0 shadow-none data-[state=closed]:pointer-events-none"
+            >
+              <AnimatePresence>
+                {menuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="bg-popover text-popover-foreground w-64 origin-top rounded-md border p-1 shadow-md"
+                  >
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">
+                      Organisations
+                    </DropdownMenuLabel>
+                    <DropdownMenuGroup>
+                      {organisations.map((org) => (
+                        <DropdownMenuItem
+                          key={org.name}
+                          className="gap-2 p-2"
+                          onSelect={() => setCurrent(org)}
+                        >
+                          <div className="flex size-6 items-center justify-center rounded-sm border">
+                            <Building2 className="size-3.5 shrink-0" />
+                          </div>
+                          <span className="flex-1 truncate">{org.name}</span>
+                          <span className="text-xs text-muted-foreground">{org.role}</span>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        className="gap-2 p-2"
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          setDialogOpen(true);
+                        }}
+                      >
+                        <div className="flex size-6 items-center justify-center rounded-sm border bg-transparent">
+                          <Plus className="size-3.5" />
+                        </div>
+                        <span className="font-medium text-muted-foreground">
+                          Ajouter une organisation
+                        </span>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+
+      <AddOrganisationDialog open={dialogOpen} onOpenChange={setDialogOpen} onAdd={handleAdd} />
+    </>
   );
 }
 
@@ -481,35 +624,53 @@ function SidebarFooterLink({ link }: { link: FooterLink }) {
 // l'espace entre le déclencheur et la bulle sans la refermer.
 const HOVER_CLOSE_DELAY = 150;
 // Largeur estimée de la bulle (en px), utilisée pour la garder à l'écran.
-const PANEL_WIDTH = 260;
+const PANEL_WIDTH = 280;
 
 function ServiceHoverMenu({ menu, pathname }: { menu: ServiceMenu; pathname: string }) {
   const [open, setOpen] = React.useState(false);
   const [position, setPosition] = React.useState<{ top: number; left: number } | null>(null);
   const triggerRef = React.useRef<HTMLLIElement | null>(null);
+  const panelRef = React.useRef<HTMLDivElement | null>(null);
   const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Calcule la position de la bulle puis l'ouvre. La bulle est en
+  // Calcule la position initiale de la bulle puis l'ouvre. La bulle est en
   // position: fixed pour échapper à l'overflow du sidebar et rester stable.
   const openMenu = React.useCallback(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     const el = triggerRef.current;
     if (el) {
       const rect = el.getBoundingClientRect();
-      let left = rect.right + 8;
-      let top = rect.top;
-      // Garder la bulle dans la fenêtre.
+      let left = rect.right + 10;
+      // Garder la bulle à l'écran horizontalement (à droite par défaut,
+      // à gauche quand il n'y a plus de place).
       if (left + PANEL_WIDTH > window.innerWidth - 8) {
-        left = rect.left - PANEL_WIDTH - 8;
+        left = rect.left - PANEL_WIDTH - 10;
       }
-      const panelHeight = 380;
-      if (top + panelHeight > window.innerHeight - 8) {
-        top = Math.max(8, window.innerHeight - panelHeight - 8);
-      }
-      setPosition({ top, left });
+      setPosition({ top: rect.top, left });
     }
     setOpen(true);
   }, []);
+
+  // Une fois la bulle montée, on mesure sa taille réelle et on décale sa
+  // position pour qu'elle reste entièrement visible, quelle que soit sa
+  // longueur (notamment en bas d'écran).
+  React.useEffect(() => {
+    if (!open || !position || !panelRef.current) return;
+    const panel = panelRef.current;
+    const height = panel.offsetHeight;
+    const width = panel.offsetWidth;
+    const fitsHeight = height <= window.innerHeight - 24;
+    const fitsWidth = width <= window.innerWidth - 24;
+    const top = fitsHeight
+      ? Math.max(8, Math.min(position.top, window.innerHeight - height - 8))
+      : 8;
+    const left = fitsWidth
+      ? Math.max(8, Math.min(position.left, window.innerWidth - width - 8))
+      : 8;
+    if (top !== position.top || left !== position.left) {
+      setPosition({ top, left });
+    }
+  }, [open, position]);
 
   const scheduleClose = React.useCallback(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -522,6 +683,16 @@ function ServiceHoverMenu({ menu, pathname }: { menu: ServiceMenu; pathname: str
   const cancelClose = React.useCallback(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
   }, []);
+
+  const toggleMenu = React.useCallback(() => {
+    if (open) {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+      setOpen(false);
+      setPosition(null);
+    } else {
+      openMenu();
+    }
+  }, [open, openMenu]);
 
   // Nettoie le timer au démontage.
   React.useEffect(() => {
@@ -537,66 +708,84 @@ function ServiceHoverMenu({ menu, pathname }: { menu: ServiceMenu; pathname: str
       onMouseEnter={openMenu}
       onMouseLeave={scheduleClose}
     >
+      {/* Le parent n'est plus un lien : il sert uniquement à piloter la bulle. */}
       <SidebarMenuButton
         tooltip={menu.title}
         isActive={pathname.startsWith(menu.rootHref)}
-        asChild
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={toggleMenu}
       >
-        <Link href={menu.rootHref}>
-          <menu.icon />
-          <span>{menu.title}</span>
-        </Link>
+        <menu.icon />
+        <span>{menu.title}</span>
       </SidebarMenuButton>
 
-      {open && position && (
-        <div
-          role="menu"
-          style={{ top: position.top, left: position.left }}
-          onMouseEnter={cancelClose}
-          onMouseLeave={scheduleClose}
-          className="bg-popover text-popover-foreground fixed z-50 rounded-md border p-2 shadow-md"
-        >
-          <div className="px-2 pt-1 pb-2 text-sm font-semibold">{menu.title}</div>
-          {menu.headline && (
-            <div className="px-2 pt-1 pb-2 text-xs font-medium text-muted-foreground">
-              {menu.headline}
-            </div>
-          )}
-          <div className="my-1 h-px bg-border" />
-          {menu.sections.map((section, index) => (
-            <React.Fragment key={section.label ?? index}>
-              {section.label && (
-                <div className="px-2 pt-2 pb-1 text-xs font-medium text-muted-foreground">
-                  {section.label}
-                </div>
-              )}
-              <div className="flex flex-col">
-                {section.items.map((item) => {
-                  const active = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      role="menuitem"
-                      className={cn(
-                        "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                        active && "bg-accent text-accent-foreground",
-                      )}
-                    >
-                      <span className="flex-1">{item.title}</span>
-                      {item.badge && (
-                        <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
+      <AnimatePresence>
+        {open && position && (
+          <motion.div
+            ref={panelRef}
+            role="menu"
+            style={{ top: position.top, left: position.left, maxHeight: "calc(100vh - 16px)" }}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            onMouseEnter={cancelClose}
+            onMouseLeave={scheduleClose}
+            className="bg-popover text-popover-foreground fixed z-50 w-70 overflow-y-auto rounded-xl border shadow-xl shadow-sidebar-primary/10 scrollbar-thin"
+          >
+            {/* En-tête du menu */}
+            <div className="sticky top-0 z-10 flex items-center gap-3 border-b bg-popover/95 p-3 backdrop-blur-sm">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-foreground">
+                <menu.icon className="size-4" />
               </div>
-            </React.Fragment>
-          ))}
-        </div>
-      )}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold leading-none">{menu.title}</p>
+                {menu.headline && (
+                  <p className="mt-1 truncate text-xs text-muted-foreground">{menu.headline}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Sections du menu */}
+            <div className="p-2 pb-3">
+              {menu.sections.map((section, index) => (
+                <React.Fragment key={section.label ?? index}>
+                  {index > 0 && section.label && <div className="mx-2 mt-1 h-px bg-border/60" />}
+                  {section.label && (
+                    <p className="px-2 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {section.label}
+                    </p>
+                  )}
+                  <div className="flex flex-col gap-0.5">
+                    {section.items.map((item) => {
+                      const active = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          role="menuitem"
+                          className={cn(
+                            "flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                            active && "bg-accent font-medium text-accent-foreground"
+                          )}
+                        >
+                          <span className="min-w-0 flex-1 truncate">{item.title}</span>
+                          {item.badge && (
+                            <span className="ml-auto shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </li>
   );
 }
@@ -604,49 +793,6 @@ function ServiceHoverMenu({ menu, pathname }: { menu: ServiceMenu; pathname: str
 /* ------------------------------------------------------------------ */
 /* Dialog "Ajouter un service"                                         */
 /* ------------------------------------------------------------------ */
-
-interface CatalogService {
-  label: string;
-  description: string;
-  icon: LucideIcon;
-  href: string;
-}
-
-interface CatalogGroup {
-  label: string;
-  services: CatalogService[];
-}
-
-const allServices: CatalogGroup[] = [
-  {
-    label: "Bare Metal Cloud",
-    services: [
-      { label: "Serveurs dédiés", description: "Serveurs physiques dédiés", icon: Server, href: "/order/check-in" },
-      { label: "Serveurs Privés Virtuels", description: "VPS élastiques à la demande", icon: HardDrive, href: "/order/check-in" },
-      { label: "Managed Bare Metal", description: "VMware managé en haute disponibilité", icon: Container, href: "/order/check-in" },
-      { label: "NAS-HA", description: "Stockage réseau haute disponibilité", icon: Archive, href: "/order/check-in" },
-    ],
-  },
-  {
-    label: "Cloud computing",
-    services: [
-      { label: "Compute", description: "Instances cloud à la demande", icon: Cloud, href: "/order/check-in" },
-      { label: "Kubernetes", description: "Conteneurs managés", icon: Container, href: "/order/check-in" },
-      { label: "Databases", description: "Bases de données managées", icon: Database, href: "/order/check-in" },
-      { label: "Object Storage", description: "Stockage d'objets élastique", icon: Archive, href: "/order/check-in" },
-      { label: "GPU & IA", description: "Serveurs GPU pour l'IA", icon: Brain, href: "/order/check-in" },
-    ],
-  },
-  {
-    label: "Autres services",
-    services: [
-      { label: "Network", description: "Réseau privé et pare-feu", icon: Network, href: "/order/check-in" },
-      { label: "IAM & Sécurité", description: "Identités et accès", icon: ShieldCheck, href: "/order/check-in" },
-      { label: "Télécom", description: "Téléphonie et SDA", icon: Phone, href: "/order/check-in" },
-      { label: "Web Cloud", description: "Hébergement web et e-mail", icon: Globe, href: "/order/check-in" },
-    ],
-  },
-];
 
 function AddServiceDialog() {
   const [open, setOpen] = React.useState(false);
