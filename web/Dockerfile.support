@@ -1,0 +1,36 @@
+# Build from the repository root (the root pnpm-workspace.yaml is the single
+# workspace for the whole monorepo):
+#   docker build -f web/Dockerfile.support .
+FROM node:24.4-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN npm install -g pnpm@10.22.0
+
+FROM base AS build
+COPY . /usr/src/app
+WORKDIR /usr/src/app
+
+# Install dependencies (support + its workspace deps only)
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --filter=@zenthcloud/support... --frozen-lockfile
+
+# Deploy only the support app
+ENV NODE_ENV=production
+RUN pnpm --filter=@zenthcloud/support run build
+RUN pnpm --filter=@zenthcloud/support --prod deploy --legacy /prod/support
+
+RUN cp -R /usr/src/app/web/apps/support/.next /prod/support/.next
+
+FROM base AS zenthcloud
+WORKDIR /app
+
+# Set production
+ENV NODE_ENV=production
+
+# Copy only the necessary files
+COPY --from=build /prod/support/.next ./.next
+COPY --from=build /prod/support/public ./public
+COPY --from=build /prod/support/package.json ./package.json
+COPY --from=build /prod/support/node_modules ./node_modules
+
+EXPOSE 3000
+CMD HOSTNAME=0.0.0.0 && pnpm start

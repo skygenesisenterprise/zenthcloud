@@ -8,6 +8,8 @@
 		"website:dev": "pnpm --filter=@zenthcloud/website run dev",
 		"website:build": "pnpm --filter=@zenthcloud/website run build",
 		"website:typecheck": "pnpm --filter=@zenthcloud/website run typecheck",
+		"support:build": "pnpm --filter=@zenthcloud/support run build",
+		"support:typecheck": "pnpm --filter=@zenthcloud/support run typecheck",
 		"typecheck": "pnpm --filter=@zenthcloud/website --filter=@zenthcloud/docs run typecheck",
 		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
 		"build": "pnpm --filter=@zenthcloud/website --filter=@zenthcloud/docs run build",
