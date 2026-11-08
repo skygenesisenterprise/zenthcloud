@@ -1,4 +1,4 @@
-export const TEMPLATES_BASE_URL = "https://templates.guilderia.com";
+export const TEMPLATES_BASE_URL = "https://templates.zenthcloud.com";
 
 export interface TemplateLinks {
 	github?: string;
@@ -34,7 +34,7 @@ export function getTemplateLogoUrl(template: Template): string {
 	return `${base}/${template.id}/${template.logo}`;
 }
 
-// Same payload format the guilderia UI expects for Compose → Advanced → Base64 import
+// Same payload format the zenthcloud UI expects for Compose → Advanced → Base64 import
 export function templateToBase64(
 	dockerCompose: string | null,
 	config: string | null,

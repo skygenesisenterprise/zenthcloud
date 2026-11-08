@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
 			userAgent: "*",
 			allow: "/",
 		},
-		sitemap: "https://docs.guilderia.com/sitemap.xml",
+		sitemap: "https://docs.zenthcloud.com/sitemap.xml",
 	};
 }
 

@@ -2,11 +2,11 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import {
 	deriveInternalDnsZone,
 	getDomainRequirements,
-} from "@guilderia/server/utils/domain-scope";
+} from "@zenthcloud/server/utils/domain-scope";
 import {
 	INVALID_HOSTNAME_MESSAGE,
 	VALID_HOSTNAME_REGEX,
-} from "@guilderia/server/utils/hostname-validation";
+} from "@zenthcloud/server/utils/hostname-validation";
 import { DatabaseZap, Dices, RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -576,7 +576,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																		: domainRequirements.scope === "local"
 																			? ".local domain. This hostname resolves over mDNS/Bonjour or your local DNS configuration."
 																			: domainRequirements.scope === "lan"
-																				? "LAN domain. This hostname must resolve to your guilderia server through your local DNS or hosts configuration."
+																				? "LAN domain. This hostname must resolve to your zenthcloud server through your local DNS or hosts configuration."
 																				: "Internal domain. Public DNS and Let's Encrypt are not required."}
 																</FormDescription>
 															)}
@@ -618,7 +618,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 											<div className="flex gap-2">
 												<FormControl>
 													<Input
-														placeholder="api.guilderia.com or gitlab.guilderia.lan"
+														placeholder="api.zenthcloud.com or gitlab.zenthcloud.lan"
 														{...field}
 													/>
 												</FormControl>
@@ -667,14 +667,14 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 									domainRequirements.scope !== "localhost" &&
 									(internalDns?.available ? (
 										<AlertBlock type="info">
-											<strong>guilderia Internal DNS</strong> will register{" "}
+											<strong>zenthcloud Internal DNS</strong> will register{" "}
 											<code>{host}</code> in the{" "}
 											<code>{deriveInternalDnsZone(host)}</code> zone so it
 											resolves inside your network.
 										</AlertBlock>
 									) : (
 										<AlertBlock type="warning">
-											No guilderia Internal DNS provider is configured, so{" "}
+											No zenthcloud Internal DNS provider is configured, so{" "}
 											<code>{host}</code> will not resolve automatically. Add
 											one in the{" "}
 											<Link

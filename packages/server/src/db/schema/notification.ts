@@ -15,7 +15,7 @@ import { organization } from "./account";
 export const notificationType = pgEnum("notificationType", [
 	"slack",
 	"telegram",
-	"guilderia",
+	"zenthcloud",
 	"email",
 	"resend",
 	"gotify",
@@ -37,8 +37,8 @@ export const notifications = pgTable("notification", {
 	appBuildError: boolean("appBuildError").notNull().default(false),
 	databaseBackup: boolean("databaseBackup").notNull().default(false),
 	volumeBackup: boolean("volumeBackup").notNull().default(false),
-	guilderiaRestart: boolean("guilderiaRestart").notNull().default(false),
-	guilderiaBackup: boolean("guilderiaBackup").notNull().default(false),
+	zenthcloudRestart: boolean("zenthcloudRestart").notNull().default(false),
+	zenthcloudBackup: boolean("zenthcloudBackup").notNull().default(false),
 	dockerCleanup: boolean("dockerCleanup").notNull().default(false),
 	serverThreshold: boolean("serverThreshold").notNull().default(false),
 	notificationType: notificationType("notificationType").notNull(),
@@ -51,7 +51,7 @@ export const notifications = pgTable("notification", {
 	telegramId: text("telegramId").references(() => telegram.telegramId, {
 		onDelete: "cascade",
 	}),
-	guilderiaId: text("guilderiaId").references(() => guilderia.guilderiaId, {
+	zenthcloudId: text("zenthcloudId").references(() => zenthcloud.zenthcloudId, {
 		onDelete: "cascade",
 	}),
 	emailId: text("emailId").references(() => email.emailId, {
@@ -105,8 +105,8 @@ export const telegram = pgTable("telegram", {
 	messageThreadId: text("messageThreadId"),
 });
 
-export const guilderia = pgTable("guilderia", {
-	guilderiaId: text("guilderiaId")
+export const zenthcloud = pgTable("zenthcloud", {
+	zenthcloudId: text("zenthcloudId")
 		.notNull()
 		.primaryKey()
 		.$defaultFn(() => nanoid()),
@@ -215,9 +215,9 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 		fields: [notifications.telegramId],
 		references: [telegram.telegramId],
 	}),
-	guilderia: one(guilderia, {
-		fields: [notifications.guilderiaId],
-		references: [guilderia.guilderiaId],
+	zenthcloud: one(zenthcloud, {
+		fields: [notifications.zenthcloudId],
+		references: [zenthcloud.zenthcloudId],
 	}),
 	email: one(email, {
 		fields: [notifications.emailId],
@@ -267,9 +267,9 @@ export const apiCreateSlack = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -296,9 +296,9 @@ export const apiCreateTelegram = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -327,9 +327,9 @@ export const apiCreateDiscord = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -343,7 +343,7 @@ export const apiCreateDiscord = notificationsSchema
 
 export const apiUpdateDiscord = apiCreateDiscord.partial().extend({
 	notificationId: z.string().min(1),
-	guilderiaId: z.string().min(1),
+	zenthcloudId: z.string().min(1),
 	organizationId: z.string().optional(),
 });
 
@@ -359,9 +359,9 @@ export const apiCreateEmail = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -396,9 +396,9 @@ export const apiCreateResend = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -427,9 +427,9 @@ export const apiCreateGotify = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -463,9 +463,9 @@ export const apiCreateNtfy = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -496,9 +496,9 @@ export const apiCreateMattermost = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -514,9 +514,9 @@ export const apiCreateMattermost = notificationsSchema
 		webhookUrl: true,
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		appDeploy: true,
 		dockerCleanup: true,
 		serverThreshold: true,
@@ -547,9 +547,9 @@ export const apiCreateCustom = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -575,9 +575,9 @@ export const apiCreateLark = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -602,9 +602,9 @@ export const apiCreateTeams = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -629,9 +629,9 @@ export const apiCreatePushover = notificationsSchema
 	.pick({
 		appBuildError: true,
 		databaseBackup: true,
-		guilderiaBackup: true,
+		zenthcloudBackup: true,
 		volumeBackup: true,
-		guilderiaRestart: true,
+		zenthcloudRestart: true,
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
@@ -664,9 +664,9 @@ export const apiUpdatePushover = z.object({
 	expire: z.number().min(1).max(10800).nullish(),
 	appBuildError: z.boolean().optional(),
 	databaseBackup: z.boolean().optional(),
-	guilderiaBackup: z.boolean().optional(),
+	zenthcloudBackup: z.boolean().optional(),
 	volumeBackup: z.boolean().optional(),
-	guilderiaRestart: z.boolean().optional(),
+	zenthcloudRestart: z.boolean().optional(),
 	name: z.string().optional(),
 	appDeploy: z.boolean().optional(),
 	dockerCleanup: z.boolean().optional(),

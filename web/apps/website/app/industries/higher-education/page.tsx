@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 	description:
 		"Give students a safe sandbox to launch coursework apps with deployment software for higher education that IT teams can manage centrally.",
 	alternates: {
-		canonical: "https://guilderia.com/industries/higher-education",
+		canonical: "https://zenthcloud.com/industries/higher-education",
 	},
 };
 
@@ -18,12 +18,12 @@ const data: IndustryPageData = {
 	hero: {
 		title: "Deployment software for higher education so students launch safely",
 		description:
-			"Give students a real deployment experience securely. guilderia provides IT and academic technology teams with a controlled platform for student apps, course projects, and internal teaching tools.",
+			"Give students a real deployment experience securely. zenthcloud provides IT and academic technology teams with a controlled platform for student apps, course projects, and internal teaching tools.",
 	},
 	features: {
 		heading: "Let students ship real apps without creating shadow IT",
 		description:
-			"Students need to deploy, test, and share the apps they've built. In guilderia, higher education institutions get a deployment platform that keeps app publishing inside an environment your teams can control.",
+			"Students need to deploy, test, and share the apps they've built. In zenthcloud, higher education institutions get a deployment platform that keeps app publishing inside an environment your teams can control.",
 		items: [
 			{
 				icon: Box,
@@ -41,13 +41,13 @@ const data: IndustryPageData = {
 				icon: GitBranch,
 				title: "Connect to the tools students already use",
 				description:
-					"guilderia supports Git-based deployment workflows across providers such as GitHub, GitLab, Bitbucket, and Gitea. Students can move from repository to running app without learning a vendor-specific release process.",
+					"zenthcloud supports Git-based deployment workflows across providers such as GitHub, GitLab, Bitbucket, and Gitea. Students can move from repository to running app without learning a vendor-specific release process.",
 			},
 			{
 				icon: Layers,
 				title: "Support full-stack coursework",
 				description:
-					"Deploy frontends, APIs, background services, and databases from the same platform. guilderia supports common databases, including PostgreSQL, MySQL, MongoDB, Redis, and MariaDB.",
+					"Deploy frontends, APIs, background services, and databases from the same platform. zenthcloud supports common databases, including PostgreSQL, MySQL, MongoDB, Redis, and MariaDB.",
 			},
 			{
 				icon: Eye,
@@ -59,14 +59,14 @@ const data: IndustryPageData = {
 				icon: Network,
 				title: "Scale from one course to many departments",
 				description:
-					"Start with a single course sandbox, then expand across labs, bootcamps, research groups, or internal innovation programs. guilderia supports multi-server management and remote servers, and the platform grows with demand.",
+					"Start with a single course sandbox, then expand across labs, bootcamps, research groups, or internal innovation programs. zenthcloud supports multi-server management and remote servers, and the platform grows with demand.",
 			},
 		],
 	},
 	comparison: {
 		heading: "Student app hosting without unmanaged cloud sprawl",
 		description:
-			"Giving every student a separate cloud account creates cost, security, and support problems. guilderia gives institutions a cleaner model: one deployment layer, controlled access, and a familiar developer workflow.",
+			"Giving every student a separate cloud account creates cost, security, and support problems. zenthcloud gives institutions a cleaner model: one deployment layer, controlled access, and a familiar developer workflow.",
 		without: {
 			title: "General cloud accounts",
 			items: [
@@ -78,8 +78,8 @@ const data: IndustryPageData = {
 				"The less control you have, the more of a security risk to your deployment process.",
 			],
 		},
-		withguilderia: {
-			title: "guilderia for higher education",
+		withzenthcloud: {
+			title: "zenthcloud for higher education",
 			items: [
 				"Students deploy inside institution-managed environments.",
 				"Admins can manage projects, users, services, and servers centrally.",
@@ -93,7 +93,7 @@ const data: IndustryPageData = {
 	workflow: {
 		heading: "From coursework repository to live sandbox app",
 		description:
-			"With guilderia, teaching teams turn deployment into part of the learning journey. Students can go from code to a working URL through a repeatable workflow.",
+			"With zenthcloud, teaching teams turn deployment into part of the learning journey. Students can go from code to a working URL through a repeatable workflow.",
 		steps: [
 			{
 				title: "Create the course environment",
@@ -104,7 +104,7 @@ const data: IndustryPageData = {
 			{
 				title: "Connect the repository",
 				description:
-					"Students or instructors connect a Git provider and select the relevant branch. guilderia can trigger deployments through webhooks when changes are pushed.",
+					"Students or instructors connect a Git provider and select the relevant branch. zenthcloud can trigger deployments through webhooks when changes are pushed.",
 				flow: "Select Git provider → Choose repository → Set branch",
 			},
 			{
@@ -116,7 +116,7 @@ const data: IndustryPageData = {
 			{
 				title: "Publish to a controlled URL",
 				description:
-					"Assign a custom or generated domain where students can demo their apps. guilderia includes domain management through the UI, reducing the need for manual reverse proxy configuration.",
+					"Assign a custom or generated domain where students can demo their apps. zenthcloud includes domain management through the UI, reducing the need for manual reverse proxy configuration.",
 				flow: "Add domain → Deploy → Share app URL",
 			},
 		],
@@ -124,12 +124,12 @@ const data: IndustryPageData = {
 	builtFor: {
 		heading: "Built for teaching, governed by IT",
 		paragraphs: [
-			"guilderia helps institutions offer a modern software delivery experience without pushing infrastructure responsibility onto students.",
+			"zenthcloud helps institutions offer a modern software delivery experience without pushing infrastructure responsibility onto students.",
 			"Students can deploy the kinds of projects they're already building: web apps, APIs, database-backed tools, internal prototypes, and capstone projects.",
-			"Administrators can decide whether to use guilderia Cloud's managed control plane or self-host guilderia on university-managed infrastructure.",
+			"Administrators can decide whether to use zenthcloud Cloud's managed control plane or self-host zenthcloud on university-managed infrastructure.",
 		],
 		screenshotAlt:
-			"guilderia dashboard showing a university course project with separate environments for student sandbox, review, and demo",
+			"zenthcloud dashboard showing a university course project with separate environments for student sandbox, review, and demo",
 	},
 	detailRows: [
 		{
@@ -163,9 +163,9 @@ const data: IndustryPageData = {
 		heading: "Deployment software for higher education FAQs",
 		items: [
 			{
-				question: "Can guilderia be used as a student sandbox environment?",
+				question: "Can zenthcloud be used as a student sandbox environment?",
 				answer:
-					"Yes. guilderia can be used to create controlled environments where students deploy coursework apps without needing direct access to underlying servers. Institutions can structure projects and environments around courses, cohorts, or departments.",
+					"Yes. zenthcloud can be used to create controlled environments where students deploy coursework apps without needing direct access to underlying servers. Institutions can structure projects and environments around courses, cohorts, or departments.",
 			},
 			{
 				question: "Can instructors review student apps before they are shared?",
@@ -173,20 +173,20 @@ const data: IndustryPageData = {
 					"Yes. Instructors can use preview and review-style workflows to test changes before they are merged or promoted to a more public environment – useful for group projects, capstones, and assessed coursework.",
 			},
 			{
-				question: "Does guilderia support common student project stacks?",
+				question: "Does zenthcloud support common student project stacks?",
 				answer:
-					"Yes. guilderia supports multiple deployment methods, including Git-based apps, Dockerfiles, and Docker Compose. It also supports common databases used in coursework, including PostgreSQL, MySQL, MongoDB, Redis, and MariaDB.",
+					"Yes. zenthcloud supports multiple deployment methods, including Git-based apps, Dockerfiles, and Docker Compose. It also supports common databases used in coursework, including PostgreSQL, MySQL, MongoDB, Redis, and MariaDB.",
 			},
 			{
-				question: "Can universities connect guilderia to existing identity systems?",
+				question: "Can universities connect zenthcloud to existing identity systems?",
 				answer:
-					"guilderia Enterprise includes single sign-on options through providers such as Auth0, Keycloak, and other OIDC/SAML providers. That makes it easier to fit guilderia into existing institutional access workflows.",
+					"zenthcloud Enterprise includes single sign-on options through providers such as Auth0, Keycloak, and other OIDC/SAML providers. That makes it easier to fit zenthcloud into existing institutional access workflows.",
 			},
 			{
 				question:
-					"Should a university choose guilderia Cloud or self-hosted guilderia?",
+					"Should a university choose zenthcloud Cloud or self-hosted zenthcloud?",
 				answer:
-					"Use guilderia Cloud when you want the guilderia team to manage the control plane while your apps still run on your own servers. Choose self-hosted when your institution wants to run and maintain the full platform internally.",
+					"Use zenthcloud Cloud when you want the zenthcloud team to manage the control plane while your apps still run on your own servers. Choose self-hosted when your institution wants to run and maintain the full platform internally.",
 			},
 		],
 	},

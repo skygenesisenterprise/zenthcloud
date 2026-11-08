@@ -21,8 +21,8 @@ export default function ContactPage() {
 				highlight="your stack"
 				description="Tell us what you are deploying and how you want to run it. Our team will point you to the right edition and help you get started."
 				links={[
-					{ href: "mailto:sales@guilderia.com", label: "sales@guilderia.com" },
-					{ href: "https://docs.guilderia.com", label: "Documentation" },
+					{ href: "mailto:sales@zenthcloud.com", label: "sales@zenthcloud.com" },
+					{ href: "https://docs.zenthcloud.com", label: "Documentation" },
 				]}
 			/>
 
@@ -44,7 +44,7 @@ export default function ContactPage() {
 
 							<div className="mt-8 space-y-4 border-t border-border/40 pt-6">
 								<a
-									href="mailto:sales@guilderia.com"
+									href="mailto:sales@zenthcloud.com"
 									className="flex items-start gap-3 text-base text-muted-foreground transition-colors hover:text-foreground"
 								>
 									<Mail
@@ -53,11 +53,11 @@ export default function ContactPage() {
 									/>
 									<span>
 										<span className="block text-foreground">Sales</span>
-										sales@guilderia.com
+										sales@zenthcloud.com
 									</span>
 								</a>
 								<a
-									href="https://discord.gg/guilderia"
+									href="https://discord.gg/zenthcloud"
 									target="_blank"
 									rel="noreferrer"
 									className="flex items-start gap-3 text-base text-muted-foreground transition-colors hover:text-foreground"

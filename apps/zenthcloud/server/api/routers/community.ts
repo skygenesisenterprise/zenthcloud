@@ -15,7 +15,7 @@ import {
 	trackCommunityRepository,
 	untrackCommunityRepository,
 	updateCommunitySource,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, withPermission } from "@/server/api/trpc";

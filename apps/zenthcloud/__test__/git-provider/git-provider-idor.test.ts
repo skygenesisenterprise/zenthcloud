@@ -14,9 +14,9 @@ const mockDb = vi.hoisted(() => ({
 		},
 	},
 }));
-vi.mock("@guilderia/server/db", () => ({ db: mockDb }));
+vi.mock("@zenthcloud/server/db", () => ({ db: mockDb }));
 
-import { assertGitProviderAccess } from "@guilderia/server/services/git-provider";
+import { assertGitProviderAccess } from "@zenthcloud/server/services/git-provider";
 
 const ORG = "org-1";
 const USER = "user-member";

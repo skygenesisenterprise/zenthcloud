@@ -3,8 +3,8 @@ import {
 	getWebServerSettings,
 	IS_CLOUD,
 	isAdminPresent,
-} from "@guilderia/server";
-import { validateRequest } from "@guilderia/server/lib/auth";
+} from "@zenthcloud/server";
+import { validateRequest } from "@zenthcloud/server/lib/auth";
 import {
 	browserSupportsWebAuthn,
 	startAuthentication,
@@ -749,7 +749,7 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 						) : (
 							<Link
 								className="hover:underline text-muted-foreground"
-								href="https://docs.guilderia.com/docs/core/reset-password"
+								href="https://docs.zenthcloud.com/docs/core/reset-password"
 								target="_blank"
 							>
 								Lost your password?

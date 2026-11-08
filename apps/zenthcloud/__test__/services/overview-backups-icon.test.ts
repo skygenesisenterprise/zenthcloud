@@ -1,7 +1,7 @@
 import {
 	getBackupOverviewIcon,
 	getServiceOverviewIcon,
-} from "@guilderia/server/services/overview";
+} from "@zenthcloud/server/services/overview";
 import { describe, expect, test } from "vitest";
 
 describe("getServiceOverviewIcon", () => {

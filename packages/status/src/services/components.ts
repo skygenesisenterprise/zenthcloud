@@ -1,7 +1,7 @@
 /**
  * Component administration.
  *
- * A component is a *public capability* (Guilderia API, Deployments, ...), not a
+ * A component is a *public capability* (Zenthcloud API, Deployments, ...), not a
  * server: it may aggregate several instances through `parentId`, and a
  * monitoring source may update its observed state without ever touching the
  * public projection directly.

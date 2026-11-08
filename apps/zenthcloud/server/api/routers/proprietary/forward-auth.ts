@@ -12,13 +12,13 @@ import {
 	removeForwardAuthProxy,
 	removeForwardAuthSettings,
 	setForwardAuthSettings,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import {
 	apiDeployForwardAuthOnServer,
 	apiForwardAuthDomainTarget,
 	apiForwardAuthServerTarget,
 	apiSetForwardAuthSettings,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import {
 	createTRPCRouter,

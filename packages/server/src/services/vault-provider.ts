@@ -1,4 +1,4 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateVaultProvider,
 	type apiCreateVaultSecret,
@@ -8,7 +8,7 @@ import {
 	type VaultProviderConfig,
 	vaultProvider,
 	vaultSecret,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import {
 	getVaultCapabilities,
 	getVaultClient,
@@ -18,7 +18,7 @@ import {
 	type VaultProviderType,
 	type VaultSecretRecord,
 	vaultProviderTypes,
-} from "@guilderia/server/utils/vault";
+} from "@zenthcloud/server/utils/vault";
 import { TRPCError } from "@trpc/server";
 import { and, asc, eq } from "drizzle-orm";
 import type { z } from "zod";
@@ -392,7 +392,7 @@ export const findVaultSecretById = async (vaultSecretId: string) => {
 };
 
 /**
- * Secrets Guilderia manages itself, encrypted at rest. They resolve through the
+ * Secrets Zenthcloud manages itself, encrypted at rest. They resolve through the
  * same `${{vault.<provider>.<name>}}` syntax as the provider's own secrets.
  */
 export const listVaultSecretsForProvider = async (vaultProviderId: string) =>

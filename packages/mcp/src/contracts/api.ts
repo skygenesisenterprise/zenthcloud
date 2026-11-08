@@ -1,5 +1,5 @@
 /**
- * Minimal port implemented by the Guilderia API adapter.
+ * Minimal port implemented by the Zenthcloud API adapter.
  *
  * Capabilities depend on this interface rather than on Axios so that they can
  * be tested without a network and so that every call goes through one place
@@ -8,7 +8,7 @@
 
 export interface ApiRequest {
   method: "GET" | "POST";
-  /** API path relative to the Guilderia `/api` prefix, e.g. `/project.all`. */
+  /** API path relative to the Zenthcloud `/api` prefix, e.g. `/project.all`. */
   path: string;
   params?: Record<string, unknown>;
   body?: unknown;

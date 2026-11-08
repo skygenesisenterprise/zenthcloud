@@ -4,7 +4,7 @@ import {
 	execAsyncRemote,
 	findServerById,
 	getRemoteDocker,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { TRPCError } from "@trpc/server";
 import { quote } from "shell-quote";
 import { z } from "zod";

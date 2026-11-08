@@ -126,7 +126,7 @@ function parseChoice<T extends string>(
 }
 
 /**
- * Validates the Guilderia base URL.
+ * Validates the Zenthcloud base URL.
  *
  * Credentials in the URL, a query string or a fragment are rejected: they
  * would leak into logs or change which endpoint is targeted without being
@@ -137,17 +137,17 @@ export function validateAstronCollectionUrl(raw: string): string {
   try {
     url = new URL(raw);
   } catch {
-    throw new Error("Environment variable GUILDERIA_URL must be a valid absolute URL");
+    throw new Error("Environment variable ZENTHCLOUD_URL must be a valid absolute URL");
   }
 
   if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new Error("Environment variable GUILDERIA_URL must use http:// or https://");
+    throw new Error("Environment variable ZENTHCLOUD_URL must use http:// or https://");
   }
   if (url.username || url.password) {
-    throw new Error("Environment variable GUILDERIA_URL must not contain credentials");
+    throw new Error("Environment variable ZENTHCLOUD_URL must not contain credentials");
   }
   if (url.search || url.hash) {
-    throw new Error("Environment variable GUILDERIA_URL must not contain a query string or fragment");
+    throw new Error("Environment variable ZENTHCLOUD_URL must not contain a query string or fragment");
   }
 
   return `${url.origin}${url.pathname}`.replace(/\/+$/, "");
@@ -156,91 +156,91 @@ export function validateAstronCollectionUrl(raw: string): string {
 function validateApiKey(raw: string | undefined): string {
   const value = raw?.trim();
   if (!value) {
-    throw new Error("Environment variable GUILDERIA_API_KEY is not defined");
+    throw new Error("Environment variable ZENTHCLOUD_API_KEY is not defined");
   }
   if (value.length > 4096) {
-    throw new Error("Environment variable GUILDERIA_API_KEY is too long");
+    throw new Error("Environment variable ZENTHCLOUD_API_KEY is too long");
   }
   // Reject control characters explicitly: an API key must be a single printable token.
   // biome-ignore lint/suspicious/noControlCharactersInRegex: intentional control-character validation
   if (/[\s\u0000-\u001f\u007f]/.test(value)) {
-    throw new Error("Environment variable GUILDERIA_API_KEY must not contain whitespace");
+    throw new Error("Environment variable ZENTHCLOUD_API_KEY must not contain whitespace");
   }
   return value;
 }
 
 function loadPolicy(env: NodeJS.ProcessEnv): PolicyConfig {
   const maxAutomaticRisk = parseInteger(
-    "GUILDERIA_MCP_MAX_RISK",
-    env.GUILDERIA_MCP_MAX_RISK,
+    "ZENTHCLOUD_MCP_MAX_RISK",
+    env.ZENTHCLOUD_MCP_MAX_RISK,
     1,
     0,
     3,
   ) as RiskLevel;
 
-  const approvalToken = env.GUILDERIA_MCP_APPROVAL_TOKEN?.trim() || undefined;
+  const approvalToken = env.ZENTHCLOUD_MCP_APPROVAL_TOKEN?.trim() || undefined;
   if (approvalToken !== undefined && approvalToken.length < 16) {
     throw new Error(
-      "Environment variable GUILDERIA_MCP_APPROVAL_TOKEN must be at least 16 characters",
+      "Environment variable ZENTHCLOUD_MCP_APPROVAL_TOKEN must be at least 16 characters",
     );
   }
 
   return {
     maxAutomaticRisk,
-    allowHighRiskWithApproval: parseBoolean(env.GUILDERIA_MCP_ALLOW_HIGH_RISK, true),
-    allowDestructive: parseBoolean(env.GUILDERIA_MCP_ALLOW_DESTRUCTIVE, false),
+    allowHighRiskWithApproval: parseBoolean(env.ZENTHCLOUD_MCP_ALLOW_HIGH_RISK, true),
+    allowDestructive: parseBoolean(env.ZENTHCLOUD_MCP_ALLOW_DESTRUCTIVE, false),
     ...(approvalToken ? { approvalToken } : {}),
-    blockedCapabilities: new Set(parseList(env.GUILDERIA_MCP_BLOCKED_CAPABILITIES)),
+    blockedCapabilities: new Set(parseList(env.ZENTHCLOUD_MCP_BLOCKED_CAPABILITIES)),
   };
 }
 
 function loadLimits(env: NodeJS.ProcessEnv): ExecutionLimits {
   return {
     toolTimeoutMs: parseInteger(
-      "GUILDERIA_MCP_TIMEOUT_MS",
-      env.GUILDERIA_MCP_TIMEOUT_MS,
+      "ZENTHCLOUD_MCP_TIMEOUT_MS",
+      env.ZENTHCLOUD_MCP_TIMEOUT_MS,
       DEFAULT_TIMEOUT_MS,
       1_000,
       MAX_TIMEOUT_MS,
     ),
     maxResultBytes: parseInteger(
-      "GUILDERIA_MCP_MAX_RESULT_BYTES",
-      env.GUILDERIA_MCP_MAX_RESULT_BYTES,
+      "ZENTHCLOUD_MCP_MAX_RESULT_BYTES",
+      env.ZENTHCLOUD_MCP_MAX_RESULT_BYTES,
       DEFAULT_MAX_RESULT_BYTES,
       1_024,
       8 * 1024 * 1024,
     ),
     maxRequestsPerMinute: parseInteger(
-      "GUILDERIA_MCP_RATE_LIMIT",
-      env.GUILDERIA_MCP_RATE_LIMIT,
+      "ZENTHCLOUD_MCP_RATE_LIMIT",
+      env.ZENTHCLOUD_MCP_RATE_LIMIT,
       120,
       1,
       10_000,
     ),
     maxConcurrentRequests: parseInteger(
-      "GUILDERIA_MCP_MAX_CONCURRENCY",
-      env.GUILDERIA_MCP_MAX_CONCURRENCY,
+      "ZENTHCLOUD_MCP_MAX_CONCURRENCY",
+      env.ZENTHCLOUD_MCP_MAX_CONCURRENCY,
       4,
       1,
       64,
     ),
     operationRetentionMs: parseInteger(
-      "GUILDERIA_MCP_OPERATION_RETENTION_MS",
-      env.GUILDERIA_MCP_OPERATION_RETENTION_MS,
+      "ZENTHCLOUD_MCP_OPERATION_RETENTION_MS",
+      env.ZENTHCLOUD_MCP_OPERATION_RETENTION_MS,
       24 * 60 * 60 * 1000,
       60_000,
       30 * 24 * 60 * 60 * 1000,
     ),
     verificationTimeoutMs: parseInteger(
-      "GUILDERIA_MCP_VERIFICATION_TIMEOUT_MS",
-      env.GUILDERIA_MCP_VERIFICATION_TIMEOUT_MS,
+      "ZENTHCLOUD_MCP_VERIFICATION_TIMEOUT_MS",
+      env.ZENTHCLOUD_MCP_VERIFICATION_TIMEOUT_MS,
       10 * 60 * 1000,
       5_000,
       60 * 60 * 1000,
     ),
     verificationIntervalMs: parseInteger(
-      "GUILDERIA_MCP_VERIFICATION_INTERVAL_MS",
-      env.GUILDERIA_MCP_VERIFICATION_INTERVAL_MS,
+      "ZENTHCLOUD_MCP_VERIFICATION_INTERVAL_MS",
+      env.ZENTHCLOUD_MCP_VERIFICATION_INTERVAL_MS,
       5_000,
       500,
       60_000,
@@ -269,55 +269,55 @@ function parseOptionalHttpUrl(name: string, value: string | undefined): string |
 }
 
 function loadHttp(env: NodeJS.ProcessEnv): HttpConfig {
-  const token = env.GUILDERIA_MCP_HTTP_TOKEN?.trim() || undefined;
+  const token = env.ZENTHCLOUD_MCP_HTTP_TOKEN?.trim() || undefined;
   if (token !== undefined && token.length < 16) {
-    throw new Error("Environment variable GUILDERIA_MCP_HTTP_TOKEN must be at least 16 characters");
+    throw new Error("Environment variable ZENTHCLOUD_MCP_HTTP_TOKEN must be at least 16 characters");
   }
 
   return {
     port: parseInteger("MCP_PORT", env.MCP_PORT ?? env.PORT, 3000, 1, 65_535),
-    host: env.GUILDERIA_MCP_HTTP_HOST?.trim() || "127.0.0.1",
+    host: env.ZENTHCLOUD_MCP_HTTP_HOST?.trim() || "127.0.0.1",
     ...(token ? { token } : {}),
-    allowUnauthenticated: parseBoolean(env.GUILDERIA_MCP_HTTP_ALLOW_UNAUTHENTICATED, false),
+    allowUnauthenticated: parseBoolean(env.ZENTHCLOUD_MCP_HTTP_ALLOW_UNAUTHENTICATED, false),
     sessionTtlMs: parseInteger(
-      "GUILDERIA_MCP_HTTP_SESSION_TTL_MS",
-      env.GUILDERIA_MCP_HTTP_SESSION_TTL_MS,
+      "ZENTHCLOUD_MCP_HTTP_SESSION_TTL_MS",
+      env.ZENTHCLOUD_MCP_HTTP_SESSION_TTL_MS,
       30 * 60 * 1000,
       60_000,
       24 * 60 * 60 * 1000,
     ),
     maxSessions: parseInteger(
-      "GUILDERIA_MCP_HTTP_MAX_SESSIONS",
-      env.GUILDERIA_MCP_HTTP_MAX_SESSIONS,
+      "ZENTHCLOUD_MCP_HTTP_MAX_SESSIONS",
+      env.ZENTHCLOUD_MCP_HTTP_MAX_SESSIONS,
       50,
       1,
       1_000,
     ),
     maxBodyBytes: parseInteger(
-      "GUILDERIA_MCP_HTTP_MAX_BODY_BYTES",
-      env.GUILDERIA_MCP_HTTP_MAX_BODY_BYTES,
+      "ZENTHCLOUD_MCP_HTTP_MAX_BODY_BYTES",
+      env.ZENTHCLOUD_MCP_HTTP_MAX_BODY_BYTES,
       1024 * 1024,
       1_024,
       16 * 1024 * 1024,
     ),
-    ...(parseOptionalHttpUrl("GUILDERIA_MCP_PUBLIC_BASE_URL", env.GUILDERIA_MCP_PUBLIC_BASE_URL)
+    ...(parseOptionalHttpUrl("ZENTHCLOUD_MCP_PUBLIC_BASE_URL", env.ZENTHCLOUD_MCP_PUBLIC_BASE_URL)
       ? {
           publicBaseUrl: parseOptionalHttpUrl(
-            "GUILDERIA_MCP_PUBLIC_BASE_URL",
-            env.GUILDERIA_MCP_PUBLIC_BASE_URL,
+            "ZENTHCLOUD_MCP_PUBLIC_BASE_URL",
+            env.ZENTHCLOUD_MCP_PUBLIC_BASE_URL,
           ) as string,
         }
       : {}),
-    ...(parseOptionalHttpUrl("GUILDERIA_MCP_OAUTH_ISSUER", env.GUILDERIA_MCP_OAUTH_ISSUER)
+    ...(parseOptionalHttpUrl("ZENTHCLOUD_MCP_OAUTH_ISSUER", env.ZENTHCLOUD_MCP_OAUTH_ISSUER)
       ? {
           oauthIssuer: parseOptionalHttpUrl(
-            "GUILDERIA_MCP_OAUTH_ISSUER",
-            env.GUILDERIA_MCP_OAUTH_ISSUER,
+            "ZENTHCLOUD_MCP_OAUTH_ISSUER",
+            env.ZENTHCLOUD_MCP_OAUTH_ISSUER,
           ) as string,
         }
       : {}),
-    ...(env.GUILDERIA_MCP_OAUTH_AUDIENCE?.trim() || undefined
-      ? { oauthAudience: (env.GUILDERIA_MCP_OAUTH_AUDIENCE as string).trim() }
+    ...(env.ZENTHCLOUD_MCP_OAUTH_AUDIENCE?.trim() || undefined
+      ? { oauthAudience: (env.ZENTHCLOUD_MCP_OAUTH_AUDIENCE as string).trim() }
       : {}),
   };
 }
@@ -328,9 +328,9 @@ function loadMode(env: NodeJS.ProcessEnv): {
   advanced: AdvancedSelection;
 } {
   const legacySelection: LegacyToolSelection = {
-    ...(env.GUILDERIA_TOOL_PRESET ? { preset: env.GUILDERIA_TOOL_PRESET.trim() } : {}),
-    enabledTags: parseList(env.GUILDERIA_ENABLED_TAGS),
-    disabledTags: parseList(env.GUILDERIA_DISABLED_TAGS),
+    ...(env.ZENTHCLOUD_TOOL_PRESET ? { preset: env.ZENTHCLOUD_TOOL_PRESET.trim() } : {}),
+    enabledTags: parseList(env.ZENTHCLOUD_ENABLED_TAGS),
+    disabledTags: parseList(env.ZENTHCLOUD_DISABLED_TAGS),
   };
 
   const hasLegacySelection =
@@ -338,9 +338,9 @@ function loadMode(env: NodeJS.ProcessEnv): {
     legacySelection.enabledTags.length > 0 ||
     legacySelection.disabledTags.length > 0;
 
-  const explicitMode = env.GUILDERIA_MCP_MODE?.trim();
+  const explicitMode = env.ZENTHCLOUD_MCP_MODE?.trim();
   const mode = explicitMode
-    ? parseChoice("GUILDERIA_MCP_MODE", explicitMode, CATALOG_MODES, "business")
+    ? parseChoice("ZENTHCLOUD_MCP_MODE", explicitMode, CATALOG_MODES, "business")
     : hasLegacySelection
       ? "advanced"
       : "business";
@@ -348,8 +348,8 @@ function loadMode(env: NodeJS.ProcessEnv): {
   // Legacy presets exposed every generated operation, so they keep the `full`
   // profile. An explicit advanced mode defaults to read-only.
   const profile = parseChoice(
-    "GUILDERIA_MCP_ADVANCED_PROFILE",
-    env.GUILDERIA_MCP_ADVANCED_PROFILE,
+    "ZENTHCLOUD_MCP_ADVANCED_PROFILE",
+    env.ZENTHCLOUD_MCP_ADVANCED_PROFILE,
     ADVANCED_PROFILES,
     hasLegacySelection ? "full" : "read-only",
   );
@@ -359,43 +359,43 @@ function loadMode(env: NodeJS.ProcessEnv): {
     legacySelection,
     advanced: {
       profile,
-      enabledTags: parseList(env.GUILDERIA_MCP_ADVANCED_TAGS),
-      disabledTags: parseList(env.GUILDERIA_MCP_ADVANCED_DISABLED_TAGS),
-      excludedOperations: parseList(env.GUILDERIA_MCP_ADVANCED_EXCLUDE),
+      enabledTags: parseList(env.ZENTHCLOUD_MCP_ADVANCED_TAGS),
+      disabledTags: parseList(env.ZENTHCLOUD_MCP_ADVANCED_DISABLED_TAGS),
+      excludedOperations: parseList(env.ZENTHCLOUD_MCP_ADVANCED_EXCLUDE),
     },
   };
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): McpConfig {
-  const rawUrl = env.GUILDERIA_URL;
+  const rawUrl = env.ZENTHCLOUD_URL;
   if (!rawUrl) {
-    throw new Error("Environment variable GUILDERIA_URL is not defined");
+    throw new Error("Environment variable ZENTHCLOUD_URL is not defined");
   }
 
-  const parsedFields = parseList(env.GUILDERIA_REDACT_FIELDS);
+  const parsedFields = parseList(env.ZENTHCLOUD_REDACT_FIELDS);
   const { mode, legacySelection, advanced } = loadMode(env);
 
-  const operationStorePath = env.GUILDERIA_MCP_OPERATION_STORE?.trim();
-  const auditLogPath = env.GUILDERIA_MCP_AUDIT_LOG?.trim();
+  const operationStorePath = env.ZENTHCLOUD_MCP_OPERATION_STORE?.trim();
+  const auditLogPath = env.ZENTHCLOUD_MCP_AUDIT_LOG?.trim();
 
   const config: McpConfig = {
     astronCollectionUrl: validateAstronCollectionUrl(rawUrl),
-    apiKey: validateApiKey(env.GUILDERIA_API_KEY),
-    customHeaders: parseCustomHeaders(env.GUILDERIA_CUSTOM_HEADERS),
+    apiKey: validateApiKey(env.ZENTHCLOUD_API_KEY),
+    customHeaders: parseCustomHeaders(env.ZENTHCLOUD_CUSTOM_HEADERS),
     timeoutMs: parseInteger(
-      "GUILDERIA_TIMEOUT",
-      env.GUILDERIA_TIMEOUT,
+      "ZENTHCLOUD_TIMEOUT",
+      env.ZENTHCLOUD_TIMEOUT,
       DEFAULT_TIMEOUT_MS,
       1_000,
       MAX_TIMEOUT_MS,
     ),
-    retryAttempts: parseInteger("GUILDERIA_RETRY_ATTEMPTS", env.GUILDERIA_RETRY_ATTEMPTS, 2, 0, 5),
-    retryDelayMs: parseInteger("GUILDERIA_RETRY_DELAY", env.GUILDERIA_RETRY_DELAY, 1_000, 100, 30_000),
-    redactEnv: parseBoolean(env.GUILDERIA_REDACT_ENV, true),
+    retryAttempts: parseInteger("ZENTHCLOUD_RETRY_ATTEMPTS", env.ZENTHCLOUD_RETRY_ATTEMPTS, 2, 0, 5),
+    retryDelayMs: parseInteger("ZENTHCLOUD_RETRY_DELAY", env.ZENTHCLOUD_RETRY_DELAY, 1_000, 100, 30_000),
+    redactEnv: parseBoolean(env.ZENTHCLOUD_REDACT_ENV, true),
     redactFields: parsedFields.length > 0 ? parsedFields : DEFAULT_REDACTED_FIELDS,
     environment: parseChoice(
-      "GUILDERIA_MCP_ENVIRONMENT",
-      env.GUILDERIA_MCP_ENVIRONMENT,
+      "ZENTHCLOUD_MCP_ENVIRONMENT",
+      env.ZENTHCLOUD_MCP_ENVIRONMENT,
       ENVIRONMENTS,
       "self",
     ),
@@ -408,8 +408,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): McpConfig {
     ...(operationStorePath ? { operationStorePath } : {}),
     ...(auditLogPath ? { auditLogPath } : {}),
     logLevel: parseChoice(
-      "GUILDERIA_MCP_LOG_LEVEL",
-      env.GUILDERIA_MCP_LOG_LEVEL,
+      "ZENTHCLOUD_MCP_LOG_LEVEL",
+      env.ZENTHCLOUD_MCP_LOG_LEVEL,
       ["error", "warn", "info", "debug"] as const,
       "info",
     ),

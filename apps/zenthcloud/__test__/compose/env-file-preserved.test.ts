@@ -1,10 +1,10 @@
-import { getBuildComposeCommand } from "@guilderia/server/utils/builders/compose";
+import { getBuildComposeCommand } from "@zenthcloud/server/utils/builders/compose";
 import { describe, expect, it, vi } from "vitest";
 
 // Compose now has a `createEnvFile` toggle (default true), mirroring the
-// Application builder's flag: when disabled, Guilderia never writes `.env`,
+// Application builder's flag: when disabled, Zenthcloud never writes `.env`,
 // so a repo-tracked file survives untouched.
-vi.mock("@guilderia/server/utils/docker/domain", () => ({
+vi.mock("@zenthcloud/server/utils/docker/domain", () => ({
 	writeDomainsToCompose: vi.fn().mockResolvedValue(""),
 }));
 
@@ -34,7 +34,7 @@ describe("getBuildComposeCommand createEnvFile toggle", () => {
 		expect(command).not.toContain("base64 -d >");
 	});
 
-	it("createEnvFile: true (default) writes Guilderia's vars", async () => {
+	it("createEnvFile: true (default) writes Zenthcloud's vars", async () => {
 		const command = await getBuildComposeCommand({
 			...baseCompose,
 			createEnvFile: true,

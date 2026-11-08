@@ -1,4 +1,4 @@
-import type { Redirect } from "@guilderia/server/services/redirect";
+import type { Redirect } from "@zenthcloud/server/services/redirect";
 import type { ApplicationNested } from "../builders";
 import {
 	loadOrCreateConfig,

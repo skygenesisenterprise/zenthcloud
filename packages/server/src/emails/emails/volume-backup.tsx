@@ -32,7 +32,7 @@ export type TemplateProps = {
 };
 
 export const VolumeBackupEmail = ({
-	projectName = "guilderia",
+	projectName = "zenthcloud",
 	applicationName = "frontend",
 	volumeName = "app-data",
 	serviceType = "application",
@@ -53,11 +53,11 @@ export const VolumeBackupEmail = ({
 						<Section className="mt-[32px]">
 							<Img
 								src={
-									"https://raw.githubusercontent.com/skygenesisenterprise/guilderia/refs/heads/master/apps/guilderia/logo.png"
+									"https://raw.githubusercontent.com/skygenesisenterprise/zenthcloud/refs/heads/master/apps/zenthcloud/logo.png"
 								}
 								width="100"
 								height="50"
-								alt="Guilderia"
+								alt="Zenthcloud"
 								className="my-0 mx-auto"
 							/>
 						</Section>

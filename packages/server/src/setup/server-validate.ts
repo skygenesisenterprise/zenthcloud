@@ -64,7 +64,7 @@ export const validateBuildpacks = () => `
 `;
 
 export const validateMainDirectory = () => `
-  if [ -d "/etc/guilderia" ]; then
+  if [ -d "/etc/zenthcloud" ]; then
 	echo true
   else
 	echo false
@@ -72,7 +72,7 @@ export const validateMainDirectory = () => `
 `;
 
 export const validateAstronCollectionNetwork = () => `
-  if docker network ls | grep -q 'guilderia-network'; then
+  if docker network ls | grep -q 'zenthcloud-network'; then
 	echo true
   else
 	echo false

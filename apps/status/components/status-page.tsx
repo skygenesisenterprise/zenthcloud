@@ -2,7 +2,7 @@ import type {
 	PublicIncidentDto,
 	PublicMaintenanceDto,
 	PublicPageDto,
-} from "@guilderia/status";
+} from "@zenthcloud/status";
 import { AlertTriangle, CalendarClock, DatabaseZap } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "./empty-state";

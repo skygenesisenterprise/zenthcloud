@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { createEnvFileCommand } from "@guilderia/server/utils/builders/utils";
+import { createEnvFileCommand } from "@zenthcloud/server/utils/builders/utils";
 import { parse } from "dotenv";
 import { afterEach, describe, expect, it } from "vitest";
 

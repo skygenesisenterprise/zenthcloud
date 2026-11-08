@@ -18,13 +18,13 @@ import {
 	stopService,
 	stopServiceRemote,
 	updateLibsqlById,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import {
 	addNewService,
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
-} from "@guilderia/server/services/permission";
-import { assertServiceMoveAllowed } from "@guilderia/server/services/service-move";
+} from "@zenthcloud/server/services/permission";
+import { assertServiceMoveAllowed } from "@zenthcloud/server/services/service-move";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";

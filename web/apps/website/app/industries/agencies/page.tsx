@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 	description:
 		"Run client apps, previews, and production releases from one deployment agency platform that supports Git, Docker, domains, logs, and databases.",
 	alternates: {
-		canonical: "https://guilderia.com/industries/agencies",
+		canonical: "https://zenthcloud.com/industries/agencies",
 	},
 };
 
@@ -25,12 +25,12 @@ const data: IndustryPageData = {
 	hero: {
 		title: "A deployment agency platform for faster client launches",
 		description:
-			"Launch client websites, SaaS products, internal tools, vibe-coded software, and campaign apps without rebuilding the deployment process every time. guilderia gives agencies a repeatable release platform with previews, domains, logs, databases, and client-ready governance.",
+			"Launch client websites, SaaS products, internal tools, vibe-coded software, and campaign apps without rebuilding the deployment process every time. zenthcloud gives agencies a repeatable release platform with previews, domains, logs, databases, and client-ready governance.",
 	},
 	features: {
 		heading: "Ship client projects faster without messy hosting handoffs",
 		description:
-			"Agencies need a deployment model that works across clients, stacks, domains, and production requirements. guilderia helps teams move from repo to live app with less manual setup and more visibility after launch.",
+			"Agencies need a deployment model that works across clients, stacks, domains, and production requirements. zenthcloud helps teams move from repo to live app with less manual setup and more visibility after launch.",
 		items: [
 			{
 				icon: GitBranch,
@@ -60,7 +60,7 @@ const data: IndustryPageData = {
 				icon: Bot,
 				title: "Enable AI workflows with the MCP",
 				description:
-					"Connect your AI agent to guilderia with the MCP, so team members and clients can manage deployments with prompts, or even autonomously.",
+					"Connect your AI agent to zenthcloud with the MCP, so team members and clients can manage deployments with prompts, or even autonomously.",
 			},
 			{
 				icon: Paintbrush,
@@ -73,7 +73,7 @@ const data: IndustryPageData = {
 	comparison: {
 		heading: "Client deployments without a patchwork of hosting accounts",
 		description:
-			"guilderia gives your software building and deployment agency a single operating model to build, review, launch, and support client apps.",
+			"zenthcloud gives your software building and deployment agency a single operating model to build, review, launch, and support client apps.",
 		without: {
 			title: "Traditional agency deployment tools",
 			items: [
@@ -84,8 +84,8 @@ const data: IndustryPageData = {
 				"Handoffs can create confusion over access and ownership.",
 			],
 		},
-		withguilderia: {
-			title: "guilderia for agencies",
+		withzenthcloud: {
+			title: "zenthcloud for agencies",
 			items: [
 				"One platform for client projects, environments, services, and servers.",
 				"Git and Docker workflows support a wide range of project stacks.",
@@ -98,7 +98,7 @@ const data: IndustryPageData = {
 	workflow: {
 		heading: "From client repository to production launch",
 		description:
-			"guilderia helps agencies turn deployment into a repeatable client delivery process. New projects can follow the same workflow, even when the technology stack changes.",
+			"zenthcloud helps agencies turn deployment into a repeatable client delivery process. New projects can follow the same workflow, even when the technology stack changes.",
 		steps: [
 			{
 				title: "Create the client project",
@@ -109,7 +109,7 @@ const data: IndustryPageData = {
 			{
 				title: "Connect the repository",
 				description:
-					"Connect the client app from Git or configure a Docker-based deployment. guilderia can trigger releases from webhooks when changes are pushed.",
+					"Connect the client app from Git or configure a Docker-based deployment. zenthcloud can trigger releases from webhooks when changes are pushed.",
 				flow: "Select provider → Choose repository → Set branch",
 			},
 			{
@@ -129,12 +129,12 @@ const data: IndustryPageData = {
 	builtFor: {
 		heading: "Built for agencies managing many client apps",
 		paragraphs: [
-			"guilderia gives agencies a cleaner way to manage multiple apps, clients, and release workflows.",
+			"zenthcloud gives agencies a cleaner way to manage multiple apps, clients, and release workflows.",
 			"Teams can deploy from common Git providers, use Docker Compose for more advanced projects, and keep client services visible after the initial launch.",
 			"For larger agencies, Enterprise features add SSO, custom roles, audit logs, and whitelabeling, making it easier to give internal teams and client stakeholders the right level of access without handing over raw server credentials.",
 		],
 		screenshotAlt:
-			"guilderia dashboard showing an agency project with web, API, database and worker services, and an environment selector with production and staging",
+			"zenthcloud dashboard showing an agency project with web, API, database and worker services, and an environment selector with production and staging",
 	},
 	detailRows: [
 		{
@@ -172,10 +172,10 @@ const data: IndustryPageData = {
 			{
 				question: "What is a deployment agency platform?",
 				answer:
-					"A deployment agency platform is software that helps agencies deploy, manage, and support client applications across multiple projects. guilderia gives teams one place for apps, environments, domains, logs, databases, and deployments.",
+					"A deployment agency platform is software that helps agencies deploy, manage, and support client applications across multiple projects. zenthcloud gives teams one place for apps, environments, domains, logs, databases, and deployments.",
 			},
 			{
-				question: "Can guilderia handle multiple client projects?",
+				question: "Can zenthcloud handle multiple client projects?",
 				answer:
 					"Yes. Agencies can organize projects around clients, products, campaigns, or retainers. Each service can have its own environment variables, domains, deployments, logs, monitoring, and backups where relevant.",
 			},
@@ -185,14 +185,14 @@ const data: IndustryPageData = {
 					"Yes. Preview deployments help agencies share live versions of changes before they are merged or released. This makes signoff easier for websites, SaaS products, and custom apps.",
 			},
 			{
-				question: "Does guilderia support whitelabeling?",
+				question: "Does zenthcloud support whitelabeling?",
 				answer:
-					"guilderia Enterprise includes whitelabeling for self-hosted setups, along with SSO, custom roles, and audit logs.",
+					"zenthcloud Enterprise includes whitelabeling for self-hosted setups, along with SSO, custom roles, and audit logs.",
 			},
 			{
 				question: "Can agencies deploy Docker Compose apps?",
 				answer:
-					"Yes. guilderia supports Docker Compose for multi-service applications, which is useful when client projects include APIs, databases, workers, queues, or supporting services.",
+					"Yes. zenthcloud supports Docker Compose for multi-service applications, which is useful when client projects include APIs, databases, workers, queues, or supporting services.",
 			},
 		],
 	},

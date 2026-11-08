@@ -1,9 +1,9 @@
-import { db } from "@guilderia/server/db";
-import { dnsProvider, dnsZone } from "@guilderia/server/db/schema";
+import { db } from "@zenthcloud/server/db";
+import { dnsProvider, dnsZone } from "@zenthcloud/server/db/schema";
 import {
 	deriveInternalDnsZone,
 	getDomainRequirements,
-} from "@guilderia/server/utils/domain-scope";
+} from "@zenthcloud/server/utils/domain-scope";
 import { and, eq } from "drizzle-orm";
 import { createDnsProviderRecord } from "./dns-provider";
 import { findServerById } from "./server";
@@ -38,7 +38,7 @@ export const findInternalDnsProvider = async (organizationId: string) =>
 	db.query.dnsProvider.findFirst({
 		where: and(
 			eq(dnsProvider.organizationId, organizationId),
-			eq(dnsProvider.providerType, "guilderia-internal"),
+			eq(dnsProvider.providerType, "zenthcloud-internal"),
 		),
 	});
 
@@ -74,8 +74,8 @@ export const ensureInternalDnsZone = async (
 };
 
 /**
- * Registers a LAN/internal domain in the organization's Guilderia Internal DNS
- * provider so `gitlab.guilderia.lan` or `gitlab.guilderia.local` resolves without
+ * Registers a LAN/internal domain in the organization's Zenthcloud Internal DNS
+ * provider so `gitlab.zenthcloud.lan` or `gitlab.zenthcloud.local` resolves without
  * any external DNS. Public and localhost domains are ignored. The provider is
  * never created implicitly: when none exists the caller receives `no-provider`
  * and can point the user at the DNS settings page.
@@ -98,7 +98,7 @@ export const syncDomainToInternalDns = async ({
 	if (!provider) {
 		return {
 			status: "no-provider",
-			message: "No Guilderia Internal DNS provider is configured",
+			message: "No Zenthcloud Internal DNS provider is configured",
 		};
 	}
 

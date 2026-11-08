@@ -1,4 +1,4 @@
-import type { namecheapDnsConfigSchema } from "@guilderia/server/db/schema";
+import type { namecheapDnsConfigSchema } from "@zenthcloud/server/db/schema";
 import { XMLParser } from "fast-xml-parser";
 import type { z } from "zod";
 import { createDnsHttp, stripTrailingDot, toSubdomain } from "../http";

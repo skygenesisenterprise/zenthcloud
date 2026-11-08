@@ -8,11 +8,11 @@ BUILDER=$(docker buildx create --use)
 if [ "$BUILD_TYPE" == "canary" ]; then
     TAG="canary"
     echo PUSHING CANARY
-        docker buildx build --platform linux/amd64,linux/arm64 --pull --rm -t "skygenesisenterprise/guilderia:${TAG}" -f 'Dockerfile' --push .
+        docker buildx build --platform linux/amd64,linux/arm64 --pull --rm -t "skygenesisenterprise/zenthcloud:${TAG}" -f 'Dockerfile' --push .
 else
     echo  "PUSHING PRODUCTION"
     VERSION=$(node -p "require('./package.json').version")
-    docker buildx build --platform linux/amd64,linux/arm64 --pull --rm -t "skygenesisenterprise/guilderia:latest" -t "skygenesisenterprise/guilderia:${VERSION}" -f 'Dockerfile' --push .
+    docker buildx build --platform linux/amd64,linux/arm64 --pull --rm -t "skygenesisenterprise/zenthcloud:latest" -t "skygenesisenterprise/zenthcloud:${VERSION}" -f 'Dockerfile' --push .
 fi
 
 docker buildx rm $BUILDER

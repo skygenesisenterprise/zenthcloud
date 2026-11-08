@@ -11,7 +11,7 @@ import type {
 	CommunityContributionKind,
 	CommunityEventType,
 	CommunityHealthProfile,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 
 /* -------------------------------------------------------------------------- */
 /* Attention rules                                                            */

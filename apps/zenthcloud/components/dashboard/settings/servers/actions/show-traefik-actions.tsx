@@ -99,7 +99,7 @@ export const ShowTraefikActions = ({ serverId }: Props) => {
 						<span>Reload</span>
 					</DropdownMenuItem>
 					<ShowModalLogs
-						appName="guilderia-traefik"
+						appName="zenthcloud-traefik"
 						serverId={serverId}
 						type="standalone"
 					>

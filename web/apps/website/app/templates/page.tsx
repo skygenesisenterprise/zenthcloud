@@ -6,16 +6,16 @@ import { TemplateExplorer } from "./components/TemplateExplorer";
 export const metadata: Metadata = {
 	title: "Open Source Templates - One-Click Self-Hosted Deployments",
 	description:
-		"Browse 500+ open source templates ready to deploy on guilderia with one click. Self-host databases, CMS, analytics, AI tools, and more with Docker Compose.",
+		"Browse 500+ open source templates ready to deploy on zenthcloud with one click. Self-host databases, CMS, analytics, AI tools, and more with Docker Compose.",
 	alternates: {
-		canonical: "https://guilderia.com/templates",
+		canonical: "https://zenthcloud.com/templates",
 	},
 	openGraph: {
-		title: "guilderia Open Source Templates",
+		title: "zenthcloud Open Source Templates",
 		description:
-			"Browse 500+ open source templates ready to deploy on guilderia with one click.",
+			"Browse 500+ open source templates ready to deploy on zenthcloud with one click.",
 		type: "website",
-		url: "https://guilderia.com/templates",
+		url: "https://zenthcloud.com/templates",
 	},
 };
 

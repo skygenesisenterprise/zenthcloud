@@ -23,7 +23,7 @@ export default function NotFound() {
 				}
 				links={[
 					{ href: "/templates", label: "Templates" },
-					{ href: "https://docs.guilderia.com", label: "Documentation", external: true },
+					{ href: "https://docs.zenthcloud.com", label: "Documentation", external: true },
 					{ href: "/contact", label: "Contact" },
 				]}
 			/>

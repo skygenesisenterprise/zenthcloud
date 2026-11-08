@@ -1,4 +1,4 @@
-import { syncOrganizationCommunity } from "@guilderia/server/services/community";
+import { syncOrganizationCommunity } from "@zenthcloud/server/services/community";
 import { scheduleJob, scheduledJobs } from "node-schedule";
 
 /**

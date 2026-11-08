@@ -1,6 +1,6 @@
-import { logger } from "@guilderia/server/lib/logger";
-import type { BackupSchedule } from "@guilderia/server/services/backup";
-import type { Destination } from "@guilderia/server/services/destination";
+import { logger } from "@zenthcloud/server/lib/logger";
+import type { BackupSchedule } from "@zenthcloud/server/services/backup";
+import type { Destination } from "@zenthcloud/server/services/destination";
 import { scheduledJobs, scheduleJob } from "node-schedule";
 import { quote } from "shell-quote";
 import { keepLatestNBackups } from ".";

@@ -83,8 +83,8 @@ export const AddCompose = ({ environmentId, projectName }: Props) => {
 
 	const hasServers = servers && servers.length > 0;
 	// Show dropdown logic based on cloud environment
-	// Cloud: show only if there are remote servers (no guilderia option)
-	// Self-hosted: show only if there are remote servers (guilderia is default, hide if no remote servers)
+	// Cloud: show only if there are remote servers (no zenthcloud option)
+	// Self-hosted: show only if there are remote servers (zenthcloud is default, hide if no remote servers)
 	const shouldShowServerDropdown = hasServers;
 
 	const form = useForm<AddCompose>({
@@ -108,7 +108,7 @@ export const AddCompose = ({ environmentId, projectName }: Props) => {
 			environmentId,
 			composeType: data.composeType,
 			appName: data.appName,
-			serverId: data.serverId === "guilderia" ? undefined : data.serverId,
+			serverId: data.serverId === "zenthcloud" ? undefined : data.serverId,
 		})
 			.then(async () => {
 				toast.success("Compose Created");
@@ -206,22 +206,22 @@ export const AddCompose = ({ environmentId, projectName }: Props) => {
 										<Select
 											onValueChange={field.onChange}
 											defaultValue={
-												field.value || (showLocalOption ? "guilderia" : undefined)
+												field.value || (showLocalOption ? "zenthcloud" : undefined)
 											}
 										>
 											<SelectTrigger>
 												<SelectValue
 													placeholder={
-														showLocalOption ? "guilderia" : "Select a Server"
+														showLocalOption ? "zenthcloud" : "Select a Server"
 													}
 												/>
 											</SelectTrigger>
 											<SelectContent>
 												<SelectGroup>
 													{showLocalOption && (
-														<SelectItem value="guilderia">
+														<SelectItem value="zenthcloud">
 															<span className="flex items-center gap-2 justify-between w-full">
-																<span>guilderia</span>
+																<span>zenthcloud</span>
 																<span className="text-muted-foreground text-xs self-center">
 																	Default
 																</span>

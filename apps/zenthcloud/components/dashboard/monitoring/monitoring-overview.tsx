@@ -1,4 +1,4 @@
-import { createMetricUsage } from "@guilderia/server/monitoring/status";
+import { createMetricUsage } from "@zenthcloud/server/monitoring/status";
 import {
 	Check,
 	ChevronDown,
@@ -415,8 +415,8 @@ export function MonitoringOverview() {
 				)}
 
 				{workspace.type === "global" && (
-					<section aria-label="Default guilderia instance monitoring">
-						<ContainerFreeMonitoring appName="guilderia" />
+					<section aria-label="Default zenthcloud instance monitoring">
+						<ContainerFreeMonitoring appName="zenthcloud" />
 					</section>
 				)}
 

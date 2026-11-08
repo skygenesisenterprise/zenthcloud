@@ -25,7 +25,7 @@ export const AstronCollectionBackupEmail = ({
 	date = "2023-05-01T00:00:00.000Z",
 	backupSize,
 }: TemplateProps) => {
-	const previewText = `Guilderia instance backup was ${type === "success" ? "successful ✅" : "failed ❌"}`;
+	const previewText = `Zenthcloud instance backup was ${type === "success" ? "successful ✅" : "failed ❌"}`;
 
 	return (
 		<Html>
@@ -37,22 +37,22 @@ export const AstronCollectionBackupEmail = ({
 						<Section className="mt-[32px]">
 							<Img
 								src={
-									"https://raw.githubusercontent.com/skygenesisenterprise/guilderia/refs/heads/master/apps/guilderia/logo.png"
+									"https://raw.githubusercontent.com/skygenesisenterprise/zenthcloud/refs/heads/master/apps/zenthcloud/logo.png"
 								}
 								width="100"
 								height="50"
-								alt="Guilderia"
+								alt="Zenthcloud"
 								className="my-0 mx-auto"
 							/>
 						</Section>
 						<Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
-							Guilderia Instance Backup
+							Zenthcloud Instance Backup
 						</Heading>
 						<Text className="text-black text-[14px] leading-[24px]">
 							Hello,
 						</Text>
 						<Text className="text-black text-[14px] leading-[24px]">
-							Your Guilderia instance backup was{" "}
+							Your Zenthcloud instance backup was{" "}
 							{type === "success"
 								? "successful ✅"
 								: "failed. Please check the error message below. ❌"}
@@ -61,10 +61,10 @@ export const AstronCollectionBackupEmail = ({
 						<Section className="flex text-black text-[14px] leading-[24px] bg-[#F4F4F5] rounded-lg p-2">
 							<Text className="!leading-3 font-bold">Details: </Text>
 							<Text className="!leading-3">
-								Backup Type: <strong>Complete Guilderia Instance</strong>
+								Backup Type: <strong>Complete Zenthcloud Instance</strong>
 							</Text>
 							<Text className="!leading-3">
-								Content: <strong>/etc/guilderia + PostgreSQL Database</strong>
+								Content: <strong>/etc/zenthcloud + PostgreSQL Database</strong>
 							</Text>
 							{backupSize && (
 								<Text className="!leading-3">

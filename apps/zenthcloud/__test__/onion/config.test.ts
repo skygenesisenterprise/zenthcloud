@@ -8,7 +8,7 @@ import {
 	renderTorrc,
 	sanitizeOnionError,
 	toContainerSafeName,
-} from "@guilderia/server/utils/onion/config";
+} from "@zenthcloud/server/utils/onion/config";
 import { describe, expect, it } from "vitest";
 
 describe("renderTorrc", () => {
@@ -156,10 +156,10 @@ describe("getOnionServicePaths", () => {
 
 	it("derives a docker-safe container name", () => {
 		expect(getOnionServicePaths("abc123").containerName).toBe(
-			"guilderia-onion-abc123",
+			"zenthcloud-onion-abc123",
 		);
-		expect(toContainerSafeName("guilderia-onion-a b/c")).toBe(
-			"guilderia-onion-a-b-c",
+		expect(toContainerSafeName("zenthcloud-onion-a b/c")).toBe(
+			"zenthcloud-onion-a-b-c",
 		);
 		expect(toContainerSafeName("-leading")).toBe("n-leading");
 	});

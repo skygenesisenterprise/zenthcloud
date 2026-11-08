@@ -1,5 +1,5 @@
-import { IS_CLOUD, shouldDeploy } from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+import { IS_CLOUD, shouldDeploy } from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import { eq } from "drizzle-orm";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { compose } from "@/server/db/schema";

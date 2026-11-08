@@ -4,13 +4,13 @@ import {
 	findServerById,
 	isManagedCloud,
 	validateRequest,
-} from "@guilderia/server";
-import { encodeBase64 } from "@guilderia/server/utils/docker/utils";
+} from "@zenthcloud/server";
+import { encodeBase64 } from "@zenthcloud/server/utils/docker/utils";
 import {
 	createRedactingLineBuffer,
 	safeErrorMessage,
-} from "@guilderia/server/utils/security/redact";
-import { readValidDirectory } from "@guilderia/server/wss/utils";
+} from "@zenthcloud/server/utils/security/redact";
+import { readValidDirectory } from "@zenthcloud/server/wss/utils";
 import { Client, type ClientChannel } from "ssh2";
 import { WebSocketServer } from "ws";
 import { createCleanup } from "./cleanup";

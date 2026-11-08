@@ -1,4 +1,4 @@
-import type { gcpVaultConfigSchema } from "@guilderia/server/db/schema";
+import type { gcpVaultConfigSchema } from "@zenthcloud/server/db/schema";
 import { createSign } from "node:crypto";
 import type { z } from "zod";
 import { type VaultClient, vaultFetch } from "./types";

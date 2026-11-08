@@ -3,7 +3,7 @@ import { join } from "node:path";
 import {
 	execAsync,
 	execAsyncRemote,
-} from "@guilderia/server/utils/process/execAsync";
+} from "@zenthcloud/server/utils/process/execAsync";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "../db";
@@ -13,7 +13,7 @@ import {
 	initializeTraefikService,
 	type TraefikOptions,
 } from "../setup/traefik-setup";
-import { getAstronCollectionImageTag, GUILDERIA_IMAGE, toReleaseTag } from "./update";
+import { getAstronCollectionImageTag, ZENTHCLOUD_IMAGE, toReleaseTag } from "./update";
 
 // The update detection/status model lives in `./update`; re-exported here so the
 // historical import path keeps working for the API, SDK and desktop clients.
@@ -28,8 +28,8 @@ export {
 	type IUpdateStatusData,
 	invalidateUpdateCache,
 	isUpdateInstallable,
-	GUILDERIA_GITHUB_REPOSITORY,
-	GUILDERIA_IMAGE,
+	ZENTHCLOUD_GITHUB_REPOSITORY,
+	ZENTHCLOUD_IMAGE,
 	normalizeVersion,
 	REQUIRED_RELEASE_ASSETS,
 	toReleaseTag,
@@ -190,7 +190,7 @@ export const reloadDockerResource = async (
 	const resourceType = await getDockerResourceType(resourceName, serverId);
 	let command = "";
 	if (resourceType === "service") {
-		if (resourceName === "guilderia") {
+		if (resourceName === "zenthcloud") {
 			const currentImageTag = getAstronCollectionImageTag();
 			// `canary` and `feature` installations stay on their channel, every
 			// other one moves to the released version when one is given.
@@ -199,7 +199,7 @@ export const reloadDockerResource = async (
 					? currentImageTag
 					: toReleaseTag(version || currentImageTag);
 
-			command = `docker service update --force --image ${GUILDERIA_IMAGE}:${imageTag} ${resourceName}`;
+			command = `docker service update --force --image ${ZENTHCLOUD_IMAGE}:${imageTag} ${resourceName}`;
 		} else {
 			command = `docker service update --force ${resourceName}`;
 		}
@@ -318,7 +318,7 @@ export const checkPortInUse = async (
 ): Promise<{ isInUse: boolean; conflictingContainer?: string }> => {
 	try {
 		// Check if port is in use by a Docker container
-		const dockerCommand = `docker ps -a --format '{{.Names}}' | grep -v '^guilderia-traefik$' | while read name; do docker port "$name" 2>/dev/null | grep -q ':${port}' && echo "$name" && break; done || true`;
+		const dockerCommand = `docker ps -a --format '{{.Names}}' | grep -v '^zenthcloud-traefik$' | while read name; do docker port "$name" 2>/dev/null | grep -q ':${port}' && echo "$name" && break; done || true`;
 		const { stdout: dockerOut } = serverId
 			? await execAsyncRemote(serverId, dockerCommand)
 			: await execAsync(dockerCommand);
@@ -333,7 +333,7 @@ export const checkPortInUse = async (
 		}
 
 		// Check if port is in use by a host-level service (non-Docker)
-		// Guilderia runs inside a container, so we spawn an ephemeral container
+		// Zenthcloud runs inside a container, so we spawn an ephemeral container
 		// with --net=host to share the host's network stack and use nc -z to
 		// check if something is listening on the port
 		const hostCommand = `docker run --rm --net=host busybox sh -c 'nc -z 0.0.0.0 ${port} 2>/dev/null && echo in_use || echo free'`;
@@ -357,7 +357,7 @@ export const checkPortInUse = async (
 
 export const writeTraefikSetup = async (input: TraefikOptions) => {
 	const resourceType = await getDockerResourceType(
-		"guilderia-traefik",
+		"zenthcloud-traefik",
 		input.serverId,
 	);
 
@@ -395,7 +395,7 @@ export const reconnectServicesToTraefik = async (serverId?: string) => {
 	let commands = "";
 
 	for (const compose of composeResult) {
-		commands += `docker network connect ${compose.appName} $(docker ps --filter "name=guilderia-traefik" -q) >/dev/null 2>&1\n`;
+		commands += `docker network connect ${compose.appName} $(docker ps --filter "name=zenthcloud-traefik" -q) >/dev/null 2>&1\n`;
 	}
 
 	if (serverId) {

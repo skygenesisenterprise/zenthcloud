@@ -8,8 +8,8 @@ import {
 	IS_CLOUD,
 	removePreviewDeployment,
 	shouldDeploy,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import { and, eq } from "drizzle-orm";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { applications, compose, github } from "@/server/db/schema";

@@ -1,7 +1,7 @@
 import { RootProvider } from "fumadocs-ui/provider/next";
 import "./global.css";
 import SearchDialog from "@/components/SearchDialog";
-import { guilderiaTraffic } from "@/components/guilderiaTraffic";
+import { zenthcloudTraffic } from "@/components/zenthcloudTraffic";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
@@ -11,25 +11,25 @@ const inter = Inter({
 
 export const metadata: Metadata = {
 	metadataBase: new URL(
-		process.env.NEXT_PUBLIC_APP_URL || "https://docs.guilderia.com",
+		process.env.NEXT_PUBLIC_APP_URL || "https://docs.zenthcloud.com",
 	),
 	title: {
-		default: "guilderia Documentation",
-		template: "%s | guilderia Documentation",
+		default: "zenthcloud Documentation",
+		template: "%s | zenthcloud Documentation",
 	},
 	description:
 		"Open Source Alternative to Vercel, Netlify and Heroku. Deploy your applications with ease.",
 	keywords: [
-		"guilderia",
+		"zenthcloud",
 		"deployment",
 		"docker",
 		"hosting",
 		"devops",
 		"open source",
 	],
-	authors: [{ name: "guilderia Team" }],
+	authors: [{ name: "zenthcloud Team" }],
 	openGraph: {
-		title: "guilderia Documentation",
+		title: "zenthcloud Documentation",
 		description: "Open Source Alternative to Vercel, Netlify and Heroku",
 		type: "website",
 	},
@@ -40,7 +40,7 @@ export default function Layout({ children }: LayoutProps<"/">) {
 		<html lang="en" className={inter.className} suppressHydrationWarning>
 			<body className="flex flex-col min-h-screen">
 				{/* Traffic Manager instrumentation (no-op without the env vars). */}
-				<guilderiaTraffic />
+				<zenthcloudTraffic />
 				<RootProvider
 					search={{
 						SearchDialog,

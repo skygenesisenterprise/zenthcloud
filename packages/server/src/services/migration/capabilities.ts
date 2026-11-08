@@ -1,11 +1,11 @@
 import type { CapabilityMatrix } from "./types";
 
 /**
- * Capabilities really present in Guilderia.
+ * Capabilities really present in Zenthcloud.
  * The engine maps to these native concepts only; it never invents a second
  * permanent Dokploy-specific business model.
  */
-export const GUILDERIA_DESTINATION_CAPABILITIES: CapabilityMatrix = {
+export const ZENTHCLOUD_DESTINATION_CAPABILITIES: CapabilityMatrix = {
 	capabilities: {
 		"project.create": true,
 		"environment.create": true,
@@ -38,7 +38,7 @@ export const GUILDERIA_DESTINATION_CAPABILITIES: CapabilityMatrix = {
 	supportedVersions: ["dokploy: any version observable via Docker metadata"],
 };
 
-export const GUILDERIA_SOURCE_CAPABILITIES: CapabilityMatrix = {
+export const ZENTHCLOUD_SOURCE_CAPABILITIES: CapabilityMatrix = {
 	capabilities: {
 		"project.export": true,
 		"environment.export": true,
@@ -58,7 +58,7 @@ export const GUILDERIA_SOURCE_CAPABILITIES: CapabilityMatrix = {
 };
 
 /**
- * Guilderia -> Dokploy export adapter declares what the target Dokploy
+ * Zenthcloud -> Dokploy export adapter declares what the target Dokploy
  * version really supports. Unknown versions fail closed as to-verify.
  */
 export const DOKPLOY_DESTINATION_CAPABILITIES: CapabilityMatrix = {
@@ -80,7 +80,7 @@ export const DOKPLOY_DESTINATION_CAPABILITIES: CapabilityMatrix = {
 	limits: [
 		"Target Dokploy version must be declared; undeclared versions are to-verify.",
 		"Resources without a faithful Dokploy equivalent are flagged, never silently approximated.",
-		"Guilderia installation is preserved until explicit end-of-migration confirmation.",
+		"Zenthcloud installation is preserved until explicit end-of-migration confirmation.",
 		"Configuration, data transfer and operational cutover are validated separately.",
 	],
 	supportedVersions: ["dokploy: versions declared by the destination adapter at runtime"],

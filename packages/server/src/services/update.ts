@@ -1,7 +1,7 @@
 import semver from "semver";
 
 /**
- * Guilderia update detection and availability.
+ * Zenthcloud update detection and availability.
  *
  * A GitHub release is *not* automatically an installable update: a release can
  * exist while the artifacts the installer needs are still being published. This
@@ -15,17 +15,17 @@ import semver from "semver";
  * directly, it reads the status computed here.
  */
 
-/** Repository publishing the Guilderia releases. */
-export const GUILDERIA_GITHUB_REPOSITORY = "skygenesisenterprise/guilderia";
+/** Repository publishing the Zenthcloud releases. */
+export const ZENTHCLOUD_GITHUB_REPOSITORY = "skygenesisenterprise/zenthcloud";
 
 /**
  * Self-hosted image published by .github/workflows/docker-publish.yml. Releases
  * are consumed from the GitHub Releases API, images from the GitHub Container
  * Registry, so no Docker Hub credential is involved anymore.
  */
-export const GUILDERIA_IMAGE = `ghcr.io/${GUILDERIA_GITHUB_REPOSITORY}`;
+export const ZENTHCLOUD_IMAGE = `ghcr.io/${ZENTHCLOUD_GITHUB_REPOSITORY}`;
 
-/** Suffix docker-publish.yml appends to the self-hosted image: `v1.2.3-app` publishes `ghcr.io/skygenesisenterprise/guilderia:v1.2.3-app`. */
+/** Suffix docker-publish.yml appends to the self-hosted image: `v1.2.3-app` publishes `ghcr.io/skygenesisenterprise/zenthcloud:v1.2.3-app`. */
 const APP_TAG_SUFFIX = "-app";
 
 /** Matches the self-hosted release tags only, so the other images of the publish matrix (`-cloud`, `-mcp`, ...) are ignored. */
@@ -34,11 +34,11 @@ const SELF_HOSTED_RELEASE_REGEX = /^v?(\d+)\.(\d+)\.(\d+)-app$/;
 /** GitHub allows 60 anonymous requests per hour and IP, the dashboard polls this every few minutes. */
 const RELEASES_CACHE_TTL_MS = 15 * 60 * 1000;
 const RELEASES_REQUEST_TIMEOUT_MS = 10_000;
-const RELEASES_URL = `https://api.github.com/repos/${GUILDERIA_GITHUB_REPOSITORY}/releases?per_page=100`;
+const RELEASES_URL = `https://api.github.com/repos/${ZENTHCLOUD_GITHUB_REPOSITORY}/releases?per_page=100`;
 
 /**
  * Assets an installation needs to be able to run. `docker-publish.yml` copies
- * `install.sh` to `install-guilderia.sh` and publishes both; `install.sh` is the
+ * `install.sh` to `install-zenthcloud.sh` and publishes both; `install.sh` is the
  * canonical one the documentation points to, so it is what we require.
  */
 export const REQUIRED_RELEASE_ASSETS = ["install.sh"] as const;
@@ -99,7 +99,7 @@ export interface IUpdateStatusData extends IUpdateData {
 	checkedAt: string;
 }
 
-/** Returns current Guilderia docker image tag or `latest` by default. */
+/** Returns current Zenthcloud docker image tag or `latest` by default. */
 export const getAstronCollectionImageTag = () => {
 	return process.env.RELEASE_TAG || "latest";
 };
@@ -280,7 +280,7 @@ const fetchSelfHostedReleases = async (): Promise<SelfHostedRelease[]> => {
 			headers: {
 				Accept: "application/vnd.github+json",
 				"X-GitHub-Api-Version": "2022-11-28",
-				"User-Agent": "guilderia",
+				"User-Agent": "zenthcloud",
 				// A token is optional, it only raises the rate limit from 60 to 5000
 				// requests per hour.
 				...(process.env.GITHUB_TOKEN

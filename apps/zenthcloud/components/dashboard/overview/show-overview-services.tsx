@@ -1,6 +1,6 @@
 "use client";
 
-import type { OverviewServiceType } from "@guilderia/server/services/overview-shared";
+import type { OverviewServiceType } from "@zenthcloud/server/services/overview-shared";
 import {
 	type ColumnDef,
 	flexRender,
@@ -198,7 +198,7 @@ const ServiceDetails = ({ service }: { service: ServiceRow | null }) => {
 					{service.name}
 				</DialogTitle>
 				<DialogDescription>
-					guilderia workload summary. Runtime and deployment controls remain
+					zenthcloud workload summary. Runtime and deployment controls remain
 					available on the service page.
 				</DialogDescription>
 			</DialogHeader>
@@ -564,7 +564,7 @@ export const ShowOverviewServices = () => {
 					<div className="space-y-1">
 						<h1 className="text-2xl font-semibold tracking-tight">Services</h1>
 						<p className="text-sm text-muted-foreground">
-							Manage and operate the workloads deployed through guilderia.
+							Manage and operate the workloads deployed through zenthcloud.
 						</p>
 					</div>
 					<Button
@@ -662,7 +662,7 @@ export const ShowOverviewServices = () => {
 							className="flex min-h-56 items-center justify-center gap-2 text-sm text-muted-foreground"
 							role="status"
 						>
-							Loading guilderia services…
+							Loading zenthcloud services…
 							<Loader2 className="size-4 animate-spin" aria-hidden />
 						</div>
 					) : isError ? (

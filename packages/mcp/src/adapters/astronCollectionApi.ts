@@ -80,8 +80,8 @@ export function normalizeApiError(error: unknown): ApiError {
     const serverMessage = extractServerMessage(axiosError.response.data);
     const message =
       status >= 500
-        ? `Guilderia API returned HTTP ${status}`
-        : (serverMessage ?? `Guilderia API returned HTTP ${status}`);
+        ? `Zenthcloud API returned HTTP ${status}`
+        : (serverMessage ?? `Zenthcloud API returned HTTP ${status}`);
 
     return new ApiError({
       message: redactKnownSecrets(message, getRegisteredSecrets()),
@@ -93,14 +93,14 @@ export function normalizeApiError(error: unknown): ApiError {
 
   if (axiosError.code === "ECONNABORTED" || axiosError.code === "ETIMEDOUT") {
     return new ApiError({
-      message: "The Guilderia API did not respond before the timeout",
+      message: "The Zenthcloud API did not respond before the timeout",
       code: "timeout",
       retryable: true,
     });
   }
 
   return new ApiError({
-    message: "Could not reach the Guilderia API",
+    message: "Could not reach the Zenthcloud API",
     code: "network_error",
     retryable: true,
   });
@@ -148,7 +148,7 @@ export class AstronCollectionApi implements ApiPort {
           "Content-Type": "application/json",
           Accept: "application/json",
           "x-api-key": config.apiKey,
-          "User-Agent": `guilderia-mcp/${PACKAGE_VERSION}`,
+          "User-Agent": `zenthcloud-mcp/${PACKAGE_VERSION}`,
           ...config.customHeaders,
         },
       });

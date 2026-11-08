@@ -17,7 +17,7 @@ import {
  *
  *   installation.hasCapability("cloud.fleet")
  *
- * Legacy `GUILDERIA_FLAVOR` / `IS_CLOUD` values are only ever *hints*: a protected
+ * Legacy `ZENTHCLOUD_FLAVOR` / `IS_CLOUD` values are only ever *hints*: a protected
  * product's capabilities come from a signed entitlement, never from the
  * environment.
  */
@@ -35,16 +35,16 @@ export const capabilityLabels: Record<AstronCollectionCapability, string> = {
 };
 
 export const capabilityDescriptions: Record<AstronCollectionCapability, string> = {
-	"self.hosted": "Run the full Guilderia control plane on your own host.",
+	"self.hosted": "Run the full Zenthcloud control plane on your own host.",
 	"self.local-registry":
 		"Host and serve container images from a registry on the instance.",
 	"self.offline":
-		"Operate without any permanent connectivity to Guilderia services.",
-	"cloud.control-plane": "Run the managed Guilderia Cloud control plane.",
+		"Operate without any permanent connectivity to Zenthcloud services.",
+	"cloud.control-plane": "Run the managed Zenthcloud Cloud control plane.",
 	"cloud.managed-services":
-		"Offer Guilderia-operated managed services to tenants.",
-	"cloud.fleet": "Manage a fleet of Guilderia instances from the cloud.",
-	"console.instance-management": "Manage individual Guilderia instances.",
+		"Offer Zenthcloud-operated managed services to tenants.",
+	"cloud.fleet": "Manage a fleet of Zenthcloud instances from the cloud.",
+	"console.instance-management": "Manage individual Zenthcloud instances.",
 	"console.fleet": "Manage groups of instances from the Console.",
 	"console.remote-management":
 		"Perform privileged remote operations on managed instances.",
@@ -117,7 +117,7 @@ export const hasCapability = (
  * is authoritative.
  */
 export const resolveProductHint = (options: {
-	/** Explicit product override (GUILDERIA_PRODUCT); wins over every hint. */
+	/** Explicit product override (ZENTHCLOUD_PRODUCT); wins over every hint. */
 	product?: string | null;
 	flavor?: string | null;
 	isCloud?: boolean;

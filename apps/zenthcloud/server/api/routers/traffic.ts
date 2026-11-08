@@ -7,7 +7,7 @@ import {
 	TrafficServiceError,
 	updateTrafficProperty,
 	upsertTrafficSource,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import {
 	getAudienceReport,
 	getHttpReport,
@@ -17,7 +17,7 @@ import {
 	listTrafficPlatforms,
 	resolveTrafficRange,
 	TrafficRangeError,
-} from "@guilderia/server/services/traffic-analytics";
+} from "@zenthcloud/server/services/traffic-analytics";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, withPermission } from "../trpc";

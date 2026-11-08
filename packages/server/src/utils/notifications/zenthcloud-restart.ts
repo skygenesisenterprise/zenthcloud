@@ -1,6 +1,6 @@
-import { db } from "@guilderia/server/db";
-import { notifications } from "@guilderia/server/db/schema";
-import GuilderiaRestartEmail from "@guilderia/server/emails/emails/guilderia-restart";
+import { db } from "@zenthcloud/server/db";
+import { notifications } from "@zenthcloud/server/db/schema";
+import ZenthcloudRestartEmail from "@zenthcloud/server/emails/emails/zenthcloud-restart";
 import { render } from "@react-email/components";
 import { format } from "date-fns";
 import { eq } from "drizzle-orm";
@@ -19,15 +19,15 @@ import {
 	sendTelegramNotification,
 } from "./utils";
 
-export const sendGuilderiaRestartNotifications = async () => {
+export const sendZenthcloudRestartNotifications = async () => {
 	try {
 		const date = new Date();
 		const unixDate = ~~(Number(date) / 1000);
 		const notificationList = await db.query.notifications.findMany({
-			where: eq(notifications.guilderiaRestart, true),
+			where: eq(notifications.zenthcloudRestart, true),
 			with: {
 				email: true,
-				guilderia: true,
+				zenthcloud: true,
 				telegram: true,
 				slack: true,
 				resend: true,
@@ -45,7 +45,7 @@ export const sendGuilderiaRestartNotifications = async () => {
 			const {
 				email,
 				resend,
-				guilderia,
+				zenthcloud,
 				telegram,
 				slack,
 				gotify,
@@ -60,13 +60,13 @@ export const sendGuilderiaRestartNotifications = async () => {
 			try {
 				if (email || resend) {
 					const template = await render(
-						GuilderiaRestartEmail({ date: date.toLocaleString() }),
+						ZenthcloudRestartEmail({ date: date.toLocaleString() }),
 					).catch();
 
 					if (email) {
 						await sendEmailNotification(
 							email,
-							"Guilderia Server Restarted",
+							"Zenthcloud Server Restarted",
 							template,
 						);
 					}
@@ -74,18 +74,18 @@ export const sendGuilderiaRestartNotifications = async () => {
 					if (resend) {
 						await sendResendNotification(
 							resend,
-							"Guilderia Server Restarted",
+							"Zenthcloud Server Restarted",
 							template,
 						);
 					}
 				}
 
-				if (guilderia) {
+				if (zenthcloud) {
 					const decorate = (decoration: string, text: string) =>
-						`${guilderia.decoration ? decoration : ""} ${text}`.trim();
+						`${zenthcloud.decoration ? decoration : ""} ${text}`.trim();
 
-					await sendDiscordNotification(guilderia, {
-						title: decorate(">", "`✅` Guilderia Server Restarted"),
+					await sendDiscordNotification(zenthcloud, {
+						title: decorate(">", "`✅` Zenthcloud Server Restarted"),
 						color: 0x57f287,
 						fields: [
 							{
@@ -106,7 +106,7 @@ export const sendGuilderiaRestartNotifications = async () => {
 						],
 						timestamp: date.toISOString(),
 						footer: {
-							text: "Guilderia Restart Notification",
+							text: "Zenthcloud Restart Notification",
 						},
 					});
 				}
@@ -116,7 +116,7 @@ export const sendGuilderiaRestartNotifications = async () => {
 						`${gotify.decoration ? decoration : ""} ${text}\n`;
 					await sendGotifyNotification(
 						gotify,
-						decorate("✅", "Guilderia Server Restarted"),
+						decorate("✅", "Zenthcloud Server Restarted"),
 						`${decorate("🕒", `Date: ${date.toLocaleString()}`)}`,
 					);
 				}
@@ -124,7 +124,7 @@ export const sendGuilderiaRestartNotifications = async () => {
 				if (ntfy) {
 					await sendNtfyNotification(
 						ntfy,
-						"Guilderia Server Restarted",
+						"Zenthcloud Server Restarted",
 						"white_check_mark",
 						"",
 						`🕒Date: ${date.toLocaleString()}`,
@@ -134,7 +134,7 @@ export const sendGuilderiaRestartNotifications = async () => {
 				if (telegram) {
 					await sendTelegramNotification(
 						telegram,
-						`<b>✅ Guilderia Server Restarted</b>\n\n<b>Date:</b> ${format(
+						`<b>✅ Zenthcloud Server Restarted</b>\n\n<b>Date:</b> ${format(
 							date,
 							"PP",
 						)}\n<b>Time:</b> ${format(date, "pp")}`,
@@ -148,7 +148,7 @@ export const sendGuilderiaRestartNotifications = async () => {
 						attachments: [
 							{
 								color: "#00FF00",
-								pretext: ":white_check_mark: *Guilderia Server Restarted*",
+								pretext: ":white_check_mark: *Zenthcloud Server Restarted*",
 								fields: [
 									{
 										title: "Time",
@@ -163,21 +163,21 @@ export const sendGuilderiaRestartNotifications = async () => {
 
 				if (mattermost) {
 					await sendMattermostNotification(mattermost, {
-						text: `**✅ Guilderia Server Restarted**\n\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}`,
+						text: `**✅ Zenthcloud Server Restarted**\n\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}`,
 						channel: mattermost.channel,
-						username: mattermost.username || "Guilderia",
+						username: mattermost.username || "Zenthcloud",
 					});
 				}
 
 				if (custom) {
 					try {
 						await sendCustomNotification(custom, {
-							title: "Guilderia Server Restarted",
-							message: "Guilderia server has been restarted successfully",
+							title: "Zenthcloud Server Restarted",
+							message: "Zenthcloud server has been restarted successfully",
 							timestamp: date.toISOString(),
 							date: date.toLocaleString(),
 							status: "success",
-							type: "guilderia-restart",
+							type: "zenthcloud-restart",
 						});
 					} catch (error) {
 						console.log(error);
@@ -204,7 +204,7 @@ export const sendGuilderiaRestartNotifications = async () => {
 							header: {
 								title: {
 									tag: "plain_text",
-									content: "✅ Guilderia Server Restarted",
+									content: "✅ Zenthcloud Server Restarted",
 								},
 								subtitle: {
 									tag: "plain_text",
@@ -262,14 +262,14 @@ export const sendGuilderiaRestartNotifications = async () => {
 				if (pushover) {
 					await sendPushoverNotification(
 						pushover,
-						"Guilderia Server Restarted",
+						"Zenthcloud Server Restarted",
 						`Date: ${date.toLocaleString()}`,
 					);
 				}
 
 				if (teams) {
 					await sendTeamsNotification(teams, {
-						title: "✅ Guilderia Server Restarted",
+						title: "✅ Zenthcloud Server Restarted",
 						facts: [
 							{ name: "Status", value: "Successful" },
 							{ name: "Restart Time", value: format(date, "PP pp") },
@@ -281,6 +281,6 @@ export const sendGuilderiaRestartNotifications = async () => {
 			}
 		}
 	} catch (error) {
-		console.error("[Guilderia] Restart notifications failed:", error);
+		console.error("[Zenthcloud] Restart notifications failed:", error);
 	}
 };

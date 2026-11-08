@@ -27,9 +27,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "The Self-Hosted PaaS Built for Developers",
 	description:
-		"Start using guilderia, the free, open source PaaS that enables developers to deploy apps and databases on their own infrastructure.",
+		"Start using zenthcloud, the free, open source PaaS that enables developers to deploy apps and databases on their own infrastructure.",
 	alternates: {
-		canonical: "https://guilderia.com/self-hosted-paas",
+		canonical: "https://zenthcloud.com/self-hosted-paas",
 	},
 };
 
@@ -38,7 +38,7 @@ const controlFeatures = [
 		icon: Wallet,
 		title: "Save on infrastructure costs",
 		description:
-			"Run guilderia on any VPS or bare metal server you already own. No per-seat fees, no per-deployment charges—just your underlying infrastructure costs.",
+			"Run zenthcloud on any VPS or bare metal server you already own. No per-seat fees, no per-deployment charges—just your underlying infrastructure costs.",
 	},
 	{
 		icon: Unlock,
@@ -105,21 +105,21 @@ const setupSteps = [
 		icon: ServerCog,
 		title: "Provision a server",
 		description:
-			"Spin up any Linux VPS from a cloud provider of your choice, or use hardware you already own. guilderia has minimal overhead and runs comfortably on modest specs.",
+			"Spin up any Linux VPS from a cloud provider of your choice, or use hardware you already own. zenthcloud has minimal overhead and runs comfortably on modest specs.",
 	},
 	{
 		number: "02",
 		icon: TerminalSquare,
 		title: "Run one install command",
 		description:
-			"Install guilderia with a single command. Docker is the only prerequisite, the installer handles the rest in just a few commands.",
+			"Install zenthcloud with a single command. Docker is the only prerequisite, the installer handles the rest in just a few commands.",
 	},
 	{
 		number: "03",
 		icon: MonitorSmartphone,
 		title: "Open the web UI",
 		description:
-			"Once installed, open the guilderia web UI in your browser, create your admin account, and you're in. No complex cluster setup, no Kubernetes complexity.",
+			"Once installed, open the zenthcloud web UI in your browser, create your admin account, and you're in. No complex cluster setup, no Kubernetes complexity.",
 	},
 	{
 		number: "04",
@@ -160,7 +160,7 @@ const faqs = [
 					third-party cloud provider.
 				</p>
 				<p className="mt-3">
-					guilderia is an open source PaaS you can install on any server with a
+					zenthcloud is an open source PaaS you can install on any server with a
 					single command.
 				</p>
 			</>
@@ -176,7 +176,7 @@ const faqs = [
 					on.
 				</p>
 				<p className="mt-3">
-					guilderia is a strong open source PaaS alternative to Heroku and similar
+					zenthcloud is a strong open source PaaS alternative to Heroku and similar
 					hosted platforms. It supports application deployment, Docker Compose,
 					MySQL and other databases, Heroku Buildpacks, multi-server management,
 					and enterprise features like SSO and audit logs.
@@ -189,34 +189,34 @@ const faqs = [
 		),
 	},
 	{
-		question: "Is guilderia really free to self-host?",
+		question: "Is zenthcloud really free to self-host?",
 		answer: (
 			<p>
-				Yes. The open source version of guilderia is free to install and run on
+				Yes. The open source version of zenthcloud is free to install and run on
 				your own servers. You pay only for the infrastructure you provision,
-				meaning no per-seat or per-deployment fees. guilderia Cloud plans start at
+				meaning no per-seat or per-deployment fees. zenthcloud Cloud plans start at
 				$4.50 per server per month if you prefer managed uptime.
 			</p>
 		),
 	},
 	{
-		question: "What's the difference between guilderia Cloud and self-hosted?",
+		question: "What's the difference between zenthcloud Cloud and self-hosted?",
 		answer: (
 			<p>
 				Both versions are functionally identical. Every feature available in
 				self-hosted is also available in Cloud, and vice versa. The difference
-				is purely operational: with self-hosted, you manage the guilderia instance
-				itself, including updates and uptime. With Cloud, guilderia manages the
+				is purely operational: with self-hosted, you manage the zenthcloud instance
+				itself, including updates and uptime. With Cloud, zenthcloud manages the
 				control plane for you. Your applications always run on your own servers
 				in both cases.
 			</p>
 		),
 	},
 	{
-		question: "Does guilderia support multi-tenancy?",
+		question: "Does zenthcloud support multi-tenancy?",
 		answer: (
 			<p>
-				Yes. guilderia includes multi-tenancy support via organizations and
+				Yes. zenthcloud includes multi-tenancy support via organizations and
 				projects, with role-based access controls that let you manage
 				permissions across teams. Enterprise plans include fine-grained RBAC and
 				custom roles for more complex access requirements.
@@ -224,10 +224,10 @@ const faqs = [
 		),
 	},
 	{
-		question: "What infrastructure does guilderia support?",
+		question: "What infrastructure does zenthcloud support?",
 		answer: (
 			<p>
-				guilderia runs on any Linux server—a VPS from any cloud provider, bare
+				zenthcloud runs on any Linux server—a VPS from any cloud provider, bare
 				metal, or even a Raspberry Pi for testing. It uses Docker Swarm for
 				container orchestration and Traefik as a reverse proxy, so you get load
 				balancing, SSL, and routing out of the box without managing those layers
@@ -244,12 +244,12 @@ export default function SelfHostedPaasPage() {
 			badgeDetail="Free & open source"
 			title="Your own PaaS,"
 			highlight="on your own servers"
-			description="Install guilderia on any Linux server in minutes. Git-based deploys, databases and Docker, with full control and none of the Kubernetes complexity."
+			description="Install zenthcloud on any Linux server in minutes. Git-based deploys, databases and Docker, with full control and none of the Kubernetes complexity."
 			actions={
 				<>
 					<Button className="rounded-full" asChild>
 						<Link
-							href="https://app.guilderia.com/register"
+							href="https://app.zenthcloud.com/register"
 							target="_blank"
 							rel="noreferrer"
 						>
@@ -262,8 +262,8 @@ export default function SelfHostedPaasPage() {
 				</>
 			}
 			links={[
-				{ href: "/self", label: "guilderia Self" },
-				{ href: "/cloud", label: "guilderia Cloud" },
+				{ href: "/self", label: "zenthcloud Self" },
+				{ href: "/cloud", label: "zenthcloud Cloud" },
 				{ href: "/comparison", label: "Compare editions" },
 			]}
 			sections={[
@@ -279,14 +279,14 @@ export default function SelfHostedPaasPage() {
 					id: "enterprise",
 					title: "Self-hosted for larger teams",
 					description:
-						"guilderia Enterprise adds the security, compliance and support features larger organisations require, on-premises or in your own cloud.",
+						"zenthcloud Enterprise adds the security, compliance and support features larger organisations require, on-premises or in your own cloud.",
 					items: enterpriseFeatures,
 					columns: 2,
 					callout: {
 						title: "Security and compliance, on your infrastructure",
 						description:
 							"SSO/SAML, audit logs, fine-grained RBAC and guaranteed response times.",
-						cta: "Learn about guilderia Enterprise",
+						cta: "Learn about zenthcloud Enterprise",
 						href: "/enterprise",
 					},
 				},
@@ -294,7 +294,7 @@ export default function SelfHostedPaasPage() {
 					id: "setup",
 					title: "From blank server to running platform",
 					description:
-						"guilderia is designed for minimal overhead. Docker is the only prerequisite, and the installer handles the rest.",
+						"zenthcloud is designed for minimal overhead. Docker is the only prerequisite, and the installer handles the rest.",
 					items: setupSteps,
 					columns: 2,
 				},
@@ -308,9 +308,9 @@ export default function SelfHostedPaasPage() {
 			finalCta={{
 				title: "Your own PaaS, up and running today",
 				description:
-					"guilderia is free to self-host and takes just a few commands to install. Follow the setup guide and deploy on your own infrastructure in minutes.",
+					"zenthcloud is free to self-host and takes just a few commands to install. Follow the setup guide and deploy on your own infrastructure in minutes.",
 				cta: "Create your account",
-				href: "https://app.guilderia.com/register",
+				href: "https://app.zenthcloud.com/register",
 				external: true,
 			}}
 		>
@@ -325,15 +325,15 @@ export default function SelfHostedPaasPage() {
 						description:
 							"Choose self-hosted for zero platform cost, full control, or air-gapped and private networks.",
 						bullets: selfHostedBullets,
-						cta: "Install guilderia",
-						href: "https://docs.guilderia.com/docs/core",
+						cta: "Install zenthcloud",
+						href: "https://docs.zenthcloud.com/docs/core",
 						external: true,
 					},
 					{
-						name: "guilderia Cloud",
+						name: "zenthcloud Cloud",
 						tagline: "Managed control plane",
 						description:
-							"Choose Cloud if you would rather not maintain the guilderia instance itself. Your apps still run on your own servers.",
+							"Choose Cloud if you would rather not maintain the zenthcloud instance itself. Your apps still run on your own servers.",
 						bullets: cloudBullets,
 						cta: "Explore Cloud",
 						href: "/cloud",

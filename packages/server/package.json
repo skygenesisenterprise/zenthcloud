@@ -1,9 +1,9 @@
 {
-  "name": "@guilderia/server",
+  "name": "@zenthcloud/server",
   "version": "1.2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/skygenesisenterprise/guilderia.git",
+    "url": "https://github.com/skygenesisenterprise/zenthcloud.git",
     "directory": "packages/server"
   },
   "main": "./src/index.ts",

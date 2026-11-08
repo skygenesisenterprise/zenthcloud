@@ -1,7 +1,7 @@
 import { existsSync, promises as fsPromises } from "node:fs";
 import path from "node:path";
-import { IS_CLOUD, paths } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
+import { IS_CLOUD, paths } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateDeployment,
 	type apiCreateDeploymentBackup,
@@ -15,13 +15,13 @@ import {
 	deployments,
 	environments,
 	projects,
-} from "@guilderia/server/db/schema";
-import { removeDirectoryIfExistsContent } from "@guilderia/server/utils/filesystem/directory";
+} from "@zenthcloud/server/db/schema";
+import { removeDirectoryIfExistsContent } from "@zenthcloud/server/utils/filesystem/directory";
 import {
 	execAsync,
 	execAsyncRemote,
-} from "@guilderia/server/utils/process/execAsync";
-import { redactSecrets } from "@guilderia/server/utils/security/redact";
+} from "@zenthcloud/server/utils/process/execAsync";
+import { redactSecrets } from "@zenthcloud/server/utils/security/redact";
 import { TRPCError } from "@trpc/server";
 import { format } from "date-fns";
 import {
@@ -198,7 +198,7 @@ export const createDeployment = async (
 			const command = `
 				mkdir -p ${LOGS_PATH}/${application.appName};
             	echo "Initializing deployment" >> ${logFilePath};
-			    echo "Building on ${serverId ? "Build Server" : "Guilderia Server"}" >> ${logFilePath};
+			    echo "Building on ${serverId ? "Build Server" : "Zenthcloud Server"}" >> ${logFilePath};
 			`;
 
 			await execAsyncRemote(server.serverId, command);

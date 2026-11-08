@@ -1,7 +1,7 @@
 /**
  * Status Core — default status catalog.
  *
- * The Guilderia status page tracks the public Guilderia offerings. The catalog is
+ * The Zenthcloud status page tracks the public Zenthcloud offerings. The catalog is
  * declarative and seeding is explicit (see `pnpm seed` / `make status-seed`),
  * idempotent and non-destructive: components are matched by name, so re-running
  * the seed after an upgrade never duplicates a component nor overwrites the
@@ -38,12 +38,12 @@ export interface StatusCatalog {
 	components: CatalogComponent[];
 }
 
-export const GUILDERIA_STATUS_CATALOG: StatusCatalog = {
+export const ZENTHCLOUD_STATUS_CATALOG: StatusCatalog = {
 	page: {
-		slug: "guilderia",
-		name: "Guilderia Status",
+		slug: "zenthcloud",
+		name: "Zenthcloud Status",
 		description:
-			"Real-time status and uptime history for the Guilderia platform services.",
+			"Real-time status and uptime history for the Zenthcloud platform services.",
 		// These are service-level components observed by monitoring, not probes
 		// reporting every few seconds: the two-minute engine default would flag
 		// them "no recent data" almost immediately. Fifteen minutes matches a
@@ -55,9 +55,9 @@ export const GUILDERIA_STATUS_CATALOG: StatusCatalog = {
 	},
 	components: [
 		{
-			name: "Guilderia Cloud",
+			name: "Zenthcloud Cloud",
 			description:
-				"Managed Guilderia platform: console, deployments and billing.",
+				"Managed Zenthcloud platform: console, deployments and billing.",
 			category: "application",
 			groupName: "Platform",
 		},
@@ -70,7 +70,7 @@ export const GUILDERIA_STATUS_CATALOG: StatusCatalog = {
 		{
 			name: "MCP Server",
 			description:
-				"Model Context Protocol server exposing Guilderia tools to AI agents.",
+				"Model Context Protocol server exposing Zenthcloud tools to AI agents.",
 			category: "api",
 			groupName: "Platform",
 		},

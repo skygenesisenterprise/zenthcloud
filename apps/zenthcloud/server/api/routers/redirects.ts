@@ -3,8 +3,8 @@ import {
 	findRedirectById,
 	removeRedirectById,
 	updateRedirectById,
-} from "@guilderia/server";
-import { checkServicePermissionAndAccess } from "@guilderia/server/services/permission";
+} from "@zenthcloud/server";
+import { checkServicePermissionAndAccess } from "@zenthcloud/server/services/permission";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
 import {

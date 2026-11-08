@@ -1,4 +1,4 @@
-import { shouldDeploy } from "@guilderia/server";
+import { shouldDeploy } from "@zenthcloud/server";
 import { describe, expect, it } from "vitest";
 
 describe("shouldDeploy", () => {

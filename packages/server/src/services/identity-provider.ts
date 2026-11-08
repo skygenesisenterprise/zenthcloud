@@ -10,15 +10,15 @@ import {
 	identityProviderCategory,
 	identityProviderTypes,
 	noIdentityCapabilities,
-} from "@guilderia/server/utils/identity";
+} from "@zenthcloud/server/utils/identity";
 import {
 	parseLdapConfig,
 	testLdapConnection,
-} from "@guilderia/server/utils/identity/ldap";
+} from "@zenthcloud/server/utils/identity/ldap";
 import {
 	parseOauthConfig,
 	testSocialConnection,
-} from "@guilderia/server/utils/identity/oauth";
+} from "@zenthcloud/server/utils/identity/oauth";
 
 /**
  * Provider row shape the health probe needs. Kept structural so the tRPC layer
@@ -275,7 +275,7 @@ const probeOidc = async (
 			base,
 			"unreachable",
 			`Could not reach the discovery endpoint: ${message}`,
-			"Check that the issuer URL is reachable from the Guilderia server.",
+			"Check that the issuer URL is reachable from the Zenthcloud server.",
 		);
 	}
 	const latencyMs = Date.now() - startedAt;
@@ -446,7 +446,7 @@ const probeSaml = (
 
 /**
  * Probes a social provider. Its API is public, so a `connected` status means
- * the source is reachable from the Guilderia server and answered with the shape
+ * the source is reachable from the Zenthcloud server and answered with the shape
  * the adapter expects; the credentials are exercised by the sign-in round-trip.
  */
 const probeSocial = async (
@@ -473,7 +473,7 @@ const probeSocial = async (
 			base,
 			classifyIdentityProviderFailure(result.message),
 			result.message,
-			"Verify the client ID and secret, and that the Guilderia server can reach the provider.",
+			"Verify the client ID and secret, and that the Zenthcloud server can reach the provider.",
 		);
 	}
 

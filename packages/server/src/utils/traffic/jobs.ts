@@ -1,7 +1,7 @@
 import {
 	ingestTraefikAccessLog,
 	runTrafficRetention,
-} from "@guilderia/server/services/traffic";
+} from "@zenthcloud/server/services/traffic";
 import { scheduledJobs, scheduleJob } from "node-schedule";
 
 /**

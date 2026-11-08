@@ -1,21 +1,21 @@
 import { existsSync, readFileSync } from "node:fs";
-import { IS_CLOUD, GUILDERIA_TOR_IMAGE } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
+import { IS_CLOUD, ZENTHCLOUD_TOR_IMAGE } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateOnionService,
 	type apiDeleteOnionService,
 	type apiUpdateOnionService,
 	ONION_VIRTUAL_PORT_DEFAULT,
 	onionServices,
-} from "@guilderia/server/db/schema";
-import { loadDockerCompose, loadDockerComposeRemote } from "@guilderia/server/utils/docker/domain";
-import { toDockerHostPath } from "@guilderia/server/utils/docker/host-path";
-import { getComposeContainer } from "@guilderia/server/utils/docker/utils";
+} from "@zenthcloud/server/db/schema";
+import { loadDockerCompose, loadDockerComposeRemote } from "@zenthcloud/server/utils/docker/domain";
+import { toDockerHostPath } from "@zenthcloud/server/utils/docker/host-path";
+import { getComposeContainer } from "@zenthcloud/server/utils/docker/utils";
 import {
 	generateOnionIdentity,
 	isOnionHostname,
 	onionIdentityFiles,
-} from "@guilderia/server/utils/onion/address";
+} from "@zenthcloud/server/utils/onion/address";
 import {
 	assertDockerNetworkName,
 	assertOnionRuntimeInputs,
@@ -29,7 +29,7 @@ import {
 	getRestartOnionServiceCommand,
 	getStartOnionServiceCommand,
 	getStopOnionServiceCommand,
-} from "@guilderia/server/utils/onion/commands";
+} from "@zenthcloud/server/utils/onion/commands";
 import {
 	assertOnionPort,
 	assertOnionServiceName,
@@ -38,8 +38,8 @@ import {
 	onionStatusFromDockerState,
 	renderTorrc,
 	sanitizeOnionError,
-} from "@guilderia/server/utils/onion/config";
-import { execAsync, execAsyncRemote } from "@guilderia/server/utils/process/execAsync";
+} from "@zenthcloud/server/utils/onion/config";
+import { execAsync, execAsyncRemote } from "@zenthcloud/server/utils/process/execAsync";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -60,7 +60,7 @@ import { findComposeById } from "./compose";
  * never published on a host port.
  *
  * Managed Onion Services stay opt-in on hosted Cloud: `IS_CLOUD` refuses them
- * unless the operator deliberately sets `GUILDERIA_ALLOW_CLOUD_ONION_SERVICES`.
+ * unless the operator deliberately sets `ZENTHCLOUD_ALLOW_CLOUD_ONION_SERVICES`.
  */
 
 export type OnionService = typeof onionServices.$inferSelect;
@@ -71,7 +71,7 @@ export type OnionCompose = OnionServiceWithCompose["compose"];
 
 const cloudOnionServicesOptIn = () =>
 	["1", "true", "yes"].includes(
-		(process.env.GUILDERIA_ALLOW_CLOUD_ONION_SERVICES ?? "").toLowerCase(),
+		(process.env.ZENTHCLOUD_ALLOW_CLOUD_ONION_SERVICES ?? "").toLowerCase(),
 	);
 
 /**
@@ -84,7 +84,7 @@ export const assertManagedOnionServicesEnabled = () => {
 		throw new TRPCError({
 			code: "FORBIDDEN",
 			message:
-				"Managed Tor Onion Services are disabled on Guilderia Cloud. Enable them deliberately with GUILDERIA_ALLOW_CLOUD_ONION_SERVICES after a security review.",
+				"Managed Tor Onion Services are disabled on Zenthcloud Cloud. Enable them deliberately with ZENTHCLOUD_ALLOW_CLOUD_ONION_SERVICES after a security review.",
 		});
 	}
 };
@@ -109,7 +109,7 @@ const assertComposeSupportsOnionServices = (compose: OnionCompose) => {
 
 /**
  * Service names of a Compose project. Raw projects keep their file in the
- * database; every other source is read from disk (or over SSH) because Guilderia
+ * database; every other source is read from disk (or over SSH) because Zenthcloud
  * never parses the file it deployed from memory.
  */
 export const listComposeServiceNames = async (
@@ -140,7 +140,7 @@ const ensureTargetServiceExists = async (
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message:
-				"The Compose file of this project could not be read. Deploy the project once so Guilderia can inspect its services, then try again",
+				"The Compose file of this project could not be read. Deploy the project once so Zenthcloud can inspect its services, then try again",
 		});
 	}
 
@@ -369,7 +369,7 @@ export const createOnionService = async (
 		targetPort,
 		virtualPort,
 	});
-	const image = GUILDERIA_TOR_IMAGE;
+	const image = ZENTHCLOUD_TOR_IMAGE;
 
 	try {
 		assertOnionRuntimeInputs({
@@ -570,7 +570,7 @@ export const startOnionService = async (onionServiceId: string) => {
 			getStartOnionServiceCommand({
 				paths,
 				bindSources,
-				image: GUILDERIA_TOR_IMAGE,
+				image: ZENTHCLOUD_TOR_IMAGE,
 				network,
 				onionServiceId: onionService.onionServiceId,
 				composeId: compose.composeId,

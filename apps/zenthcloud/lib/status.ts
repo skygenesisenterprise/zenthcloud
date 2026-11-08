@@ -1,9 +1,9 @@
 /**
- * Bridge between the Guilderia Console and a Guilderia Status instance.
+ * Bridge between the Zenthcloud Console and a Zenthcloud Status instance.
  *
  * The console never touches the status database: it talks to the status
  * application over HTTP through the official integration client
- * (`StatusPublisher` from `@guilderia/status/client`) with a scoped bearer
+ * (`StatusPublisher` from `@zenthcloud/status/client`) with a scoped bearer
  * token, exactly like any other machine-to-machine consumer. That means an
  * incident introduced from this console, from the status admin UI or by the
  * monitoring agent all lands in the same platform — so the Incidents page
@@ -21,8 +21,8 @@ import type {
 	AdminIncidentDto,
 	AdminMaintenanceDto,
 	AdminPageDto,
-} from "@guilderia/status";
-import { StatusPublisher, StatusPublisherError } from "@guilderia/status";
+} from "@zenthcloud/status";
+import { StatusPublisher, StatusPublisherError } from "@zenthcloud/status";
 
 export type {
 	AdminComponentDto,
@@ -32,7 +32,7 @@ export type {
 	IncidentSeverity,
 	IncidentState,
 	MaintenanceState,
-} from "@guilderia/status";
+} from "@zenthcloud/status";
 
 /** Everything the console knows about one status page. */
 export interface StatusPageOverview {

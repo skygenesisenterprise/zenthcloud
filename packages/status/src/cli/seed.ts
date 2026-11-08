@@ -1,7 +1,7 @@
 /**
- * `pnpm seed [-- --slug guilderia]`
+ * `pnpm seed [-- --slug zenthcloud]`
  *
- * Creates the Guilderia status page and its components (Guilderia Cloud, API, MCP
+ * Creates the Zenthcloud status page and its components (Zenthcloud Cloud, API, MCP
  * Server, GitHub App, Website, Docs) from the shipped catalog. Idempotent: an
  * existing page or component is left untouched, so it is safe to re-run after
  * an upgrade or from a Make target.
@@ -13,7 +13,7 @@
  *   { "observedStatus": "operational" | "degraded" | "outage" | "unknown" }
  */
 import { loadConfig } from "../config";
-import { GUILDERIA_STATUS_CATALOG } from "../core/catalog";
+import { ZENTHCLOUD_STATUS_CATALOG } from "../core/catalog";
 import { createStatusContext } from "../services/context";
 import { seedCatalog } from "../services/seed";
 
@@ -30,7 +30,7 @@ const lines: string[] = [];
 try {
 	const result = seedCatalog(
 		ctx,
-		GUILDERIA_STATUS_CATALOG,
+		ZENTHCLOUD_STATUS_CATALOG,
 		{
 			slug: readFlag("slug"),
 			name: readFlag("name"),

@@ -1,5 +1,5 @@
-import type { OverviewDomainSortBy } from "@guilderia/server/services/overview-shared";
-import { sortOverviewDomains } from "@guilderia/server/services/overview-shared";
+import type { OverviewDomainSortBy } from "@zenthcloud/server/services/overview-shared";
+import { sortOverviewDomains } from "@zenthcloud/server/services/overview-shared";
 import { ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";

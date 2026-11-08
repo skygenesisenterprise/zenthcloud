@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { existsSync, rmSync } from "node:fs";
-import { getRegistryTag } from "@guilderia/server/utils/cluster/upload";
+import { getRegistryTag } from "@zenthcloud/server/utils/cluster/upload";
 import { parse, quote } from "shell-quote";
 import { describe, expect, it } from "vitest";
 

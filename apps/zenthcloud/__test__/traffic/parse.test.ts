@@ -4,14 +4,14 @@ import {
 	deviceTypeOf,
 	normalizeHost,
 	normalizeRoute,
-	GUILDERIA_SERVICE_NAME,
+	ZENTHCLOUD_SERVICE_NAME,
 	parseTraefikAccessLog,
 	parseTraefikAccessLogLine,
 	referrerHostOf,
 	resolvePropertyId,
 	statusClassOf,
 	stripQueryAndHash,
-} from "@guilderia/server/utils/traffic/parse";
+} from "@zenthcloud/server/utils/traffic/parse";
 import { describe, expect, it } from "vitest";
 
 const traefikLine = (overrides: Record<string, unknown> = {}) =>
@@ -23,12 +23,12 @@ const traefikLine = (overrides: Record<string, unknown> = {}) =>
 		Duration: 45_000_000,
 		OriginStatus: 200,
 		RequestContentSize: 12,
-		RequestHost: "guilderia.com",
+		RequestHost: "zenthcloud.com",
 		RequestMethod: "get",
 		RequestPath: "/pricing?token=super-secret#anchor",
 		RequestProtocol: "HTTP/2.0",
-		RouterName: "guilderia-com-web@file",
-		ServiceName: GUILDERIA_SERVICE_NAME,
+		RouterName: "zenthcloud-com-web@file",
+		ServiceName: ZENTHCLOUD_SERVICE_NAME,
 		StartUTC: "2026-10-12T09:04:05.123456789Z",
 		entryPointName: "websecure",
 		level: "info",
@@ -93,8 +93,8 @@ describe("normalizeRoute", () => {
 
 describe("host and referrer normalisation", () => {
 	it("lowercases hosts and drops the port", () => {
-		expect(normalizeHost("guilderia.COM:8443")).toBe("guilderia.com");
-		expect(normalizeHost("guilderia.com.")).toBe("guilderia.com");
+		expect(normalizeHost("zenthcloud.COM:8443")).toBe("zenthcloud.com");
+		expect(normalizeHost("zenthcloud.com.")).toBe("zenthcloud.com");
 		expect(normalizeHost("[::1]:3000")).toBe("::1");
 		expect(normalizeHost(null)).toBe("");
 	});
@@ -142,7 +142,7 @@ describe("parseTraefikAccessLogLine", () => {
 		const event = parseTraefikAccessLogLine(traefikLine());
 		expect(event).not.toBeNull();
 		expect(event).toMatchObject({
-			host: "guilderia.com",
+			host: "zenthcloud.com",
 			route: "/pricing",
 			method: "GET",
 			status: 200,
@@ -150,7 +150,7 @@ describe("parseTraefikAccessLogLine", () => {
 			bytesIn: 12,
 			bytesOut: 4096,
 			durationMs: 45,
-			serviceName: GUILDERIA_SERVICE_NAME,
+			serviceName: ZENTHCLOUD_SERVICE_NAME,
 			protocol: "HTTP/2.0",
 		});
 		expect(event?.timestamp.toISOString()).toBe("2026-10-12T09:04:05.123Z");
@@ -172,7 +172,7 @@ describe("parseTraefikAccessLogLine", () => {
 		// A record truncated by log rotation must be dropped, not guessed at.
 		expect(
 			parseTraefikAccessLogLine(
-				'{"StartUTC":"2026-01-01","RequestHost":"guilderia.com"',
+				'{"StartUTC":"2026-01-01","RequestHost":"zenthcloud.com"',
 			),
 		).toBeNull();
 	});
@@ -216,17 +216,17 @@ describe("parseTraefikAccessLog", () => {
 
 describe("resolvePropertyId", () => {
 	const properties = [
-		{ id: "apex", domain: "guilderia.com", matchesSubdomains: true },
-		{ id: "docs", domain: "docs.guilderia.com", matchesSubdomains: false },
-		{ id: "api", domain: "api.guilderia.com", matchesSubdomains: false },
+		{ id: "apex", domain: "zenthcloud.com", matchesSubdomains: true },
+		{ id: "docs", domain: "docs.zenthcloud.com", matchesSubdomains: false },
+		{ id: "api", domain: "api.zenthcloud.com", matchesSubdomains: false },
 	];
 
 	it("prefers the most specific declared domain", () => {
-		expect(resolvePropertyId("guilderia.com", properties)).toBe("apex");
-		expect(resolvePropertyId("www.guilderia.com", properties)).toBe("apex");
-		expect(resolvePropertyId("docs.guilderia.com", properties)).toBe("docs");
+		expect(resolvePropertyId("zenthcloud.com", properties)).toBe("apex");
+		expect(resolvePropertyId("www.zenthcloud.com", properties)).toBe("apex");
+		expect(resolvePropertyId("docs.zenthcloud.com", properties)).toBe("docs");
 		expect(
-			resolvePropertyId("deep.docs.guilderia.com", properties),
+			resolvePropertyId("deep.docs.zenthcloud.com", properties),
 		).toBe("apex");
 	});
 
@@ -237,8 +237,8 @@ describe("resolvePropertyId", () => {
 
 	it("ignores sub-domains when the property forbids them", () => {
 		expect(
-			resolvePropertyId("extra.api.guilderia.com", [
-				{ id: "api", domain: "api.guilderia.com", matchesSubdomains: false },
+			resolvePropertyId("extra.api.zenthcloud.com", [
+				{ id: "api", domain: "api.zenthcloud.com", matchesSubdomains: false },
 			]),
 		).toBeUndefined();
 	});

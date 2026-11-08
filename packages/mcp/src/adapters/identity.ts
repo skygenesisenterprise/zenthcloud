@@ -86,7 +86,7 @@ export class IdentityResolver {
     if (typeof userId !== "string" || userId === "" || typeof organizationId !== "string") {
       throw new ApiError({
         message:
-          "The configured Guilderia API key is not valid or has no active organization. Check GUILDERIA_API_KEY.",
+          "The configured Zenthcloud API key is not valid or has no active organization. Check ZENTHCLOUD_API_KEY.",
         code: "unauthenticated",
       });
     }
@@ -96,7 +96,7 @@ export class IdentityResolver {
     );
     if (!permissions) {
       throw new ApiError({
-        message: "The Guilderia API returned an unexpected permission set; refusing to execute",
+        message: "The Zenthcloud API returned an unexpected permission set; refusing to execute",
         code: "internal_error",
       });
     }

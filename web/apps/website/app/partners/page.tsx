@@ -12,7 +12,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Partners",
 	description:
-		"Join the guilderia partner program. Agency plan, referral program, and reseller options.",
+		"Join the zenthcloud partner program. Agency plan, referral program, and reseller options.",
 };
 
 const PROGRAMS = [
@@ -36,7 +36,7 @@ const PROGRAMS = [
 		badge: "Available",
 		badgeVariant: "default" as const,
 		description:
-			"Earn 20% commission on every customer you refer to guilderia.",
+			"Earn 20% commission on every customer you refer to zenthcloud.",
 		features: [
 			"Co-marketing opportunities",
 			"Partner dashboard",
@@ -51,7 +51,7 @@ const PROGRAMS = [
 		badge: "Coming soon",
 		badgeVariant: "secondary" as const,
 		description:
-			"Sell guilderia directly in your market with local presence and relationships.",
+			"Sell zenthcloud directly in your market with local presence and relationships.",
 		features: [
 			"Strategic market access",
 			"Cultural advantage",
@@ -70,7 +70,7 @@ export default function PartnersPage() {
 				badge="Partners"
 				badgeDetail="Agency, referral & reseller"
 				title="Partner with"
-				highlight="guilderia"
+				highlight="zenthcloud"
 				description="Unlock premium features for your clients, earn revenue through referrals, and scale your agency on infrastructure you control."
 				actions={
 					<Button className="rounded-full" asChild>
@@ -78,7 +78,7 @@ export default function PartnersPage() {
 					</Button>
 				}
 				links={[
-					{ href: "mailto:partners@guilderia.com", label: "partners@guilderia.com" },
+					{ href: "mailto:partners@zenthcloud.com", label: "partners@zenthcloud.com" },
 					{ href: "/pricing", label: "Pricing" },
 				]}
 			/>

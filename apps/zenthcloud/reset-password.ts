@@ -1,6 +1,6 @@
-import { findOwner, generateRandomPassword } from "@guilderia/server";
-import { db } from "@guilderia/server/db";
-import { account, user } from "@guilderia/server/db/schema";
+import { findOwner, generateRandomPassword } from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
+import { account, user } from "@zenthcloud/server/db/schema";
 import { and, eq } from "drizzle-orm";
 
 (async () => {

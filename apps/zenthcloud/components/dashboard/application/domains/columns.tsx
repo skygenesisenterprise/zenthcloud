@@ -1,4 +1,4 @@
-import { getDomainRequirements } from "@guilderia/server/utils/domain-scope";
+import { getDomainRequirements } from "@zenthcloud/server/utils/domain-scope";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
 	ArrowUpDown,

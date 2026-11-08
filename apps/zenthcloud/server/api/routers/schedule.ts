@@ -3,28 +3,28 @@ import {
 	isExternalJobsEnabled,
 	removeScheduleJob,
 	scheduleJob,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
-import { deployments } from "@guilderia/server/db/schema/deployment";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
+import { deployments } from "@zenthcloud/server/db/schema/deployment";
 import {
 	createScheduleSchema,
 	schedules,
 	updateScheduleSchema,
-} from "@guilderia/server/db/schema/schedule";
-import { runCommand } from "@guilderia/server/index";
+} from "@zenthcloud/server/db/schema/schedule";
+import { runCommand } from "@zenthcloud/server/index";
 import {
 	checkPermission,
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
-} from "@guilderia/server/services/permission";
+} from "@zenthcloud/server/services/permission";
 import {
 	assertHostScheduleAccess,
 	createSchedule,
 	deleteSchedule,
 	findScheduleById,
 	updateSchedule,
-} from "@guilderia/server/services/schedule";
-import { findServerById } from "@guilderia/server/services/server";
+} from "@zenthcloud/server/services/schedule";
+import { findServerById } from "@zenthcloud/server/services/server";
 import { TRPCError } from "@trpc/server";
 import { asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -64,7 +64,7 @@ export const scheduleRouter = createTRPCRouter({
 			}
 			const newSchedule = await createSchedule({
 				...input,
-				...(input.scheduleType === "guilderia-server" && {
+				...(input.scheduleType === "zenthcloud-server" && {
 					organizationId: ctx.session.activeOrganizationId,
 				}),
 			});
@@ -213,7 +213,7 @@ export const scheduleRouter = createTRPCRouter({
 					"application",
 					"compose",
 					"server",
-					"guilderia-server",
+					"zenthcloud-server",
 				]),
 			}),
 		)
@@ -240,7 +240,7 @@ export const scheduleRouter = createTRPCRouter({
 					}
 				}
 
-				if (input.scheduleType === "guilderia-server") {
+				if (input.scheduleType === "zenthcloud-server") {
 					const member = await findMemberByUserId(
 						ctx.user.id,
 						ctx.session.activeOrganizationId,
@@ -257,7 +257,7 @@ export const scheduleRouter = createTRPCRouter({
 				application: eq(schedules.applicationId, input.id),
 				compose: eq(schedules.composeId, input.id),
 				server: eq(schedules.serverId, input.id),
-				"guilderia-server": eq(
+				"zenthcloud-server": eq(
 					schedules.organizationId,
 					ctx.session.activeOrganizationId,
 				),

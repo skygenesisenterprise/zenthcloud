@@ -1,33 +1,33 @@
-import { docker } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
+import { docker } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateApplication,
 	applications,
 	buildAppName,
-} from "@guilderia/server/db/schema";
-import { getAdvancedStats } from "@guilderia/server/monitoring/utils";
+} from "@zenthcloud/server/db/schema";
+import { getAdvancedStats } from "@zenthcloud/server/monitoring/utils";
 import {
 	getBuildCommand,
 	mechanizeDockerContainer,
-} from "@guilderia/server/utils/builders";
-import { sendBuildErrorNotifications } from "@guilderia/server/utils/notifications/build-error";
-import { sendBuildSuccessNotifications } from "@guilderia/server/utils/notifications/build-success";
+} from "@zenthcloud/server/utils/builders";
+import { sendBuildErrorNotifications } from "@zenthcloud/server/utils/notifications/build-error";
+import { sendBuildSuccessNotifications } from "@zenthcloud/server/utils/notifications/build-success";
 import {
 	ExecError,
 	execAsync,
 	execAsyncRemote,
-} from "@guilderia/server/utils/process/execAsync";
-import { cloneBitbucketRepository } from "@guilderia/server/utils/providers/bitbucket";
-import { buildRemoteDocker } from "@guilderia/server/utils/providers/docker";
+} from "@zenthcloud/server/utils/process/execAsync";
+import { cloneBitbucketRepository } from "@zenthcloud/server/utils/providers/bitbucket";
+import { buildRemoteDocker } from "@zenthcloud/server/utils/providers/docker";
 import {
 	cloneGitRepository,
 	getGitCommitInfo,
-} from "@guilderia/server/utils/providers/git";
-import { cloneGiteaRepository } from "@guilderia/server/utils/providers/gitea";
-import { cloneGithubRepository } from "@guilderia/server/utils/providers/github";
-import { cloneGitlabRepository } from "@guilderia/server/utils/providers/gitlab";
-import { redactSecrets } from "@guilderia/server/utils/security/redact";
-import { createTraefikConfig } from "@guilderia/server/utils/traefik/application";
+} from "@zenthcloud/server/utils/providers/git";
+import { cloneGiteaRepository } from "@zenthcloud/server/utils/providers/gitea";
+import { cloneGithubRepository } from "@zenthcloud/server/utils/providers/github";
+import { cloneGitlabRepository } from "@zenthcloud/server/utils/providers/gitlab";
+import { redactSecrets } from "@zenthcloud/server/utils/security/redact";
+import { createTraefikConfig } from "@zenthcloud/server/utils/traefik/application";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
@@ -194,7 +194,7 @@ export const updateApplicationStatus = async (
 };
 
 /**
- * Guilderia Cloud: assign and provision the generated *.guilderia.app hostname
+ * Zenthcloud Cloud: assign and provision the generated *.zenthcloud.app hostname
  * once a deployment is live. Imported lazily because `cloud-domain` imports
  * this module; the cycle stays safe, and domain provisioning must never turn a
  * successful deployment into a failure (the ledger records the error instead).
@@ -477,12 +477,12 @@ export const deployPreviewApplication = async ({
 		);
 		await updateIssueComment({
 			...issueParams,
-			body: `### Guilderia Preview Deployment\n\n${buildingComment}`,
+			body: `### Zenthcloud Preview Deployment\n\n${buildingComment}`,
 		});
 		application.appName = previewDeployment.appName;
-		application.env = `${application.previewEnv}\nGUILDERIA_DEPLOY_URL=${previewDeployment?.domain?.host}`;
-		application.buildArgs = `${application.previewBuildArgs}\nGUILDERIA_DEPLOY_URL=${previewDeployment?.domain?.host}`;
-		application.buildSecrets = `${application.previewBuildSecrets}\nGUILDERIA_DEPLOY_URL=${previewDeployment?.domain?.host}`;
+		application.env = `${application.previewEnv}\nZENTHCLOUD_DEPLOY_URL=${previewDeployment?.domain?.host}`;
+		application.buildArgs = `${application.previewBuildArgs}\nZENTHCLOUD_DEPLOY_URL=${previewDeployment?.domain?.host}`;
+		application.buildSecrets = `${application.previewBuildSecrets}\nZENTHCLOUD_DEPLOY_URL=${previewDeployment?.domain?.host}`;
 		application.rollbackActive = false;
 		application.buildRegistry = null;
 		application.rollbackRegistry = null;
@@ -512,7 +512,7 @@ export const deployPreviewApplication = async ({
 		);
 		await updateIssueComment({
 			...issueParams,
-			body: `### Guilderia Preview Deployment\n\n${successComment}`,
+			body: `### Zenthcloud Preview Deployment\n\n${successComment}`,
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 		await updatePreviewDeployment(previewDeploymentId, {
@@ -522,7 +522,7 @@ export const deployPreviewApplication = async ({
 		const comment = getIssueComment(application.name, "error", previewDomain);
 		await updateIssueComment({
 			...issueParams,
-			body: `### Guilderia Preview Deployment\n\n${comment}`,
+			body: `### Zenthcloud Preview Deployment\n\n${comment}`,
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "error");
 		await updatePreviewDeployment(previewDeploymentId, {
@@ -594,14 +594,14 @@ export const rebuildPreviewApplication = async ({
 		);
 		await updateIssueComment({
 			...issueParams,
-			body: `### Guilderia Preview Deployment\n\n${buildingComment}`,
+			body: `### Zenthcloud Preview Deployment\n\n${buildingComment}`,
 		});
 
 		// Set application properties for preview deployment
 		application.appName = previewDeployment.appName;
-		application.env = `${application.previewEnv}\nGUILDERIA_DEPLOY_URL=${previewDeployment?.domain?.host}`;
-		application.buildArgs = `${application.previewBuildArgs}\nGUILDERIA_DEPLOY_URL=${previewDeployment?.domain?.host}`;
-		application.buildSecrets = `${application.previewBuildSecrets}\nGUILDERIA_DEPLOY_URL=${previewDeployment?.domain?.host}`;
+		application.env = `${application.previewEnv}\nZENTHCLOUD_DEPLOY_URL=${previewDeployment?.domain?.host}`;
+		application.buildArgs = `${application.previewBuildArgs}\nZENTHCLOUD_DEPLOY_URL=${previewDeployment?.domain?.host}`;
+		application.buildSecrets = `${application.previewBuildSecrets}\nZENTHCLOUD_DEPLOY_URL=${previewDeployment?.domain?.host}`;
 		application.rollbackActive = false;
 		application.buildRegistry = null;
 		application.rollbackRegistry = null;
@@ -626,7 +626,7 @@ export const rebuildPreviewApplication = async ({
 		);
 		await updateIssueComment({
 			...issueParams,
-			body: `### Guilderia Preview Deployment\n\n${successComment}`,
+			body: `### Zenthcloud Preview Deployment\n\n${successComment}`,
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 		await updatePreviewDeployment(previewDeploymentId, {
@@ -653,7 +653,7 @@ export const rebuildPreviewApplication = async ({
 		const comment = getIssueComment(application.name, "error", previewDomain);
 		await updateIssueComment({
 			...issueParams,
-			body: `### Guilderia Preview Deployment\n\n${comment}`,
+			body: `### Zenthcloud Preview Deployment\n\n${comment}`,
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "error");
 		await updatePreviewDeployment(previewDeploymentId, {
@@ -666,7 +666,7 @@ export const rebuildPreviewApplication = async ({
 };
 
 export const getApplicationStats = async (appName: string) => {
-	if (appName === "guilderia") {
+	if (appName === "zenthcloud") {
 		return await getAdvancedStats(appName);
 	}
 	const filter = {

@@ -9,45 +9,45 @@ export const IS_CLOUD = process.env.IS_CLOUD === "true";
  * capability model (issue #75 §12); it is never the sole basis for unlocking a
  * protected product.
  */
-export const GUILDERIA_FLAVOR = process.env.GUILDERIA_FLAVOR;
+export const ZENTHCLOUD_FLAVOR = process.env.ZENTHCLOUD_FLAVOR;
 
 /**
  * Product the instance was launched as (`self`, `cloud` or `console`).
  *
  * This is the launcher's explicit declaration and takes precedence over the
- * legacy `GUILDERIA_FLAVOR` / `IS_CLOUD` hints. It is *not* an authorization: a
+ * legacy `ZENTHCLOUD_FLAVOR` / `IS_CLOUD` hints. It is *not* an authorization: a
  * protected product still fails closed without a signed entitlement. It answers
  * "which surface was started", which is what the console/cloud UI needs even
  * when a persisted instance identity was minted for another product.
  */
-export const GUILDERIA_PRODUCT = process.env.GUILDERIA_PRODUCT;
+export const ZENTHCLOUD_PRODUCT = process.env.ZENTHCLOUD_PRODUCT;
 
 /**
- * Public key Guilderia signs cloud/console entitlements with. Only the public half
+ * Public key Zenthcloud signs cloud/console entitlements with. Only the public half
  * ships here; the signing key is kept offline. Empty by default so a protected
  * product fails closed until a real key is configured.
  */
-export const GUILDERIA_ENTITLEMENT_PUBLIC_KEY =
-	process.env.GUILDERIA_ENTITLEMENT_PUBLIC_KEY ?? "";
+export const ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY =
+	process.env.ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY ?? "";
 
 /** Optional path to the entitlement public key, for file-based deployments. */
-export const GUILDERIA_ENTITLEMENT_PUBLIC_KEY_FILE =
-	process.env.GUILDERIA_ENTITLEMENT_PUBLIC_KEY_FILE;
+export const ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY_FILE =
+	process.env.ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY_FILE;
 
 /**
  * Development-only escape hatch for protected products (cloud/console).
  *
  * Local development must be able to boot a protected product without a real
- * Guilderia-signed entitlement, which is only minted by Guilderia's authority. It is
+ * Zenthcloud-signed entitlement, which is only minted by Zenthcloud's authority. It is
  * never a security downgrade: the check is ignored whenever NODE_ENV=production,
  * so a leaked environment variable can never unlock a protected product on a
- * real host. Opt in explicitly with GUILDERIA_ALLOW_UNLICENSED_DEV=1; the dev
+ * real host. Opt in explicitly with ZENTHCLOUD_ALLOW_UNLICENSED_DEV=1; the dev
  * Compose service sets it automatically.
  */
 export const allowUnlicensedDevInstance = (): boolean =>
 	process.env.NODE_ENV !== "production" &&
 	["1", "true", "yes"].includes(
-		(process.env.GUILDERIA_ALLOW_UNLICENSED_DEV ?? "").toLowerCase(),
+		(process.env.ZENTHCLOUD_ALLOW_UNLICENSED_DEV ?? "").toLowerCase(),
 	);
 
 /**
@@ -57,14 +57,14 @@ export const allowUnlicensedDevInstance = (): boolean =>
  * `torrc` from `/etc/tor/torrc` and keep its Tor data directory in
  * `/var/lib/tor`.
  */
-export const GUILDERIA_TOR_IMAGE =
-	process.env.GUILDERIA_TOR_IMAGE ?? "docker.io/dockurr/tor:latest";
+export const ZENTHCLOUD_TOR_IMAGE =
+	process.env.ZENTHCLOUD_TOR_IMAGE ?? "docker.io/dockurr/tor:latest";
 
-export const GUILDERIA_DOCKER_API_VERSION =
-	process.env.GUILDERIA_DOCKER_API_VERSION;
-export const GUILDERIA_DOCKER_HOST = process.env.GUILDERIA_DOCKER_HOST;
-export const GUILDERIA_DOCKER_PORT = process.env.GUILDERIA_DOCKER_PORT
-	? Number(process.env.GUILDERIA_DOCKER_PORT)
+export const ZENTHCLOUD_DOCKER_API_VERSION =
+	process.env.ZENTHCLOUD_DOCKER_API_VERSION;
+export const ZENTHCLOUD_DOCKER_HOST = process.env.ZENTHCLOUD_DOCKER_HOST;
+export const ZENTHCLOUD_DOCKER_PORT = process.env.ZENTHCLOUD_DOCKER_PORT
+	? Number(process.env.ZENTHCLOUD_DOCKER_PORT)
 	: undefined;
 
 export const CLEANUP_CRON_JOB = "50 23 * * *";
@@ -97,18 +97,18 @@ type DockerSocketCandidate = {
 };
 
 const getDockerConfig = (): Docker => {
-	const versionOption = GUILDERIA_DOCKER_API_VERSION
-		? { version: GUILDERIA_DOCKER_API_VERSION }
+	const versionOption = ZENTHCLOUD_DOCKER_API_VERSION
+		? { version: ZENTHCLOUD_DOCKER_API_VERSION }
 		: {};
 
 	// Explicit remote Docker host configuration
-	if (GUILDERIA_DOCKER_HOST) {
+	if (ZENTHCLOUD_DOCKER_HOST) {
 		console.info(
-			`Using remote Docker host: ${GUILDERIA_DOCKER_HOST}${GUILDERIA_DOCKER_PORT ? `:${GUILDERIA_DOCKER_PORT}` : ""}`,
+			`Using remote Docker host: ${ZENTHCLOUD_DOCKER_HOST}${ZENTHCLOUD_DOCKER_PORT ? `:${ZENTHCLOUD_DOCKER_PORT}` : ""}`,
 		);
 		return new Docker({
-			host: GUILDERIA_DOCKER_HOST,
-			...(GUILDERIA_DOCKER_PORT && { port: GUILDERIA_DOCKER_PORT }),
+			host: ZENTHCLOUD_DOCKER_HOST,
+			...(ZENTHCLOUD_DOCKER_PORT && { port: ZENTHCLOUD_DOCKER_PORT }),
 			...versionOption,
 		});
 	}
@@ -172,13 +172,13 @@ if (!globalForDocker.docker) {
 export const docker = globalForDocker.docker;
 
 export const paths = (isServer = false) => {
-	// `GUILDERIA_CONFIG_PATH` lets a containerized install share its config (Traefik
+	// `ZENTHCLOUD_CONFIG_PATH` lets a containerized install share its config (Traefik
 	// dynamic files, certificates, applications…) through a volume with the
 	// Compose-managed Traefik service instead of the in-container `.docker` dir.
 	const BASE_PATH =
-		process.env.GUILDERIA_CONFIG_PATH ||
+		process.env.ZENTHCLOUD_CONFIG_PATH ||
 		(isServer || process.env.NODE_ENV === "production"
-			? "/etc/guilderia"
+			? "/etc/zenthcloud"
 			: path.join(process.cwd(), ".docker"));
 	const MAIN_TRAEFIK_PATH = `${BASE_PATH}/traefik`;
 	const DYNAMIC_TRAEFIK_PATH = `${MAIN_TRAEFIK_PATH}/dynamic`;

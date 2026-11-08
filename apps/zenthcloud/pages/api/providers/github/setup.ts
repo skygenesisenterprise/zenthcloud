@@ -3,9 +3,9 @@ import {
 	deriveGithubApiUrl,
 	parseGithubBaseUrl,
 	validateRequest,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
-import { hasPermission } from "@guilderia/server/services/permission";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
+import { hasPermission } from "@zenthcloud/server/services/permission";
 import { eq } from "drizzle-orm";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Octokit } from "octokit";

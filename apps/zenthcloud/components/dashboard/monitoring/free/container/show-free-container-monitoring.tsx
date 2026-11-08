@@ -1,5 +1,5 @@
-import { createMetricUsage } from "@guilderia/server/monitoring/status";
-import { formatMb } from "@guilderia/server/monitoring/units";
+import { createMetricUsage } from "@zenthcloud/server/monitoring/status";
+import { formatMb } from "@zenthcloud/server/monitoring/units";
 import { Cpu, HardDrive, MemoryStick } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -282,7 +282,7 @@ export const ContainerFreeMonitoring = ({
 						</MetricUsage>
 					</CardContent>
 				</Card>
-				{appName === "guilderia" && (					<Card className="bg-background">
+				{appName === "zenthcloud" && (					<Card className="bg-background">
 						<CardContent className="pt-6">
 							<MetricUsage
 								label="Disk Space"
@@ -301,7 +301,7 @@ export const ContainerFreeMonitoring = ({
 					</CardContent>
 					</Card>
 				)}
-				{appName === "guilderia" && (
+				{appName === "zenthcloud" && (
 					<Card className="bg-background">
 						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 							<CardTitle className="text-sm font-medium">

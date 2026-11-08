@@ -1,5 +1,5 @@
-import type { ApplicationNested } from "@guilderia/server/utils/builders";
-import { getRailpackCommand } from "@guilderia/server/utils/builders/railpack";
+import type { ApplicationNested } from "@zenthcloud/server/utils/builders";
+import { getRailpackCommand } from "@zenthcloud/server/utils/builders/railpack";
 import { describe, expect, it } from "vitest";
 
 const createApplication = (

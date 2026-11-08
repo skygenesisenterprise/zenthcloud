@@ -140,7 +140,7 @@ generate_secrets() {
 # Create necessary directories
 setup_directories() {
     log_info "Creating directories..."
-    mkdir -p /etc/guilderia 2>/dev/null || sudo mkdir -p /etc/guilderia 2>/dev/null || true
+    mkdir -p /etc/zenthcloud 2>/dev/null || sudo mkdir -p /etc/zenthcloud 2>/dev/null || true
     log_success "Directories ready"
 }
 

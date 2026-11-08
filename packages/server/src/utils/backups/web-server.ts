@@ -2,18 +2,18 @@ import { createWriteStream } from "node:fs";
 import { mkdtemp, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { IS_CLOUD, paths } from "@guilderia/server/constants";
+import { IS_CLOUD, paths } from "@zenthcloud/server/constants";
 import {
 	ENCRYPTION_KEY_BACKUP_FILE,
 	exportEncryptionKeys,
-} from "@guilderia/server/lib/encryption";
-import type { BackupSchedule } from "@guilderia/server/services/backup";
+} from "@zenthcloud/server/lib/encryption";
+import type { BackupSchedule } from "@zenthcloud/server/services/backup";
 import {
 	createDeploymentBackup,
 	updateDeploymentStatus,
-} from "@guilderia/server/services/deployment";
-import { findDestinationById } from "@guilderia/server/services/destination";
-import { sendGuilderiaBackupNotifications } from "../notifications/guilderia-backup";
+} from "@zenthcloud/server/services/deployment";
+import { findDestinationById } from "@zenthcloud/server/services/destination";
+import { sendZenthcloudBackupNotifications } from "../notifications/zenthcloud-backup";
 import { execAsync } from "../process/execAsync";
 import { redactRcloneCredentials } from "./redact";
 import { getBackupTimestamp, getS3Credentials, normalizeS3Path } from "./utils";
@@ -44,7 +44,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 		const rcloneFlags = getS3Credentials(destination);
 		const timestamp = getBackupTimestamp();
 		const { BASE_PATH } = paths();
-		const tempDir = await mkdtemp(join(tmpdir(), "guilderia-backup-"));
+		const tempDir = await mkdtemp(join(tmpdir(), "zenthcloud-backup-"));
 		const backupFileName = `webserver-backup-${timestamp}.zip`;
 		const s3Path = `:s3:${destination.bucket}/${backup.appName}/${normalizeS3Path(backup.prefix)}${backupFileName}`;
 
@@ -53,21 +53,21 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 
 			// First get the container ID
 			const { stdout: containerId } = await execAsync(
-				`docker ps --filter "name=guilderia-postgres" --filter "status=running" -q | head -n 1`,
+				`docker ps --filter "name=zenthcloud-postgres" --filter "status=running" -q | head -n 1`,
 			);
 
 			if (!containerId) {
-				writeStream.write("Guilderia postgres container not found❌\n");
+				writeStream.write("Zenthcloud postgres container not found❌\n");
 				writeStream.end();
-				throw new Error("Guilderia postgres container not found");
+				throw new Error("Zenthcloud postgres container not found");
 			}
 
-			writeStream.write(`Guilderia postgres container ID: ${containerId}\n`);
+			writeStream.write(`Zenthcloud postgres container ID: ${containerId}\n`);
 
 			const postgresContainerId = containerId.trim();
 
 			// First dump the database inside the container
-			const dumpCommand = `docker exec ${postgresContainerId} pg_dump -v -Fc -U guilderia -d guilderia -f /tmp/database.sql`;
+			const dumpCommand = `docker exec ${postgresContainerId} pg_dump -v -Fc -U zenthcloud -d zenthcloud -f /tmp/database.sql`;
 			writeStream.write(`Running dump command: ${dumpCommand}\n`);
 			await execAsync(dumpCommand);
 
@@ -119,7 +119,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 			await execAsync(uploadCommand);
 			writeStream.write("Uploaded backup to S3 ✅\n");
 			writeStream.end();
-			await sendGuilderiaBackupNotifications({
+			await sendZenthcloudBackupNotifications({
 				type: "success",
 				backupSize: formatBytes(computedBackupSize),
 			});
@@ -143,7 +143,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 		writeStream.write("Backup error❌\n");
 		writeStream.write(`${safeErrorMessage}\n`);
 		writeStream.end();
-		await sendGuilderiaBackupNotifications({
+		await sendZenthcloudBackupNotifications({
 			type: "error",
 			errorMessage: safeErrorMessage || "Error message not provided",
 			backupSize: formatBytes(computedBackupSize),

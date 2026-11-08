@@ -1,7 +1,7 @@
 import type {
 	TrafficDeviceType,
 	TrafficStatusClass,
-} from "@guilderia/server/db/schema/traffic";
+} from "@zenthcloud/server/db/schema/traffic";
 
 /**
  * Normalisation layer of the HTTP observability pipeline.
@@ -38,7 +38,7 @@ export interface TrafficHttpEvent {
 	bytesOut: number;
 	/** Total request duration (`Duration`, converted from nanoseconds). */
 	durationMs: number;
-	/** `ServiceName`, used to recognise Guilderia's own control plane. */
+	/** `ServiceName`, used to recognise Zenthcloud's own control plane. */
 	serviceName: string | null;
 	protocol: string | null;
 }
@@ -50,8 +50,8 @@ export interface ParsedTrafficLog {
 	invalidLines: number;
 }
 
-/** The Traefik service name of Guilderia's own dashboard, when observed locally. */
-export const GUILDERIA_SERVICE_NAME = "guilderia-service-app@file";
+/** The Traefik service name of Zenthcloud's own dashboard, when observed locally. */
+export const ZENTHCLOUD_SERVICE_NAME = "zenthcloud-service-app@file";
 
 const MAX_ROUTE_LENGTH = 240;
 const MAX_ROUTE_SEGMENTS = 8;
@@ -341,7 +341,7 @@ export interface ResolvableProperty {
  * Resolve a request host to the property that owns it.
  *
  * Exact domain first, then the longest matching parent domain when sub-domains
- * are allowed, so `docs.guilderia.com` wins over a declared `guilderia.com` when
+ * are allowed, so `docs.zenthcloud.com` wins over a declared `zenthcloud.com` when
  * both are watched separately.
  */
 export const resolvePropertyId = (

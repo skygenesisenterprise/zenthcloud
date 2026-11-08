@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import { paths } from "@guilderia/server/constants";
+import { paths } from "@zenthcloud/server/constants";
 import {
 	getWebServerSettings,
 	updateWebServerSettings,
-} from "@guilderia/server/services/web-server-settings";
+} from "@zenthcloud/server/services/web-server-settings";
 import { scheduledJobs, scheduleJob } from "node-schedule";
 import { execAsync } from "../process/execAsync";
 
@@ -33,11 +33,11 @@ export const startLogCleanup = async (
 					`tail -n 1000 ${accessLogPath} > ${accessLogPath}.tmp && mv ${accessLogPath}.tmp ${accessLogPath}`,
 				);
 
-				// Traefik can run as a standalone container ("guilderia-traefik") or a
-				// swarm service task ("guilderia-traefik.1.<task-id>"), so resolve the
+				// Traefik can run as a standalone container ("zenthcloud-traefik") or a
+				// swarm service task ("zenthcloud-traefik.1.<task-id>"), so resolve the
 				// running container id dynamically instead of assuming the name.
 				const { stdout: containerId } = await execAsync(
-					'docker ps -q --filter "name=guilderia-traefik" --filter "status=running" | head -n 1',
+					'docker ps -q --filter "name=zenthcloud-traefik" --filter "status=running" | head -n 1',
 				);
 				const traefikContainerId = containerId.trim();
 				if (!traefikContainerId) {

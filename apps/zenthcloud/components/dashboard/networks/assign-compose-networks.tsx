@@ -39,7 +39,7 @@ interface Props {
 const serviceSchema = z.object({
 	serviceName: z.string(),
 	networkIds: z.array(z.string()),
-	detachguilderiaNetwork: z.boolean(),
+	detachzenthcloudNetwork: z.boolean(),
 });
 
 const formSchema = z.object({
@@ -95,7 +95,7 @@ export const AssignComposeNetworks = ({ composeId }: Props) => {
 				return {
 					serviceName,
 					networkIds: config?.networkIds ?? [],
-					detachguilderiaNetwork: config?.detachguilderiaNetwork ?? false,
+					detachzenthcloudNetwork: config?.detachzenthcloudNetwork ?? false,
 				};
 			}),
 		});
@@ -109,7 +109,7 @@ export const AssignComposeNetworks = ({ composeId }: Props) => {
 	const onSubmit = async (values: FormValues) => {
 		try {
 			const serviceNetworks = values.services.filter(
-				(s) => s.networkIds.length > 0 || s.detachguilderiaNetwork,
+				(s) => s.networkIds.length > 0 || s.detachzenthcloudNetwork,
 			);
 			await mutateAsync({
 				composeId,
@@ -131,7 +131,7 @@ export const AssignComposeNetworks = ({ composeId }: Props) => {
 					<CardTitle className="text-xl">Networks</CardTitle>
 					<CardDescription>
 						Attach Docker networks per service and detach it from
-						guilderia-network. Takes effect on the next deploy.
+						zenthcloud-network. Takes effect on the next deploy.
 					</CardDescription>
 				</div>
 				<Button
@@ -224,13 +224,13 @@ const ServiceRow = ({
 		<div className="flex flex-col gap-3 rounded-lg border p-4">
 			<FormField
 				control={control}
-				name={`services.${index}.detachguilderiaNetwork`}
+				name={`services.${index}.detachzenthcloudNetwork`}
 				render={({ field }) => (
 					<FormItem className="flex flex-row items-center justify-between gap-3 space-y-0">
 						<span className="text-sm font-medium">{service}</span>
 						<div className="flex items-center gap-2">
 							<span className="text-xs text-muted-foreground">
-								Detach guilderia-network
+								Detach zenthcloud-network
 							</span>
 							<FormControl>
 								<Switch

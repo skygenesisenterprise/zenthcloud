@@ -1,18 +1,18 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateDnsProvider,
 	type DnsProviderConfig,
 	dnsProvider,
 	dnsProviderTypes,
-} from "@guilderia/server/db/schema";
-import type { DnsRecordInput } from "@guilderia/server/utils/dns";
+} from "@zenthcloud/server/db/schema";
+import type { DnsRecordInput } from "@zenthcloud/server/utils/dns";
 import {
 	getDnsCapabilities,
 	getDnsClient,
 	getDnsProviderCategory,
 	parseZoneFile,
 	serializeZoneFile,
-} from "@guilderia/server/utils/dns";
+} from "@zenthcloud/server/utils/dns";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
@@ -44,7 +44,7 @@ const SENSITIVE_FIELDS: Record<DnsProviderConfig["providerType"], string[]> = {
 	coredns: ["password"],
 	unbound: [],
 	custom: ["apiToken"],
-	"guilderia-internal": [],
+	"zenthcloud-internal": [],
 };
 
 export const maskDnsProviderConfig = (
@@ -215,7 +215,7 @@ const withAdapterScope = (
 	config: DnsProviderConfig,
 	provider?: Pick<DnsProvider, "dnsProviderId" | "organizationId">,
 ) =>
-	config.providerType === "guilderia-internal"
+	config.providerType === "zenthcloud-internal"
 		? {
 				...config,
 				dnsProviderId: provider?.dnsProviderId ?? "",

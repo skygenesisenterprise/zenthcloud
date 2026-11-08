@@ -1,7 +1,7 @@
 /**
  * Phase 1 — shared observability contracts for Prometheus/Grafana.
  *
- * These types are intentionally transport-agnostic: the Guilderia console must
+ * These types are intentionally transport-agnostic: the Zenthcloud console must
  * not be coupled to whether metrics come from the managed stack or from an
  * external Prometheus/Grafana pair. Adapters (Phase 3) implement these
  * contracts; the console (Phase 4) only consumes them.
@@ -12,7 +12,7 @@
  * - Prometheus read paths must not depend on Grafana at runtime.
  */
 
-/** Stable resource identity used to join Guilderia objects to metric series. */
+/** Stable resource identity used to join Zenthcloud objects to metric series. */
 export interface ObservableResourceRef {
 	organizationId: string;
 	serverId?: string;
@@ -32,7 +32,7 @@ export interface ObservableResourceRef {
 }
 
 /**
- * Mastered Prometheus label set for Guilderia series.
+ * Mastered Prometheus label set for Zenthcloud series.
  * Keep cardinality bounded: no secrets, no unbounded/free-form values.
  */
 export type ObservabilityLabelKey =

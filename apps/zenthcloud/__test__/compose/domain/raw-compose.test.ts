@@ -1,10 +1,10 @@
-import { addDomainToCompose } from "@guilderia/server/utils/docker/domain";
-import { execAsyncRemote } from "@guilderia/server/utils/process/execAsync";
+import { addDomainToCompose } from "@zenthcloud/server/utils/docker/domain";
+import { execAsyncRemote } from "@zenthcloud/server/utils/process/execAsync";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@guilderia/server/utils/process/execAsync", async (importOriginal) => ({
+vi.mock("@zenthcloud/server/utils/process/execAsync", async (importOriginal) => ({
 	...(await importOriginal<
-		typeof import("@guilderia/server/utils/process/execAsync")
+		typeof import("@zenthcloud/server/utils/process/execAsync")
 	>()),
 	execAsyncRemote: vi.fn(),
 }));

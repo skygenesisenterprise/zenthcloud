@@ -938,8 +938,8 @@ describe("external navigation", () => {
 			"support",
 		]);
 		expect(navigation.external.map((item) => item.href)).toEqual([
-			"https://docs.guilderia.com/docs/core",
-			"https://guilderia.com/community",
+			"https://docs.zenthcloud.com/docs/core",
+			"https://zenthcloud.com/community",
 		]);
 	});
 

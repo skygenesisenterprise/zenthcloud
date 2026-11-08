@@ -1,7 +1,7 @@
 /**
  * Homepage content.
  *
- * Copy follows the positioning decided in REDESIGN.md: guilderia is a platform
+ * Copy follows the positioning decided in REDESIGN.md: zenthcloud is a platform
  * to deploy, operate and control services, run either on infrastructure you
  * control (Self) or as a managed platform (Cloud). European development is
  * stated as a fact about the team, not as a sovereignty guarantee.
@@ -24,7 +24,7 @@ export const lifecycle: LifecycleStep[] = [
 		step: "02",
 		title: "Platform",
 		description:
-			"guilderia installs on that infrastructure and becomes the control plane: deployments, routing, certificates, secrets, backups and monitoring.",
+			"zenthcloud installs on that infrastructure and becomes the control plane: deployments, routing, certificates, secrets, backups and monitoring.",
 	},
 	{
 		step: "03",
@@ -61,7 +61,7 @@ export const audiencePaths: AudiencePath[] = [
 		description:
 			"Repeatable deployments, access control, audit trails and support for teams that answer to someone.",
 		href: "/enterprise",
-		cta: "guilderia for teams",
+		cta: "zenthcloud for teams",
 	},
 ];
 
@@ -76,31 +76,31 @@ export interface EditionOption {
 
 export const editionOptions: EditionOption[] = [
 	{
-		name: "guilderia Self",
+		name: "zenthcloud Self",
 		operator: "You operate the platform",
 		description:
-			"Install guilderia on the servers you control. You decide the upgrades, the network boundaries, the backups and who has access.",
+			"Install zenthcloud on the servers you control. You decide the upgrades, the network boundaries, the backups and who has access.",
 		bullets: [
 			"Free and open source (Apache-2.0)",
 			"Runs on any Linux server with Docker",
 			"Data, secrets and backups stay in your boundary",
 			"Start on one server, add nodes when you need them",
 		],
-		cta: "Install guilderia",
+		cta: "Install zenthcloud",
 		href: "/self",
 	},
 	{
-		name: "guilderia Cloud",
-		operator: "guilderia operates the platform",
+		name: "zenthcloud Cloud",
+		operator: "zenthcloud operates the platform",
 		description:
-			"The control plane is hosted, monitored and upgraded by guilderia. Your workloads stay on the servers you connect.",
+			"The control plane is hosted, monitored and upgraded by zenthcloud. Your workloads stay on the servers you connect.",
 		bullets: [
 			"Nothing to install to get started",
 			"Upgrades and monitoring handled for you",
 			"Your applications and data stay yours",
 			"Same product as Self, different operating model",
 		],
-		cta: "Explore guilderia Cloud",
+		cta: "Explore zenthcloud Cloud",
 		href: "/cloud",
 	},
 ];
@@ -154,7 +154,7 @@ export const principles: Principle[] = [
 	{
 		title: "Self-hosting first",
 		description:
-			"The default is software you install and keep. guilderia Cloud is an option, not a requirement.",
+			"The default is software you install and keep. zenthcloud Cloud is an option, not a requirement.",
 	},
 	{
 		title: "Open source",
@@ -174,7 +174,7 @@ export const principles: Principle[] = [
 	{
 		title: "European development",
 		description:
-			"guilderia is developed by a European team. We say what that means, and what it does not guarantee, instead of trading on the label.",
+			"zenthcloud is developed by a European team. We say what that means, and what it does not guarantee, instead of trading on the label.",
 	},
 ];
 
@@ -189,31 +189,31 @@ export const resources: ResourceLink[] = [
 	{
 		label: "Documentation",
 		description: "Installation, architecture and reference.",
-		href: "https://docs.guilderia.com/docs/core",
+		href: "https://docs.zenthcloud.com/docs/core",
 		external: true,
 	},
 	{
 		label: "Installation guide",
 		description: "Prerequisites and the one-command install.",
-		href: "https://docs.guilderia.com/docs/core/installation",
+		href: "https://docs.zenthcloud.com/docs/core/installation",
 		external: true,
 	},
 	{
 		label: "Source code",
 		description: "Apache-2.0 repository, issues and releases.",
-		href: "https://github.com/skygenesisenterprise/guilderia",
+		href: "https://github.com/skygenesisenterprise/zenthcloud",
 		external: true,
 	},
 	{
 		label: "Feature matrix",
 		description: "What is available today, and what is not.",
-		href: "https://docs.guilderia.com/docs/core/feature-matrix",
+		href: "https://docs.zenthcloud.com/docs/core/feature-matrix",
 		external: true,
 	},
 	{
 		label: "Service status",
 		description: "Availability of the hosted services.",
-		href: "https://status.guilderia.com",
+		href: "https://status.zenthcloud.com",
 		external: true,
 	},
 	{
@@ -230,24 +230,24 @@ export interface HomeFaq {
 
 export const homeFaqs: HomeFaq[] = [
 	{
-		question: "What is guilderia?",
+		question: "What is zenthcloud?",
 		answer:
-			"guilderia is a platform for deploying, operating and controlling application services. It runs on infrastructure you control with guilderia Self, or as a managed platform with guilderia Cloud.",
+			"zenthcloud is a platform for deploying, operating and controlling application services. It runs on infrastructure you control with zenthcloud Self, or as a managed platform with zenthcloud Cloud.",
 	},
 	{
-		question: "Is guilderia only for self-hosting?",
+		question: "Is zenthcloud only for self-hosting?",
 		answer:
-			"No. Self-hosting is the default way to run guilderia, and guilderia Cloud is the managed option. Both use the same platform — what changes is who operates the control plane.",
+			"No. Self-hosting is the default way to run zenthcloud, and zenthcloud Cloud is the managed option. Both use the same platform — what changes is who operates the control plane.",
 	},
 	{
-		question: "What do I need to run guilderia Self?",
+		question: "What do I need to run zenthcloud Self?",
 		answer:
 			"A Linux server with Docker: a small VPS, a homelab machine or bare metal. Windows Server is supported through the PowerShell installer. The documentation lists prerequisites and supported environments.",
 	},
 	{
 		question: "Do I need Kubernetes?",
 		answer:
-			"No. guilderia is built on Docker, with Docker Swarm for multi-node deployments and Traefik for routing and certificates.",
+			"No. zenthcloud is built on Docker, with Docker Swarm for multi-node deployments and Traefik for routing and certificates.",
 	},
 	{
 		question: "What can I deploy?",
@@ -260,13 +260,13 @@ export const homeFaqs: HomeFaq[] = [
 			"Yes. Start with the local server, then add remote servers over SSH and group them into a Swarm cluster. Multi-node distributes workloads across nodes; it is not automatic high availability.",
 	},
 	{
-		question: "Is guilderia free?",
+		question: "Is zenthcloud free?",
 		answer:
-			"guilderia Self is free and open source under Apache-2.0, so you pay only for your infrastructure. guilderia Cloud is a paid managed service, and a commercial Enterprise offer adds governance features and support.",
+			"zenthcloud Self is free and open source under Apache-2.0, so you pay only for your infrastructure. zenthcloud Cloud is a paid managed service, and a commercial Enterprise offer adds governance features and support.",
 	},
 	{
 		question: "How do I get started?",
 		answer:
-			"Run the install command above on a Linux or Windows Server host, or explore guilderia Cloud if you would rather not operate the control plane. The documentation walks through the first deployment.",
+			"Run the install command above on a Linux or Windows Server host, or explore zenthcloud Cloud if you would rather not operate the control plane. The documentation walks through the first deployment.",
 	},
 ];

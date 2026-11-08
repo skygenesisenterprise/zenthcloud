@@ -13,7 +13,7 @@ const nextConfig = {
 	typescript: {
 		ignoreBuildErrors: true,
 	},
-	transpilePackages: ["@guilderia/server", "@guilderia/status"],
+	transpilePackages: ["@zenthcloud/server", "@zenthcloud/status"],
 	/**
 	 * The client container only serves the frontend: every `/api/*` call is proxied
 	 * to the API service (GROUP 4), which owns authentication, tRPC/OpenAPI, the
@@ -40,11 +40,11 @@ const nextConfig = {
 	},
 	webpack: (config) => {
 		// Resolve monorepo packages for transpilation
-		config.resolve.alias["@guilderia/status"] = path.resolve(
+		config.resolve.alias["@zenthcloud/status"] = path.resolve(
 			__dirname,
 			"../../packages/status/src"
 		);
-		config.resolve.alias["@guilderia/server"] = path.resolve(
+		config.resolve.alias["@zenthcloud/server"] = path.resolve(
 			__dirname,
 			"../../packages/server/src"
 		);

@@ -1,5 +1,5 @@
-import type { AuditAction, AuditResourceType } from "@guilderia/server/db/schema";
-import { createAuditLog } from "@guilderia/server/services/proprietary/audit-log";
+import type { AuditAction, AuditResourceType } from "@zenthcloud/server/db/schema";
+import { createAuditLog } from "@zenthcloud/server/services/proprietary/audit-log";
 
 interface AuditCtx {
 	user: { id: string; email: string; role: string };

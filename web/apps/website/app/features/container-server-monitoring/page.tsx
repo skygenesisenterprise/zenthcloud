@@ -83,7 +83,7 @@ const configFeatures = [
 		icon: Database,
 		title: "Manage how long data is stored",
 		description:
-			"Decide on your retention period and an automated cron job will clean old metrics. Choose which port the guilderia metrics server listens on—the default is 4500.",
+			"Decide on your retention period and an automated cron job will clean old metrics. Choose which port the zenthcloud metrics server listens on—the default is 4500.",
 	},
 	{
 		icon: Server,
@@ -111,7 +111,7 @@ const relatedFeatures = [
 		icon: Database,
 		title: "Database Management",
 		description:
-			"Provision, manage, and back up databases without leaving guilderia.",
+			"Provision, manage, and back up databases without leaving zenthcloud.",
 		href: "/features/database-management-tool",
 	},
 	{
@@ -142,7 +142,7 @@ const faqs = [
 	{
 		question: "What is the best server monitoring software?",
 		answer:
-			"The best server monitoring software depends on what you need to monitor and whether you want open-source control or a managed SaaS. If you're using guilderia, you get real-time server monitoring as part of your solution on all plans—with no additional setup required once your server is deployed.",
+			"The best server monitoring software depends on what you need to monitor and whether you want open-source control or a managed SaaS. If you're using zenthcloud, you get real-time server monitoring as part of your solution on all plans—with no additional setup required once your server is deployed.",
 	},
 ];
 
@@ -164,7 +164,7 @@ export default function ContainerServerMonitoringPage() {
 						className="w-full rounded-full px-6 sm:w-auto"
 						asChild
 					>
-						<Link href="https://docs.guilderia.com/docs/core" target="_blank">
+						<Link href="https://docs.zenthcloud.com/docs/core" target="_blank">
 							View documentation
 						</Link>
 					</Button>
@@ -197,7 +197,7 @@ export default function ContainerServerMonitoringPage() {
 					id: "configuration-options",
 					title: "Multiple configuration options",
 					description:
-						"Set up your guilderia dashboard to suit your needs with different configuration options.",
+						"Set up your zenthcloud dashboard to suit your needs with different configuration options.",
 					items: configFeatures,
 					columns: 2,
 					layout: "split",
@@ -207,7 +207,7 @@ export default function ContainerServerMonitoringPage() {
 				id: "monitoring-tool",
 				title: "Container and server monitoring tool",
 				description:
-					"Take advantage of guilderia's comprehensive container and server monitoring software alongside the rest of the platform.",
+					"Take advantage of zenthcloud's comprehensive container and server monitoring software alongside the rest of the platform.",
 				items: relatedFeatures,
 				columns: 3,
 			}}
@@ -220,7 +220,7 @@ export default function ContainerServerMonitoringPage() {
 			finalCta={{
 				title: "Ready to keep your systems running?",
 				description:
-					"Get real-time visibility into your servers and containers with guilderia's built-in monitoring.",
+					"Get real-time visibility into your servers and containers with zenthcloud's built-in monitoring.",
 				cta: "Contact sales",
 				href: "/contact",
 			}}
@@ -231,7 +231,7 @@ export default function ContainerServerMonitoringPage() {
 						Monitoring is already on
 					</h2>
 					<p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-muted-foreground">
-						Use guilderia's container monitoring dashboard as soon as you have
+						Use zenthcloud's container monitoring dashboard as soon as you have
 						completed the server deployment setup.
 					</p>
 					<p className="mt-6 rounded-xl bg-secondary px-4 py-3 text-sm text-muted-foreground">
@@ -246,15 +246,15 @@ export default function ContainerServerMonitoringPage() {
 			<Container className="pb-20 sm:pb-28">
 				<ProductFrame
 					src="/primary/monitoring.png"
-					alt="guilderia monitoring dashboard with CPU, memory and network metrics"
-					path="app.guilderia.com/monitoring"
+					alt="zenthcloud monitoring dashboard with CPU, memory and network metrics"
+					path="app.zenthcloud.com/monitoring"
 					caption="Metrics update as you watch them — no separate monitoring stack to install."
 				/>
 			</Container>
 
 			<ChoicePanels
 				id="host-where-needed"
-				title="Host guilderia where your business needs it"
+				title="Host zenthcloud where your business needs it"
 				description="Choose a deployment option that suits your business — on your infrastructure or ours."
 				panels={[
 					{
@@ -275,7 +275,7 @@ export default function ContainerServerMonitoringPage() {
 						name: "Cloud Deployment",
 						tagline: "Managed control plane",
 						description:
-							"Let guilderia operate the dashboard while your workloads run on your servers.",
+							"Let zenthcloud operate the dashboard while your workloads run on your servers.",
 						bullets: [
 							"Rapid scaling capabilities",
 							"Reduced infrastructure overhead",

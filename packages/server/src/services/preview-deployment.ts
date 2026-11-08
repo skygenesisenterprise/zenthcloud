@@ -1,10 +1,10 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreatePreviewDeployment,
 	deployments,
 	organization,
 	previewDeployments,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import type { z } from "zod";
@@ -164,7 +164,7 @@ export const createPreviewDeployment = async (
 		owner: application?.owner || "",
 		repo: application?.repository || "",
 		issue_number: Number.parseInt(schema.pullRequestNumber),
-		body: `### Guilderia Preview Deployment\n\n${runningComment}`,
+		body: `### Zenthcloud Preview Deployment\n\n${runningComment}`,
 	});
 
 	const previewDeployment = await db

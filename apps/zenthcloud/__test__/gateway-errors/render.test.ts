@@ -3,14 +3,14 @@ import {
 	getGatewayErrorPageConfig,
 	renderGatewayErrorPage,
 	safeHttpUrl,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { describe, expect, test } from "vitest";
 
 const config = getGatewayErrorPageConfig({
-	GUILDERIA_GATEWAY_BRAND_NAME: "Acme Cloud",
-	GUILDERIA_GATEWAY_DOCS_URL: "https://docs.example.com/",
-	GUILDERIA_GATEWAY_STATUS_URL: "https://status.example.com",
-	GUILDERIA_GATEWAY_SUPPORT_URL: "https://support.example.com",
+	ZENTHCLOUD_GATEWAY_BRAND_NAME: "Acme Cloud",
+	ZENTHCLOUD_GATEWAY_DOCS_URL: "https://docs.example.com/",
+	ZENTHCLOUD_GATEWAY_STATUS_URL: "https://status.example.com",
+	ZENTHCLOUD_GATEWAY_SUPPORT_URL: "https://support.example.com",
 	IS_CLOUD: "true",
 });
 
@@ -44,7 +44,7 @@ describe("getGatewayErrorPageConfig", () => {
 
 	test("falls back to safe defaults", () => {
 		const fallback = getGatewayErrorPageConfig({});
-		expect(fallback.brandName).toBe("Guilderia");
+		expect(fallback.brandName).toBe("Zenthcloud");
 		expect(fallback.docsUrl).toBeNull();
 		expect(fallback.statusUrl).toBeNull();
 		expect(fallback.supportUrl).toBeNull();
@@ -54,8 +54,8 @@ describe("getGatewayErrorPageConfig", () => {
 
 	test("rejects invalid links and locales", () => {
 		const invalid = getGatewayErrorPageConfig({
-			GUILDERIA_GATEWAY_DOCS_URL: "javascript:alert(1)",
-			GUILDERIA_GATEWAY_LOCALE: "<script>",
+			ZENTHCLOUD_GATEWAY_DOCS_URL: "javascript:alert(1)",
+			ZENTHCLOUD_GATEWAY_LOCALE: "<script>",
 		});
 		expect(invalid.docsUrl).toBeNull();
 		expect(invalid.locale).toBe("en");
@@ -63,7 +63,7 @@ describe("getGatewayErrorPageConfig", () => {
 
 	test("caps the brand name length", () => {
 		const longBrand = getGatewayErrorPageConfig({
-			GUILDERIA_GATEWAY_BRAND_NAME: "a".repeat(200),
+			ZENTHCLOUD_GATEWAY_BRAND_NAME: "a".repeat(200),
 		});
 		expect(longBrand.brandName).toHaveLength(64);
 	});

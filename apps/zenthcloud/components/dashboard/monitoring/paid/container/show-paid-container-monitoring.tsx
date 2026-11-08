@@ -1,4 +1,4 @@
-import { createMetricUsage } from "@guilderia/server/monitoring/status";
+import { createMetricUsage } from "@zenthcloud/server/monitoring/status";
 import { Cpu, HardDrive, Loader2, MemoryStick, Network } from "lucide-react";
 import { useEffect, useState } from "react";
 import { MetricUsage } from "@/components/dashboard/monitoring/metric-usage";

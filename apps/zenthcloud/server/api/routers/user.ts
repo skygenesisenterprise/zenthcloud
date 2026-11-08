@@ -13,8 +13,8 @@ import {
 	sendEmailNotification,
 	sendResendNotification,
 	updateUser,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import {
 	account,
 	apiAssignPermissions,
@@ -25,11 +25,11 @@ import {
 	member,
 	session,
 	user,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import {
 	hasPermission,
 	resolvePermissions,
-} from "@guilderia/server/services/permission";
+} from "@zenthcloud/server/services/permission";
 import { TRPCError } from "@trpc/server";
 import * as bcrypt from "bcrypt";
 import { and, asc, desc, eq, gt, ne } from "drizzle-orm";
@@ -823,7 +823,7 @@ export const userRouter = createTRPCRouter({
 			try {
 				const toEmail = currentInvitation?.email || "";
 				const orgName = organization?.name || "organization";
-				const subject = `You've been invited to join ${orgName} on Guilderia`;
+				const subject = `You've been invited to join ${orgName} on Zenthcloud`;
 				const html = await renderInvitationEmail({
 					email: toEmail,
 					inviteLink,

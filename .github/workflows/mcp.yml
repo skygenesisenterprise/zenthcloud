@@ -45,16 +45,16 @@ jobs:
           cache: pnpm
 
       - name: Install MCP dependencies
-        run: pnpm install --frozen-lockfile --filter "@guilderia/mcp..."
+        run: pnpm install --frozen-lockfile --filter "@zenthcloud/mcp..."
 
       - name: Check generated catalog is current
-        run: pnpm --filter @guilderia/mcp run generate:check
+        run: pnpm --filter @zenthcloud/mcp run generate:check
 
       - name: Lint and format check
-        run: pnpm --filter @guilderia/mcp run lint:ci
+        run: pnpm --filter @zenthcloud/mcp run lint:ci
 
       - name: Type-check
-        run: pnpm --filter @guilderia/mcp run typecheck
+        run: pnpm --filter @zenthcloud/mcp run typecheck
 
       - name: Test
-        run: pnpm --filter @guilderia/mcp run test
+        run: pnpm --filter @zenthcloud/mcp run test

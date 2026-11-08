@@ -1,4 +1,4 @@
-import { auth } from "@guilderia/server/index";
+import { auth } from "@zenthcloud/server/index";
 import { toNodeHandler } from "better-auth/node";
 
 // Disallow body parsing, we will parse it manually

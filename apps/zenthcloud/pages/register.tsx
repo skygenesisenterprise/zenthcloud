@@ -1,4 +1,4 @@
-import { IS_CLOUD, isAdminPresent, validateRequest } from "@guilderia/server";
+import { IS_CLOUD, isAdminPresent, validateRequest } from "@zenthcloud/server";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { generateServerSideHelper } from "@/utils/create-server-helpers";
 import { AlertTriangle } from "lucide-react";
@@ -214,7 +214,7 @@ const Register = ({ isCloud }: Props) => {
 												<FormItem>
 													<FormLabel>Email</FormLabel>
 													<FormControl>
-														<Input placeholder="email@guilderia.com" {...field} />
+														<Input placeholder="email@zenthcloud.com" {...field} />
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -280,7 +280,7 @@ const Register = ({ isCloud }: Props) => {
 									Need help?
 									<Link
 										className="underline"
-										href="https://guilderia.com"
+										href="https://zenthcloud.com"
 										target="_blank"
 									>
 										Contact us

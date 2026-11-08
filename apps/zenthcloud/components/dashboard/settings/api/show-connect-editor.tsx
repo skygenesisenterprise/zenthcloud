@@ -15,26 +15,26 @@ import {
 import { api } from "@/utils/api";
 
 const MARKETPLACE_URL =
-	"https://marketplace.visualstudio.com/items?itemName=guilderia.guilderia";
-const EXTENSION_ID = "guilderia.guilderia";
+	"https://marketplace.visualstudio.com/items?itemName=zenthcloud.zenthcloud";
+const EXTENSION_ID = "zenthcloud.zenthcloud";
 
 const STEPS = [
 	{
 		title: "Install the extension",
 		description:
-			"From a terminal, or search for “guilderia” in the Extensions view.",
+			"From a terminal, or search for “zenthcloud” in the Extensions view.",
 		command: `code --install-extension ${EXTENSION_ID}`,
 	},
 	{
 		title: "Add this instance",
 		description:
-			"Run “guilderia: Add Instance” in the Command Palette and paste the address below. Plain HTTP is accepted on localhost and private networks.",
+			"Run “zenthcloud: Add Instance” in the Command Palette and paste the address below. Plain HTTP is accepted on localhost and private networks.",
 		command: "", // resolved at render time from the current origin
 	},
 	{
 		title: "Authenticate",
 		description:
-			"Run “guilderia: Login”, then paste one of the keys listed on this page. The extension stores it in VS Code secret storage, never in settings.json.",
+			"Run “zenthcloud: Login”, then paste one of the keys listed on this page. The extension stores it in VS Code secret storage, never in settings.json.",
 		command: "", // resolved at render time from the current origin
 	},
 ];
@@ -42,16 +42,16 @@ const STEPS = [
 /**
  * The dashboard half of the VS Code connect flow.
  *
- * guilderia's public API has no OAuth or device-code procedure, so the extension
+ * zenthcloud's public API has no OAuth or device-code procedure, so the extension
  * authenticates exactly like the CLI and the SDK: an API key sent as
  * `x-api-key`. This card is where that key comes from, which makes it the
- * counterpart of the extension's `guilderia.instance.add` and `guilderia.login`
+ * counterpart of the extension's `zenthcloud.instance.add` and `zenthcloud.login`
  * commands.
  *
  * Everything here is derived from `document.location.origin`, so the page is
  * served by the very instance the user is looking at. That is what makes the
- * instructions correct for both deployments without branching: guilderia Cloud
- * hands out `https://app.guilderia.com`, a self-hosted instance hands out its
+ * instructions correct for both deployments without branching: zenthcloud Cloud
+ * hands out `https://app.zenthcloud.com`, a self-hosted instance hands out its
  * own origin, and the extension is identical either way because it only ever
  * talks to the origin it is given.
  */
@@ -90,7 +90,7 @@ export const ShowConnectEditor = () => {
 			<CardContent className="space-y-4 border-t pt-5">
 				<div className="flex items-center gap-2 text-sm text-muted-foreground">
 					<Badge variant="secondary">
-						{isCloud ? "guilderia Cloud" : "Self-hosted"}
+						{isCloud ? "zenthcloud Cloud" : "Self-hosted"}
 					</Badge>
 					<span>
 						The extension connects to this instance over the same API as the CLI

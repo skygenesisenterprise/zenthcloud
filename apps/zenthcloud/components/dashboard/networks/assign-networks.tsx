@@ -53,7 +53,7 @@ export const AssignNetworks = ({ id, type }: Props) => {
 		service,
 		serverId,
 		networkIds,
-		detachguilderiaNetwork,
+		detachzenthcloudNetwork,
 		isolatedNetwork,
 		updateAsync,
 		isUpdating,
@@ -73,9 +73,9 @@ export const AssignNetworks = ({ id, type }: Props) => {
 
 	useEffect(() => {
 		setSelected(networkIds ?? []);
-		setDetached(detachguilderiaNetwork ?? false);
+		setDetached(detachzenthcloudNetwork ?? false);
 		setIsolated(isolatedNetwork ?? false);
-	}, [networkIds, detachguilderiaNetwork, isolatedNetwork]);
+	}, [networkIds, detachzenthcloudNetwork, isolatedNetwork]);
 
 	const availableNetworks = (networks ?? []).filter(
 		(n) => n.driver === "overlay",
@@ -86,7 +86,7 @@ export const AssignNetworks = ({ id, type }: Props) => {
 	const isDirty =
 		selected.length !== (networkIds?.length ?? 0) ||
 		selected.some((networkId) => !networkIds?.includes(networkId)) ||
-		detached !== detachguilderiaNetwork ||
+		detached !== detachzenthcloudNetwork ||
 		(type === "application" && isolated !== isolatedNetwork);
 
 	const toggle = (networkId: string) => {
@@ -101,7 +101,7 @@ export const AssignNetworks = ({ id, type }: Props) => {
 		try {
 			await updateAsync({
 				networkIds: selected,
-				detachguilderiaNetwork: detached,
+				detachzenthcloudNetwork: detached,
 				// Only applications can own a dedicated network today.
 				...(type === "application" && { isolatedNetwork: isolated }),
 			});
@@ -132,11 +132,11 @@ export const AssignNetworks = ({ id, type }: Props) => {
 						<div className="space-y-1 pr-1">
 							<div className="flex items-center gap-2">
 								<span className="text-sm font-medium">Isolated network</span>
-								<Badge variant="secondary">{"guilderia-iso-<app>"}</Badge>
+								<Badge variant="secondary">{"zenthcloud-iso-<app>"}</Badge>
 							</div>
 							<p className="text-sm text-muted-foreground">
 								Give this application its own dedicated overlay network so it is
-								isolated from other services. It still joins guilderia-network, so
+								isolated from other services. It still joins zenthcloud-network, so
 								its domains keep working through Traefik.
 							</p>
 						</div>
@@ -147,7 +147,7 @@ export const AssignNetworks = ({ id, type }: Props) => {
 				{isolated && detached && (
 					<AlertBlock type="warning">
 						A detached service keeps only its dedicated network, which Traefik
-						cannot reach. Leave guilderia-network attached so the domain stays
+						cannot reach. Leave zenthcloud-network attached so the domain stays
 						accessible.
 					</AlertBlock>
 				)}
@@ -156,12 +156,12 @@ export const AssignNetworks = ({ id, type }: Props) => {
 					<div className="space-y-1 pr-1">
 						<div className="flex items-center gap-2">
 							<span className="text-sm font-medium">
-								Detach from guilderia-network
+								Detach from zenthcloud-network
 							</span>
-							<Badge variant="secondary">guilderia-network</Badge>
+							<Badge variant="secondary">zenthcloud-network</Badge>
 						</div>
 						<p className="text-sm text-muted-foreground">
-							By default the service joins the shared guilderia-network. Detach it
+							By default the service joins the shared zenthcloud-network. Detach it
 							to keep it reachable only through the networks you attach below.
 						</p>
 					</div>
@@ -170,15 +170,15 @@ export const AssignNetworks = ({ id, type }: Props) => {
 
 				{detached && hasDomains && (
 					<AlertBlock type="warning">
-						Warning: this service has domains. Detaching it from guilderia-network
+						Warning: this service has domains. Detaching it from zenthcloud-network
 						will break Traefik routing, and its domains will stop working.
 					</AlertBlock>
 				)}
 
 				{detached && !hasDomains && selected.length === 0 && (
 					<AlertBlock type="warning">
-						This service is detached from guilderia-network but has no other
-						network attached. It would be unreachable, so guilderia-network will
+						This service is detached from zenthcloud-network but has no other
+						network attached. It would be unreachable, so zenthcloud-network will
 						be kept until you attach a network below.
 					</AlertBlock>
 				)}
@@ -374,7 +374,7 @@ const useServiceNetworks = (id: string, type: ServiceType) => {
 		service,
 		serverId: service?.serverId ?? null,
 		networkIds: service?.networkIds ?? [],
-		detachguilderiaNetwork: service?.detachguilderiaNetwork ?? false,
+		detachzenthcloudNetwork: service?.detachzenthcloudNetwork ?? false,
 		isolatedNetwork:
 			(service as { isolatedNetwork?: boolean } | undefined)?.isolatedNetwork ??
 			false,
@@ -386,6 +386,6 @@ const useServiceNetworks = (id: string, type: ServiceType) => {
 
 type SavePayload = {
 	networkIds: string[];
-	detachguilderiaNetwork: boolean;
+	detachzenthcloudNetwork: boolean;
 	isolatedNetwork?: boolean;
 };

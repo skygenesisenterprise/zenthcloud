@@ -3,7 +3,7 @@ import {
 	getWebServerSettings,
 	IS_CLOUD,
 	updateWebServerSettings,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { TRPCError } from "@trpc/server";
 import { apiUpdateWhitelabeling } from "@/server/db/schema";
 import {

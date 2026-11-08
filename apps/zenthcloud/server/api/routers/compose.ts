@@ -33,25 +33,25 @@ import {
 	stopCompose,
 	updateCompose,
 	updateDeploymentStatus,
-} from "@guilderia/server";
-import { paths } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
-import { canEditDeployGitSource } from "@guilderia/server/services/git-provider";
+} from "@zenthcloud/server";
+import { paths } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
+import { canEditDeployGitSource } from "@zenthcloud/server/services/git-provider";
 import {
 	addNewService,
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
-} from "@guilderia/server/services/permission";
-import { assertServiceMoveAllowed } from "@guilderia/server/services/service-move";
-import { processTemplate } from "@guilderia/server/templates/processors";
+} from "@zenthcloud/server/services/permission";
+import { assertServiceMoveAllowed } from "@zenthcloud/server/services/service-move";
+import { processTemplate } from "@zenthcloud/server/templates/processors";
 import {
 	type CompleteTemplate,
 	getTemplatesLogoBaseUrl,
 	resolveTemplateFiles,
 	resolveTemplateLogo,
 	resolveTemplatesList,
-} from "@guilderia/server/templates/resolver";
+} from "@zenthcloud/server/templates/resolver";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import _ from "lodash";

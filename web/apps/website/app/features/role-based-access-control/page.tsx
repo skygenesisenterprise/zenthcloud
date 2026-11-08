@@ -18,7 +18,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Role-Based Access Control for Teams",
 	description:
-		"Control who can access what across your guilderia projects. Fine-grained RBAC keeps your infrastructure secure as your team scales.",
+		"Control who can access what across your zenthcloud projects. Fine-grained RBAC keeps your infrastructure secure as your team scales.",
 };
 
 const coreFeatures = [
@@ -26,7 +26,7 @@ const coreFeatures = [
 		icon: Users,
 		title: "Set organization-wide roles",
 		description:
-			"Assign owners, admins, and members across your organization, with each role scoping what that user can access and action within guilderia.",
+			"Assign owners, admins, and members across your organization, with each role scoping what that user can access and action within zenthcloud.",
 	},
 	{
 		icon: FolderLock,
@@ -60,14 +60,14 @@ const relatedFeatures = [
 		icon: ScrollText,
 		title: "Audit logs",
 		description:
-			"Keep a full record of every action taken across your guilderia environment for compliance and accountability.",
+			"Keep a full record of every action taken across your zenthcloud environment for compliance and accountability.",
 		href: "/features/audit-logs",
 	},
 	{
 		icon: Paintbrush,
 		title: "White labeling",
 		description:
-			"Present guilderia as your own product, with custom branding for your clients or organization.",
+			"Present zenthcloud as your own product, with custom branding for your clients or organization.",
 		href: "/features/white-labeling",
 	},
 ];
@@ -90,7 +90,7 @@ export default function RoleBasedAccessControlPage() {
 						className="w-full rounded-full px-6 sm:w-auto"
 						asChild
 					>
-						<Link href="https://docs.guilderia.com/docs/core" target="_blank">
+						<Link href="https://docs.zenthcloud.com/docs/core" target="_blank">
 							View documentation
 						</Link>
 					</Button>
@@ -102,7 +102,7 @@ export default function RoleBasedAccessControlPage() {
 					id: "control-without-compromise",
 					title: "Control without compromise",
 					description:
-						"RBAC in guilderia lets you define exactly what each person on your team can see, create, control, and manage.",
+						"RBAC in zenthcloud lets you define exactly what each person on your team can see, create, control, and manage.",
 					items: coreFeatures,
 					columns: 2,
 					layout: "split",
@@ -112,14 +112,14 @@ export default function RoleBasedAccessControlPage() {
 				id: "powerful-features",
 				title: "Powerful features for growing teams",
 				description:
-					"guilderia scales with your team, with features and plans for when you're ready to take the next step.",
+					"zenthcloud scales with your team, with features and plans for when you're ready to take the next step.",
 				items: relatedFeatures,
 				columns: 3,
 			}}
 			finalCta={{
 				title: "Ready to take your business to the next level?",
 				description:
-					"Talk to us about fine-grained RBAC and the rest of guilderia's higher-tier feature set.",
+					"Talk to us about fine-grained RBAC and the rest of zenthcloud's higher-tier feature set.",
 				cta: "Schedule a call",
 				href: "/contact",
 			}}

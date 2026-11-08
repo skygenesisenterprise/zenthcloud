@@ -33,7 +33,7 @@ export function groupsForChangedFiles(files) {
 				groups.add(group);
 			}
 		}
-		if (file.startsWith("apps/guilderia/server/api/")) {
+		if (file.startsWith("apps/zenthcloud/server/api/")) {
 			groups.add("spec");
 			groups.add("api-reference");
 			groups.add("regions");

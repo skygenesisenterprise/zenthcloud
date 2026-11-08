@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ApiError } from "../adapters/guilderiaApi.js";
+import { ApiError } from "../adapters/zenthcloudApi.js";
 import { defineCapability } from "../contracts/capability.js";
 import { toolResultEnvelopeShape } from "../contracts/result.js";
 import { deploymentTimestamp, errorSignature, fetchApplication, fetchDeployments, findDeployment, getString, isTerminalDeployment, projectApplicationSummary, summarizeDeployment, } from "./helpers.js";
@@ -7,7 +7,7 @@ const applicationId = z
     .string()
     .min(1)
     .max(128)
-    .describe("guilderia application identifier (not the application name)");
+    .describe("zenthcloud application identifier (not the application name)");
 const deploymentId = z
     .string()
     .min(1)
@@ -119,7 +119,7 @@ export const getDeploymentHistoryCapability = defineCapability({
 export const getApplicationLogsCapability = defineCapability({
     name: "get_application_logs",
     title: "Get application logs",
-    description: "Returns recent runtime or build logs for an application, with bounded tail size and optional text filter. Use it with diagnose_deployment when a deployment failed. Logs are returned as stored by guilderia; known credentials are redacted but application secrets may appear in application output.",
+    description: "Returns recent runtime or build logs for an application, with bounded tail size and optional text filter. Use it with diagnose_deployment when a deployment failed. Logs are returned as stored by zenthcloud; known credentials are redacted but application secrets may appear in application output.",
     category: "diagnostics",
     mode: "business",
     source: "business",
@@ -267,7 +267,7 @@ const FAILURE_SIGNALS = [
     {
         pattern: /cannot connect to the docker daemon|cannot connect to docker/i,
         summary: "The deployment could not reach the Docker daemon",
-        nextStep: "Check that Docker is running on the target server and reachable by guilderia.",
+        nextStep: "Check that Docker is running on the target server and reachable by zenthcloud.",
     },
     {
         pattern: /npm err!|yarn error|pnpm err|failed to compile|build failed/i,
@@ -386,7 +386,7 @@ export const diagnoseDeploymentCapability = defineCapability({
                 nextSteps: signals.length > 0
                     ? signals.map((signal) => signal.nextStep)
                     : [
-                        "Open the full deployment logs in guilderia for the raw build output.",
+                        "Open the full deployment logs in zenthcloud for the raw build output.",
                         "Check the target server health with list_servers.",
                     ],
                 logExcerpt,

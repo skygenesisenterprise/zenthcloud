@@ -1,7 +1,7 @@
 import {
 	type cloudflareDnsConfigSchema,
 	proxiableDnsRecordTypes,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import type { z } from "zod";
 import { type DnsClient, dnsFetch } from "./types";
 

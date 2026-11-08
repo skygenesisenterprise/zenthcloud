@@ -2,8 +2,8 @@ import {
 	findRollbackById,
 	removeRollbackById,
 	rollback,
-} from "@guilderia/server";
-import { checkServicePermissionAndAccess } from "@guilderia/server/services/permission";
+} from "@zenthcloud/server";
+import { checkServicePermissionAndAccess } from "@zenthcloud/server/services/permission";
 import { TRPCError } from "@trpc/server";
 import { audit } from "@/server/api/utils/audit";
 import { apiFindOneRollback } from "@/server/db/schema";

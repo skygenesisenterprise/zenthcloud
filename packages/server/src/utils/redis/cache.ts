@@ -25,7 +25,7 @@ export const createRedisTtlCache = <T>({
 	now,
 }: RedisTtlCacheOptions): TtlCache<T> => {
 	const local = createTtlCache<T>({ ttlMs, now });
-	const redisKey = (key: string) => `guilderia:cache:${namespace}:${key}`;
+	const redisKey = (key: string) => `zenthcloud:cache:${namespace}:${key}`;
 
 	return {
 		has(key) {

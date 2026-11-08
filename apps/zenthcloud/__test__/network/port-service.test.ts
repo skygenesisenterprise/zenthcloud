@@ -34,7 +34,7 @@ const mocks = vi.hoisted(() => {
 	};
 });
 
-vi.mock("@guilderia/server/db", () => ({
+vi.mock("@zenthcloud/server/db", () => ({
 	db: { transaction: mocks.transaction },
 	dbUrl: "postgres://mock:mock@localhost:5432/mock",
 }));
@@ -42,7 +42,7 @@ vi.mock("@guilderia/server/db", () => ({
 import {
 	createPortChecked,
 	updatePortChecked,
-} from "@guilderia/server/services/port";
+} from "@zenthcloud/server/services/port";
 
 const existingPort = {
 	portId: "port-1",

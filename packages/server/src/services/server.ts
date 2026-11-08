@@ -1,10 +1,10 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateServer,
 	member,
 	organization,
 	server,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import type { z } from "zod";
@@ -123,7 +123,7 @@ export const testSshConnectionWithPassword = async ({
 };
 
 /**
- * Installs Guilderia's public key on the server. Delegates to the dedicated SSH
+ * Installs Zenthcloud's public key on the server. Delegates to the dedicated SSH
  * provisioning layer, which validates the account can manage its own SSH
  * configuration (root or passwordless sudo) and makes the installation
  * idempotent.

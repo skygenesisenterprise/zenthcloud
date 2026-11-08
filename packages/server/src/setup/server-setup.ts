@@ -1,14 +1,14 @@
 import path from "node:path";
-import { IS_CLOUD, paths } from "@guilderia/server/constants";
-import { getAstronCollectionUrl } from "@guilderia/server/services/admin";
+import { IS_CLOUD, paths } from "@zenthcloud/server/constants";
+import { getAstronCollectionUrl } from "@zenthcloud/server/services/admin";
 import {
 	createServerDeployment,
 	updateDeploymentStatus,
-} from "@guilderia/server/services/deployment";
+} from "@zenthcloud/server/services/deployment";
 import {
 	findServerById,
 	updateServerById,
-} from "@guilderia/server/services/server";
+} from "@zenthcloud/server/services/server";
 import {
 	getDefaultMiddlewares,
 	getDefaultServerTraefikConfig,
@@ -16,7 +16,7 @@ import {
 	TRAEFIK_PORT,
 	TRAEFIK_SSL_PORT,
 	TRAEFIK_VERSION,
-} from "@guilderia/server/setup/traefik-setup";
+} from "@zenthcloud/server/setup/traefik-setup";
 import slug from "slugify";
 import { Client } from "ssh2";
 import { recreateDirectory } from "../utils/filesystem/directory";
@@ -336,8 +336,8 @@ const installRequirements = async (
 						`Technical details: ${technicalDetail}`,
 						"",
 						"💡 Hints:",
-						"  • Check that the SSH key you added in Guilderia is the same one installed on the server (e.g. in ~/.ssh/authorized_keys).",
-						"  • Try generating a new SSH key in Guilderia and add only the public key to the server, then try again.",
+						"  • Check that the SSH key you added in Zenthcloud is the same one installed on the server (e.g. in ~/.ssh/authorized_keys).",
+						"  • Try generating a new SSH key in Zenthcloud and add only the public key to the server, then try again.",
 						"  • Make sure to follow the instructions on the Setup Server Button on the SSH Keys tab",
 					].join("\n");
 					onData?.(friendlyMessage);
@@ -358,7 +358,7 @@ const installRequirements = async (
 						"",
 						"💡 Hints:",
 						"  • Check that the server IP address and SSH port are correct and the server is powered on.",
-						"  • If the server is in a private network, ensure Guilderia can reach it (VPN, firewall rules, or correct security groups).",
+						"  • If the server is in a private network, ensure Zenthcloud can reach it (VPN, firewall rules, or correct security groups).",
 						"  • Make sure the SSH port (usually 22) is open and the SSH service is running on the server.",
 					].join("\n");
 					onData?.(friendlyMessage);
@@ -392,17 +392,17 @@ const setupDirectories = () => {
 };
 
 const setupMainDirectory = () => `
-	# Check if the /etc/guilderia directory exists
-	if [ -d /etc/guilderia ]; then
-		echo "/etc/guilderia already exists ✅"
+	# Check if the /etc/zenthcloud directory exists
+	if [ -d /etc/zenthcloud ]; then
+		echo "/etc/zenthcloud already exists ✅"
 	else
-		# Create the /etc/guilderia directory
-		$SUDO_CMD mkdir -p /etc/guilderia
-		echo "Directory /etc/guilderia created ✅"
+		# Create the /etc/zenthcloud directory
+		$SUDO_CMD mkdir -p /etc/zenthcloud
+		echo "Directory /etc/zenthcloud created ✅"
 	fi
 	# Ensure the current user owns the directory
 	if [ -n "$SUDO_CMD" ]; then
-		$SUDO_CMD chown -R $CURRENT_USER:$CURRENT_USER /etc/guilderia
+		$SUDO_CMD chown -R $CURRENT_USER:$CURRENT_USER /etc/zenthcloud
 	fi
 `;
 
@@ -464,15 +464,15 @@ export const setupSwarm = () => `
 	`;
 
 const setupNetwork = () => `
-	# Check if the guilderia-network already exists
-	if $SUDO_CMD docker network ls | grep -q 'guilderia-network'; then
-		echo "Network guilderia-network already exists ✅"
+	# Check if the zenthcloud-network already exists
+	if $SUDO_CMD docker network ls | grep -q 'zenthcloud-network'; then
+		echo "Network zenthcloud-network already exists ✅"
 	else
-		# Create the guilderia-network if it doesn't exist
-		if $SUDO_CMD docker network create --driver overlay --attachable guilderia-network; then
+		# Create the zenthcloud-network if it doesn't exist
+		if $SUDO_CMD docker network create --driver overlay --attachable zenthcloud-network; then
 			echo "Network created ✅"
 		else
-			echo "Failed to create guilderia-network ❌" >&2
+			echo "Failed to create zenthcloud-network ❌" >&2
 			exit 1
 		fi
 	fi
@@ -537,7 +537,7 @@ if [ -x "$(command -v snap)" ]; then
     SNAP_DOCKER_INSTALLED=$(snap list docker >/dev/null 2>&1 && echo "true" || echo "false")
     if [ "$SNAP_DOCKER_INSTALLED" = "true" ]; then
         echo " - Docker is installed via snap."
-        echo "   Please note that Guilderia does not support Docker installed via snap."
+        echo "   Please note that Zenthcloud does not support Docker installed via snap."
         echo "   Please remove Docker with snap (snap remove docker) and reexecute this script."
         exit 1
     fi
@@ -666,13 +666,13 @@ const createTraefikConfig = () => {
 	const config = getDefaultServerTraefikConfig();
 
 	const command = `
-	if [ -f "/etc/guilderia/traefik/dynamic/acme.json" ]; then
-		chmod 600 "/etc/guilderia/traefik/dynamic/acme.json"
+	if [ -f "/etc/zenthcloud/traefik/dynamic/acme.json" ]; then
+		chmod 600 "/etc/zenthcloud/traefik/dynamic/acme.json"
 	fi
-	if [ -f "/etc/guilderia/traefik/traefik.yml" ]; then
+	if [ -f "/etc/zenthcloud/traefik/traefik.yml" ]; then
 		echo "Traefik config already exists ✅"
 	else
-		echo "${config}" > /etc/guilderia/traefik/traefik.yml
+		echo "${config}" > /etc/zenthcloud/traefik/traefik.yml
 	fi
 	`;
 
@@ -682,10 +682,10 @@ const createTraefikConfig = () => {
 const createDefaultMiddlewares = () => {
 	const config = getDefaultMiddlewares();
 	const command = `
-	if [ -f "/etc/guilderia/traefik/dynamic/middlewares.yml" ]; then
+	if [ -f "/etc/zenthcloud/traefik/dynamic/middlewares.yml" ]; then
 		echo "Middlewares config already exists ✅"
 	else
-		echo "${config}" > /etc/guilderia/traefik/dynamic/middlewares.yml
+		echo "${config}" > /etc/zenthcloud/traefik/dynamic/middlewares.yml
 	fi
 	`;
 	return command;
@@ -704,30 +704,30 @@ export const installRClone = () => `
 export const createTraefikInstance = () => {
 	const command = `
 	    # Check if dokpyloy-traefik exists
-		if $SUDO_CMD docker service inspect guilderia-traefik > /dev/null 2>&1; then
+		if $SUDO_CMD docker service inspect zenthcloud-traefik > /dev/null 2>&1; then
 			echo "Migrating Traefik to Standalone..."
-			$SUDO_CMD docker service rm guilderia-traefik
+			$SUDO_CMD docker service rm zenthcloud-traefik
 			sleep 8
 			echo "Traefik migrated to Standalone ✅"
 		fi
 
-		if $SUDO_CMD docker inspect guilderia-traefik > /dev/null 2>&1; then
+		if $SUDO_CMD docker inspect zenthcloud-traefik > /dev/null 2>&1; then
 			echo "Traefik already exists ✅"
 		else
-			# Create the guilderia-traefik container
+			# Create the zenthcloud-traefik container
 			TRAEFIK_VERSION=${TRAEFIK_VERSION}
 			$SUDO_CMD docker run -d \
-				--name guilderia-traefik \
+				--name zenthcloud-traefik \
 				--restart always \
-				-v /etc/guilderia/traefik/traefik.yml:/etc/traefik/traefik.yml \
-				-v /etc/guilderia/traefik/dynamic:/etc/guilderia/traefik/dynamic \
+				-v /etc/zenthcloud/traefik/traefik.yml:/etc/traefik/traefik.yml \
+				-v /etc/zenthcloud/traefik/dynamic:/etc/zenthcloud/traefik/dynamic \
 				-v /var/run/docker.sock:/var/run/docker.sock \
 				-p ${TRAEFIK_SSL_PORT}:${TRAEFIK_SSL_PORT} \
 				-p ${TRAEFIK_PORT}:${TRAEFIK_PORT} \
 				-p ${TRAEFIK_HTTP3_PORT}:${TRAEFIK_HTTP3_PORT}/udp \
 				traefik:v$TRAEFIK_VERSION
 
-			$SUDO_CMD docker network connect guilderia-network guilderia-traefik;
+			$SUDO_CMD docker network connect zenthcloud-network zenthcloud-traefik;
 			echo "Traefik version $TRAEFIK_VERSION installed ✅"
 		fi
 	`;
@@ -764,8 +764,8 @@ const setupPermissions = () => `
 		else
 			echo "User $CURRENT_USER already in docker group ✅"
 		fi
-		# Ensure the user owns the guilderia directory
-		$SUDO_CMD chown -R $CURRENT_USER:$CURRENT_USER /etc/guilderia
+		# Ensure the user owns the zenthcloud directory
+		$SUDO_CMD chown -R $CURRENT_USER:$CURRENT_USER /etc/zenthcloud
 		echo "Permissions configured for $CURRENT_USER ✅"
 	else
 		echo "Running as root, no extra permissions needed ✅"

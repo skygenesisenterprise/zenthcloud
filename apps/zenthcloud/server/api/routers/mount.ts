@@ -13,12 +13,12 @@ import {
 	findRedisById,
 	getServiceContainer,
 	updateMount,
-} from "@guilderia/server";
-import type { ServiceType } from "@guilderia/server/db/schema/mount";
+} from "@zenthcloud/server";
+import type { ServiceType } from "@zenthcloud/server/db/schema/mount";
 import {
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
-} from "@guilderia/server/services/permission";
+} from "@zenthcloud/server/services/permission";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";

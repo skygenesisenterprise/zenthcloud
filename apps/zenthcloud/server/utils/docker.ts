@@ -1,4 +1,4 @@
-import { execAsync } from "@guilderia/server";
+import { execAsync } from "@zenthcloud/server";
 
 /** Returns if the current operating system is Windows Subsystem for Linux (WSL). */
 export const isWSL = async () => {

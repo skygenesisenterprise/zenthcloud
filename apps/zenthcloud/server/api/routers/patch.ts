@@ -12,8 +12,8 @@ import {
 	readPatchRepoDirectory,
 	readPatchRepoFile,
 	updatePatch,
-} from "@guilderia/server";
-import { checkServicePermissionAndAccess } from "@guilderia/server/services/permission";
+} from "@zenthcloud/server";
+import { checkServicePermissionAndAccess } from "@zenthcloud/server/services/permission";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {

@@ -3,8 +3,8 @@ import {
 	getIdentityCapabilities,
 	getIdentityProviderHealth,
 	listIdentityProviderDescriptors,
-} from "@guilderia/server/services/identity-provider";
-import type { IdentityProviderRecord } from "@guilderia/server/services/identity-provider";
+} from "@zenthcloud/server/services/identity-provider";
+import type { IdentityProviderRecord } from "@zenthcloud/server/services/identity-provider";
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch as typeof fetch;

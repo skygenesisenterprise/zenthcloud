@@ -3,7 +3,7 @@ import {
 	compose,
 	deployments,
 	schedules,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { db } from "../../db/index";
 
@@ -25,7 +25,7 @@ export const initCancelDeployments = async () => {
 			.filter(
 				(deployment) =>
 					!deployment.scheduleId ||
-					deployment.scheduleType === "guilderia-server",
+					deployment.scheduleType === "zenthcloud-server",
 			)
 			.map((deployment) => deployment.deploymentId);
 

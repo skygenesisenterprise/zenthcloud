@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
-import { TEMPLATES_BASE_URL } from "@guilderia/server/templates/github";
+import { TEMPLATES_BASE_URL } from "@zenthcloud/server/templates/github";
 import {
 	getLocalBlueprintsDir,
 	getLocalTemplateLogoPath,
-} from "@guilderia/server/templates/local";
+} from "@zenthcloud/server/templates/local";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 /**

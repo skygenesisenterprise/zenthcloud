@@ -2,21 +2,21 @@ import {
 	getIdentityProviderHealth,
 	listIdentityProviderDescriptors,
 	normalizeTrustedOrigin,
-} from "@guilderia/server";
-import { IS_CLOUD } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
-import { ssoProvider, user } from "@guilderia/server/db/schema";
-import { ssoProviderBodySchema } from "@guilderia/server/db/schema/sso";
+} from "@zenthcloud/server";
+import { IS_CLOUD } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
+import { ssoProvider, user } from "@zenthcloud/server/db/schema";
+import { ssoProviderBodySchema } from "@zenthcloud/server/db/schema/sso";
 import {
 	getOrganizationOwnerId,
 	requestToHeaders,
-} from "@guilderia/server/index";
-import { auth } from "@guilderia/server/lib/auth";
-import { invalidateTrustedOriginsCache } from "@guilderia/server/services/admin";
+} from "@zenthcloud/server/index";
+import { auth } from "@zenthcloud/server/lib/auth";
+import { invalidateTrustedOriginsCache } from "@zenthcloud/server/services/admin";
 import {
 	getWebServerSettings,
 	updateWebServerSettings,
-} from "@guilderia/server/services/web-server-settings";
+} from "@zenthcloud/server/services/web-server-settings";
 import { TRPCError } from "@trpc/server";
 import { and, asc, eq, isNotNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -114,7 +114,7 @@ function preserveStoredSsoConfig<T>(stored: string | null, updated: T): T {
 export const ssoRouter = createTRPCRouter({
 	/**
 	 * Whether the instance offers SSO sign-in. SSO is available on both
-	 * Guilderia Cloud and self-hosted Guilderia, so this is always true. Kept as an
+	 * Zenthcloud Cloud and self-hosted Zenthcloud, so this is always true. Kept as an
 	 * endpoint because the public API/SDK/CLI/MCP surface references it.
 	 */
 	showSignInWithSSO: publicProcedure.query(() => true),

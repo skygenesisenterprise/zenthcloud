@@ -33,7 +33,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Application Management Software and Solutions",
 	description:
-		"Monitor, control, and maintain your business applications from a single dashboard with guilderia's application management software.",
+		"Monitor, control, and maintain your business applications from a single dashboard with zenthcloud's application management software.",
 };
 
 const coreFeatures = [
@@ -53,7 +53,7 @@ const coreFeatures = [
 		icon: RotateCcw,
 		title: "Rollback in seconds",
 		description:
-			"Recover fast when a release goes wrong. guilderia supports Docker Swarm automatic rollback when health checks fail, as well as registry-based rollback to any previous deployment version when a Docker registry is configured.",
+			"Recover fast when a release goes wrong. zenthcloud supports Docker Swarm automatic rollback when health checks fail, as well as registry-based rollback to any previous deployment version when a Docker registry is configured.",
 	},
 	{
 		icon: Clock,
@@ -147,17 +147,17 @@ const faqs = [
 	{
 		question: "What is application performance management software?",
 		answer:
-			"Application performance management software helps IT teams monitor application health, track resource usage, and identify performance issues before they affect users. Key features typically include real-time monitoring of CPU, memory, disk, and network usage, alongside log access and alerting. guilderia covers the operational side of application performance management: giving teams live usage data, deployment history, and rollback capabilities from a single dashboard, without requiring specialist expertise or separate tooling.",
+			"Application performance management software helps IT teams monitor application health, track resource usage, and identify performance issues before they affect users. Key features typically include real-time monitoring of CPU, memory, disk, and network usage, alongside log access and alerting. zenthcloud covers the operational side of application performance management: giving teams live usage data, deployment history, and rollback capabilities from a single dashboard, without requiring specialist expertise or separate tooling.",
 	},
 	{
 		question: "What is the best application management software?",
 		answer:
-			"The best application management software depends on your business needs, team size, and technical expertise. Enterprise platforms often come with deep integration capabilities and reporting features, but they can require significant investment and a steeper learning curve. guilderia is built for teams that want operational efficiency without that overhead. It covers the key processes of application management, including monitoring, rollbacks, environment configuration, and scheduled jobs, in a platform you can self-host or run in the cloud so that your IT team can run on your own infrastructure if they want. It\u2019s a strong fit for organizations that want to manage business applications with full control and without vendor lock-in.",
+			"The best application management software depends on your business needs, team size, and technical expertise. Enterprise platforms often come with deep integration capabilities and reporting features, but they can require significant investment and a steeper learning curve. zenthcloud is built for teams that want operational efficiency without that overhead. It covers the key processes of application management, including monitoring, rollbacks, environment configuration, and scheduled jobs, in a platform you can self-host or run in the cloud so that your IT team can run on your own infrastructure if they want. It\u2019s a strong fit for organizations that want to manage business applications with full control and without vendor lock-in.",
 	},
 	{
 		question: "What is application lifecycle management software?",
 		answer:
-			"Application lifecycle management (ALM) software supports the full lifecycle of a software application, from requirements and development through deployment, ongoing maintenance, and eventual retirement. It connects strategic planning and business objectives with day-to-day operational execution. guilderia focuses on the operational slice of that lifecycle\u2014standardizing how applications are deployed, monitored, rolled back, and maintained\u2014which is where most teams experience the most friction. For organizations going through digital transformation or modernization initiatives, having that operational foundation in place is what makes broader lifecycle management sustainable.",
+			"Application lifecycle management (ALM) software supports the full lifecycle of a software application, from requirements and development through deployment, ongoing maintenance, and eventual retirement. It connects strategic planning and business objectives with day-to-day operational execution. zenthcloud focuses on the operational slice of that lifecycle\u2014standardizing how applications are deployed, monitored, rolled back, and maintained\u2014which is where most teams experience the most friction. For organizations going through digital transformation or modernization initiatives, having that operational foundation in place is what makes broader lifecycle management sustainable.",
 	},
 ];
 
@@ -168,11 +168,11 @@ export default function ApplicationManagementSoftwarePage() {
 			badgeDetail="Operations & visibility"
 			title="Application management"
 			highlight="that works"
-			description="Monitor, control, and maintain your business applications from a single dashboard. guilderia gives your IT team the visibility and tools to keep every application running at peak performance — without the complexity."
+			description="Monitor, control, and maintain your business applications from a single dashboard. zenthcloud gives your IT team the visibility and tools to keep every application running at peak performance — without the complexity."
 			actions={
 				<>
 					<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
-						<Link href="https://app.guilderia.com/register" target="_blank">
+						<Link href="https://app.zenthcloud.com/register" target="_blank">
 							Get Started
 						</Link>
 					</Button>
@@ -195,7 +195,7 @@ export default function ApplicationManagementSoftwarePage() {
 					id: "everything-in-one-platform",
 					title: "Everything your team needs in one platform",
 					description:
-						"Improving visibility into your application portfolio is the first step toward better application management. guilderia surfaces the signals your IT team needs, in real time, in one place.",
+						"Improving visibility into your application portfolio is the first step toward better application management. zenthcloud surfaces the signals your IT team needs, in real time, in one place.",
 					items: coreFeatures,
 					columns: 3,
 				},
@@ -217,9 +217,9 @@ export default function ApplicationManagementSoftwarePage() {
 			finalCta={{
 				title: "Take control of your application landscape",
 				description:
-					"guilderia gives your IT team the application management software it needs to monitor, maintain, and scale business applications with confidence.",
+					"zenthcloud gives your IT team the application management software it needs to monitor, maintain, and scale business applications with confidence.",
 				cta: "Create your account",
-				href: "https://app.guilderia.com",
+				href: "https://app.zenthcloud.com",
 				external: true,
 			}}
 		>
@@ -265,8 +265,8 @@ export default function ApplicationManagementSoftwarePage() {
 
 			<ChoicePanels
 				id="run-where-needed"
-				title="Run guilderia where your business needs it"
-				description="Deploy guilderia on your own infrastructure or ours. Both options give you the same application management capabilities, and you choose what fits your operational model and regulatory compliance requirements."
+				title="Run zenthcloud where your business needs it"
+				description="Deploy zenthcloud on your own infrastructure or ours. Both options give you the same application management capabilities, and you choose what fits your operational model and regulatory compliance requirements."
 				panels={[
 					{
 						name: "Self-hosted",
@@ -278,10 +278,10 @@ export default function ApplicationManagementSoftwarePage() {
 						href: "/self",
 					},
 					{
-						name: "guilderia Cloud",
+						name: "zenthcloud Cloud",
 						tagline: "Managed for you",
 						description:
-							"Let guilderia run the control plane while your applications keep running on your own servers.",
+							"Let zenthcloud run the control plane while your applications keep running on your own servers.",
 						bullets: cloudItems,
 						cta: "Explore Cloud",
 						href: "/cloud",
@@ -293,7 +293,7 @@ export default function ApplicationManagementSoftwarePage() {
 			<ProcessRail
 				id="deploy-ai-safely"
 				title="Deploy AI in a controlled environment"
-				description="Use guilderia to create sandbox environments separated from production infrastructure, where technical and non-technical employees can launch AI-coded apps safely."
+				description="Use zenthcloud to create sandbox environments separated from production infrastructure, where technical and non-technical employees can launch AI-coded apps safely."
 				steps={[
 					{
 						title: "Set up in minutes",
@@ -304,7 +304,7 @@ export default function ApplicationManagementSoftwarePage() {
 					{
 						title: "Deploy from any source",
 						description:
-							"Once guilderia is set up, team members can take AI-coded apps from a Git repo, Docker image, or Compose file to a running environment without engineering support.",
+							"Once zenthcloud is set up, team members can take AI-coded apps from a Git repo, Docker image, or Compose file to a running environment without engineering support.",
 						label: "Deploy",
 					},
 					{

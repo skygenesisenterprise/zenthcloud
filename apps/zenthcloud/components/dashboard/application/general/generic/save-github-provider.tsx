@@ -1,4 +1,4 @@
-import { VALID_BRANCH_REGEX } from "@guilderia/server/utils/git-branch-validation";
+import { VALID_BRANCH_REGEX } from "@zenthcloud/server/utils/git-branch-validation";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { CheckIcon, ChevronsUpDown, HelpCircle, Plus, X } from "lucide-react";
 import Link from "next/link";

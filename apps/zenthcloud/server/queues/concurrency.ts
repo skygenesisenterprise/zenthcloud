@@ -1,6 +1,6 @@
-import { db } from "@guilderia/server/db";
-import { server } from "@guilderia/server/db/schema";
-import { getWebServerSettings } from "@guilderia/server/services/web-server-settings";
+import { db } from "@zenthcloud/server/db";
+import { server } from "@zenthcloud/server/db/schema";
+import { getWebServerSettings } from "@zenthcloud/server/services/web-server-settings";
 import { eq } from "drizzle-orm";
 import { LOCAL_PARTITION } from "./in-memory-queue";
 
@@ -8,7 +8,7 @@ import { LOCAL_PARTITION } from "./in-memory-queue";
  * Resolve the effective builds concurrency for a queue partition.
  *
  * - `LOCAL_PARTITION` -> concurrency stored on the web server settings (the
- *   local Guilderia web server).
+ *   local Zenthcloud web server).
  * - any other partition -> concurrency stored on the matching `server` row.
  */
 export const resolveBuildsConcurrency = async (

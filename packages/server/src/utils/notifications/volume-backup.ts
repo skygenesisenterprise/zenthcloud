@@ -1,7 +1,7 @@
-import { db } from "@guilderia/server/db";
-import { notifications } from "@guilderia/server/db/schema";
-import { VolumeBackupEmail } from "@guilderia/server/emails/emails/volume-backup";
-import { redactSecrets } from "@guilderia/server/utils/security/redact";
+import { db } from "@zenthcloud/server/db";
+import { notifications } from "@zenthcloud/server/db/schema";
+import { VolumeBackupEmail } from "@zenthcloud/server/emails/emails/volume-backup";
+import { redactSecrets } from "@zenthcloud/server/utils/security/redact";
 import { render } from "@react-email/components";
 import { format } from "date-fns";
 import { and, eq } from "drizzle-orm";
@@ -59,7 +59,7 @@ export const sendVolumeBackupNotifications = async ({
 		),
 		with: {
 			email: true,
-			guilderia: true,
+			zenthcloud: true,
 			telegram: true,
 			slack: true,
 			resend: true,
@@ -77,7 +77,7 @@ export const sendVolumeBackupNotifications = async ({
 		const {
 			email,
 			resend,
-			guilderia,
+			zenthcloud,
 			telegram,
 			slack,
 			gotify,
@@ -112,11 +112,11 @@ export const sendVolumeBackupNotifications = async ({
 				}
 			}
 
-			if (guilderia) {
+			if (zenthcloud) {
 				const decorate = (decoration: string, text: string) =>
-					`${guilderia.decoration ? decoration : ""} ${text}`.trim();
+					`${zenthcloud.decoration ? decoration : ""} ${text}`.trim();
 
-				await sendDiscordNotification(guilderia, {
+				await sendDiscordNotification(zenthcloud, {
 					title:
 						type === "success"
 							? decorate(">", "`✅` Volume Backup Successful")
@@ -180,7 +180,7 @@ export const sendVolumeBackupNotifications = async ({
 					],
 					timestamp: date.toISOString(),
 					footer: {
-						text: "Guilderia Volume Backup Notification",
+						text: "Zenthcloud Volume Backup Notification",
 					},
 				});
 			}
@@ -321,7 +321,7 @@ export const sendVolumeBackupNotifications = async ({
 				await sendMattermostNotification(mattermost, {
 					text: `**${statusEmoji} Volume Backup ${typeStatus}**\n\n**Project:** ${projectName}\n**Application:** ${applicationName}\n**Volume Name:** ${volumeName}\n**Service Type:** ${serviceType}${sizeInfo}\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}${errorMsg}`,
 					channel: mattermost.channel,
-					username: mattermost.username || "Guilderia",
+					username: mattermost.username || "Zenthcloud",
 				});
 			}
 

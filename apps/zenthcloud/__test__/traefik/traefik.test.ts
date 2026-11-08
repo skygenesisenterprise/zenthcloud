@@ -1,5 +1,5 @@
-import type { ApplicationNested, Domain, Redirect } from "@guilderia/server";
-import { createRouterConfig } from "@guilderia/server";
+import type { ApplicationNested, Domain, Redirect } from "@zenthcloud/server";
+import { createRouterConfig } from "@zenthcloud/server";
 import { expect, test } from "vitest";
 
 const baseApp: ApplicationNested = {

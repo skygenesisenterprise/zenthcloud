@@ -1,8 +1,8 @@
-import type { ComposeSpecification } from "@guilderia/server";
+import type { ComposeSpecification } from "@zenthcloud/server";
 import {
 	addSuffixToServiceNetworks,
 	generateRandomHash,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { expect, test } from "vitest";
 import { parse } from "yaml";
 
@@ -192,10 +192,10 @@ services:
   web:
     image: nginx:latest
     networks:
-      - guilderia-network
+      - zenthcloud-network
 `;
 
-test("It shouldn't add suffix to guilderia-network in services", () => {
+test("It shouldn't add suffix to zenthcloud-network in services", () => {
 	const composeData = parse(composeFile7) as ComposeSpecification;
 
 	const suffix = generateRandomHash();
@@ -207,7 +207,7 @@ test("It shouldn't add suffix to guilderia-network in services", () => {
 	const service = networks.web;
 
 	expect(service).toBeDefined();
-	expect(service?.networks).toContain("guilderia-network");
+	expect(service?.networks).toContain("zenthcloud-network");
 });
 
 const composeFile8 = `
@@ -219,7 +219,7 @@ services:
     networks:
       - frontend
       - backend
-      - guilderia-network
+      - zenthcloud-network
 
 
   api:
@@ -228,23 +228,23 @@ services:
       frontend:
         aliases:
           - api
-      guilderia-network:
+      zenthcloud-network:
         aliases:
           - api
   redis:
     image: redis:alpine
     networks:
-      guilderia-network:
+      zenthcloud-network:
   db:
     image: myapi:latest
     networks:
-      guilderia-network:
+      zenthcloud-network:
         aliases:
           - apid
 
 `;
 
-test("It shouldn't add suffix to guilderia-network in services multiples cases", () => {
+test("It shouldn't add suffix to zenthcloud-network in services multiples cases", () => {
 	const composeData = parse(composeFile8) as ComposeSpecification;
 
 	const suffix = generateRandomHash();
@@ -267,9 +267,9 @@ test("It shouldn't add suffix to guilderia-network in services multiples cases",
 	};
 
 	expect(service).toBeDefined();
-	expect(service?.networks).toContain("guilderia-network");
+	expect(service?.networks).toContain("zenthcloud-network");
 
-	expect(redis?.networks).toHaveProperty("guilderia-network");
-	expect(dbNetworks["guilderia-network"]).toBeDefined();
-	expect(apiNetworks["guilderia-network"]).toBeDefined();
+	expect(redis?.networks).toHaveProperty("zenthcloud-network");
+	expect(dbNetworks["zenthcloud-network"]).toBeDefined();
+	expect(apiNetworks["zenthcloud-network"]).toBeDefined();
 });

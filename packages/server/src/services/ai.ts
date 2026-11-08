@@ -1,13 +1,13 @@
-import { db } from "@guilderia/server/db";
-import { ai, organization } from "@guilderia/server/db/schema";
-import { aiCustomProviderSchema } from "@guilderia/server/db/schema/ai";
+import { db } from "@zenthcloud/server/db";
+import { ai, organization } from "@zenthcloud/server/db/schema";
+import { aiCustomProviderSchema } from "@zenthcloud/server/db/schema/ai";
 import {
 	type AiCapabilities,
 	getAiProviderLabel,
 	getAiProviderPreset,
 	getModelCapabilities,
 	resolveAiProviderId,
-} from "@guilderia/server/utils/ai/contracts";
+} from "@zenthcloud/server/utils/ai/contracts";
 import {
 	type AiConnectionTestResult,
 	type AiModelInfo,
@@ -16,7 +16,7 @@ import {
 	normalizeAiError,
 	testAiConnection,
 	validateAiEndpointUrl,
-} from "@guilderia/server/utils/ai/runtime";
+} from "@zenthcloud/server/utils/ai/runtime";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";

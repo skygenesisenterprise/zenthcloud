@@ -221,7 +221,7 @@ export const TrafficAudiencePanel = ({
 												className="text-sm text-muted-foreground"
 											>
 												No explicit event was tracked on this period. Call
-												window.guilderiaTraffic.track("event_name") from the site
+												window.zenthcloudTraffic.track("event_name") from the site
 												to instrument one.
 											</TableCell>
 										</TableRow>

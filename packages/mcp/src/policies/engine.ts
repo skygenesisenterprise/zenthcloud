@@ -48,7 +48,7 @@ export function evaluatePolicy(config: PolicyConfig, input: PolicyEvaluationInpu
   if (config.blockedCapabilities.has(capability.name)) {
     return deny(
       "policy_denied",
-      `The capability "${capability.name}" is blocked by GUILDERIA_MCP_BLOCKED_CAPABILITIES`,
+      `The capability "${capability.name}" is blocked by ZENTHCLOUD_MCP_BLOCKED_CAPABILITIES`,
       risk,
     );
   }
@@ -76,7 +76,7 @@ export function evaluatePolicy(config: PolicyConfig, input: PolicyEvaluationInpu
   if (risk !== 2) {
     return deny(
       "policy_denied",
-      `Risk level ${risk} exceeds GUILDERIA_MCP_MAX_RISK (${config.maxAutomaticRisk})`,
+      `Risk level ${risk} exceeds ZENTHCLOUD_MCP_MAX_RISK (${config.maxAutomaticRisk})`,
       risk,
     );
   }
@@ -88,7 +88,7 @@ export function evaluatePolicy(config: PolicyConfig, input: PolicyEvaluationInpu
   if (capability.effects.destructive && !config.allowDestructive) {
     return deny(
       "policy_denied",
-      "Destructive capabilities are disabled. Set GUILDERIA_MCP_ALLOW_DESTRUCTIVE=true to opt in",
+      "Destructive capabilities are disabled. Set ZENTHCLOUD_MCP_ALLOW_DESTRUCTIVE=true to opt in",
       risk,
     );
   }
@@ -96,7 +96,7 @@ export function evaluatePolicy(config: PolicyConfig, input: PolicyEvaluationInpu
   if (!config.approvalToken) {
     return deny(
       "approval_required",
-      "This capability requires an approval token, but GUILDERIA_MCP_APPROVAL_TOKEN is not configured",
+      "This capability requires an approval token, but ZENTHCLOUD_MCP_APPROVAL_TOKEN is not configured",
       risk,
       true,
     );

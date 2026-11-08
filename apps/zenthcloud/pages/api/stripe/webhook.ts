@@ -1,6 +1,6 @@
 import { buffer } from "node:stream/consumers";
-import { findUserById, type Server } from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+import { findUserById, type Server } from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import { and, asc, eq } from "drizzle-orm";
 import type { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";

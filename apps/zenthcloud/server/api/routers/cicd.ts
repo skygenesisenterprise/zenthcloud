@@ -8,8 +8,8 @@ import {
 	readDeploymentLogs,
 	resolveCicdTarget,
 	toGithubDeploymentStatus,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import {
 	apiCicdDeploy,
 	apiCicdDeploymentId,
@@ -23,7 +23,7 @@ import {
 	deployments,
 	environments,
 	projects,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import {
 	assertCicdTarget,
 	buildCicdApiKeyMetadata,
@@ -31,16 +31,16 @@ import {
 	type CicdTokenScope,
 	parseCicdTokenScope,
 	resolveCicdActions,
-} from "@guilderia/server/lib/cicd-scope";
-import { findApplicationById } from "@guilderia/server/services/application";
-import { findDeploymentById } from "@guilderia/server/services/deployment";
+} from "@zenthcloud/server/lib/cicd-scope";
+import { findApplicationById } from "@zenthcloud/server/services/application";
+import { findDeploymentById } from "@zenthcloud/server/services/deployment";
 import {
 	checkPermission,
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
 	type PermissionCtx,
-} from "@guilderia/server/services/permission";
-import { createApiKey } from "@guilderia/server/services/user";
+} from "@zenthcloud/server/services/permission";
+import { createApiKey } from "@zenthcloud/server/services/user";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, inArray, like } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -69,7 +69,7 @@ import { createTRPCRouter, protectedProcedure, withCicdAction } from "../trpc";
  * 3. `assertCicdTarget` → the target is inside the token's project (and inside
  *    its environment/application/repository restrictions when set).
  * 4. `checkServicePermissionAndAccess` → the token's user still has the
- *    underlying Guilderia permission, so revoking a member's access immediately
+ *    underlying Zenthcloud permission, so revoking a member's access immediately
  *    stops their workflows from deploying.
  */
 
@@ -290,7 +290,7 @@ export const cicdRouter = createTRPCRouter({
 				tags: ["cicd"],
 				summary: "Deploy a commit",
 				description:
-					"Queues a deployment for an exact commit sha and returns the Guilderia deployment id, which can be polled with the status endpoint.",
+					"Queues a deployment for an exact commit sha and returns the Zenthcloud deployment id, which can be polled with the status endpoint.",
 			},
 		})
 		.mutation(async ({ ctx, input }) => {
@@ -376,7 +376,7 @@ export const cicdRouter = createTRPCRouter({
 					deploymentUrl: target.dashboardUrl,
 					applicationUrl: target.dashboardUrl,
 					environmentUrl: target.environmentUrl,
-					message: "Guilderia could not start the deployment",
+					message: "Zenthcloud could not start the deployment",
 				};
 			}
 
@@ -442,7 +442,7 @@ export const cicdRouter = createTRPCRouter({
 				tags: ["cicd"],
 				summary: "Get a deployment status",
 				description:
-					"Returns the Guilderia status, the GitHub Deployments state to publish, and the links to the deployment and its logs.",
+					"Returns the Zenthcloud status, the GitHub Deployments state to publish, and the links to the deployment and its logs.",
 			},
 		})
 		.query(async ({ ctx, input }) => {
@@ -460,7 +460,7 @@ export const cicdRouter = createTRPCRouter({
 				tags: ["cicd"],
 				summary: "Read deployment logs",
 				description:
-					"Returns the last lines of the build log, so a workflow can surface a failing build without asking the user to open Guilderia.",
+					"Returns the last lines of the build log, so a workflow can surface a failing build without asking the user to open Zenthcloud.",
 			},
 		})
 		.query(async ({ ctx, input }) => {
@@ -584,7 +584,7 @@ export const cicdRouter = createTRPCRouter({
 			if (!deploymentId) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "Guilderia could not start the redeployment",
+					message: "Zenthcloud could not start the redeployment",
 				});
 			}
 

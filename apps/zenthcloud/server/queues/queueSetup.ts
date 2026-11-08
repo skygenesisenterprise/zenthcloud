@@ -1,9 +1,9 @@
-import { getRedis, IS_CLOUD, isRedisEnabled } from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+import { getRedis, IS_CLOUD, isRedisEnabled } from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import {
 	execAsync,
 	execAsyncRemote,
-} from "@guilderia/server/utils/process/execAsync";
+} from "@zenthcloud/server/utils/process/execAsync";
 import { BullMqQueue } from "./bullmq-queue";
 import { resolveBuildsConcurrency } from "./concurrency";
 import { processDeploymentJob } from "./deployments-queue";

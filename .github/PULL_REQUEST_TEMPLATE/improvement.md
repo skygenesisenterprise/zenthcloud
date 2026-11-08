@@ -37,7 +37,7 @@ Casing is not enforced.
 
 ## Tests
 
-<!-- New or updated tests, and what they cover. `pnpm test` runs the vitest suite in apps/guilderia/__test__. -->
+<!-- New or updated tests, and what they cover. `pnpm test` runs the vitest suite in apps/zenthcloud/__test__. -->
 
 ## Compatibility
 

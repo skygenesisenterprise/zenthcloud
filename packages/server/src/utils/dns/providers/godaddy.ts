@@ -1,4 +1,4 @@
-import type { godaddyDnsConfigSchema } from "@guilderia/server/db/schema";
+import type { godaddyDnsConfigSchema } from "@zenthcloud/server/db/schema";
 import type { z } from "zod";
 import { createDnsHttp, stripTrailingDot, toSubdomain } from "../http";
 import type { DnsClient, DnsRecordInput } from "../types";

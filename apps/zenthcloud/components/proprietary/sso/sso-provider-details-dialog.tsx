@@ -135,7 +135,7 @@ export const SsoProviderDetailsDialog = ({ provider, onOpenChange }: Props) => {
 					)}
 					{callbackPath && !baseURL && (
 						<p className="text-xs text-muted-foreground">
-							Replace {"{baseURL}"} with your Guilderia URL (e.g.
+							Replace {"{baseURL}"} with your Zenthcloud URL (e.g.
 							https://your-domain.com).
 						</p>
 					)}

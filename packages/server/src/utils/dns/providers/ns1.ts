@@ -1,4 +1,4 @@
-import type { ns1DnsConfigSchema } from "@guilderia/server/db/schema";
+import type { ns1DnsConfigSchema } from "@zenthcloud/server/db/schema";
 import type { z } from "zod";
 import { createDnsHttp, stripTrailingDot } from "../http";
 import type { DnsClient } from "../types";

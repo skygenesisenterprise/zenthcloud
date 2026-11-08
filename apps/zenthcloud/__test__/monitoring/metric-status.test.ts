@@ -7,7 +7,7 @@ import {
 	getThresholdsForMetric,
 	getUsagePercentage,
 	normalizeThresholds,
-} from "@guilderia/server/monitoring/status";
+} from "@zenthcloud/server/monitoring/status";
 import { describe, expect, test } from "vitest";
 
 describe("getMetricStatus", () => {

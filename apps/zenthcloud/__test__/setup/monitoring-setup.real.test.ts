@@ -1,15 +1,15 @@
 import { execSync } from "node:child_process";
-import { docker } from "@guilderia/server/constants";
-import { setupMonitoring } from "@guilderia/server/setup/monitoring-setup";
+import { docker } from "@zenthcloud/server/constants";
+import { setupMonitoring } from "@zenthcloud/server/setup/monitoring-setup";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const REAL_TEST_TIMEOUT = 120000;
-const SERVICE_NAME = "guilderia-monitoring";
+const SERVICE_NAME = "zenthcloud-monitoring";
 const TEST_IMAGE = "busybox:latest";
 
 // Mock ONLY db-backed lookups and remote I/O. Dockerode stays real and talks to
 // the local daemon, so the legacy-container cleanup is exercised for real.
-vi.mock("@guilderia/server/services/server", () => ({
+vi.mock("@zenthcloud/server/services/server", () => ({
 	findServerById: vi.fn().mockResolvedValue({
 		serverId: "test-server",
 		serverType: "deploy",
@@ -30,16 +30,16 @@ vi.mock("@guilderia/server/services/server", () => ({
 	}),
 }));
 
-vi.mock("@guilderia/server/services/settings", () => ({
+vi.mock("@zenthcloud/server/services/settings", () => ({
 	getAstronCollectionImageTag: vi.fn(() => "latest"),
 }));
 
-vi.mock("@guilderia/server/utils/docker/utils", () => ({
+vi.mock("@zenthcloud/server/utils/docker/utils", () => ({
 	pullImage: vi.fn().mockResolvedValue(undefined),
 	pullRemoteImage: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@guilderia/server/utils/process/execAsync", () => ({
+vi.mock("@zenthcloud/server/utils/process/execAsync", () => ({
 	execAsync: vi.fn().mockResolvedValue({ stdout: "", stderr: "" }),
 	execAsyncRemote: vi.fn().mockResolvedValue({ stdout: "", stderr: "" }),
 }));
@@ -132,7 +132,7 @@ const pullTestImage = async () => {
 };
 
 // The code under test hardcodes the production name, so this suite cannot
-// namespace its fixtures. Skip rather than wipe a real agent on a Guilderia host.
+// namespace its fixtures. Skip rather than wipe a real agent on a Zenthcloud host.
 const hasRealMonitoring = () => {
 	const query = (cmd: string) => {
 		try {
@@ -190,7 +190,7 @@ describe.skipIf(!hasDocker() || hasRealMonitoring() || !process.env.CI)(
 		);
 
 		it(
-			"removes the legacy container without touching swarm tasks, which are named guilderia-monitoring.<slot>.<id>",
+			"removes the legacy container without touching swarm tasks, which are named zenthcloud-monitoring.<slot>.<id>",
 			async () => {
 				const taskName = `${SERVICE_NAME}.1.qh3ldvg2h9x0test`;
 				const task = await docker.createContainer({
@@ -241,7 +241,7 @@ describe.skipIf(!hasDocker() || hasRealMonitoring() || !process.env.CI)(
 				};
 
 				const remoteDocker = await import(
-					"@guilderia/server/utils/servers/remote-docker"
+					"@zenthcloud/server/utils/servers/remote-docker"
 				);
 				const spy = vi
 					.spyOn(remoteDocker, "getRemoteDocker")

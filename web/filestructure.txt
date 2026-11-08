@@ -289,8 +289,8 @@
                 |-- cli
                     |-- token.png
                 |-- diagram.png
-                |-- guilderia-ssh-compose.png
-                |-- guilderia-ssh-key.png
+                |-- zenthcloud-ssh-compose.png
+                |-- zenthcloud-ssh-key.png
                 |-- favicon.png
                 |-- file-mount-configuration.webp
                 |-- file-mount.png
@@ -328,7 +328,7 @@
                     |-- setup.png
                     |-- shared-variables.png
                     |-- web-domain-setup
-                        |-- guilderia-setup.png
+                        |-- zenthcloud-setup.png
                         |-- domain-setup.png
                 |-- multi-server-add-app.png
                 |-- multi-server-add-server.png

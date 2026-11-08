@@ -1,6 +1,6 @@
-import type { Schema } from "@guilderia/server/templates";
-import type { CompleteTemplate } from "@guilderia/server/templates/processors";
-import { processTemplate } from "@guilderia/server/templates/processors";
+import type { Schema } from "@zenthcloud/server/templates";
+import type { CompleteTemplate } from "@zenthcloud/server/templates/processors";
+import { processTemplate } from "@zenthcloud/server/templates/processors";
 import { describe, expect, it } from "vitest";
 
 describe("processTemplate", () => {

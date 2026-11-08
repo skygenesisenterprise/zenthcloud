@@ -1,4 +1,4 @@
-import { getAuditLogs } from "@guilderia/server/services/proprietary/audit-log";
+import { getAuditLogs } from "@zenthcloud/server/services/proprietary/audit-log";
 import { z } from "zod";
 import { createTRPCRouter, withPermission } from "../../trpc";
 

@@ -1,6 +1,6 @@
-import { findUserById, updateUser } from "@guilderia/server";
-import { db } from "@guilderia/server/db";
-import { member, projects, server, user } from "@guilderia/server/db/schema";
+import { findUserById, updateUser } from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
+import { member, projects, server, user } from "@zenthcloud/server/db/schema";
 import { eq } from "drizzle-orm";
 
 /**

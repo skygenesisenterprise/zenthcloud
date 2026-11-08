@@ -1,4 +1,4 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateCicdDeployment,
 	applications,
@@ -7,8 +7,8 @@ import {
 	domains,
 	environments,
 	projects,
-} from "@guilderia/server/db/schema";
-import type { CicdProvider } from "@guilderia/server/lib/cicd-scope";
+} from "@zenthcloud/server/db/schema";
+import type { CicdProvider } from "@zenthcloud/server/lib/cicd-scope";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, or, sql } from "drizzle-orm";
 import type { z } from "zod";
@@ -17,7 +17,7 @@ import { getAstronCollectionUrl } from "./admin";
 /**
  * CI/CD API services.
  *
- * The point of this module is that a CI client never has to know how Guilderia
+ * The point of this module is that a CI client never has to know how Zenthcloud
  * stores projects: it sends names (or ids) plus the CI metadata and gets back a
  * deployment it can poll and link to. Everything touching the `cicd_deployment`
  * table lives here so the dashboard and the public API cannot drift apart.
@@ -39,10 +39,10 @@ export const CICD_GITHUB_STATUSES = [
 export type CicdGithubStatus = (typeof CICD_GITHUB_STATUSES)[number];
 
 /**
- * Maps a Guilderia deployment state onto a GitHub deployment state.
+ * Maps a Zenthcloud deployment state onto a GitHub deployment state.
  *
  * - `done` → `success`: the container is up.
- * - `error` → `failure`: the build or the container startup failed. Guilderia has
+ * - `error` → `failure`: the build or the container startup failed. Zenthcloud has
  *   a single error state, so a request rejected by the API is reported by the
  *   client itself (no deployment is created) and never reaches this mapping.
  * - `cancelled` → `inactive`: the workflow was cancelled and the deployment was
@@ -66,7 +66,7 @@ export const toGithubDeploymentStatus = (
 
 /**
  * Reported for a deployment that exists but has not been picked up by a worker
- * yet. Distinct from `toGithubDeploymentStatus` because a Guilderia deployment row
+ * yet. Distinct from `toGithubDeploymentStatus` because a Zenthcloud deployment row
  * says `running` from the moment it is created.
  */
 export const QUEUED_GITHUB_STATUS: CicdGithubStatus = "queued";
@@ -85,7 +85,7 @@ export interface CicdTarget {
 	/** `owner/repository` of the application, when it is deployed from Git. */
 	repository: string | null;
 	serverId: string | null;
-	/** Deep link to the application page in the Guilderia dashboard. */
+	/** Deep link to the application page in the Zenthcloud dashboard. */
 	dashboardUrl: string;
 	/** Public URL of the application, when it has a domain. */
 	environmentUrl: string | null;
@@ -295,7 +295,7 @@ const findApplicationInProject = async (input: {
 };
 
 /**
- * Creates the `cicd_deployment` row that ties a Guilderia deployment to the CI run
+ * Creates the `cicd_deployment` row that ties a Zenthcloud deployment to the CI run
  * that requested it.
  *
  * Idempotent on `(provider, externalId)`: a retried request returns the existing
@@ -379,7 +379,7 @@ export const findCicdDeploymentsByProject = async (
 	});
 
 /**
- * Everything a CI client needs to report on a deployment: the Guilderia state, the
+ * Everything a CI client needs to report on a deployment: the Zenthcloud state, the
  * GitHub state to publish, and the links between both systems.
  */
 export const getCicdDeploymentView = async (deploymentId: string) => {
@@ -423,7 +423,7 @@ export const getCicdDeploymentView = async (deploymentId: string) => {
 	const project = deployment.application?.environment.project;
 	const environment = deployment.application?.environment;
 
-	// A Guilderia deployment row says `running` from the moment it is created, so
+	// A Zenthcloud deployment row says `running` from the moment it is created, so
 	// "queued" is detected by the application not having been moved to `running`
 	// yet: that is the first thing every worker does with a deployment job.
 	const queued =

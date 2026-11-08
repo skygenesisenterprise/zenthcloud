@@ -4,7 +4,7 @@ export const SiteFooter = ({ name }: { name: string }) => (
 			© {new Date().getFullYear()} {name}. All rights reserved.
 		</p>
 		<p>
-			Powered by Guilderia Status —{" "}
+			Powered by Zenthcloud Status —{" "}
 			<a
 				href="/api/v1/openapi.json"
 				className="underline decoration-dotted underline-offset-2 hover:text-foreground"

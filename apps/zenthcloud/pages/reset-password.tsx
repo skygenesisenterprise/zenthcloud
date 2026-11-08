@@ -1,4 +1,4 @@
-import { IS_CLOUD } from "@guilderia/server";
+import { IS_CLOUD } from "@zenthcloud/server";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import type { GetServerSidePropsContext } from "next";
 import Link from "next/link";

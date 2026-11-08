@@ -1,4 +1,4 @@
-import { validateRequest } from "@guilderia/server/lib/auth";
+import { validateRequest } from "@zenthcloud/server/lib/auth";
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 
 type ConsolePageProps = Record<string, never>;

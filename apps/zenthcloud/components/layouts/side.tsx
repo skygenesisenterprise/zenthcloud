@@ -830,9 +830,9 @@ export default function Page({ children, pageTitle }: Props) {
 
 	// Pages without a navigation entry still deserve a location in the header.
 	// `DashboardLayout` falls back to the generic app name for unknown routes,
-	// which we ignore so we never show a meaningless "Guilderia" crumb.
+	// which we ignore so we never show a meaningless "Zenthcloud" crumb.
 	const standaloneTitle =
-		!activeNavigation && pageTitle && pageTitle !== "Guilderia"
+		!activeNavigation && pageTitle && pageTitle !== "Zenthcloud"
 			? pageTitle
 			: undefined;
 
@@ -986,10 +986,10 @@ export default function Page({ children, pageTitle }: Props) {
 								<NotificationsButton />
 								<Button variant="ghost" size="icon" asChild>
 									<Link
-										href="https://github.com/skygenesisenterprise/guilderia"
+										href="https://github.com/skygenesisenterprise/zenthcloud"
 										target="_blank"
 										rel="noopener noreferrer"
-										aria-label="Guilderia on GitHub"
+										aria-label="Zenthcloud on GitHub"
 									>
 										<GithubIcon className="size-4" />
 									</Link>

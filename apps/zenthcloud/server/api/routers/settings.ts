@@ -27,7 +27,7 @@ import {
 	isExternalJobsEnabled,
 	isManagedCloud,
 	isUpdateInstallable,
-	GUILDERIA_IMAGE,
+	ZENTHCLOUD_IMAGE,
 	normalizeVersion,
 	parseRawConfig,
 	paths,
@@ -56,14 +56,14 @@ import {
 	writeMainConfig,
 	writeTraefikConfigInPath,
 	writeTraefikSetup,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
-import { checkPermission } from "@guilderia/server/services/permission";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
+import { checkPermission } from "@zenthcloud/server/services/permission";
 import {
 	isValidIpAddress,
 	sortIpCandidates,
-} from "@guilderia/server/utils/ip-address";
-import { generateOpenApiDocument } from "@guilderia/trpc-openapi";
+} from "@zenthcloud/server/utils/ip-address";
+import { generateOpenApiDocument } from "@zenthcloud/trpc-openapi";
 import { TRPCError } from "@trpc/server";
 import { eq, sql } from "drizzle-orm";
 import { scheduledJobs, scheduleJob } from "node-schedule";
@@ -165,11 +165,11 @@ export const settingsRouter = createTRPCRouter({
 		if (IS_CLOUD) {
 			return true;
 		}
-		await reloadDockerResource("guilderia", undefined, packageInfo.version);
+		await reloadDockerResource("zenthcloud", undefined, packageInfo.version);
 		await audit(ctx, {
 			action: "reload",
 			resourceType: "settings",
-			resourceName: "guilderia",
+			resourceName: "zenthcloud",
 		});
 		return true;
 	}),
@@ -189,7 +189,7 @@ export const settingsRouter = createTRPCRouter({
 		.input(apiServerSchema)
 		.mutation(async ({ input, ctx }) => {
 			// Run in background so the request returns immediately; avoids proxy timeouts.
-			void reloadDockerResource("guilderia-traefik", input?.serverId).catch(
+			void reloadDockerResource("zenthcloud-traefik", input?.serverId).catch(
 				(err) => {
 					console.error("reloadTraefik background:", err);
 				},
@@ -197,16 +197,16 @@ export const settingsRouter = createTRPCRouter({
 			await audit(ctx, {
 				action: "reload",
 				resourceType: "settings",
-				resourceName: "guilderia-traefik",
+				resourceName: "zenthcloud-traefik",
 			});
 			return true;
 		}),
 	toggleDashboard: adminProcedure
 		.input(apiEnableDashboard)
 		.mutation(async ({ input, ctx }) => {
-			const ports = await readPorts("guilderia-traefik", input.serverId);
+			const ports = await readPorts("zenthcloud-traefik", input.serverId);
 			const env = await readEnvironmentVariables(
-				"guilderia-traefik",
+				"zenthcloud-traefik",
 				input.serverId,
 			);
 			const preparedEnv = prepareEnvironmentVariables(env);
@@ -389,8 +389,8 @@ export const settingsRouter = createTRPCRouter({
 				updateLetsEncryptEmail(input.letsEncryptEmail);
 			}
 
-			// Register the control-plane hostname in the organization's Guilderia
-			// Internal DNS so names like `console.guilderia.lan` resolve inside the
+			// Register the control-plane hostname in the organization's Zenthcloud
+			// Internal DNS so names like `console.zenthcloud.lan` resolve inside the
 			// LAN, the same way application domains do.
 			const organizationId = ctx.session?.activeOrganizationId;
 			const internalDns =
@@ -607,7 +607,7 @@ export const settingsRouter = createTRPCRouter({
 		if (IS_CLOUD) {
 			return true;
 		}
-		const traefikConfig = readConfig("guilderia");
+		const traefikConfig = readConfig("zenthcloud");
 		return traefikConfig;
 	}),
 	updateWebServerTraefikConfig: adminProcedure
@@ -616,7 +616,7 @@ export const settingsRouter = createTRPCRouter({
 			if (IS_CLOUD) {
 				return true;
 			}
-			writeConfig("guilderia", input.traefikConfig);
+			writeConfig("zenthcloud", input.traefikConfig);
 			await audit(ctx, {
 				action: "update",
 				resourceType: "settings",
@@ -689,13 +689,13 @@ export const settingsRouter = createTRPCRouter({
 			"update",
 			"--force",
 			"--image",
-			`${GUILDERIA_IMAGE}:${data.latestVersion}`,
-			"guilderia",
+			`${ZENTHCLOUD_IMAGE}:${data.latestVersion}`,
+			"zenthcloud",
 		]);
 		await audit(ctx, {
 			action: "update",
 			resourceType: "settings",
-			resourceName: "guilderia-version",
+			resourceName: "zenthcloud-version",
 		});
 
 		return true;
@@ -909,14 +909,14 @@ export const settingsRouter = createTRPCRouter({
 				}
 				try {
 					const container = await docker
-						.getContainer("guilderia-traefik")
+						.getContainer("zenthcloud-traefik")
 						.inspect();
 					if (container.State?.Running) {
 						status = "running";
 						version = container.Config?.Image ?? null;
 					}
 				} catch {
-					const service = await docker.getService("guilderia-traefik").inspect();
+					const service = await docker.getService("zenthcloud-traefik").inspect();
 					const replicas = service.Spec?.Mode?.Replicated?.Replicas;
 					const tasks = await docker.listTasks({
 						filters: { service: [service.ID], desiredState: ["running"] },
@@ -1088,8 +1088,8 @@ export const settingsRouter = createTRPCRouter({
 			});
 
 			openApiDocument.info = {
-				title: "Guilderia API",
-				description: "Endpoints for guilderia",
+				title: "Zenthcloud API",
+				description: "Endpoints for zenthcloud",
 				version: packageInfo.version,
 			};
 
@@ -1119,7 +1119,7 @@ export const settingsRouter = createTRPCRouter({
 		.input(apiServerSchema)
 		.query(async ({ input }) => {
 			const envVars = await readEnvironmentVariables(
-				"guilderia-traefik",
+				"zenthcloud-traefik",
 				input?.serverId,
 			);
 			return envVars;
@@ -1129,7 +1129,7 @@ export const settingsRouter = createTRPCRouter({
 		.input(z.object({ env: z.string(), serverId: z.string().optional() }))
 		.mutation(async ({ input, ctx }) => {
 			const envs = prepareEnvironmentVariables(input.env);
-			const ports = await readPorts("guilderia-traefik", input?.serverId);
+			const ports = await readPorts("zenthcloud-traefik", input?.serverId);
 
 			// Run in background so the request returns immediately; client polls /api/health.
 			void writeTraefikSetup({
@@ -1149,7 +1149,7 @@ export const settingsRouter = createTRPCRouter({
 	haveTraefikDashboardPortEnabled: adminProcedure
 		.input(apiServerSchema)
 		.query(async ({ input }) => {
-			const ports = await readPorts("guilderia-traefik", input?.serverId);
+			const ports = await readPorts("zenthcloud-traefik", input?.serverId);
 			return ports.some((port) => port.targetPort === 8080);
 		}),
 
@@ -1253,7 +1253,7 @@ export const settingsRouter = createTRPCRouter({
 			if (input.enable) {
 				const config = {
 					accessLog: {
-						filePath: "/etc/guilderia/traefik/dynamic/access.log",
+						filePath: "/etc/zenthcloud/traefik/dynamic/access.log",
 						format: "json",
 						bufferingSize: 100,
 					},
@@ -1398,7 +1398,7 @@ export const settingsRouter = createTRPCRouter({
 					});
 				}
 				const env = await readEnvironmentVariables(
-					"guilderia-traefik",
+					"zenthcloud-traefik",
 					input?.serverId,
 				);
 
@@ -1447,7 +1447,7 @@ export const settingsRouter = createTRPCRouter({
 	getTraefikPorts: adminProcedure
 		.input(apiServerSchema)
 		.query(async ({ input }) => {
-			const ports = await readPorts("guilderia-traefik", input?.serverId);
+			const ports = await readPorts("zenthcloud-traefik", input?.serverId);
 			return ports;
 		}),
 	updateLogCleanup: protectedProcedure
@@ -1482,7 +1482,7 @@ export const settingsRouter = createTRPCRouter({
 		if (!IS_CLOUD) {
 			return [];
 		}
-		const ips = process.env.GUILDERIA_CLOUD_IPS?.split(",");
+		const ips = process.env.ZENTHCLOUD_CLOUD_IPS?.split(",");
 		return ips;
 	}),
 });

@@ -117,7 +117,7 @@ function statusForResource(
     default:
       break;
   }
-  if (direction === "guilderia-to-dokploy") {
+  if (direction === "zenthcloud-to-dokploy") {
     return {
       status: "to-verify",
       reason: "Export equivalence must be verified against declared Dokploy version.",

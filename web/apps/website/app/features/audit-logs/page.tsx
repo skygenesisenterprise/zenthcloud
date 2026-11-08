@@ -18,7 +18,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Audit Logs for Enterprise Compliance",
 	description:
-		"Track every action across your guilderia organization. Audit logs give enterprise teams the visibility they need for security and compliance.",
+		"Track every action across your zenthcloud organization. Audit logs give enterprise teams the visibility they need for security and compliance.",
 };
 
 const coreFeatures = [
@@ -26,13 +26,13 @@ const coreFeatures = [
 		icon: Building2,
 		title: "Track actions across your whole organization",
 		description:
-			"Audit logs capture authentication events, user management changes, deployment activity, infrastructure updates, environment variable changes, backup configuration, and more. If it happened in guilderia, it\u2019s recorded.",
+			"Audit logs capture authentication events, user management changes, deployment activity, infrastructure updates, environment variable changes, backup configuration, and more. If it happened in zenthcloud, it\u2019s recorded.",
 	},
 	{
 		icon: AlertCircle,
 		title: "Investigate issues quickly",
 		description:
-			"Each log entry includes a timestamp, the user who performed the action, the action type, the resource affected, and the user\u2019s role in guilderia at the time. When something goes wrong, you have everything you need to trace it back to its source.",
+			"Each log entry includes a timestamp, the user who performed the action, the action type, the resource affected, and the user\u2019s role in zenthcloud at the time. When something goes wrong, you have everything you need to trace it back to its source.",
 	},
 	{
 		icon: Search,
@@ -67,7 +67,7 @@ const relatedFeatures = [
 		icon: Paintbrush,
 		title: "White labeling",
 		description:
-			"Present guilderia as your own product, with custom branding for your clients or organization.",
+			"Present zenthcloud as your own product, with custom branding for your clients or organization.",
 		href: "/features/white-labeling",
 	},
 ];
@@ -79,7 +79,7 @@ export default function AuditLogsPage() {
 			badgeDetail="Security & governance"
 			title="Full visibility into"
 			highlight="every action taken"
-			description="Know exactly who did what, and when, across your entire guilderia organization, with an audit trail built for security reviews, compliance and incident response."
+			description="Know exactly who did what, and when, across your entire zenthcloud organization, with an audit trail built for security reviews, compliance and incident response."
 			actions={
 				<>
 					<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
@@ -90,7 +90,7 @@ export default function AuditLogsPage() {
 						className="w-full rounded-full px-6 sm:w-auto"
 						asChild
 					>
-						<Link href="https://docs.guilderia.com/docs/core" target="_blank">
+						<Link href="https://docs.zenthcloud.com/docs/core" target="_blank">
 							View documentation
 						</Link>
 					</Button>
@@ -112,14 +112,14 @@ export default function AuditLogsPage() {
 				id: "powerful-features",
 				title: "Powerful features for growing teams",
 				description:
-					"guilderia scales with your team, with features and plans for when you're ready to take the next step.",
+					"zenthcloud scales with your team, with features and plans for when you're ready to take the next step.",
 				items: relatedFeatures,
 				columns: 3,
 			}}
 			finalCta={{
 				title: "Ready to take control?",
 				description:
-					"Talk to us about audit logs and the rest of guilderia's higher-tier features.",
+					"Talk to us about audit logs and the rest of zenthcloud's higher-tier features.",
 				cta: "Schedule a call",
 				href: "/contact",
 			}}

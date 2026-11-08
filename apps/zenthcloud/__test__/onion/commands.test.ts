@@ -1,5 +1,5 @@
 import { parse, quote } from "shell-quote";
-import { getOnionServicePaths } from "@guilderia/server/utils/onion/config";
+import { getOnionServicePaths } from "@zenthcloud/server/utils/onion/config";
 import {
 	assertDockerNetworkName,
 	getInspectOnionNetworkCommand,
@@ -10,7 +10,7 @@ import {
 	getRestartOnionServiceCommand,
 	getStartOnionServiceCommand,
 	getStopOnionServiceCommand,
-} from "@guilderia/server/utils/onion/commands";
+} from "@zenthcloud/server/utils/onion/commands";
 import { describe, expect, it } from "vitest";
 
 const paths = getOnionServicePaths("abc123");
@@ -69,25 +69,25 @@ describe("getStartOnionServiceCommand", () => {
 	});
 
 	it("mounts the daemon-visible source of the storage", () => {
-		// The daemon resolves a bind source on its own filesystem: when Guilderia
+		// The daemon resolves a bind source on its own filesystem: when Zenthcloud
 		// keeps its configuration in a volume, the path it sees is not the one
 		// the daemon would find.
 		const command = startCommand({
 			bindSources: {
-				dataDir: "/var/lib/docker/volumes/guilderia-config/_data/onion/abc123/data",
+				dataDir: "/var/lib/docker/volumes/zenthcloud-config/_data/onion/abc123/data",
 				torrcPath:
-					"/var/lib/docker/volumes/guilderia-config/_data/onion/abc123/torrc",
+					"/var/lib/docker/volumes/zenthcloud-config/_data/onion/abc123/torrc",
 			},
 		});
 
 		expect(command).toContain(
 			`-v ${q(
-				`/var/lib/docker/volumes/guilderia-config/_data/onion/abc123/data:${paths.containerDataDir}`,
+				`/var/lib/docker/volumes/zenthcloud-config/_data/onion/abc123/data:${paths.containerDataDir}`,
 			)}`,
 		);
 		expect(command).toContain(
 			`-v ${q(
-				`/var/lib/docker/volumes/guilderia-config/_data/onion/abc123/torrc:${paths.containerConfigPath}`,
+				`/var/lib/docker/volumes/zenthcloud-config/_data/onion/abc123/torrc:${paths.containerConfigPath}`,
 			)}`,
 		);
 		expect(command).not.toContain(`${paths.torrcPath}:`);
@@ -104,8 +104,8 @@ describe("getStartOnionServiceCommand", () => {
 	it("labels the container so the runtime is traceable", () => {
 		const command = startCommand();
 
-		expect(command).toContain(q("guilderia.onionServiceId=abc123"));
-		expect(command).toContain(q("guilderia.composeId=compose1"));
+		expect(command).toContain(q("zenthcloud.onionServiceId=abc123"));
+		expect(command).toContain(q("zenthcloud.composeId=compose1"));
 	});
 
 	it("drops the image healthcheck that expects a control port", () => {
@@ -120,7 +120,7 @@ describe("getStartOnionServiceCommand", () => {
 		// The payload stays a single argument: it is quoted, and the parsed
 		// command gains no operator at all.
 		expect(command).toContain(
-			`--label ${q("guilderia.onionServiceId=x; rm -rf /tmp/onion")}`,
+			`--label ${q("zenthcloud.onionServiceId=x; rm -rf /tmp/onion")}`,
 		);
 		expect(operatorsOf(command)).toEqual(operatorsOf(startCommand()));
 	});

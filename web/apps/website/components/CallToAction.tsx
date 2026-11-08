@@ -5,23 +5,23 @@ import { Button } from "./ui/button";
 const paths = [
 	{
 		href: "/self",
-		label: "Get started with guilderia Self",
+		label: "Get started with zenthcloud Self",
 		description: "Free, open source, on your servers",
 	},
 	{
-		href: "https://app.guilderia.com/register",
-		label: "Explore guilderia Cloud",
-		description: "Managed by guilderia, ready in minutes",
+		href: "https://app.zenthcloud.com/register",
+		label: "Explore zenthcloud Cloud",
+		description: "Managed by zenthcloud, ready in minutes",
 		external: true,
 	},
 	{
-		href: "https://docs.guilderia.com/docs/core",
+		href: "https://docs.zenthcloud.com/docs/core",
 		label: "Read the documentation",
 		description: "Guides, installation, architecture and reference",
 		external: true,
 	},
 	{
-		href: "https://github.com/skygenesisenterprise/guilderia",
+		href: "https://github.com/skygenesisenterprise/zenthcloud",
 		label: "View GitHub",
 		description: "Source code, issues and releases",
 		external: true,
@@ -67,11 +67,11 @@ export function CallToAction() {
 			<Container className="relative z-30">
 				<div className="mx-auto max-w-2xl text-center">
 					<h2 className="font-display text-3xl tracking-tight text-foreground sm:text-4xl">
-						Start with guilderia today
+						Start with zenthcloud today
 					</h2>
 					<p className="mt-4 text-lg tracking-tight text-muted-foreground">
 						Deploy your first application on infrastructure you own — self-hosted
-						with guilderia Self, or managed with guilderia Cloud.
+						with zenthcloud Self, or managed with zenthcloud Cloud.
 					</p>
 
 					<div className="mx-auto mt-10 grid max-w-xl grid-cols-1 gap-4 sm:grid-cols-2">

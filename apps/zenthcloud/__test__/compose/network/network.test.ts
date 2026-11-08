@@ -1,10 +1,10 @@
-import type { ComposeSpecification } from "@guilderia/server";
+import type { ComposeSpecification } from "@zenthcloud/server";
 import {
 	addSuffixToAllNetworks,
 	addSuffixToNetworksRoot,
 	addSuffixToServiceNetworks,
 	generateRandomHash,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { expect, test } from "vitest";
 import { parse } from "yaml";
 
@@ -266,13 +266,13 @@ services:
         aliases:
           - app
       backend:
-      guilderia-network:
+      zenthcloud-network:
 
   worker:
     image: worker:latest
     networks:
       - backend
-      - guilderia-network
+      - zenthcloud-network
 
 networks:
   frontend:
@@ -284,7 +284,7 @@ networks:
     driver_opts:
       com.docker.network.bridge.enable_icc: "true"
 
-  guilderia-network:
+  zenthcloud-network:
     driver: bridge
 
 `;
@@ -300,13 +300,13 @@ services:
         aliases:
           - app
       backend-testhash:
-      guilderia-network:
+      zenthcloud-network:
 
   worker:
     image: worker:latest
     networks:
       - backend-testhash
-      - guilderia-network
+      - zenthcloud-network
 
 networks:
   frontend-testhash:
@@ -318,14 +318,14 @@ networks:
     driver_opts:
       com.docker.network.bridge.enable_icc: "true"
   
-  guilderia-network:
+  zenthcloud-network:
     driver: bridge
 
 
   
 `);
 
-test("Expect don't add suffix to guilderia-network in compose file with multiple services and complex network configurations", () => {
+test("Expect don't add suffix to zenthcloud-network in compose file with multiple services and complex network configurations", () => {
 	const composeData = parse(composeFile4) as ComposeSpecification;
 
 	const suffix = "testhash";

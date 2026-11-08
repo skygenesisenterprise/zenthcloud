@@ -1,17 +1,17 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateMySql,
 	backups,
 	buildAppName,
 	mysql,
-} from "@guilderia/server/db/schema";
-import { generatePassword } from "@guilderia/server/templates";
-import { buildMysql } from "@guilderia/server/utils/databases/mysql";
+} from "@zenthcloud/server/db/schema";
+import { generatePassword } from "@zenthcloud/server/templates";
+import { buildMysql } from "@zenthcloud/server/utils/databases/mysql";
 import {
 	pullImage,
 	waitForSwarmServiceConvergence,
-} from "@guilderia/server/utils/docker/utils";
-import { execAsyncRemote } from "@guilderia/server/utils/process/execAsync";
+} from "@zenthcloud/server/utils/docker/utils";
+import { execAsyncRemote } from "@zenthcloud/server/utils/process/execAsync";
 import { TRPCError } from "@trpc/server";
 import { eq, getTableColumns } from "drizzle-orm";
 import { quote } from "shell-quote";

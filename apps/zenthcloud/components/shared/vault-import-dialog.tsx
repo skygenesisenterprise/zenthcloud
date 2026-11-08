@@ -206,7 +206,7 @@ export const VaultImportDialog = ({
 						Select the secrets to import as{" "}
 						{/* biome-ignore lint/suspicious/noTemplateCurlyInString: vault ${{...}} reference syntax shown as documentation, not a JS template */}
 						<code>{"${{vault.<provider>.<secret>}}"}</code> references. They are
-						resolved at deploy time and the values never reach Guilderia. Secrets
+						resolved at deploy time and the values never reach Zenthcloud. Secrets
 						already defined below are skipped unless you check them explicitly.
 					</DialogDescription>
 				</DialogHeader>

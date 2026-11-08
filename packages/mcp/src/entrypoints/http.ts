@@ -51,7 +51,7 @@ class PayloadTooLargeError extends Error {}
 async function readJsonBody(request: Request, maxBytes: number): Promise<unknown> {
   const text = await request.text();
   if (Buffer.byteLength(text, "utf8") > maxBytes) {
-    throw new PayloadTooLargeError("Request body exceeds GUILDERIA_MCP_HTTP_MAX_BODY_BYTES");
+    throw new PayloadTooLargeError("Request body exceeds ZENTHCLOUD_MCP_HTTP_MAX_BODY_BYTES");
   }
   if (text.trim() === "") return undefined;
   return JSON.parse(text) as unknown;
@@ -62,18 +62,18 @@ async function readJsonBody(request: Request, maxBytes: number): Promise<unknown
  *
  * Remote transports require a bearer token. An explicit opt-out is accepted
  * only on loopback, so a published container cannot expose an unauthenticated
- * Guilderia automation surface by accident.
+ * Zenthcloud automation surface by accident.
  */
 export function assertHttpSecurity(http: HttpConfig): void {
   if (!http.token && !http.allowUnauthenticated) {
     throw new Error(
-      "HTTP transport requires GUILDERIA_MCP_HTTP_TOKEN (at least 16 characters). " +
-        "For local development only, set GUILDERIA_MCP_HTTP_ALLOW_UNAUTHENTICATED=true with a loopback bind address.",
+      "HTTP transport requires ZENTHCLOUD_MCP_HTTP_TOKEN (at least 16 characters). " +
+        "For local development only, set ZENTHCLOUD_MCP_HTTP_ALLOW_UNAUTHENTICATED=true with a loopback bind address.",
     );
   }
   if (!http.token && http.allowUnauthenticated && !isLoopbackHost(http.host)) {
     throw new Error(
-      "GUILDERIA_MCP_HTTP_ALLOW_UNAUTHENTICATED is only allowed when GUILDERIA_MCP_HTTP_HOST is loopback",
+      "ZENTHCLOUD_MCP_HTTP_ALLOW_UNAUTHENTICATED is only allowed when ZENTHCLOUD_MCP_HTTP_HOST is loopback",
     );
   }
 }
@@ -179,8 +179,8 @@ export async function createHttpApplication(
 
   // RFC 9728 OAuth protected-resource metadata (MCP auth discovery).
   // Public by design: it describes how to authenticate, it never accepts
-  // credentials and never proxies to the Guilderia API.
-  // When GUILDERIA_MCP_OAUTH_ISSUER is unset, this endpoint honestly reports
+  // credentials and never proxies to the Zenthcloud API.
+  // When ZENTHCLOUD_MCP_OAUTH_ISSUER is unset, this endpoint honestly reports
   // bearer-only auth (developer/private-connector path) instead of faking
   // an authorization server. ChatGPT public listing requires a real issuer.
   app.get("/.well-known/oauth-protected-resource", (c) => {
@@ -189,7 +189,7 @@ export async function createHttpApplication(
         {
           error: "oauth_not_configured",
           message:
-            "This MCP server uses bearer-only auth (GUILDERIA_MCP_HTTP_TOKEN) for private/developer connectors. OAuth 2.1 with dynamic client registration is not configured; public ChatGPT listing is not available with this configuration.",
+            "This MCP server uses bearer-only auth (ZENTHCLOUD_MCP_HTTP_TOKEN) for private/developer connectors. OAuth 2.1 with dynamic client registration is not configured; public ChatGPT listing is not available with this configuration.",
           resource: resourceUrl,
           bearer_methods_supported: ["header"],
           docs: "See packages/mcp/CHATGPT.md for the supported private-connector path.",
@@ -440,7 +440,7 @@ export async function main(): Promise<void> {
       hostname: config.http.host,
     },
     (info) => {
-      logger.info("MCP Guilderia HTTP server started", {
+      logger.info("MCP Zenthcloud HTTP server started", {
         host: config.http.host,
         port: info.port,
         authenticated: Boolean(config.http.token),

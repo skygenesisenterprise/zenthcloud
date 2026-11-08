@@ -1,11 +1,11 @@
 import { join } from "node:path";
-import { paths } from "@guilderia/server/constants";
+import { paths } from "@zenthcloud/server/constants";
 import {
 	findGiteaById,
 	type Gitea,
 	updateGitea,
-} from "@guilderia/server/services/gitea";
-import type { InferResultType } from "@guilderia/server/types/with";
+} from "@zenthcloud/server/services/gitea";
+import type { InferResultType } from "@zenthcloud/server/types/with";
 import { TRPCError } from "@trpc/server";
 import { quote } from "shell-quote";
 import {
@@ -57,7 +57,7 @@ export const refreshGiteaToken = async (giteaProviderId: string) => {
 		}
 
 		// Token is expired or about to expire, refresh it
-		// Use internal URL when Gitea is on same instance as Guilderia
+		// Use internal URL when Gitea is on same instance as Zenthcloud
 		const baseUrl = giteaProvider.giteaInternalUrl || giteaProvider.giteaUrl;
 		const tokenEndpoint = `${baseUrl}/login/oauth/access_token`;
 		const params = new URLSearchParams({

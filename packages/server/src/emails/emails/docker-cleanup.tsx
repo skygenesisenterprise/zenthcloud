@@ -18,10 +18,10 @@ export type TemplateProps = {
 };
 
 export const DockerCleanupEmail = ({
-	message = "Docker cleanup for guilderia",
+	message = "Docker cleanup for zenthcloud",
 	date = "2023-05-01T00:00:00.000Z",
 }: TemplateProps) => {
-	const previewText = "Docker cleanup for guilderia";
+	const previewText = "Docker cleanup for zenthcloud";
 	return (
 		<Html>
 			<Preview>{previewText}</Preview>
@@ -33,22 +33,22 @@ export const DockerCleanupEmail = ({
 						<Section className="mt-[32px]">
 							<Img
 								src={
-									"https://raw.githubusercontent.com/skygenesisenterprise/guilderia/refs/heads/master/apps/guilderia/logo.png"
+									"https://raw.githubusercontent.com/skygenesisenterprise/zenthcloud/refs/heads/master/apps/zenthcloud/logo.png"
 								}
 								width="100"
 								height="50"
-								alt="Guilderia"
+								alt="Zenthcloud"
 								className="my-0 mx-auto"
 							/>
 						</Section>
 						<Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
-							Docker cleanup for <strong>guilderia</strong>
+							Docker cleanup for <strong>zenthcloud</strong>
 						</Heading>
 						<Text className="text-black text-[14px] leading-[24px]">
 							Hello,
 						</Text>
 						<Text className="text-black text-[14px] leading-[24px]">
-							The docker cleanup for <strong>guilderia</strong> was successful ✅
+							The docker cleanup for <strong>zenthcloud</strong> was successful ✅
 						</Text>
 
 						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#F4F4F5] rounded-lg p-2">

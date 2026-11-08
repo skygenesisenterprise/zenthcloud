@@ -114,7 +114,7 @@ export const createGrafanaClient = (options: GrafanaClientOptions) => {
 		},
 
 		listDashboards: async (
-			query = "guilderia",
+			query = "zenthcloud",
 		): Promise<GrafanaDashboardRef[]> => {
 			const params = new URLSearchParams({ type: "dash-db", query });
 			const body = await request<
@@ -170,7 +170,7 @@ export const createGrafanaClient = (options: GrafanaClientOptions) => {
 		exploreUrl: (expr: string): string =>
 			`${baseUrl}/explore?left=${encodeURIComponent(
 				JSON.stringify({
-					datasource: "Guilderia Prometheus",
+					datasource: "Zenthcloud Prometheus",
 					queries: [{ expr }],
 				}),
 			)}`,

@@ -1,37 +1,37 @@
 import path from "node:path";
-import { paths } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
+import { paths } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiTransferService,
 	deployments,
 	network,
 	type ServiceType,
-} from "@guilderia/server/db/schema";
-import { removeService } from "@guilderia/server/utils/docker/utils";
+} from "@zenthcloud/server/db/schema";
+import { removeService } from "@zenthcloud/server/utils/docker/utils";
 import {
 	removeDirectoryCode,
 	removeMonitoringDirectory,
-} from "@guilderia/server/utils/filesystem/directory";
+} from "@zenthcloud/server/utils/filesystem/directory";
 import {
 	execAsync,
 	execAsyncRemote,
-} from "@guilderia/server/utils/process/execAsync";
-import { pipeBetweenServers } from "@guilderia/server/utils/process/remoteStream";
+} from "@zenthcloud/server/utils/process/execAsync";
+import { pipeBetweenServers } from "@zenthcloud/server/utils/process/remoteStream";
 import {
 	readConfig,
 	readRemoteConfig,
 	removeTraefikConfig,
 	writeConfig,
 	writeConfigRemote,
-} from "@guilderia/server/utils/traefik/application";
-import { manageDomain } from "@guilderia/server/utils/traefik/domain";
-import { removeForwardAuthMiddleware } from "@guilderia/server/utils/traefik/forward-auth";
+} from "@zenthcloud/server/utils/traefik/application";
+import { manageDomain } from "@zenthcloud/server/utils/traefik/domain";
+import { removeForwardAuthMiddleware } from "@zenthcloud/server/utils/traefik/forward-auth";
 import {
 	deleteAllMiddlewares,
 	removePathMiddlewares,
-} from "@guilderia/server/utils/traefik/middleware";
-import { createRedirectMiddleware } from "@guilderia/server/utils/traefik/redirect";
-import { createSecurityMiddleware } from "@guilderia/server/utils/traefik/security";
+} from "@zenthcloud/server/utils/traefik/middleware";
+import { createRedirectMiddleware } from "@zenthcloud/server/utils/traefik/redirect";
+import { createSecurityMiddleware } from "@zenthcloud/server/utils/traefik/security";
 import { TRPCError } from "@trpc/server";
 import { eq, inArray, sql } from "drizzle-orm";
 import { quote } from "shell-quote";
@@ -487,8 +487,8 @@ export const transferService = async (
 		}
 	}
 
-	const sourceName = service.server?.name ?? "Guilderia Server";
-	const targetName = targetServer?.name ?? "Guilderia Server";
+	const sourceName = service.server?.name ?? "Zenthcloud Server";
+	const targetName = targetServer?.name ?? "Zenthcloud Server";
 	const originalNetworkIds =
 		"networkIds" in service ? service.networkIds : undefined;
 	let switched = false;

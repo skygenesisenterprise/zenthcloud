@@ -5,7 +5,7 @@ import {
 	isValidCidr,
 	isValidIp,
 	parseCidr,
-} from "@guilderia/server/utils/network/cidr";
+} from "@zenthcloud/server/utils/network/cidr";
 import { describe, expect, it } from "vitest";
 
 describe("isValidCidr", () => {

@@ -1,9 +1,9 @@
-import type { ComposeSpecification } from "@guilderia/server";
+import type { ComposeSpecification } from "@zenthcloud/server";
 import {
 	addSuffixToAllVolumes,
 	addSuffixToVolumesRoot,
 	generateRandomHash,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { expect, test } from "vitest";
 import { parse } from "yaml";
 

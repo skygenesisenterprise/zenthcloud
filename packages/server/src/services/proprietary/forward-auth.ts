@@ -1,11 +1,11 @@
-import { IS_CLOUD } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
+import { IS_CLOUD } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
 import {
 	forwardAuthSettings,
 	server,
 	ssoProvider,
-} from "@guilderia/server/db/schema";
-import { checkServicePermissionAndAccess } from "@guilderia/server/services/permission";
+} from "@zenthcloud/server/db/schema";
+import { checkServicePermissionAndAccess } from "@zenthcloud/server/services/permission";
 import {
 	deriveBaseDomain,
 	deriveCookieSecret,
@@ -14,13 +14,13 @@ import {
 	isForwardAuthRunning,
 	removeForwardAuth,
 	setupForwardAuth,
-} from "@guilderia/server/setup/forward-auth-setup";
-import { manageDomain } from "@guilderia/server/utils/traefik/domain";
+} from "@zenthcloud/server/setup/forward-auth-setup";
+import { manageDomain } from "@zenthcloud/server/utils/traefik/domain";
 import {
 	manageForwardAuthDomain,
 	removeForwardAuthDomain,
 	removeForwardAuthMiddleware,
-} from "@guilderia/server/utils/traefik/forward-auth";
+} from "@zenthcloud/server/utils/traefik/forward-auth";
 import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { findApplicationById } from "../application";
@@ -264,7 +264,7 @@ export const getForwardAuthServerStatus = async (organizationId: string) => {
 			: [
 					{
 						serverId: null,
-						name: "Guilderia Server (local)",
+						name: "Zenthcloud Server (local)",
 						ipAddress: null,
 					},
 				]),

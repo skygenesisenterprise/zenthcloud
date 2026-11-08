@@ -9,8 +9,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Capabilities",
 	description:
-		"What guilderia deploys, operates and controls — grouped by domain, with links to the authoritative feature matrix and limitations documentation.",
-	alternates: { canonical: "https://guilderia.com/capabilities" },
+		"What zenthcloud deploys, operates and controls — grouped by domain, with links to the authoritative feature matrix and limitations documentation.",
+	alternates: { canonical: "https://zenthcloud.com/capabilities" },
 };
 
 const domains = [
@@ -27,7 +27,7 @@ const domains = [
 	{
 		title: "Infrastructure",
 		items: [
-			"The local server guilderia is installed on",
+			"The local server zenthcloud is installed on",
 			"Remote Linux servers added over SSH",
 			"Docker Swarm clusters across nodes",
 			"Volumes and bind mounts",
@@ -97,7 +97,7 @@ export default function CapabilitiesPage() {
 		<main>
 			<PageIntro
 				eyebrow="Capabilities"
-				title="What guilderia does"
+				title="What zenthcloud does"
 				highlight="today"
 				description="Grouped by the job each capability does. For the authoritative status — including what is in development, planned or out of scope — the documentation feature matrix and limitations pages are the reference."
 				links={[

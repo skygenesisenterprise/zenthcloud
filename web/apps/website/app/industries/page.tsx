@@ -25,9 +25,9 @@ import Link from "next/link";
 export const metadata: Metadata = {
 	title: "Industries: Deployment Solutions by Sector",
 	description:
-		"See how teams in finance, healthcare, government, manufacturing, pharmaceuticals, higher education, and agencies use guilderia to deploy applications in environments they control.",
+		"See how teams in finance, healthcare, government, manufacturing, pharmaceuticals, higher education, and agencies use zenthcloud to deploy applications in environments they control.",
 	alternates: {
-		canonical: "https://guilderia.com/industries",
+		canonical: "https://zenthcloud.com/industries",
 	},
 };
 
@@ -94,7 +94,7 @@ const commonFoundation = [
 		icon: IconServer2,
 		title: "Data inside your boundary",
 		description:
-			"guilderia Self keeps the control plane, application data and backups on infrastructure you own, including restricted and air-gapped networks.",
+			"zenthcloud Self keeps the control plane, application data and backups on infrastructure you own, including restricted and air-gapped networks.",
 	},
 	{
 		icon: IconFileAnalytics,
@@ -112,12 +112,12 @@ export default function IndustriesPage() {
 				badgeDetail="Regulated · Fast-moving teams"
 				title="Deployment for"
 				highlight="your industry"
-				description="guilderia gives teams in regulated and fast-moving industries a governed platform to deploy, review, and operate applications on infrastructure they control."
+				description="zenthcloud gives teams in regulated and fast-moving industries a governed platform to deploy, review, and operate applications on infrastructure they control."
 				actions={
 					<>
 						<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
 							<Link
-								href="https://app.guilderia.com/register"
+								href="https://app.zenthcloud.com/register"
 								target="_blank"
 								rel="noopener noreferrer"
 							>
@@ -135,20 +135,20 @@ export default function IndustriesPage() {
 					</>
 				}
 				links={[
-					{ href: "/self", label: "Self-host guilderia" },
+					{ href: "/self", label: "Self-host zenthcloud" },
 					{ href: "/platform", label: "Platform capabilities" },
 					{ href: "/comparison", label: "Comparisons" },
 				]}
 			/>
 
 			<section
-				aria-labelledby="explore-guilderia-by-industry"
+				aria-labelledby="explore-zenthcloud-by-industry"
 				className="pb-20 sm:pb-28"
 			>
 				<Container>
 					<SectionHeading
-						id="explore-guilderia-by-industry"
-						title="Explore guilderia by industry"
+						id="explore-zenthcloud-by-industry"
+						title="Explore zenthcloud by industry"
 						description="The same deployment platform, adapted to the workflows, governance, and infrastructure requirements of your sector."
 					/>
 

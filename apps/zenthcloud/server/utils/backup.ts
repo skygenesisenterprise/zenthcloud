@@ -2,7 +2,7 @@ import {
 	type BackupScheduleList,
 	isExternalJobsEnabled,
 	removeScheduleBackup,
-} from "@guilderia/server/index";
+} from "@zenthcloud/server/index";
 
 type QueueJob =
 	| {

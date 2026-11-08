@@ -1,9 +1,9 @@
-import { dnsRecordTypes, type DnsRecordType } from "@guilderia/server/db/schema";
+import { dnsRecordTypes, type DnsRecordType } from "@zenthcloud/server/db/schema";
 import type { DnsRecord, DnsRecordInput } from "./types";
 
 /**
  * Minimal RFC 1035 zone-file support, shared by the import and export tRPC
- * endpoints. It intentionally covers the record types Guilderia manages and the
+ * endpoints. It intentionally covers the record types Zenthcloud manages and the
  * syntax the common providers emit; anything else (SOA, DNSSEC inline data,
  * `$INCLUDE`) is skipped rather than rejected.
  */

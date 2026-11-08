@@ -2,10 +2,10 @@ import fs from "node:fs";
 import {
 	allowUnlicensedDevInstance,
 	IS_CLOUD,
-	GUILDERIA_ENTITLEMENT_PUBLIC_KEY,
-	GUILDERIA_ENTITLEMENT_PUBLIC_KEY_FILE,
-	GUILDERIA_FLAVOR,
-	GUILDERIA_PRODUCT,
+	ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY,
+	ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY_FILE,
+	ZENTHCLOUD_FLAVOR,
+	ZENTHCLOUD_PRODUCT,
 	paths,
 } from "../constants/index";
 import {
@@ -33,7 +33,7 @@ import {
 /**
  * Runtime installation identity (issue #75 §1, §5, §6).
  *
- * Assembles the locally stored identity, the verified Guilderia entitlement and
+ * Assembles the locally stored identity, the verified Zenthcloud entitlement and
  * the centralized capability evaluation into one `Installation` object. Both the
  * runtime and the UI query capabilities through `installation.hasCapability`,
  * so product authorization has a single source of truth.
@@ -42,7 +42,7 @@ import {
 export interface Installation {
 	/** Effective product, derived from the identity and entitlement. */
 	product: AstronCollectionProduct;
-	/** Legacy flavour hint (GUILDERIA_FLAVOR / IS_CLOUD), never authoritative. */
+	/** Legacy flavour hint (ZENTHCLOUD_FLAVOR / IS_CLOUD), never authoritative. */
 	productHint: AstronCollectionProduct;
 	/** Effective capabilities after evaluation. */
 	capabilities: AstronCollectionCapability[];
@@ -58,14 +58,14 @@ export interface Installation {
 
 /** Resolves the entitlement public key from config, file or nothing. */
 export const getEntitlementPublicKey = (): string => {
-	if (GUILDERIA_ENTITLEMENT_PUBLIC_KEY_FILE) {
+	if (ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY_FILE) {
 		try {
-			return fs.readFileSync(GUILDERIA_ENTITLEMENT_PUBLIC_KEY_FILE, "utf8");
+			return fs.readFileSync(ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY_FILE, "utf8");
 		} catch {
 			return "";
 		}
 	}
-	return GUILDERIA_ENTITLEMENT_PUBLIC_KEY;
+	return ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY;
 };
 
 export interface GetInstallationOptions {
@@ -88,7 +88,7 @@ const defaultIdentityDir = () => paths().IDENTITY_PATH;
 /**
  * Product this instance was launched as (`self`, `cloud` or `console`).
  *
- * Resolved from the launcher (`GUILDERIA_PRODUCT`, then `GUILDERIA_FLAVOR`, then
+ * Resolved from the launcher (`ZENTHCLOUD_PRODUCT`, then `ZENTHCLOUD_FLAVOR`, then
  * `IS_CLOUD`) and used for display decisions such as the UI surface and the
  * product name. It is deliberately distinct from `getInstallation().product`,
  * which is authoritative for *authorization* but can differ: the persisted
@@ -97,8 +97,8 @@ const defaultIdentityDir = () => paths().IDENTITY_PATH;
  */
 export const getConfiguredProduct = (): AstronCollectionProduct =>
 	resolveProductHint({
-		product: GUILDERIA_PRODUCT,
-		flavor: GUILDERIA_FLAVOR,
+		product: ZENTHCLOUD_PRODUCT,
+		flavor: ZENTHCLOUD_FLAVOR,
 		isCloud: IS_CLOUD,
 	});
 
@@ -150,9 +150,9 @@ export const getInstallation = (
 				code: "entitlement.invalid",
 				severity: "error",
 				message:
-					"An entitlement token is present but no Guilderia entitlement public key is configured",
+					"An entitlement token is present but no Zenthcloud entitlement public key is configured",
 				remediation:
-					"Set GUILDERIA_ENTITLEMENT_PUBLIC_KEY or GUILDERIA_ENTITLEMENT_PUBLIC_KEY_FILE to Guilderia's public key.",
+					"Set ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY or ZENTHCLOUD_ENTITLEMENT_PUBLIC_KEY_FILE to Zenthcloud's public key.",
 			});
 		} else {
 			const verified = verifyEntitlementForInstance(
@@ -173,14 +173,14 @@ export const getInstallation = (
 					severity: "error",
 					message: verified.reason,
 					remediation:
-						"Request a new entitlement for this instance from Guilderia and place it in entitlement.token.",
+						"Request a new entitlement for this instance from Zenthcloud and place it in entitlement.token.",
 				});
 			}
 		}
 	}
 
 	const productHint = resolveProductHint({
-		flavor: GUILDERIA_FLAVOR,
+		flavor: ZENTHCLOUD_FLAVOR,
 		isCloud: IS_CLOUD,
 	});
 
@@ -231,9 +231,9 @@ export const getInstallation = (
 		diagnostics.push({
 			code: "entitlement.missing",
 			severity: allowUnlicensed ? "warning" : "error",
-			message: `Product "${product}" requires a Guilderia-signed entitlement`,
+			message: `Product "${product}" requires a Zenthcloud-signed entitlement`,
 			remediation: allowUnlicensed
-				? "Running unlicensed is allowed only in development (GUILDERIA_ALLOW_UNLICENSED_DEV). Enroll this instance with a signed entitlement before deploying."
+				? "Running unlicensed is allowed only in development (ZENTHCLOUD_ALLOW_UNLICENSED_DEV). Enroll this instance with a signed entitlement before deploying."
 				: "Enroll this instance with a signed entitlement; a local installer flag is not a security boundary.",
 		});
 	}
@@ -292,7 +292,7 @@ export interface InitializeInstallationOptions {
 	product?: AstronCollectionProduct;
 	instanceId?: string;
 	subjectAltNames?: string[];
-	/** Guilderia-signed entitlement required for cloud/console. */
+	/** Zenthcloud-signed entitlement required for cloud/console. */
 	entitlementToken?: string;
 	/** Overrides the configured entitlement public key (tests, tooling). */
 	entitlementPublicKey?: string;
@@ -313,7 +313,7 @@ export const initializeInstallationIdentity = (
 	const identityDir = options.identityDir ?? defaultIdentityDir();
 	const product =
 		options.product ??
-		resolveProductHint({ flavor: GUILDERIA_FLAVOR, isCloud: IS_CLOUD });
+		resolveProductHint({ flavor: ZENTHCLOUD_FLAVOR, isCloud: IS_CLOUD });
 
 	if (isProtected(product) && !options.entitlementToken) {
 		throw new Error(

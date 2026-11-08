@@ -7,8 +7,8 @@ import { buildCatalog, CapabilityRegistry } from "./registry.js";
 
 function config(overrides: Partial<McpConfig> = {}): McpConfig {
   const base = loadConfig({
-    GUILDERIA_URL: "https://guilderia.example.com",
-    GUILDERIA_API_KEY: "test-api-key-12345678",
+    ZENTHCLOUD_URL: "https://zenthcloud.example.com",
+    ZENTHCLOUD_API_KEY: "test-api-key-12345678",
   } as NodeJS.ProcessEnv);
   return {
     ...base,
@@ -142,7 +142,7 @@ describe("buildCatalog", () => {
       }),
     );
     expect(
-      catalog.warnings.some((warning) => warning.includes("Unknown GUILDERIA_TOOL_PRESET")),
+      catalog.warnings.some((warning) => warning.includes("Unknown ZENTHCLOUD_TOOL_PRESET")),
     ).toBe(true);
   });
 });

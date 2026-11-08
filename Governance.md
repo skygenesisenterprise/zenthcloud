@@ -701,7 +701,7 @@ This governance model represents our commitment to building a sustainable, inclu
 
 [⭐ Star This Project](https://github.com/skygenesisenterprise/aether-mail) •
 [🤝 Contribute](./CONTRIBUTING.md) •
-[💬 Join Community](https://guilderia.gg/aether-mail) •
+[💬 Join Community](https://zenthcloud.gg/aether-mail) •
 [📧 Contact Us](mailto:governance@skygenesisenterprise.com)
 
 ---

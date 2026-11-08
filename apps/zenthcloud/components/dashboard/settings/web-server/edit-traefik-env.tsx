@@ -134,7 +134,7 @@ export const EditTraefikEnv = ({ children, serverId }: Props) => {
 												language="properties"
 												wrapperClassName="h-140 font-mono"
 												placeholder={`TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL=test@localhost.com
-TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_STORAGE=/etc/guilderia/traefik/dynamic/acme.json
+TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_STORAGE=/etc/zenthcloud/traefik/dynamic/acme.json
 TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_HTTP_CHALLENGE=true
 TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_HTTP_CHALLENGE_PRETTY=true
 TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_HTTP_CHALLENGE_ENTRYPOINT=web

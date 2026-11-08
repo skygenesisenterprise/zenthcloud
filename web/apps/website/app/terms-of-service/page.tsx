@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Terms of Service",
 	description:
-		"Terms of Service for guilderia's cloud and on-premise deployment platform.",
+		"Terms of Service for zenthcloud's cloud and on-premise deployment platform.",
 };
 
 export default function TermsOfServicePage() {
@@ -14,9 +14,9 @@ export default function TermsOfServicePage() {
 			<section className="flex flex-col gap-2">
 				<h2 className="mb-2 text-2xl font-semibold">Overview</h2>
 				<p>
-					This website and platform are operated by guilderia Technologies, Inc.
-					(&quot;guilderia&quot;, &quot;we&quot;, &quot;us&quot;, or
-					&quot;our&quot;). guilderia provides a deployment and hosting platform
+					This website and platform are operated by zenthcloud Technologies, Inc.
+					(&quot;zenthcloud&quot;, &quot;we&quot;, &quot;us&quot;, or
+					&quot;our&quot;). zenthcloud provides a deployment and hosting platform
 					available as both a cloud-hosted service (&quot;Cloud Services&quot;)
 					and self-hosted software (&quot;On-Premise Software&quot;),
 					collectively referred to as the &quot;Services.&quot;
@@ -47,7 +47,7 @@ export default function TermsOfServicePage() {
 					</li>
 					<li>
 						<strong>&quot;Cloud Services&quot;</strong> means the hosted version
-						of the guilderia platform provided and maintained by us, accessible
+						of the zenthcloud platform provided and maintained by us, accessible
 						via the internet.
 					</li>
 					<li>
@@ -68,7 +68,7 @@ export default function TermsOfServicePage() {
 					</li>
 					<li>
 						<strong>&quot;On-Premise Software&quot;</strong> means the
-						self-hosted version of the guilderia platform that Customer installs
+						self-hosted version of the zenthcloud platform that Customer installs
 						and operates on its own infrastructure.
 					</li>
 					<li>
@@ -221,10 +221,10 @@ export default function TermsOfServicePage() {
 					If you discover a violation of the AUP, you must report it within 24
 					(twenty-four) hours of the discovery to{" "}
 					<a
-						href="mailto:contact@guilderia.com"
+						href="mailto:contact@zenthcloud.com"
 						className="text-primary underline hover:no-underline"
 					>
-						contact@guilderia.com
+						contact@zenthcloud.com
 					</a>{" "}
 					with as much information as you have including, but not limited to,
 					the date and time of the violation and any identifying information
@@ -372,10 +372,10 @@ export default function TermsOfServicePage() {
 				<p>
 					We provide technical support for Cloud Services via{" "}
 					<a
-						href="mailto:support@guilderia.com"
+						href="mailto:support@zenthcloud.com"
 						className="text-primary underline hover:no-underline"
 					>
-						support@guilderia.com
+						support@zenthcloud.com
 					</a>{" "}
 					or chat during Monday-Friday, 9am-6pm EST. Response times vary by plan
 					tier as specified in your subscription agreement.
@@ -386,7 +386,7 @@ export default function TermsOfServicePage() {
 					installation guidance. We do not provide support for Customer&apos;s
 					infrastructure, third-party integrations, or issues arising from
 					Customer modifications to the software unless otherwise agreed upon
-					with guilderia.
+					with zenthcloud.
 				</p>
 				<h3 className="text-xl font-medium">8.3 Updates and Upgrades</h3>
 				<p>
@@ -423,12 +423,12 @@ export default function TermsOfServicePage() {
 					rest, access controls, and regular security assessments. Our security
 					practices are described in our Security Documentation available at{" "}
 					<a
-						href="https://docs.guilderia.com/docs/core/remote-servers/security"
+						href="https://docs.zenthcloud.com/docs/core/remote-servers/security"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="text-primary underline hover:no-underline"
 					>
-						docs.guilderia.com/docs/core/remote-servers/security
+						docs.zenthcloud.com/docs/core/remote-servers/security
 					</a>
 					.
 				</p>
@@ -491,22 +491,22 @@ export default function TermsOfServicePage() {
 				<h3 className="text-xl font-medium">10.4 Marketing Rights</h3>
 				<h4 className="text-lg font-medium">10.4.1 Customer Logo and Name</h4>
 				<p>
-					By accepting these Terms, you grant guilderia a limited, non-exclusive,
+					By accepting these Terms, you grant zenthcloud a limited, non-exclusive,
 					royalty-free, worldwide license to use your company name, logo, and
 					trademarks solely for the purpose of identifying you as a customer of
-					guilderia in marketing materials, case studies, website pages (including
+					zenthcloud in marketing materials, case studies, website pages (including
 					a &quot;customers&quot; or &quot;trusted by&quot; page), press
 					releases, and investor presentations (&quot;Marketing Use&quot;).
 				</p>
 				<h4 className="text-lg font-medium">10.4.2 Restrictions</h4>
 				<p>
-					guilderia&apos;s Marketing Use of your name and logo is subject to the
-					following conditions: (a) guilderia shall use your logo only in the form
+					zenthcloud&apos;s Marketing Use of your name and logo is subject to the
+					following conditions: (a) zenthcloud shall use your logo only in the form
 					you have provided or approved, and in accordance with any brand
 					guidelines you provide in writing; (b) nothing in this Section grants
-					guilderia the right to imply your endorsement of any specific guilderia
+					zenthcloud the right to imply your endorsement of any specific zenthcloud
 					product, feature, or statement without your prior written consent; and
-					(c) guilderia shall not use your name or logo in any manner that is
+					(c) zenthcloud shall not use your name or logo in any manner that is
 					disparaging, misleading, or otherwise harmful to your brand or
 					reputation.
 				</p>
@@ -708,7 +708,7 @@ export default function TermsOfServicePage() {
 				<h3 className="text-xl font-medium">16.1 Your Indemnification</h3>
 				<p>
 					You agree to indemnify, defend, and hold harmless, at your own cost,
-					guilderia and its officers, directors, employees, and agents from any
+					zenthcloud and its officers, directors, employees, and agents from any
 					claims, damages, losses, and expenses (including reasonable
 					attorneys&apos; fees) arising from: (a) your use of the Services; (b)
 					your Customer Data; (c) your violation of these Terms; (d) your
@@ -783,7 +783,7 @@ export default function TermsOfServicePage() {
 					Modifications to these standard Terms are not permitted except by a
 					separately executed Order Form or Enterprise Agreement. Custom
 					commercial terms, including amendments to these Terms, are available
-					under guilderia&apos;s Enterprise plan.
+					under zenthcloud&apos;s Enterprise plan.
 				</p>
 				<h3 className="text-xl font-medium">20.2 Waivers and Severability</h3>
 				<p>
@@ -840,16 +840,16 @@ export default function TermsOfServicePage() {
 					If you have questions about these Terms of Service, please contact us
 					at:
 				</p>
-				<p className="font-medium">guilderia Technologies, Inc.</p>
+				<p className="font-medium">zenthcloud Technologies, Inc.</p>
 				<p>2912 Steiner St Unit 4
 				San Francisco, CA 94123</p>
 				<p>
 					Email:{" "}
 					<a
-						href="mailto:contact@guilderia.com"
+						href="mailto:contact@zenthcloud.com"
 						className="text-primary underline hover:no-underline"
 					>
-						contact@guilderia.com
+						contact@zenthcloud.com
 					</a>
 				</p>
 			</section>
@@ -977,10 +977,10 @@ export default function TermsOfServicePage() {
 					Cross-Border Transfers/Region-Specific Terms. For the complete
 					legal text of the Data Processing Addendum, please contact{" "}
 					<a
-						href="mailto:support@guilderia.com"
+						href="mailto:support@zenthcloud.com"
 						className="text-primary underline hover:no-underline"
 					>
-						support@guilderia.com
+						support@zenthcloud.com
 					</a>
 					.
 				</p>

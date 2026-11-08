@@ -119,7 +119,7 @@ export const CompleteStep = ({ projectId, environmentId, onFinish }: Props) => {
 				</Button>
 				<Button variant="ghost" asChild>
 					<Link
-						href="https://docs.guilderia.com/docs/core"
+						href="https://docs.zenthcloud.com/docs/core"
 						target="_blank"
 						className="flex items-center gap-1.5"
 					>

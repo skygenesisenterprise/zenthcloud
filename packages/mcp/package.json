@@ -1,10 +1,10 @@
 {
-  "name": "@guilderia/mcp",
+  "name": "@zenthcloud/mcp",
   "version": "1.0.0",
-  "description": "MCP Server for Guilderia API",
+  "description": "MCP Server for Zenthcloud API",
   "main": "build/index.js",
   "bin": {
-    "guilderia-mcp": "build/index.js"
+    "zenthcloud-mcp": "build/index.js"
   },
   "files": [
     "build"
@@ -35,19 +35,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/skygenesisenterprise/guilderia.git",
+    "url": "https://github.com/skygenesisenterprise/zenthcloud.git",
     "directory": "packages/mcp"
   },
   "keywords": [
     "modelcontextprotocol",
     "mcp",
-    "guilderia"
+    "zenthcloud"
   ],
   "author": "Sky Genesis Enterprise <developer@skygenesisenterprise.com>",
   "bugs": {
-    "url": "https://github.com/skygenesisenterprise/guilderia/issues"
+    "url": "https://github.com/skygenesisenterprise/zenthcloud/issues"
   },
-  "homepage": "https://github.com/skygenesisenterprise/guilderia/tree/master/packages/mcp#readme",
+  "homepage": "https://github.com/skygenesisenterprise/zenthcloud/tree/master/packages/mcp#readme",
   "license": "MIT",
   "type": "module",
   "dependencies": {

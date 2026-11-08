@@ -1,4 +1,4 @@
-import type { PublicHistoryEntryDto } from "@guilderia/status";
+import type { PublicHistoryEntryDto } from "@zenthcloud/status";
 import { History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { categoryLabel, severityTone } from "@/lib/view-model";

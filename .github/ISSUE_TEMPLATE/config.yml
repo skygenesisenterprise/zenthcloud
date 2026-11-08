@@ -10,9 +10,9 @@ blank_issues_enabled: false
 
 contact_links:
   - name: ❓ Question or need help
-    url: https://guilderia.com/community
-    about: Configuration help, "how do I…", deployment questions, and troubleshooting go to the guilderia Discord.
+    url: https://zenthcloud.com/community
+    about: Configuration help, "how do I…", deployment questions, and troubleshooting go to the zenthcloud Discord.
 
   - name: 🔐 Report a security vulnerability
-    url: https://github.com/skygenesisenterprise/guilderia/security/advisories/new
+    url: https://github.com/skygenesisenterprise/zenthcloud/security/advisories/new
     about: Report privately. Do not open a public issue for a vulnerability — see SECURITY.md.

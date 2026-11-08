@@ -2,7 +2,7 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import {
 	INVALID_HOSTNAME_MESSAGE,
 	VALID_HOSTNAME_REGEX,
-} from "@guilderia/server/utils/hostname-validation";
+} from "@zenthcloud/server/utils/hostname-validation";
 import { GlobeIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -66,7 +66,7 @@ export const WebDomain = () => {
 				const internalDns = result === true ? null : result?.internalDns;
 				if (internalDns?.status === "no-provider") {
 					toast.warning(
-						"Domain saved, but no guilderia Internal DNS provider is configured",
+						"Domain saved, but no zenthcloud Internal DNS provider is configured",
 					);
 				} else if (internalDns?.status === "no-ip") {
 					toast.warning(
@@ -89,8 +89,8 @@ export const WebDomain = () => {
 					Instance URL
 				</h2>
 				<p className="text-sm text-muted-foreground">
-					Configure the hostname of the guilderia control plane. Use a public
-					hostname or an internal/LAN one (e.g. console.guilderia.lan).
+					Configure the hostname of the zenthcloud control plane. Use a public
+					hostname or an internal/LAN one (e.g. console.zenthcloud.lan).
 				</p>
 			</header>
 			<Form {...form}>
@@ -108,12 +108,12 @@ export const WebDomain = () => {
 									<FormControl>
 										<Input
 											className="w-full"
-											placeholder="guilderia.example.com"
+											placeholder="zenthcloud.example.com"
 											{...field}
 										/>
 									</FormControl>
 									<FormDescription>
-										Public or internal (LAN) hostname used as the guilderia URL in
+										Public or internal (LAN) hostname used as the zenthcloud URL in
 										generated callbacks.
 									</FormDescription>
 									<FormMessage />

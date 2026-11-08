@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { paths } from "@guilderia/server/constants";
-import type { Domain } from "@guilderia/server/services/domain";
+import { paths } from "@zenthcloud/server/constants";
+import type { Domain } from "@zenthcloud/server/services/domain";
 import { parse, stringify } from "yaml";
 import type { ApplicationNested } from "../builders";
 import { execAsyncRemote } from "../process/execAsync";

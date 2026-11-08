@@ -5,15 +5,15 @@
 export type AppProduct = "self" | "cloud" | "console";
 
 /**
- * Branded names for the three Guilderia environments:
- *   self    → "Guilderia"
- *   cloud   → "Guilderia Cloud"
- *   console → "Guilderia Console"
+ * Branded names for the three Zenthcloud environments:
+ *   self    → "Zenthcloud"
+ *   cloud   → "Zenthcloud Cloud"
+ *   console → "Zenthcloud Console"
  */
 export const PRODUCT_BRAND_NAMES: Record<AppProduct, string> = {
-	self: "Guilderia",
-	cloud: "Guilderia Cloud",
-	console: "Guilderia Console",
+	self: "Zenthcloud",
+	cloud: "Zenthcloud Cloud",
+	console: "Zenthcloud Console",
 };
 
 /** Brand name of a product; falls back to self-hosted while loading/unknown. */

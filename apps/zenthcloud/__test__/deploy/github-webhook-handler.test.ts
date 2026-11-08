@@ -52,7 +52,7 @@ vi.mock("@/server/db/schema", () => ({
 	},
 }));
 
-vi.mock("@guilderia/server/db", () => ({
+vi.mock("@zenthcloud/server/db", () => ({
 	db: {
 		update: vi.fn(() => ({ set: mocks.updateSet })),
 		query: {
@@ -69,7 +69,7 @@ vi.mock("@guilderia/server/db", () => ({
 	},
 }));
 
-vi.mock("@guilderia/server", () => ({
+vi.mock("@zenthcloud/server", () => ({
 	IS_CLOUD: false,
 	shouldDeploy: mocks.shouldDeploy,
 	checkUserRepositoryPermissions: vi.fn(),
@@ -178,10 +178,10 @@ const buildPushBody = (
 		},
 	],
 	repository: {
-		name: "guilderia",
-		full_name: "agentHits/guilderia",
-		clone_url: "https://github.com/skygenesisenterprise/guilderia.git",
-		html_url: "https://github.com/skygenesisenterprise/guilderia",
+		name: "zenthcloud",
+		full_name: "agentHits/zenthcloud",
+		clone_url: "https://github.com/skygenesisenterprise/zenthcloud.git",
+		html_url: "https://github.com/skygenesisenterprise/zenthcloud",
 		owner,
 	},
 });
@@ -217,7 +217,7 @@ describe("GitHub app webhook auto-deploy", () => {
 				getConditionValue(where, "application.autoDeploy") === true &&
 				getConditionValue(where, "application.triggerType") === "push" &&
 				getConditionValue(where, "application.branch") === "main" &&
-				getConditionValue(where, "application.repository") === "guilderia" &&
+				getConditionValue(where, "application.repository") === "zenthcloud" &&
 				getConditionValue(where, "application.owner") === "agentHits" &&
 				getConditionValue(where, "application.githubId") ===
 					"github-provider-id";
@@ -271,7 +271,7 @@ describe("GitHub app webhook auto-deploy", () => {
 				getConditionValue(where, "compose.autoDeploy") === true &&
 				getConditionValue(where, "compose.triggerType") === "push" &&
 				getConditionValue(where, "compose.branch") === "main" &&
-				getConditionValue(where, "compose.repository") === "guilderia" &&
+				getConditionValue(where, "compose.repository") === "zenthcloud" &&
 				getConditionValue(where, "compose.owner") === "agentHits" &&
 				getConditionValue(where, "compose.githubId") === "github-provider-id";
 
@@ -313,7 +313,7 @@ describe("GitHub app webhook auto-deploy", () => {
 				getConditionValue(where, "application.sourceType") === "github" &&
 				getConditionValue(where, "application.autoDeploy") === true &&
 				getConditionValue(where, "application.triggerType") === "tag" &&
-				getConditionValue(where, "application.repository") === "guilderia" &&
+				getConditionValue(where, "application.repository") === "zenthcloud" &&
 				getConditionValue(where, "application.owner") === "agentHits" &&
 				getConditionValue(where, "application.githubId") ===
 					"github-provider-id";
@@ -393,7 +393,7 @@ describe("GitHub app webhook preview deployments", () => {
 					id: 987,
 					number: 42,
 					title: "feat: add preview",
-					html_url: "https://github.com/skygenesisenterprise/guilderia/pull/42",
+					html_url: "https://github.com/skygenesisenterprise/zenthcloud/pull/42",
 					labels: [],
 					user: {
 						login: "agentHits",
@@ -407,7 +407,7 @@ describe("GitHub app webhook preview deployments", () => {
 					},
 				},
 				repository: {
-					name: "guilderia",
+					name: "zenthcloud",
 					owner: {
 						login: "agentHits",
 					},

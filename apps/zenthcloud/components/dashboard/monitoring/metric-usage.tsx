@@ -3,7 +3,7 @@ import {
 	type MetricThresholds,
 	DEFAULT_THRESHOLDS,
 	getMetricStatus,
-} from "@guilderia/server/monitoring/status";
+} from "@zenthcloud/server/monitoring/status";
 import type { LucideIcon } from "lucide-react";
 import type * as React from "react";
 import { Badge } from "@/components/ui/badge";

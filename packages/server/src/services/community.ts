@@ -6,7 +6,7 @@ import {
 	communitySources,
 	db,
 	github,
-} from "@guilderia/server/db";
+} from "@zenthcloud/server/db";
 import {
 	and,
 	count,
@@ -19,7 +19,7 @@ import {
 	or,
 	sql,
 } from "drizzle-orm";
-import { findGitProviderById } from "@guilderia/server/services/git-provider";
+import { findGitProviderById } from "@zenthcloud/server/services/git-provider";
 import {
 	classifyGithubFailure,
 	describeGithubFailure,
@@ -35,9 +35,9 @@ import {
 	mapGithubRepository,
 	resolveAttentionThresholds,
 	summarizeCommunityHealth,
-} from "@guilderia/server/utils/community/mappers";
-import type { Github } from "@guilderia/server/services/github";
-import { authGithub } from "@guilderia/server/utils/providers/github";
+} from "@zenthcloud/server/utils/community/mappers";
+import type { Github } from "@zenthcloud/server/services/github";
+import { authGithub } from "@zenthcloud/server/utils/providers/github";
 import type { Octokit } from "octokit";
 
 /**

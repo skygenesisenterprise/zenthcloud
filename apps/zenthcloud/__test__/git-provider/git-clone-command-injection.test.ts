@@ -1,4 +1,4 @@
-import { cloneGitRepository } from "@guilderia/server/utils/providers/git";
+import { cloneGitRepository } from "@zenthcloud/server/utils/providers/git";
 import { parse, quote } from "shell-quote";
 import { describe, expect, it } from "vitest";
 
@@ -22,7 +22,7 @@ const LEGIT_VALUES = [
 	"main",
 	"feature/login-v2",
 	"release-1.2.3",
-	"https://github.com/skygenesisenterprise/guilderia.git",
+	"https://github.com/skygenesisenterprise/zenthcloud.git",
 	"https://gitlab.example.com/group/sub/project.git",
 ];
 

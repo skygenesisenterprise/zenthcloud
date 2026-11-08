@@ -1,11 +1,11 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2026-07-17/server.schema.json",
-  "name": "io.github.skygenesisenterprise/guilderia-mcp",
-  "description": "Guilderia MCP Server — agent-first operational interface for Guilderia instances (discovery, diagnostics, controlled deployments). Business catalog by default; generated OpenAPI operations behind explicit opt-in advanced mode.",
-  "title": "Guilderia MCP Server",
+  "name": "io.github.skygenesisenterprise/zenthcloud-mcp",
+  "description": "Zenthcloud MCP Server — agent-first operational interface for Zenthcloud instances (discovery, diagnostics, controlled deployments). Business catalog by default; generated OpenAPI operations behind explicit opt-in advanced mode.",
+  "title": "Zenthcloud MCP Server",
   "version": "1.0.0",
   "package": {
-    "name": "@guilderia/mcp",
+    "name": "@zenthcloud/mcp",
     "version": "1.0.0",
     "registry": "npm"
   },
@@ -13,7 +13,7 @@
     {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@guilderia/mcp"]
+      "args": ["-y", "@zenthcloud/mcp"]
     },
     {
       "type": "streamable-http",
@@ -29,9 +29,9 @@
     "advancedProfiles": ["read-only", "deploy", "full"]
   },
   "repository": {
-    "url": "https://github.com/skygenesisenterprise/guilderia",
+    "url": "https://github.com/skygenesisenterprise/zenthcloud",
     "subdirectory": "packages/mcp"
   },
-  "homepage": "https://github.com/skygenesisenterprise/guilderia/tree/master/packages/mcp#readme",
+  "homepage": "https://github.com/skygenesisenterprise/zenthcloud/tree/master/packages/mcp#readme",
   "license": "MIT"
 }

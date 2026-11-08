@@ -40,8 +40,8 @@ import {
 	updateSlackNotification,
 	updateTeamsNotification,
 	updateTelegramNotification,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import { TRPCError } from "@trpc/server";
 import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -145,7 +145,7 @@ export const notificationRouter = createTRPCRouter({
 			try {
 				await sendSlackNotification(input, {
 					channel: input.channel,
-					text: "Hi, From Guilderia 👋",
+					text: "Hi, From Zenthcloud 👋",
 				});
 				return true;
 			} catch (error) {
@@ -212,7 +212,7 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiTestTelegramConnection)
 		.mutation(async ({ input }) => {
 			try {
-				await sendTelegramNotification(input, "Hi, From Guilderia 👋");
+				await sendTelegramNotification(input, "Hi, From Zenthcloud 👋");
 				return true;
 			} catch (error) {
 				throw new TRPCError({
@@ -284,7 +284,7 @@ export const notificationRouter = createTRPCRouter({
 
 				await sendDiscordNotification(input, {
 					title: decorate(">", "`🤚` - Test Notification"),
-					description: decorate(">", "Hi, From Guilderia 👋"),
+					description: decorate(">", "Hi, From Zenthcloud 👋"),
 					color: 0xf3f7f4,
 				});
 
@@ -352,7 +352,7 @@ export const notificationRouter = createTRPCRouter({
 				await sendEmailNotification(
 					input,
 					"Test Email",
-					"<p>Hi, From Guilderia 👋</p>",
+					"<p>Hi, From Zenthcloud 👋</p>",
 				);
 				return true;
 			} catch (error) {
@@ -418,7 +418,7 @@ export const notificationRouter = createTRPCRouter({
 				await sendResendNotification(
 					input,
 					"Test Email",
-					"<p>Hi, From Guilderia 👋</p>",
+					"<p>Hi, From Zenthcloud 👋</p>",
 				);
 				return true;
 			} catch (error) {
@@ -474,7 +474,7 @@ export const notificationRouter = createTRPCRouter({
 			with: {
 				slack: true,
 				telegram: true,
-				guilderia: true,
+				zenthcloud: true,
 				email: true,
 				resend: true,
 				gotify: true,
@@ -492,7 +492,7 @@ export const notificationRouter = createTRPCRouter({
 	receiveNotification: publicProcedure
 		.input(
 			z.object({
-				ServerType: z.enum(["Guilderia", "Remote"]).default("Guilderia"),
+				ServerType: z.enum(["Zenthcloud", "Remote"]).default("Zenthcloud"),
 				Type: z.enum(["Memory", "CPU"]),
 				Value: z.number(),
 				Threshold: z.number(),
@@ -506,7 +506,7 @@ export const notificationRouter = createTRPCRouter({
 				let organizationId = "";
 				let ServerName = "";
 				let ServerId: string | undefined;
-				if (input.ServerType === "Guilderia") {
+				if (input.ServerType === "Zenthcloud") {
 					const settings = await getWebServerSettings();
 					if (
 						!settings?.metricsConfig?.server?.token ||
@@ -519,7 +519,7 @@ export const notificationRouter = createTRPCRouter({
 					}
 
 					organizationId = "";
-					ServerName = "Guilderia";
+					ServerName = "Zenthcloud";
 				} else {
 					const result = await db
 						.select()
@@ -607,7 +607,7 @@ export const notificationRouter = createTRPCRouter({
 				await sendGotifyNotification(
 					input,
 					"Test Notification",
-					"Hi, From Guilderia 👋",
+					"Hi, From Zenthcloud 👋",
 				);
 				return true;
 			} catch (error) {
@@ -673,8 +673,8 @@ export const notificationRouter = createTRPCRouter({
 					input,
 					"Test Notification",
 					"",
-					"view, visit Guilderia on Github, https://github.com/skygenesisenterprise/guilderia, clear=true;",
-					"Hi, From Guilderia 👋",
+					"view, visit Zenthcloud on Github, https://github.com/skygenesisenterprise/zenthcloud, clear=true;",
+					"Hi, From Zenthcloud 👋",
 				);
 				return true;
 			} catch (error) {
@@ -743,9 +743,9 @@ export const notificationRouter = createTRPCRouter({
 		.mutation(async ({ input }) => {
 			try {
 				await sendMattermostNotification(input, {
-					text: "Hi, From Guilderia 👋",
+					text: "Hi, From Zenthcloud 👋",
 					channel: input.channel,
-					username: input.username || "Guilderia Bot",
+					username: input.username || "Zenthcloud Bot",
 				});
 				return true;
 			} catch (error) {
@@ -806,7 +806,7 @@ export const notificationRouter = createTRPCRouter({
 			try {
 				await sendCustomNotification(input, {
 					title: "Test Notification",
-					message: "Hi, From Guilderia 👋",
+					message: "Hi, From Zenthcloud 👋",
 					timestamp: new Date().toISOString(),
 				});
 				return true;
@@ -872,7 +872,7 @@ export const notificationRouter = createTRPCRouter({
 				await sendLarkNotification(input, {
 					msg_type: "text",
 					content: {
-						text: "Hi, From Guilderia 👋",
+						text: "Hi, From Zenthcloud 👋",
 					},
 				});
 				return true;
@@ -937,7 +937,7 @@ export const notificationRouter = createTRPCRouter({
 			try {
 				await sendTeamsNotification(input, {
 					title: "🤚 Test Notification",
-					facts: [{ name: "Message", value: "Hi, From Guilderia 👋" }],
+					facts: [{ name: "Message", value: "Hi, From Zenthcloud 👋" }],
 				});
 				return true;
 			} catch (error) {
@@ -1005,7 +1005,7 @@ export const notificationRouter = createTRPCRouter({
 				await sendPushoverNotification(
 					input,
 					"Test Notification",
-					"Hi, From Guilderia 👋",
+					"Hi, From Zenthcloud 👋",
 				);
 				return true;
 			} catch (error) {

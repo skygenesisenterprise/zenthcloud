@@ -1,11 +1,11 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	member,
 	organization,
 	organizationRole,
 	user,
-} from "@guilderia/server/db/schema";
-import { statements } from "@guilderia/server/lib/access-control";
+} from "@zenthcloud/server/db/schema";
+import { statements } from "@zenthcloud/server/lib/access-control";
 import { TRPCError } from "@trpc/server";
 import { and, count, eq } from "drizzle-orm";
 import { z } from "zod";

@@ -1,15 +1,15 @@
 /**
- * Use this command to automatically migrate the auth secret: curl -sSL https://guilderia.com/security/1.1.5.sh | sudo bash
+ * Use this command to automatically migrate the auth secret: curl -sSL https://zenthcloud.com/security/1.1.5.sh | sudo bash
  * Migration script: re-encrypt 2FA secrets after rotating BETTER_AUTH_SECRET.
  *
  * Usage:
- *   OLD_SECRET=<old_secret> NEW_SECRET=<new_secret> npx tsx apps/guilderia/scripts/migrate-auth-secret.ts
+ *   OLD_SECRET=<old_secret> NEW_SECRET=<new_secret> npx tsx apps/zenthcloud/scripts/migrate-auth-secret.ts
  *
  * Both OLD_SECRET and NEW_SECRET are required.
- * Run this BEFORE restarting Guilderia with the new secret.
+ * Run this BEFORE restarting Zenthcloud with the new secret.
  */
-import { db } from "@guilderia/server/db";
-import { twoFactor } from "@guilderia/server/db/schema";
+import { db } from "@zenthcloud/server/db";
+import { twoFactor } from "@zenthcloud/server/db/schema";
 import { symmetricDecrypt, symmetricEncrypt } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
 
@@ -21,7 +21,7 @@ if (!OLD_SECRET || !NEW_SECRET) {
 		"❌ OLD_SECRET and NEW_SECRET environment variables are required.",
 	);
 	console.error(
-		"   Usage: OLD_SECRET=<old> NEW_SECRET=<new> npx tsx apps/guilderia/scripts/migrate-auth-secret.ts",
+		"   Usage: OLD_SECRET=<old> NEW_SECRET=<new> npx tsx apps/zenthcloud/scripts/migrate-auth-secret.ts",
 	);
 	process.exit(1);
 }

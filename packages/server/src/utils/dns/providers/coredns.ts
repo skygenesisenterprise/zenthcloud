@@ -1,4 +1,4 @@
-import type { corednsDnsConfigSchema } from "@guilderia/server/db/schema";
+import type { corednsDnsConfigSchema } from "@zenthcloud/server/db/schema";
 import { Buffer } from "node:buffer";
 import type { z } from "zod";
 import { createDnsHttp, stripTrailingDot } from "../http";

@@ -5,7 +5,7 @@ import { source } from "@/lib/source";
 // no-op change for the standalone server.
 export const dynamic = "force-static";
 
-const baseUrl = "https://docs.guilderia.com";
+const baseUrl = "https://docs.zenthcloud.com";
 
 export function GET() {
 	const pages = source.getPages();
@@ -14,9 +14,9 @@ export function GET() {
 	);
 
 	const lines = [
-		"# guilderia Documentation",
+		"# zenthcloud Documentation",
 		"",
-		"> guilderia is an open-source, self-hostable Platform as a Service (PaaS) that simplifies the deployment and management of applications, databases, and services.",
+		"> zenthcloud is an open-source, self-hostable Platform as a Service (PaaS) that simplifies the deployment and management of applications, databases, and services.",
 		"",
 		"## Docs",
 		"",

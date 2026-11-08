@@ -7,8 +7,8 @@ const mockHasPermission = vi.hoisted(() => vi.fn());
 const mockCreateGithub = vi.hoisted(() => vi.fn());
 const mockOctokitRequest = vi.hoisted(() => vi.fn());
 
-vi.mock("@guilderia/server", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@guilderia/server")>();
+vi.mock("@zenthcloud/server", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@zenthcloud/server")>();
 	return {
 		...actual,
 		validateRequest: mockValidateRequest,
@@ -16,7 +16,7 @@ vi.mock("@guilderia/server", async (importOriginal) => {
 	};
 });
 
-vi.mock("@guilderia/server/services/permission", () => ({
+vi.mock("@zenthcloud/server/services/permission", () => ({
 	hasPermission: mockHasPermission,
 }));
 
@@ -77,8 +77,8 @@ describe("github setup handler — host validation", () => {
 		mockHasPermission.mockResolvedValue(true);
 		mockOctokitRequest.mockResolvedValue({
 			data: {
-				name: "Guilderia",
-				html_url: "https://acme.ghe.com/apps/guilderia",
+				name: "Zenthcloud",
+				html_url: "https://acme.ghe.com/apps/zenthcloud",
 				id: 1,
 				client_id: "cid",
 				client_secret: "csecret",

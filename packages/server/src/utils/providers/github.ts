@@ -1,8 +1,8 @@
 import { join } from "node:path";
-import { paths } from "@guilderia/server/constants";
-import type { apiFindGithubBranches } from "@guilderia/server/db/schema";
-import { findGithubById, type Github } from "@guilderia/server/services/github";
-import type { InferResultType } from "@guilderia/server/types/with";
+import { paths } from "@zenthcloud/server/constants";
+import type { apiFindGithubBranches } from "@zenthcloud/server/db/schema";
+import { findGithubById, type Github } from "@zenthcloud/server/services/github";
+import type { InferResultType } from "@zenthcloud/server/types/with";
 import { createAppAuth } from "@octokit/auth-app";
 import { TRPCError } from "@trpc/server";
 import { Octokit } from "octokit";
@@ -320,7 +320,7 @@ export const getGithubBranches = async (
  * Auth is a GitHub App installation, so the identity is the account the app is
  * installed on (fetched with a JWT, since installation tokens cannot read
  * `/app/installations`). Repositories come from the installation, which is
- * exactly the set Guilderia is allowed to deploy from.
+ * exactly the set Zenthcloud is allowed to deploy from.
  */
 export const githubGitProviderAdapter: GitProviderAdapter<Github> = {
 	providerType: "github",

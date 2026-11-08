@@ -10,7 +10,7 @@ import type {
 	IncidentSeverity,
 	IncidentState,
 	MaintenanceState,
-} from "@guilderia/status";
+} from "@zenthcloud/status";
 
 export type Tone = "green" | "amber" | "orange" | "red" | "blue" | "neutral";
 

@@ -47,7 +47,7 @@ const config = {
 		remotePatterns: [
 			{
 				protocol: "https",
-				hostname: "templates.guilderia.com",
+				hostname: "templates.zenthcloud.com",
 			},
 		],
 	},

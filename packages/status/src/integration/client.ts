@@ -1,5 +1,5 @@
 /**
- * Status Publisher — the integration client any Guilderia backend (Console, the
+ * Status Publisher — the integration client any Zenthcloud backend (Console, the
  * monitoring agent, CI) uses to talk to a Status instance.
  *
  * Characteristics:
@@ -24,8 +24,8 @@ import type {
 } from "../core/dto";
 
 /**
- * DTO shapes re-exported for consumers (the Guilderia Console imports them from
- * `@guilderia/status/client` so it never has to pull the whole engine just for
+ * DTO shapes re-exported for consumers (the Zenthcloud Console imports them from
+ * `@zenthcloud/status/client` so it never has to pull the whole engine just for
  * types).
  */
 export type {
@@ -43,7 +43,7 @@ export type {
 } from "../core/types";
 
 export interface StatusPublisherOptions {
-	/** Base URL of the status instance, e.g. `https://status.guilderia.com`. */
+	/** Base URL of the status instance, e.g. `https://status.zenthcloud.com`. */
 	baseUrl: string;
 	/** Bearer token with the appropriate scopes. */
 	token: string;
@@ -335,7 +335,7 @@ export class StatusPublisher {
 	}
 
 	/* ---------------------------------------------------------------------- *
-	 * Administration reads — let a control plane (Guilderia Console) present a *
+	 * Administration reads — let a control plane (Zenthcloud Console) present a *
 	 * unified view of everything that happened, whoever introduced it: an    *
 	 * incident created here, on the admin UI or by the monitoring agent all  *
 	 * lives in the same platform and answers the same endpoints.             *

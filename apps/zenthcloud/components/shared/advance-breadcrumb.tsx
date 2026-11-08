@@ -1,4 +1,4 @@
-import type { ServiceType } from "@guilderia/server/db/schema";
+import type { ServiceType } from "@zenthcloud/server/db/schema";
 import {
 	Check,
 	ChevronDown,

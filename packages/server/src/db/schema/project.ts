@@ -24,7 +24,7 @@ export const projects = pgTable("project", {
 		.references(() => organization.id, { onDelete: "cascade" }),
 	env: encryptedText("env").notNull().default(""),
 	/**
-	 * Logical project quotas. These are Guilderia-level caps on the limits that
+	 * Logical project quotas. These are Zenthcloud-level caps on the limits that
 	 * services **declare**, not a runtime isolation guarantee: Docker and Swarm
 	 * still enforce each service's own `cpuLimit`/`memoryLimit`. `null` means
 	 * "no quota". Units match the service columns: CPU in nanocpus and memory

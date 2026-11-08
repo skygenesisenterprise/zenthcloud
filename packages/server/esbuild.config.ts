@@ -17,7 +17,7 @@ build({
 	format: "esm",
 	plugins: [
 		alias({
-			"@guilderia/server": path.resolve(__dirname, "src"),
+			"@zenthcloud/server": path.resolve(__dirname, "src"),
 		}),
 	],
 	packages: "external",

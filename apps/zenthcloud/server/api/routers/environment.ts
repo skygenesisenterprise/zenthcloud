@@ -7,8 +7,8 @@ import {
 	findEnvironmentsByProjectId,
 	isManagedCloud,
 	updateEnvironmentById,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import {
 	addNewEnvironment,
 	checkEnvironmentAccess,
@@ -16,7 +16,7 @@ import {
 	checkEnvironmentDeletionPermission,
 	checkPermission,
 	findMemberByUserId,
-} from "@guilderia/server/services/permission";
+} from "@zenthcloud/server/services/permission";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";

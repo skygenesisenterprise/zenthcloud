@@ -1,10 +1,10 @@
 import Script from "next/script";
 
 /**
- * Loads the first-party guilderia Traffic Manager instrumentation.
+ * Loads the first-party zenthcloud Traffic Manager instrumentation.
  *
  * Same collector script as the marketing site
- * (`apps/guilderia/public/traffic.js`), pointed at the docs property key. The docs
+ * (`apps/zenthcloud/public/traffic.js`), pointed at the docs property key. The docs
  * application is a Next.js App Router app, and the script tracks client-side
  * route changes itself (patched history APIs + `popstate`), so no
  * router-specific hook is needed here.
@@ -12,9 +12,9 @@ import Script from "next/script";
  * Renders nothing when the Traffic Manager is not configured for this
  * environment.
  */
-export const guilderiaTraffic = () => {
-	const propertyKey = process.env.NEXT_PUBLIC_guilderia_TRAFFIC_KEY;
-	const endpoint = process.env.NEXT_PUBLIC_guilderia_TRAFFIC_ENDPOINT;
+export const zenthcloudTraffic = () => {
+	const propertyKey = process.env.NEXT_PUBLIC_zenthcloud_TRAFFIC_KEY;
+	const endpoint = process.env.NEXT_PUBLIC_zenthcloud_TRAFFIC_ENDPOINT;
 
 	if (!propertyKey || !endpoint) {
 		return null;
@@ -22,7 +22,7 @@ export const guilderiaTraffic = () => {
 
 	return (
 		<Script
-			id="guilderia-traffic"
+			id="zenthcloud-traffic"
 			strategy="afterInteractive"
 			src={`${endpoint.replace(/\/+$/, "")}/traffic.js`}
 			data-property-key={propertyKey}

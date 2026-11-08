@@ -1,7 +1,7 @@
-import { db } from "@guilderia/server/db";
-import { notifications } from "@guilderia/server/db/schema";
-import BuildFailedEmail from "@guilderia/server/emails/emails/build-failed";
-import { redactSecrets } from "@guilderia/server/utils/security/redact";
+import { db } from "@zenthcloud/server/db";
+import { notifications } from "@zenthcloud/server/db/schema";
+import BuildFailedEmail from "@zenthcloud/server/emails/emails/build-failed";
+import { redactSecrets } from "@zenthcloud/server/utils/security/redact";
 import { render } from "@react-email/components";
 import { format } from "date-fns";
 import { and, eq } from "drizzle-orm";
@@ -50,7 +50,7 @@ export const sendBuildErrorNotifications = async ({
 		),
 		with: {
 			email: true,
-			guilderia: true,
+			zenthcloud: true,
 			telegram: true,
 			slack: true,
 			resend: true,
@@ -68,7 +68,7 @@ export const sendBuildErrorNotifications = async ({
 		const {
 			email,
 			resend,
-			guilderia,
+			zenthcloud,
 			telegram,
 			slack,
 			gotify,
@@ -95,7 +95,7 @@ export const sendBuildErrorNotifications = async ({
 				if (email) {
 					await sendEmailNotification(
 						email,
-						"Build failed for guilderia",
+						"Build failed for zenthcloud",
 						template,
 					);
 				}
@@ -103,19 +103,19 @@ export const sendBuildErrorNotifications = async ({
 				if (resend) {
 					await sendResendNotification(
 						resend,
-						"Build failed for guilderia",
+						"Build failed for zenthcloud",
 						template,
 					);
 				}
 			}
 
-			if (guilderia) {
+			if (zenthcloud) {
 				const decorate = (decoration: string, text: string) =>
-					`${guilderia.decoration ? decoration : ""} ${text}`.trim();
+					`${zenthcloud.decoration ? decoration : ""} ${text}`.trim();
 
 				const limitCharacter = 800;
 				const truncatedErrorMessage = errorMessage.substring(0, limitCharacter);
-				await sendDiscordNotification(guilderia, {
+				await sendDiscordNotification(zenthcloud, {
 					title: decorate(">", "`⚠️` Build Failed"),
 					color: 0xed4245,
 					fields: [
@@ -160,7 +160,7 @@ export const sendBuildErrorNotifications = async ({
 					],
 					timestamp: date.toISOString(),
 					footer: {
-						text: "Guilderia Build Notification",
+						text: "Zenthcloud Build Notification",
 					},
 				});
 			}
@@ -273,7 +273,7 @@ ${errorMessage}
 
 [View Build Details](${buildLink})`,
 					channel: mattermost.channel,
-					username: mattermost.username || "Guilderia Bot",
+					username: mattermost.username || "Zenthcloud Bot",
 				});
 			}
 

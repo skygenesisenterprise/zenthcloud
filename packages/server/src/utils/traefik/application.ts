@@ -1,8 +1,8 @@
 import fs, { createReadStream, writeFileSync } from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
-import { paths } from "@guilderia/server/constants";
-import type { Domain } from "@guilderia/server/services/domain";
+import { paths } from "@zenthcloud/server/constants";
+import type { Domain } from "@zenthcloud/server/services/domain";
 import { quote } from "shell-quote";
 import { parse, stringify } from "yaml";
 import {
@@ -175,8 +175,8 @@ export const readMonitoringConfig = async (readAll = false) => {
 						trimmed.endsWith("}")
 					) {
 						const log = JSON.parse(trimmed);
-						// Exclude Guilderia service app and Dashboard requests
-						if (log.ServiceName !== "guilderia-service-app@file") {
+						// Exclude Zenthcloud service app and Dashboard requests
+						if (log.ServiceName !== "zenthcloud-service-app@file") {
 							content += `${line}\n`;
 							validCount++;
 							if (validCount >= 500) {
@@ -240,7 +240,7 @@ export const writeConfigRemote = async (
 /**
  * Resolves a user supplied Traefik file path and rejects anything that escapes
  * the Traefik configuration directory. Without this check a `traefikFiles: write`
- * permission would allow overwriting any file the Guilderia process can write
+ * permission would allow overwriting any file the Zenthcloud process can write
  * (compose files, .env, authorized_keys) via `../../..` or an absolute path.
  *
  * Reads may also target the static `traefik.yml`, which the diagnostics view
@@ -248,7 +248,7 @@ export const writeConfigRemote = async (
  * directory and can never touch the static config that defines the ACME
  * resolvers.
  *
- * Remote servers get the same check against their own path under /etc/guilderia.
+ * Remote servers get the same check against their own path under /etc/zenthcloud.
  */
 export const resolveTraefikConfigPath = (
 	pathFile: string,

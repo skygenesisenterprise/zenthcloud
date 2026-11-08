@@ -1,7 +1,7 @@
 /**
  * Integration API (`/api/v1/integration`) — machine-to-machine.
  *
- * Used by Guilderia Console, the Go monitoring agent or any probe holding a
+ * Used by Zenthcloud Console, the Go monitoring agent or any probe holding a
  * token with the `ingest` scope. Publication remains an explicit decision:
  * ingesting an event never makes anything public unless the target page
  * opted into `autoIncident` **and** `autoPublish`.

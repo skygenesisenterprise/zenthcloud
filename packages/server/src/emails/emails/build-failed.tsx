@@ -24,11 +24,11 @@ export type TemplateProps = {
 };
 
 export const BuildFailedEmail = ({
-	projectName = "guilderia",
+	projectName = "zenthcloud",
 	applicationName = "frontend",
 	applicationType = "application",
 	errorMessage = "Error array.length is not a function",
-	buildLink = "https://guilderia.com/projects/guilderia-test/applications/guilderia-test",
+	buildLink = "https://zenthcloud.com/projects/zenthcloud-test/applications/zenthcloud-test",
 	date = "2023-05-01T00:00:00.000Z",
 }: TemplateProps) => {
 	const previewText = `Build failed for ${applicationName}`;
@@ -42,11 +42,11 @@ export const BuildFailedEmail = ({
 						<Section className="mt-[32px]">
 							<Img
 								src={
-									"https://raw.githubusercontent.com/skygenesisenterprise/guilderia/refs/heads/master/apps/guilderia/logo.png"
+									"https://raw.githubusercontent.com/skygenesisenterprise/zenthcloud/refs/heads/master/apps/zenthcloud/logo.png"
 								}
 								width="100"
 								height="50"
-								alt="Guilderia"
+								alt="Zenthcloud"
 								className="my-0 mx-auto"
 							/>
 						</Section>

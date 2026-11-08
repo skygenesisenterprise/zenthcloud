@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { paths } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
+import { paths } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
 import {
 	type NewTrafficHttpAggregate,
 	type TrafficSource,
@@ -17,17 +17,17 @@ import {
 	trafficSources,
 	type WebProperty,
 	webProperties,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import {
 	aggregateHttpEvents,
 	emptyLatencyHistogram,
 	type HttpAggregateRow,
 	LATENCY_BUCKET_COUNT,
-} from "@guilderia/server/utils/traffic/aggregate";
+} from "@zenthcloud/server/utils/traffic/aggregate";
 import {
 	type AudienceIngestPayload,
 	normalizeAudienceEvents,
-} from "@guilderia/server/utils/traffic/audience";
+} from "@zenthcloud/server/utils/traffic/audience";
 import {
 	bucketStartFor,
 	DEFAULT_BUCKET_SECONDS,
@@ -37,7 +37,7 @@ import {
 	parseTraefikAccessLog,
 	resolvePropertyId,
 	type TrafficHttpEvent,
-} from "@guilderia/server/utils/traffic/parse";
+} from "@zenthcloud/server/utils/traffic/parse";
 import {
 	and,
 	asc,
@@ -474,16 +474,16 @@ export const upsertTrafficSource = async (
 };
 
 /**
- * The four web properties of an SGE instance, declared with the sources Guilderia
+ * The four web properties of an SGE instance, declared with the sources Zenthcloud
  * knows how to feed. Declaring a property only says "we watch this domain":
  * every source starts in `not-configured`, and the dashboard keeps showing the
  * absence of data until a collector actually receives something.
  */
 export const RECOMMENDED_SGE_PROPERTIES = [
-	{ platform: "website", domain: "guilderia.com", name: "Guilderia Website" },
-	{ platform: "docs", domain: "docs.guilderia.com", name: "Guilderia Docs" },
-	{ platform: "app", domain: "app.guilderia.com", name: "Guilderia Cloud" },
-	{ platform: "api", domain: "api.guilderia.com", name: "Guilderia API" },
+	{ platform: "website", domain: "zenthcloud.com", name: "Zenthcloud Website" },
+	{ platform: "docs", domain: "docs.zenthcloud.com", name: "Zenthcloud Docs" },
+	{ platform: "app", domain: "app.zenthcloud.com", name: "Zenthcloud Cloud" },
+	{ platform: "api", domain: "api.zenthcloud.com", name: "Zenthcloud API" },
 ] as const;
 
 export const declareRecommendedProperties = async (

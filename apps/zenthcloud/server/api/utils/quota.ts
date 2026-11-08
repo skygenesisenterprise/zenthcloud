@@ -1,5 +1,5 @@
-import type { AuditResourceType } from "@guilderia/server/db/schema";
-import { ProjectQuotaExceededError } from "@guilderia/server/services/project-quota";
+import type { AuditResourceType } from "@zenthcloud/server/db/schema";
+import { ProjectQuotaExceededError } from "@zenthcloud/server/services/project-quota";
 import { audit } from "./audit";
 
 interface QuotaAuditCtx {

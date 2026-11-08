@@ -28,8 +28,8 @@ export const StepOne = ({ setTemplateInfo, templateInfo }: any) => {
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const hasServers = servers && servers.length > 0;
 	// Show dropdown logic based on cloud environment
-	// Cloud: show only if there are remote servers (no guilderia option)
-	// Self-hosted: show only if there are remote servers (guilderia is default, hide if no remote servers)
+	// Cloud: show only if there are remote servers (no zenthcloud option)
+	// Self-hosted: show only if there are remote servers (zenthcloud is default, hide if no remote servers)
 	const shouldShowServerDropdown = hasServers;
 
 	const handleExampleClick = (example: string) => {
@@ -61,10 +61,10 @@ export const StepOne = ({ setTemplateInfo, templateInfo }: any) => {
 							<Select
 								value={
 									templateInfo.server?.serverId ||
-									(!isCloud ? "guilderia" : undefined)
+									(!isCloud ? "zenthcloud" : undefined)
 								}
 								onValueChange={(value) => {
-									if (value === "guilderia") {
+									if (value === "zenthcloud") {
 										setTemplateInfo({
 											...templateInfo,
 											server: undefined,
@@ -82,15 +82,15 @@ export const StepOne = ({ setTemplateInfo, templateInfo }: any) => {
 							>
 								<SelectTrigger className="w-full">
 									<SelectValue
-										placeholder={!isCloud ? "guilderia" : "Select a Server"}
+										placeholder={!isCloud ? "zenthcloud" : "Select a Server"}
 									/>
 								</SelectTrigger>
 								<SelectContent>
 									<SelectGroup>
 										{!isCloud && (
-											<SelectItem value="guilderia">
+											<SelectItem value="zenthcloud">
 												<span className="flex items-center gap-2 justify-between w-full">
-													<span>guilderia</span>
+													<span>zenthcloud</span>
 													<span className="text-muted-foreground text-xs self-center">
 														Default
 													</span>

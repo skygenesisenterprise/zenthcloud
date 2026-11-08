@@ -1,7 +1,7 @@
 import {
 	validateBuildServer,
 	validateDeploymentTarget,
-} from "@guilderia/server/services/deployment-target";
+} from "@zenthcloud/server/services/deployment-target";
 import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -10,7 +10,7 @@ const { mockFindServerById, mockGetAccessibleServerIds } = vi.hoisted(() => ({
 	mockGetAccessibleServerIds: vi.fn(),
 }));
 
-vi.mock("@guilderia/server/services/server", () => ({
+vi.mock("@zenthcloud/server/services/server", () => ({
 	findServerById: mockFindServerById,
 	getAccessibleServerIds: mockGetAccessibleServerIds,
 }));

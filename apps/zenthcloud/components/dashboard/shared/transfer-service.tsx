@@ -1,4 +1,4 @@
-import type { ServiceType } from "@guilderia/server/db/schema";
+import type { ServiceType } from "@zenthcloud/server/db/schema";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { ArrowRightLeft } from "lucide-react";
 import { useState } from "react";
@@ -36,7 +36,7 @@ import {
 import { api } from "@/utils/api";
 import { type LogLine, parseLogs } from "../docker/logs/utils";
 
-const LOCAL_SERVER = "guilderia";
+const LOCAL_SERVER = "zenthcloud";
 
 const transferSchema = z.object({
 	targetServerId: z.string().min(1, { message: "Select a target server" }),
@@ -66,7 +66,7 @@ export const TransferService = ({ id, type, serverId }: Props) => {
 
 	const targets = [
 		...(!isCloud && serverId
-			? [{ serverId: LOCAL_SERVER, name: "guilderia Server" }]
+			? [{ serverId: LOCAL_SERVER, name: "zenthcloud Server" }]
 			: []),
 		...(servers ?? []).filter((server) => server.serverId !== serverId),
 	];

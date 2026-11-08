@@ -9,7 +9,7 @@ import {
 	type InstanceIdentityStatus,
 	isAstronCollectionCapability,
 	isAstronCollectionProduct,
-	GUILDERIA_IDENTITY_EXTENSION_OID,
+	ZENTHCLOUD_IDENTITY_EXTENSION_OID,
 	type AstronCollectionCapability,
 } from "./types";
 
@@ -45,7 +45,7 @@ const validateIdentityDocument = (
 		typeof document.subjectKeyFingerprint !== "string" ||
 		typeof document.createdAt !== "string"
 	) {
-		throw new Error("The Guilderia instance identity document is malformed");
+		throw new Error("The Zenthcloud instance identity document is malformed");
 	}
 
 	const capabilities = document.capabilities.filter(
@@ -64,7 +64,7 @@ const validateIdentityDocument = (
 };
 
 /**
- * Extracts the Guilderia identity document from an instance certificate. Throws
+ * Extracts the Zenthcloud identity document from an instance certificate. Throws
  * when the certificate does not carry a valid document.
  */
 export const parseIdentityDocument = (
@@ -73,12 +73,12 @@ export const parseIdentityDocument = (
 	// @types/node-forge mistypes the `id` option as a number; at runtime forge
 	// looks it up as the dotted OID string, so the cast is required.
 	const extension = certificate.getExtension({
-		id: GUILDERIA_IDENTITY_EXTENSION_OID,
+		id: ZENTHCLOUD_IDENTITY_EXTENSION_OID,
 	} as unknown as { id: number }) as { value?: unknown } | undefined;
 
 	if (!extension || typeof extension.value !== "string") {
 		throw new Error(
-			"The certificate has no Guilderia instance identity extension",
+			"The certificate has no Zenthcloud instance identity extension",
 		);
 	}
 
@@ -87,7 +87,7 @@ export const parseIdentityDocument = (
 		parsed = JSON.parse(extension.value);
 	} catch {
 		throw new Error(
-			"The Guilderia instance identity extension is not valid JSON",
+			"The Zenthcloud instance identity extension is not valid JSON",
 		);
 	}
 
@@ -102,7 +102,7 @@ export const parseIdentityDocumentJson = (
 	try {
 		parsed = JSON.parse(raw);
 	} catch {
-		throw new Error("The Guilderia instance identity document is not valid JSON");
+		throw new Error("The Zenthcloud instance identity document is not valid JSON");
 	}
 	return validateIdentityDocument(parsed);
 };

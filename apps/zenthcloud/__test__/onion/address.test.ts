@@ -8,7 +8,7 @@ import {
 	isOnionHostname,
 	isValidOnionAddress,
 	onionIdentityFiles,
-} from "@guilderia/server/utils/onion/address";
+} from "@zenthcloud/server/utils/onion/address";
 import { describe, expect, it } from "vitest";
 
 /**

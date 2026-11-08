@@ -53,16 +53,16 @@ jobs:
           case "$suffix" in
             cli)
               # CLI patch releases (`vX.Y.Z-cli`) go to npmjs only.
-              matrix="$(jq -cn '{include:[{package:"@guilderia/cli",dir:"packages/cli"}]}')"
+              matrix="$(jq -cn '{include:[{package:"@zenthcloud/cli",dir:"packages/cli"}]}')"
               ;;
             sdk)
-              matrix="$(jq -cn '{include:[{package:"@guilderia/sdk",dir:"packages/sdk"}]}')"
+              matrix="$(jq -cn '{include:[{package:"@zenthcloud/sdk",dir:"packages/sdk"}]}')"
               ;;
             trpc-openapi)
-              matrix="$(jq -cn '{include:[{package:"@guilderia/trpc-openapi",dir:"packages/trpc-openapi"}]}')"
+              matrix="$(jq -cn '{include:[{package:"@zenthcloud/trpc-openapi",dir:"packages/trpc-openapi"}]}')"
               ;;
             node)
-              matrix="$(jq -cn '{include:[{package:"@guilderia/cli",dir:"packages/cli"},{package:"@guilderia/sdk",dir:"packages/sdk"},{package:"@guilderia/trpc-openapi",dir:"packages/trpc-openapi"}]}')"
+              matrix="$(jq -cn '{include:[{package:"@zenthcloud/cli",dir:"packages/cli"},{package:"@zenthcloud/sdk",dir:"packages/sdk"},{package:"@zenthcloud/trpc-openapi",dir:"packages/trpc-openapi"}]}')"
               ;;
           esac
 
@@ -98,23 +98,23 @@ jobs:
       - name: Enable npm trusted publishing
         run: npm install --global npm@^11.5.1
 
-      - name: Pin the @guilderia scope to npmjs
+      - name: Pin the @zenthcloud scope to npmjs
         env:
           NPMJS_REGISTRY: ${{ env.NPMJS_REGISTRY }}
         run: |
           set -euo pipefail
 
           # `npm publish --registry` changes only the default registry: a scoped
-          # `@guilderia:registry` entry takes precedence. Pin the scope explicitly
+          # `@zenthcloud:registry` entry takes precedence. Pin the scope explicitly
           # so a CLI patch cannot be redirected to GitHub Packages by an
           # inherited npm configuration.
           npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
           registry="${NPMJS_REGISTRY%/}"
           touch "$npmrc"
-          if grep -q '^@guilderia:registry=' "$npmrc"; then
-            sed -i "s|^@guilderia:registry=.*|@guilderia:registry=${registry}/|" "$npmrc"
+          if grep -q '^@zenthcloud:registry=' "$npmrc"; then
+            sed -i "s|^@zenthcloud:registry=.*|@zenthcloud:registry=${registry}/|" "$npmrc"
           else
-            printf '\n@guilderia:registry=%s/\n' "$registry" >> "$npmrc"
+            printf '\n@zenthcloud:registry=%s/\n' "$registry" >> "$npmrc"
           fi
 
       - name: Install dependencies

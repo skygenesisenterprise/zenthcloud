@@ -5,7 +5,7 @@ import {
 	fetchSocialUser,
 	parseOauthConfig,
 	testSocialConnection,
-} from "@guilderia/server/utils/identity/oauth";
+} from "@zenthcloud/server/utils/identity/oauth";
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch as typeof fetch;

@@ -144,7 +144,7 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 				<div className="space-y-4">
 					<AlertBlock type="warning">
 						Isolated deployment is deprecated. Use the Networks section above to
-						attach networks per service and detach them from guilderia-network —
+						attach networks per service and detach them from zenthcloud-network —
 						it is declarative and does not break on restarts.
 					</AlertBlock>
 					{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}

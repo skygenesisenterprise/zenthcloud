@@ -1,4 +1,4 @@
-import { ApiError } from "../adapters/guilderiaApi.js";
+import { ApiError } from "../adapters/zenthcloudApi.js";
 export function asRecord(value) {
     if (value === null || typeof value !== "object" || Array.isArray(value))
         return undefined;
@@ -61,7 +61,7 @@ export async function fetchApplication(context, applicationId) {
     if (!application) {
         throw new ApiError({
             code: "api_error",
-            message: "The guilderia API returned an unexpected application payload",
+            message: "The zenthcloud API returned an unexpected application payload",
         });
     }
     return application;

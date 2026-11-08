@@ -9,7 +9,7 @@ import {
  * Branded application name of the current environment.
  *
  * A whitelabel app name wins when set; otherwise the product decides — so the
- * three environments read "Guilderia", "Guilderia Cloud" and "Guilderia Console".
+ * three environments read "Zenthcloud", "Zenthcloud Cloud" and "Zenthcloud Console".
  * Used for the browser tab, page titles and branded surfaces.
  */
 export function useAppName(): string {

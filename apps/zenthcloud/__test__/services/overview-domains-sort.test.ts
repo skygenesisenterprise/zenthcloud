@@ -1,5 +1,5 @@
-import type { OverviewDomain } from "@guilderia/server/services/overview";
-import { sortOverviewDomains } from "@guilderia/server/services/overview";
+import type { OverviewDomain } from "@zenthcloud/server/services/overview";
+import { sortOverviewDomains } from "@zenthcloud/server/services/overview";
 import { describe, expect, test } from "vitest";
 
 const makeDomain = (overrides: Partial<OverviewDomain>): OverviewDomain => ({

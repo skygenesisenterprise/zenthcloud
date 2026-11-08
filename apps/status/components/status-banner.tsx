@@ -1,4 +1,4 @@
-import type { GlobalStatus } from "@guilderia/status";
+import type { GlobalStatus } from "@zenthcloud/status";
 import { cn } from "@/lib/utils";
 import { type FreshnessState, statusLabel, statusTone } from "@/lib/view-model";
 import { dotClass, toneClass } from "./status-badge";

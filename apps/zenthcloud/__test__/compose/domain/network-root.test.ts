@@ -1,21 +1,21 @@
-import { addAstronCollectionNetworkToRoot } from "@guilderia/server";
+import { addAstronCollectionNetworkToRoot } from "@zenthcloud/server";
 import { describe, expect, it } from "vitest";
 
 describe("addAstronCollectionNetworkToRoot", () => {
 	it("should create network object if networks is undefined", () => {
 		const result = addAstronCollectionNetworkToRoot(undefined);
-		expect(result).toEqual({ "guilderia-network": { external: true } });
+		expect(result).toEqual({ "zenthcloud-network": { external: true } });
 	});
 
 	it("should add network to an empty object", () => {
 		const result = addAstronCollectionNetworkToRoot({});
-		expect(result).toEqual({ "guilderia-network": { external: true } });
+		expect(result).toEqual({ "zenthcloud-network": { external: true } });
 	});
 
 	it("should not modify existing network configuration", () => {
-		const existing = { "guilderia-network": { external: false } };
+		const existing = { "zenthcloud-network": { external: false } };
 		const result = addAstronCollectionNetworkToRoot(existing);
-		expect(result).toEqual({ "guilderia-network": { external: true } });
+		expect(result).toEqual({ "zenthcloud-network": { external: true } });
 	});
 
 	it("should add network alongside existing networks", () => {
@@ -23,7 +23,7 @@ describe("addAstronCollectionNetworkToRoot", () => {
 		const result = addAstronCollectionNetworkToRoot(existing);
 		expect(result).toEqual({
 			"other-network": { external: true },
-			"guilderia-network": { external: true },
+			"zenthcloud-network": { external: true },
 		});
 	});
 });

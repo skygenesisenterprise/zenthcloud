@@ -13,7 +13,7 @@
 import {
 	type IdentityLdapConfig,
 	identityLdapConfigSchema,
-} from "@guilderia/server/db/schema/sso";
+} from "@zenthcloud/server/db/schema/sso";
 import { Client } from "ldapts";
 
 const LDAP_CONNECT_TIMEOUT_MS = 10_000;

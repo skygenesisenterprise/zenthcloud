@@ -40,7 +40,7 @@ export const getOperationStatusCapability = defineCapability({
     openWorldHint: true,
   },
   limitations: [
-    "Operations are stored per MCP server process; they are shared across instances only when GUILDERIA_MCP_OPERATION_STORE is configured on a shared volume.",
+    "Operations are stored per MCP server process; they are shared across instances only when ZENTHCLOUD_MCP_OPERATION_STORE is configured on a shared volume.",
   ],
   execute: async (input, context) => {
     const operation = await context.operations.getScoped(input.operationId, {

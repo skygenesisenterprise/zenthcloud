@@ -21,7 +21,7 @@ const nextConfig = {
 					return [
 						{
 							source: "/dokploy-vs-:slug",
-							destination: "/guilderia-vs-:slug",
+							destination: "/zenthcloud-vs-:slug",
 							permanent: true,
 						},
 						// Retired routes from the previous information architecture.
@@ -55,7 +55,7 @@ const nextConfig = {
 				hostname: "www.gravatar.com",
 			},
 			{
-				hostname: "cms.guilderia.com",
+				hostname: "cms.zenthcloud.com",
 			},
 		],
 		// domains: [
@@ -63,7 +63,7 @@ const nextConfig = {
 		// 	"testing-ghost-8423be-31-220-108-27.traefik.me",
 		// 	"images.unsplash.com",
 		// 	"www.gravatar.com",
-		// 	"cms.guilderia.com",
+		// 	"cms.zenthcloud.com",
 		// ],
 	},
 };

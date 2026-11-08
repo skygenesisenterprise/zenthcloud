@@ -74,7 +74,7 @@ const objectStorageFormSchema = z
 	// The internal provider owns its storage and needs no credentials; every
 	// other provider must supply an endpoint and keys.
 	.superRefine((value, ctx) => {
-		if (value.providerType === "guilderia-internal") return;
+		if (value.providerType === "zenthcloud-internal") return;
 		if (!value.endpoint) {
 			ctx.addIssue({
 				code: "custom",
@@ -184,7 +184,7 @@ export const HandleObjectStorage = ({
 	const providerType = form.watch("providerType");
 	const pathStyle = form.watch("pathStyle");
 	const allowInsecureTls = form.watch("allowInsecureTls");
-	const isInternal = providerType === "guilderia-internal";
+	const isInternal = providerType === "zenthcloud-internal";
 
 	const providerGroups = useMemo(
 		() =>
@@ -513,14 +513,14 @@ export const HandleObjectStorage = ({
 						{isInternal && (
 							<>
 								<AlertBlock type="info">
-									guilderia keeps these buckets on its own storage path, so no
+									zenthcloud keeps these buckets on its own storage path, so no
 									external endpoint or credentials are needed. Ideal for a
 									self-hosted install that wants backups without a third party.
 								</AlertBlock>
 								{textField("rootPath", "Storage root (optional)", {
-									placeholder: "/etc/guilderia/object-storage",
+									placeholder: "/etc/zenthcloud/object-storage",
 									description:
-										"Leave empty to use the default guilderia storage path.",
+										"Leave empty to use the default zenthcloud storage path.",
 								})}
 							</>
 						)}

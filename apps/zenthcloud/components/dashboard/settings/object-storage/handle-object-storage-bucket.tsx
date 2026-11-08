@@ -266,7 +266,7 @@ export const HandleObjectStorageBucket = ({
 								<FormItem>
 									<FormLabel>Bucket name</FormLabel>
 									<FormControl>
-										<Input placeholder="guilderia-backups" {...field} />
+										<Input placeholder="zenthcloud-backups" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>

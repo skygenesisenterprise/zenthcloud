@@ -2,11 +2,11 @@ import {
 	getAllBackupsForOrganization,
 	getAllDomainsForOrganization,
 	getAllServicesForOrganization,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import {
 	findMemberByUserId,
 	hasPermission,
-} from "@guilderia/server/services/permission";
+} from "@zenthcloud/server/services/permission";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 

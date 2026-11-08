@@ -34,7 +34,7 @@ export const PaymentFailedEmail = ({
 	date = "2024-01-01",
 	hostedInvoiceUrl = "https://invoice.stripe.com/example",
 }: TemplateProps) => {
-	const previewText = `Action required: Your Guilderia payment for ${amountDue} failed`;
+	const previewText = `Action required: Your Zenthcloud payment for ${amountDue} failed`;
 	return (
 		<Html>
 			<Head />
@@ -45,10 +45,10 @@ export const PaymentFailedEmail = ({
 						{/* Header */}
 						<Section className="bg-[#09090b] rounded-t-xl px-[40px] py-[32px] text-center">
 							<Img
-								src="https://raw.githubusercontent.com/skygenesisenterprise/guilderia/refs/heads/master/web/apps/docs/public/logo-guilderia-blackpng.png"
+								src="https://raw.githubusercontent.com/skygenesisenterprise/zenthcloud/refs/heads/master/web/apps/docs/public/logo-zenthcloud-blackpng.png"
 								width="190"
 								height="120"
-								alt="Guilderia"
+								alt="Zenthcloud"
 								className="my-0 mx-auto"
 							/>
 						</Section>
@@ -140,15 +140,15 @@ export const PaymentFailedEmail = ({
 							<Text className="text-[#a1a1aa] text-[12px] leading-[18px] m-0">
 								This is an automated email from{" "}
 								<Link
-									href="https://guilderia.com"
+									href="https://zenthcloud.com"
 									className="text-[#71717a] underline"
 								>
-									Guilderia Cloud
+									Zenthcloud Cloud
 								</Link>
 								. If you have any questions about your billing, please contact
 								our{" "}
 								<Link
-									href="https://guilderia.com/community"
+									href="https://zenthcloud.com/community"
 									className="text-[#71717a] underline"
 								>
 									support team

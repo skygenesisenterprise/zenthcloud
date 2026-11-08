@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { paths } from "@guilderia/server/constants";
-import type { webServerSettings } from "@guilderia/server/db/schema/web-server-settings";
+import { paths } from "@zenthcloud/server/constants";
+import type { webServerSettings } from "@zenthcloud/server/db/schema/web-server-settings";
 import { parse, stringify } from "yaml";
 import {
 	loadOrCreateConfig,
@@ -16,7 +16,7 @@ export const updateServerTraefik = (
 	newHost: string | null,
 ) => {
 	const { https, certificateType, customCertResolver } = settings || {};
-	const appName = "guilderia";
+	const appName = "zenthcloud";
 	const config: FileConfig = loadOrCreateConfig(appName);
 
 	config.http = config.http || { routers: {}, services: {} };
@@ -43,7 +43,7 @@ export const updateServerTraefik = (
 			loadBalancer: {
 				servers: [
 					{
-						url: `http://guilderia:${process.env.PORT || 3000}`,
+						url: `http://zenthcloud:${process.env.PORT || 3000}`,
 					},
 				],
 				passHostHeader: true,

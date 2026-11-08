@@ -1,4 +1,4 @@
-import type { VaultSecretRecord } from "@guilderia/server";
+import type { VaultSecretRecord } from "@zenthcloud/server";
 import {
 	ArrowLeft,
 	Check,
@@ -211,7 +211,7 @@ export const ShowVaultSecrets = ({ vaultProviderId }: Props) => {
 									environment variable with{" "}
 									{/* biome-ignore lint/suspicious/noTemplateCurlyInString: vault ${{...}} reference syntax shown as documentation, not a JS template */}
 									<code>{"${{vault.<name>.<secret>}}"}</code>. Values are fetched
-									at deploy time and never stored in guilderia.
+									at deploy time and never stored in zenthcloud.
 								</CardDescription>
 							</CardHeader>
 						</div>

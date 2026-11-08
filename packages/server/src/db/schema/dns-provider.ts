@@ -14,9 +14,9 @@ import { z } from "zod";
 import { organization } from "./account";
 
 /**
- * Every provider Guilderia can talk to. Guilderia never assumes DNS means one SaaS
+ * Every provider Zenthcloud can talk to. Zenthcloud never assumes DNS means one SaaS
  * vendor: managed providers, infrastructure the user operates themselves, and
- * Guilderia's own internal DNS all sit behind the same adapter contract.
+ * Zenthcloud's own internal DNS all sit behind the same adapter contract.
  */
 export const dnsProviderTypes = [
 	// Managed DNS services
@@ -45,7 +45,7 @@ export const dnsProviderTypes = [
 	// Generic / custom adapter
 	"custom",
 	// First-party
-	"guilderia-internal",
+	"zenthcloud-internal",
 ] as const;
 
 export type DnsProviderType = (typeof dnsProviderTypes)[number];
@@ -191,7 +191,7 @@ export const bindTsigAlgorithms = [
 
 export const bindDnsConfigSchema = z.object({
 	providerType: z.literal("bind"),
-	// Guilderia server used to reach the nameserver over SSH and run nsupdate.
+	// Zenthcloud server used to reach the nameserver over SSH and run nsupdate.
 	serverId: z.string().trim().min(1),
 	serverAddress: z.string().trim().min(1),
 	port: z.number().int().positive().max(65535).default(53),
@@ -238,7 +238,7 @@ export const unboundDnsConfigSchema = z.object({
 // ---------------------------------------------------------------------------
 
 /**
- * Adapter for organizations with their own DNS platform. Guilderia speaks a small
+ * Adapter for organizations with their own DNS platform. Zenthcloud speaks a small
  * documented HTTP contract instead of natively knowing the product.
  */
 export const customDnsConfigSchema = z.object({
@@ -254,7 +254,7 @@ export const customDnsConfigSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const astronCollectionInternalDnsConfigSchema = z.object({
-	providerType: z.literal("guilderia-internal"),
+	providerType: z.literal("zenthcloud-internal"),
 	defaultTtl: z.number().int().positive().default(300),
 });
 
@@ -324,7 +324,7 @@ export const dnsRecordTypeEnum = pgEnum("dnsRecordType", [
 ]);
 
 /**
- * Zones and records owned by the first-party Guilderia Internal DNS provider.
+ * Zones and records owned by the first-party Zenthcloud Internal DNS provider.
  * They are the source of truth for the internal adapter, which is why they are
  * persisted instead of being resolved inside the web application.
  */
@@ -377,8 +377,8 @@ export const dnsRecord = pgTable(
 		// values here; they stay empty for the rest.
 		comment: text("comment"),
 		tags: jsonb("tags").$type<string[]>().notNull().default([]),
-		// managed = created by Guilderia, imported = adopted from the provider,
-		// external = observed but not owned by Guilderia.
+		// managed = created by Zenthcloud, imported = adopted from the provider,
+		// external = observed but not owned by Zenthcloud.
 		ownership: text("ownership").notNull().default("managed"),
 		createdAt: text("createdAt")
 			.notNull()

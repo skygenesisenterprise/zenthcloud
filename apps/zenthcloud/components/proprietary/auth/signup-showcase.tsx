@@ -82,7 +82,7 @@ const SLIDES: ShowcaseItem[][] = [
 			icon: Database,
 			title: "Managed databases",
 			description:
-				"Manage and back up MySQL, PostgreSQL, MongoDB, MariaDB, and Redis directly from Guilderia.",
+				"Manage and back up MySQL, PostgreSQL, MongoDB, MariaDB, and Redis directly from Zenthcloud.",
 		},
 		{
 			icon: Terminal,
@@ -99,7 +99,7 @@ const SLIDES: ShowcaseItem[][] = [
 			icon: Unlock,
 			title: "No lock-in",
 			description:
-				"Modify, scale, and customize Guilderia however your project needs.",
+				"Modify, scale, and customize Zenthcloud however your project needs.",
 		},
 	],
 ];

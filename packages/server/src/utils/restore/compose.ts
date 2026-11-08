@@ -1,6 +1,6 @@
-import type { apiRestoreBackup } from "@guilderia/server/db/schema";
-import type { Compose } from "@guilderia/server/services/compose";
-import type { Destination } from "@guilderia/server/services/destination";
+import type { apiRestoreBackup } from "@zenthcloud/server/db/schema";
+import type { Compose } from "@zenthcloud/server/services/compose";
+import type { Destination } from "@zenthcloud/server/services/destination";
 import { quote } from "shell-quote";
 import type { z } from "zod";
 import { getS3Credentials } from "../backups/utils";

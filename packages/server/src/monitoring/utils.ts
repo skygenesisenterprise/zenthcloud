@@ -47,7 +47,7 @@ export const recordAdvancedStats = async (
 	});
 	if (aborted()) return;
 
-	if (appName === "guilderia") {
+	if (appName === "zenthcloud") {
 		const osutils = new OSUtils();
 		const diskResult = await osutils.disk.usageByMountPoint("/");
 
@@ -70,7 +70,7 @@ export const recordAdvancedStats = async (
 
 /**
  * Get host system statistics using node-os-utils
- * This is used when monitoring "guilderia" to show host stats instead of container stats
+ * This is used when monitoring "zenthcloud" to show host stats instead of container stats
  */
 export const getHostSystemStats = async (): Promise<Container> => {
 	const osutils = new OSUtils({
@@ -158,9 +158,9 @@ export const getHostSystemStats = async (): Promise<Container> => {
 		MemUsage: memUsageFormatted,
 		BlockIO: blockIOFormatted,
 		NetIO: netIOFormatted,
-		Container: "guilderia",
+		Container: "zenthcloud",
 		ID: "host-system",
-		Name: "guilderia",
+		Name: "zenthcloud",
 	};
 };
 

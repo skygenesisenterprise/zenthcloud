@@ -250,7 +250,7 @@ function loadCliGroups(config, diagnostics) {
 				"no command groups parsed from the generated CLI",
 				{
 					file: config.sources.cliCommands,
-					hint: "Run 'pnpm --filter @guilderia/cli run generate'.",
+					hint: "Run 'pnpm --filter @zenthcloud/cli run generate'.",
 				},
 			);
 		}
@@ -571,7 +571,7 @@ function checkCliHelp(config, groups, diagnostics) {
 	if (top.status !== 0) {
 		diagnostics.warning(
 			"cli.help-unavailable",
-			`guilderia --help failed: ${(top.stderr || top.stdout || "").trim().split("\n")[0]}`,
+			`zenthcloud --help failed: ${(top.stderr || top.stdout || "").trim().split("\n")[0]}`,
 		);
 		return;
 	}
@@ -579,7 +579,7 @@ function checkCliHelp(config, groups, diagnostics) {
 		if (!new RegExp(`\\b${group.name}\\b`).test(top.stdout)) {
 			diagnostics.error(
 				"cli.help-mismatch",
-				`documented group "${group.name}" does not appear in guilderia --help`,
+				`documented group "${group.name}" does not appear in zenthcloud --help`,
 				{ file: config.sources.cliCommands },
 			);
 		}
@@ -592,7 +592,7 @@ function checkCliHelp(config, groups, diagnostics) {
 		if (result.status !== 0) {
 			diagnostics.warning(
 				"cli.help-unavailable",
-				`guilderia ${group.name} ${command.action} --help failed`,
+				`zenthcloud ${group.name} ${command.action} --help failed`,
 			);
 			continue;
 		}
@@ -606,7 +606,7 @@ function checkCliHelp(config, groups, diagnostics) {
 			if (!documented.has(match[1])) {
 				diagnostics.error(
 					"cli.help-mismatch",
-					`"${match[1]}" is offered by guilderia ${group.name} ${command.action} but not documented`,
+					`"${match[1]}" is offered by zenthcloud ${group.name} ${command.action} but not documented`,
 					{ file: "web/apps/docs/content/docs/cli" },
 				);
 			}

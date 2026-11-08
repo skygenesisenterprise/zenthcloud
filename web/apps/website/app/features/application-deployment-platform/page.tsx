@@ -38,7 +38,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Application & Software Deployment Platform",
 	description:
-		"guilderia's flexible, powerful application and software deployment platform enables you to put code written in Node.js, PHP, Python, Go, and Ruby live.",
+		"zenthcloud's flexible, powerful application and software deployment platform enables you to put code written in Node.js, PHP, Python, Go, and Ruby live.",
 };
 
 const professionalFeatures = [
@@ -46,13 +46,13 @@ const professionalFeatures = [
 		icon: Code2,
 		title: "Support for multiple languages",
 		description:
-			"Deploy apps written in Node, PHP, Python, Go, Ruby, and more. guilderia does not restrict programming languages.",
+			"Deploy apps written in Node, PHP, Python, Go, Ruby, and more. zenthcloud does not restrict programming languages.",
 	},
 	{
 		icon: Layers,
 		title: "Deploy any app with any stack",
 		description:
-			"guilderia supports single services and multi-service apps. Deploy from Git, a container registry, or Docker Compose.",
+			"zenthcloud supports single services and multi-service apps. Deploy from Git, a container registry, or Docker Compose.",
 	},
 	{
 		icon: Wrench,
@@ -150,7 +150,7 @@ const aiDeploymentFeatures = [
 		icon: Users,
 		title: "Anyone can deploy",
 		description:
-			"Once guilderia is set up, non-technical users can take code from an AI tool to a running app without engineering support.",
+			"Once zenthcloud is set up, non-technical users can take code from an AI tool to a running app without engineering support.",
 	},
 	{
 		icon: Layers,
@@ -162,7 +162,7 @@ const aiDeploymentFeatures = [
 		icon: Bot,
 		title: "AI agents via MCP",
 		description:
-			"guilderia's MCP server lets AI agents trigger deployments, query app state, and manage services without a custom integration.",
+			"zenthcloud's MCP server lets AI agents trigger deployments, query app state, and manage services without a custom integration.",
 	},
 	{
 		icon: Shield,
@@ -174,14 +174,14 @@ const aiDeploymentFeatures = [
 
 const faqs = [
 	{
-		question: "Can I deploy Docker Compose apps with guilderia?",
+		question: "Can I deploy Docker Compose apps with zenthcloud?",
 		answer:
-			"Yes. guilderia supports deploying applications with Docker Compose, which is ideal when your implementation spans multiple services, data stores, and supporting tools. You can deploy a Compose stack as part of your deployment workflows, keep configuration in configuration files, and manage environments without increasing complexity as you scale.",
+			"Yes. zenthcloud supports deploying applications with Docker Compose, which is ideal when your implementation spans multiple services, data stores, and supporting tools. You can deploy a Compose stack as part of your deployment workflows, keep configuration in configuration files, and manage environments without increasing complexity as you scale.",
 	},
 	{
 		question: "Which Git providers can I deploy from?",
 		answer:
-			"guilderia integrates seamlessly with popular version control systems and workflows, including GitHub and other git providers such as GitLab, Gitea, Bitbucket, and other Atlassian tools. You can connect repos from these version control systems, automate deployments on code changes, and align deployment workflows with CI/CD practices. If your team already uses GitHub Actions or Atlassian tools, guilderia fits into that process without forcing a new way of working.",
+			"zenthcloud integrates seamlessly with popular version control systems and workflows, including GitHub and other git providers such as GitLab, Gitea, Bitbucket, and other Atlassian tools. You can connect repos from these version control systems, automate deployments on code changes, and align deployment workflows with CI/CD practices. If your team already uses GitHub Actions or Atlassian tools, zenthcloud fits into that process without forcing a new way of working.",
 	},
 	{
 		question: "Can I deploy from a Docker registry?",
@@ -189,9 +189,9 @@ const faqs = [
 			"Yes. You can deploy a Docker image directly from a registry, which is useful when you already build artifacts elsewhere or want tighter control over technologies and build tooling. This approach supports consistent deployments across environments and production, especially when combined with automation and rollback capabilities for safer releases.",
 	},
 	{
-		question: "How do preview deployments work in guilderia?",
+		question: "How do preview deployments work in zenthcloud?",
 		answer:
-			"Preview deployments create environments for testing code changes before they reach production environments. When a pull request or branch updates, guilderia can trigger automated deployments and deployment workflows so developers can validate functionality, reliability, and security in an isolated environment. This setup supports multiple environments, speeds up testing for new features, and helps teams reduce errors before customers and users see changes in production.",
+			"Preview deployments create environments for testing code changes before they reach production environments. When a pull request or branch updates, zenthcloud can trigger automated deployments and deployment workflows so developers can validate functionality, reliability, and security in an isolated environment. This setup supports multiple environments, speeds up testing for new features, and helps teams reduce errors before customers and users see changes in production.",
 	},
 	{
 		question: "What is a deployment platform?",
@@ -205,9 +205,9 @@ const faqs = [
 			"In practice, they overlap. A deployment platform often focuses on the mechanics of deployment tools and infrastructure, while a software deployment platform emphasizes end-to-end software delivery, including CI/CD, continuous integration, and continuous delivery. A software deployment platform typically ties deployment workflows to version control systems, configuration files, and multiple environments, so teams can maintain consistency from development to production, with rollback capabilities when code changes introduce issues.",
 	},
 	{
-		question: "Can I use guilderia to deploy AI-generated apps?",
+		question: "Can I use zenthcloud to deploy AI-generated apps?",
 		answer:
-			"Yes. guilderia works with code from any source, including apps built or scaffolded by AI coding tools. You deploy using the same Git, Docker, and Compose workflows as any other application—there's no separate process for AI-generated code.",
+			"Yes. zenthcloud works with code from any source, including apps built or scaffolded by AI coding tools. You deploy using the same Git, Docker, and Compose workflows as any other application—there's no separate process for AI-generated code.",
 	},
 ];
 
@@ -222,7 +222,7 @@ export default function ApplicationDeploymentPlatformPage() {
 			actions={
 				<>
 					<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
-						<Link href="https://app.guilderia.com/register" target="_blank">
+						<Link href="https://app.zenthcloud.com/register" target="_blank">
 							Get Started
 						</Link>
 					</Button>
@@ -253,14 +253,14 @@ export default function ApplicationDeploymentPlatformPage() {
 					id: "ai-built-apps",
 					title: "Deploy the apps your teams are already building with AI",
 					description:
-						"AI coding tools are changing how applications get written. guilderia handles the deployment side, from AI-generated code to a live URL, powered by your existing workflows.",
+						"AI coding tools are changing how applications get written. zenthcloud handles the deployment side, from AI-generated code to a live URL, powered by your existing workflows.",
 					items: aiDeploymentFeatures,
 					columns: 4,
 					callout: {
 						title: "Need a governed environment for AI tools?",
 						description:
-							"See how guilderia handles sandboxed deploys, non-technical users, and enterprise security for AI-built apps.",
-						cta: "Deploy AI tools with guilderia",
+							"See how zenthcloud handles sandboxed deploys, non-technical users, and enterprise security for AI-built apps.",
+						cta: "Deploy AI tools with zenthcloud",
 						href: "/deploy-ai",
 					},
 				},
@@ -277,7 +277,7 @@ export default function ApplicationDeploymentPlatformPage() {
 					id: "everything-you-need",
 					title: "Everything you need in a deployment platform",
 					description:
-						"guilderia is the software deployment platform for shipping anything from a single service to a full multi-container stack.",
+						"zenthcloud is the software deployment platform for shipping anything from a single service to a full multi-container stack.",
 					items: platformFeatures,
 					columns: 3,
 				},
@@ -294,7 +294,7 @@ export default function ApplicationDeploymentPlatformPage() {
 				description:
 					"Create an account and deploy from Git, a container registry or Docker Compose in minutes.",
 				cta: "Get Started",
-				href: "https://app.guilderia.com/register",
+				href: "https://app.zenthcloud.com/register",
 				external: true,
 			}}
 		>
@@ -324,7 +324,7 @@ export default function ApplicationDeploymentPlatformPage() {
 								Hundreds of templates to get started
 							</h2>
 							<p className="mt-3 text-base leading-relaxed text-muted-foreground">
-								Deploy popular open-source apps in one click with guilderia
+								Deploy popular open-source apps in one click with zenthcloud
 								Templates, a ready-to-run library of pre-configured apps you
 								can deploy fast, without rebuilding the same stack from
 								scratch.
@@ -340,15 +340,15 @@ export default function ApplicationDeploymentPlatformPage() {
 			<Container className="pb-20 sm:pb-28">
 				<ProductFrame
 					src="/dashboard.png"
-					alt="guilderia dashboard showing projects and deployed services"
-					path="app.guilderia.com/projects"
+					alt="zenthcloud dashboard showing projects and deployed services"
+					path="app.zenthcloud.com/projects"
 					caption="Projects, services and deployment history in one control plane."
 				/>
 			</Container>
 
 			<ChoicePanels
 				id="host-where-needed"
-				title="Host guilderia where your business needs it"
+				title="Host zenthcloud where your business needs it"
 				description="Choose a deployment option that suits your business — on your infrastructure or ours."
 				panels={[
 					{
@@ -366,10 +366,10 @@ export default function ApplicationDeploymentPlatformPage() {
 						href: "/self",
 					},
 					{
-						name: "guilderia Cloud",
+						name: "zenthcloud Cloud",
 						tagline: "Managed for you",
 						description:
-							"The control plane is hosted, upgraded and supported by guilderia while your apps run on your servers.",
+							"The control plane is hosted, upgraded and supported by zenthcloud while your apps run on your servers.",
 						bullets: [
 							"Rapid scaling capabilities",
 							"Reduced infrastructure overhead",

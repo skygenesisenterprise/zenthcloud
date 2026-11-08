@@ -1,10 +1,10 @@
-import { db } from "@guilderia/server/db";
-import { cloudDomains, domains } from "@guilderia/server/db/schema";
-import { redactSecrets } from "@guilderia/server/utils/security/redact";
+import { db } from "@zenthcloud/server/db";
+import { cloudDomains, domains } from "@zenthcloud/server/db/schema";
+import { redactSecrets } from "@zenthcloud/server/utils/security/redact";
 import {
 	manageDomain,
 	removeDomain,
-} from "@guilderia/server/utils/traefik/domain";
+} from "@zenthcloud/server/utils/traefik/domain";
 import { TRPCError } from "@trpc/server";
 import { and, eq, ne } from "drizzle-orm";
 import { findApplicationById } from "./application";
@@ -12,7 +12,7 @@ import { ensureCloudWildcardRecord } from "./cloud-domain-dns";
 import { isManagedCloud } from "./instance-identity";
 
 /**
- * Guilderia Cloud managed hostnames (issue https://github.com/skygenesisenterprise/guilderia/issues/113).
+ * Zenthcloud Cloud managed hostnames (issue https://github.com/skygenesisenterprise/zenthcloud/issues/113).
  *
  * Allocation lives in `cloud_domain`, not in `domain`: the ledger must survive
  * application deletion so a released hostname can never be handed to another
@@ -21,9 +21,9 @@ import { isManagedCloud } from "./instance-identity";
  * keeps the hostname out of the editable custom-domain list.
  */
 
-export const CLOUD_DOMAIN_ENV = "GUILDERIA_CLOUD_DOMAIN";
-export const CLOUD_CERT_RESOLVER_ENV = "GUILDERIA_CLOUD_CERT_RESOLVER";
-const DEFAULT_CLOUD_DOMAIN = "guilderia.app";
+export const CLOUD_DOMAIN_ENV = "ZENTHCLOUD_CLOUD_DOMAIN";
+export const CLOUD_CERT_RESOLVER_ENV = "ZENTHCLOUD_CLOUD_CERT_RESOLVER";
+const DEFAULT_CLOUD_DOMAIN = "zenthcloud.app";
 const MAX_LABEL_LENGTH = 48;
 const MAX_CANDIDATES = 20;
 
@@ -77,7 +77,7 @@ export const normalizeCloudDomainBase = (
 
 /**
  * Wildcard zone used for generated hostnames, or `null` when the feature is
- * disabled. Managed Cloud defaults to `guilderia.app`; setting the env var to an
+ * disabled. Managed Cloud defaults to `zenthcloud.app`; setting the env var to an
  * empty value disables allocation, and self-hosted/console never allocate.
  */
 export const getCloudDomainBase = (
@@ -273,7 +273,7 @@ export const provisionCloudDomainRouting = async (
 	}
 
 	try {
-		// Central Cloudflare wildcard (`*.guilderia.app`). Ownership stays in the
+		// Central Cloudflare wildcard (`*.zenthcloud.app`). Ownership stays in the
 		// ledger; DNS is only the resolution layer, so a Cloudflare outage marks
 		// the hostname recoverable instead of freeing it for another tenant.
 		await ensureCloudWildcardRecord({ base: getCloudDomainBase() });

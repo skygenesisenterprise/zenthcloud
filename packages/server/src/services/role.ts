@@ -1,8 +1,8 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	organization,
 	organizationRole,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import { and, eq } from "drizzle-orm";
 
 /**

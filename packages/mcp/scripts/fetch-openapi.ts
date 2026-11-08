@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const OPENAPI_URL = process.env.GUILDERIA_OPENAPI_URL ?? "https://docs.guilderia.com/openapi.json";
+const OPENAPI_URL = process.env.ZENTHCLOUD_OPENAPI_URL ?? "https://docs.zenthcloud.com/openapi.json";
 const OUTPUT_PATH = resolve(import.meta.dirname, "../openapi.json");
 
 async function main() {

@@ -10,13 +10,13 @@ import {
 	latencyBucketIndex,
 	mergeHistograms,
 	percentileFromHistogram,
-} from "@guilderia/server/utils/traffic/aggregate";
-import type { TrafficHttpEvent } from "@guilderia/server/utils/traffic/parse";
+} from "@zenthcloud/server/utils/traffic/aggregate";
+import type { TrafficHttpEvent } from "@zenthcloud/server/utils/traffic/parse";
 import { describe, expect, it } from "vitest";
 
 const event = (overrides: Partial<TrafficHttpEvent> = {}): TrafficHttpEvent => ({
 	timestamp: new Date("2026-10-12T09:04:05.000Z"),
-	host: "guilderia.com",
+	host: "zenthcloud.com",
 	route: "/pricing",
 	method: "GET",
 	status: 200,

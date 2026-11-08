@@ -1,6 +1,6 @@
-import { resolveServiceNetworks } from "@guilderia/server/services/network";
-import { findRegistryByIdWithCredentials } from "@guilderia/server/services/registry";
-import type { InferResultType } from "@guilderia/server/types/with";
+import { resolveServiceNetworks } from "@zenthcloud/server/services/network";
+import { findRegistryByIdWithCredentials } from "@zenthcloud/server/services/registry";
+import type { InferResultType } from "@zenthcloud/server/types/with";
 import type { CreateServiceOptions } from "dockerode";
 import { getRegistryTag, uploadImageRemoteCommand } from "../cluster/upload";
 import {

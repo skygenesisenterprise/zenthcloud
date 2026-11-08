@@ -1,7 +1,7 @@
 /*
- * Guilderia Status — visual identity shared with the Guilderia console.
+ * Zenthcloud Status — visual identity shared with the Zenthcloud console.
  *
- * The oklch tokens mirror `apps/guilderia/styles/globals.css` so the status
+ * The oklch tokens mirror `apps/zenthcloud/styles/globals.css` so the status
  * page reads as the same product family, while staying a self-contained
  * stylesheet: the status platform must render even when the console
  * frontend stack is unavailable. Dark mode follows the system preference.

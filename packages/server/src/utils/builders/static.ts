@@ -1,4 +1,4 @@
-import { getDockerCommand } from "@guilderia/server/utils/builders/docker-file";
+import { getDockerCommand } from "@zenthcloud/server/utils/builders/docker-file";
 import { getCreateFileCommand } from "../docker/utils";
 import { getBuildAppDirectory } from "../filesystem/directory";
 import type { ApplicationNested } from ".";

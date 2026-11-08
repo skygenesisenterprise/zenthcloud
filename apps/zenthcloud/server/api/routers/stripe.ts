@@ -3,9 +3,9 @@ import {
 	findUserById,
 	IS_CLOUD,
 	updateUser,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
-import { member, organization } from "@guilderia/server/db/schema";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
+import { member, organization } from "@zenthcloud/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
@@ -42,7 +42,7 @@ import {
 /**
  * Resolves the account that owns billing for the active organization.
  *
- * Guilderia Cloud keeps Stripe state on the organization owner's user row, so
+ * Zenthcloud Cloud keeps Stripe state on the organization owner's user row, so
  * every billing operation is scoped through that owner rather than the caller.
  * This is what makes billing organization-level even though the data model is
  * denormalized.
@@ -248,7 +248,7 @@ export const stripeRouter = createTRPCRouter({
 			if (!IS_CLOUD) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "This feature is only available in Guilderia Cloud",
+					message: "This feature is only available in Zenthcloud Cloud",
 				});
 			}
 
@@ -613,7 +613,7 @@ export const stripeRouter = createTRPCRouter({
 			if (!IS_CLOUD) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "This feature is only available in Guilderia Cloud",
+					message: "This feature is only available in Zenthcloud Cloud",
 				});
 			}
 			const owner = await findUserById(ctx.user.ownerId);

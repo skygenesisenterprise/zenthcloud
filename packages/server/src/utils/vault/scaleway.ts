@@ -1,4 +1,4 @@
-import type { scalewayVaultConfigSchema } from "@guilderia/server/db/schema";
+import type { scalewayVaultConfigSchema } from "@zenthcloud/server/db/schema";
 import type { z } from "zod";
 import { type VaultClient, vaultFetch } from "./types";
 

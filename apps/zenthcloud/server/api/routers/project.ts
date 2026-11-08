@@ -33,16 +33,16 @@ import {
 	isManagedCloud,
 	updateProjectById,
 	updateUser,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import {
 	addNewEnvironment,
 	addNewProject,
 	checkPermission,
 	checkProjectAccess,
 	findMemberByUserId,
-} from "@guilderia/server/services/permission";
-import { serviceColumns } from "@guilderia/server/services/project";
+} from "@zenthcloud/server/services/permission";
+import { serviceColumns } from "@zenthcloud/server/services/project";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";

@@ -66,7 +66,7 @@ export function formatContactDataForHubSpot(
 			},
 		],
 		context: {
-			pageUri: "https://app.guilderia.com/register",
+			pageUri: "https://app.zenthcloud.com/register",
 			pageName: "Sign Up",
 		},
 	};

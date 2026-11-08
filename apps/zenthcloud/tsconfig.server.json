@@ -9,7 +9,7 @@
 		"moduleResolution": "bundler",
 		"paths": {
 			"@/*": ["./*"],
-			"@guilderia/server/*": ["../../packages/server/src/*"]
+			"@zenthcloud/server/*": ["../../packages/server/src/*"]
 		}
 	},
 	"include": ["next-env.d.ts", "./server/**/*"]

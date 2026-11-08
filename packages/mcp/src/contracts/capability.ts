@@ -84,7 +84,7 @@ export interface CapabilityDefinition<I extends ZodRawShape = ZodRawShape> {
   source: "business" | "generated";
   version: string;
   status: CapabilityStatus;
-  /** Guilderia environments where the underlying API is available. */
+  /** Zenthcloud environments where the underlying API is available. */
   environments: readonly Environment[];
   risk: RiskLevel;
   permissions: readonly PermissionRequirement[];

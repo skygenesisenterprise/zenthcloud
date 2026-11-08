@@ -2,18 +2,18 @@ import {
 	parseCredentialTransports,
 	resolveWebAuthnRequestContext,
 	toSecurityKeySummary,
-} from "@guilderia/server/lib/plugins/webauthn-two-factor";
+} from "@zenthcloud/server/lib/plugins/webauthn-two-factor";
 import { describe, expect, it } from "vitest";
 
 describe("resolveWebAuthnRequestContext", () => {
 	it("derives the relying party from the request origin", () => {
 		expect(
 			resolveWebAuthnRequestContext({
-				requestOrigin: "https://guilderia.example.com",
+				requestOrigin: "https://zenthcloud.example.com",
 			}),
 		).toEqual({
-			rpID: "guilderia.example.com",
-			origin: "https://guilderia.example.com",
+			rpID: "zenthcloud.example.com",
+			origin: "https://zenthcloud.example.com",
 		});
 	});
 
@@ -30,11 +30,11 @@ describe("resolveWebAuthnRequestContext", () => {
 		// runs the ceremony on that host, so it is the relying party.
 		expect(
 			resolveWebAuthnRequestContext({
-				requestOrigin: "https://guilderia.ngrok-free.app",
+				requestOrigin: "https://zenthcloud.ngrok-free.app",
 			}),
 		).toEqual({
-			rpID: "guilderia.ngrok-free.app",
-			origin: "https://guilderia.ngrok-free.app",
+			rpID: "zenthcloud.ngrok-free.app",
+			origin: "https://zenthcloud.ngrok-free.app",
 		});
 		expect(
 			resolveWebAuthnRequestContext({
@@ -46,31 +46,31 @@ describe("resolveWebAuthnRequestContext", () => {
 	it("keeps an explicitly configured relying party ID", () => {
 		expect(
 			resolveWebAuthnRequestContext({
-				configuredRpID: "guilderia.example.com",
-				requestOrigin: "https://guilderia.example.com",
+				configuredRpID: "zenthcloud.example.com",
+				requestOrigin: "https://zenthcloud.example.com",
 			}),
 		).toEqual({
-			rpID: "guilderia.example.com",
-			origin: "https://guilderia.example.com",
+			rpID: "zenthcloud.example.com",
+			origin: "https://zenthcloud.example.com",
 		});
 	});
 
 	it("accepts a pinned relying party that covers a subdomain", () => {
 		expect(
 			resolveWebAuthnRequestContext({
-				configuredRpID: "guilderia.example.com",
-				requestOrigin: "https://app.guilderia.example.com",
+				configuredRpID: "zenthcloud.example.com",
+				requestOrigin: "https://app.zenthcloud.example.com",
 			}),
 		).toEqual({
-			rpID: "guilderia.example.com",
-			origin: "https://app.guilderia.example.com",
+			rpID: "zenthcloud.example.com",
+			origin: "https://app.zenthcloud.example.com",
 		});
 	});
 
 	it("rejects a pinned relying party that does not cover the origin", () => {
 		expect(
 			resolveWebAuthnRequestContext({
-				configuredRpID: "guilderia.example.com",
+				configuredRpID: "zenthcloud.example.com",
 				requestOrigin: "https://evil.example.net",
 			}),
 		).toBeNull();
@@ -79,7 +79,7 @@ describe("resolveWebAuthnRequestContext", () => {
 	it("rejects plain HTTP outside loopback", () => {
 		expect(
 			resolveWebAuthnRequestContext({
-				requestOrigin: "http://guilderia.example.com",
+				requestOrigin: "http://zenthcloud.example.com",
 			}),
 		).toBeNull();
 	});

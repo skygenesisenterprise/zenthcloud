@@ -22,15 +22,15 @@ import {
 	stopService,
 	stopServiceRemote,
 	updateMongoById,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import {
 	addNewService,
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
-} from "@guilderia/server/services/permission";
-import { assertServiceMoveAllowed } from "@guilderia/server/services/service-move";
+} from "@zenthcloud/server/services/permission";
+import { assertServiceMoveAllowed } from "@zenthcloud/server/services/service-move";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";

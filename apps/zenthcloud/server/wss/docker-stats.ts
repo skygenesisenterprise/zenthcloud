@@ -7,7 +7,7 @@ import {
 	isManagedCloud,
 	recordAdvancedStats,
 	validateRequest,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { quote } from "shell-quote";
 import { WebSocketServer } from "ws";
 import { canAccessDockerOverWss } from "./authorize";
@@ -146,8 +146,8 @@ export const setupDockerStatsMonitoringSocketServer = (
 			}
 			inFlight = true;
 			try {
-				// Special case: when monitoring "guilderia", get host system stats instead of container stats
-				if (appName === "guilderia") {
+				// Special case: when monitoring "zenthcloud", get host system stats instead of container stats
+				if (appName === "zenthcloud") {
 					const stat = await getHostSystemStats();
 					if (closed) {
 						return;

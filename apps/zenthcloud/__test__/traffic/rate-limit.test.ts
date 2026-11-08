@@ -1,10 +1,10 @@
-import { createRateLimiter } from "@guilderia/server/utils/rate-limit";
+import { createRateLimiter } from "@zenthcloud/server/utils/rate-limit";
 import {
 	adminRole,
 	memberRole,
 	ownerRole,
 	statements,
-} from "@guilderia/server/lib/access-control";
+} from "@zenthcloud/server/lib/access-control";
 import { describe, expect, it } from "vitest";
 
 describe("createRateLimiter", () => {

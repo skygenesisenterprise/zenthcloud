@@ -1,4 +1,4 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	applications,
 	backups,
@@ -17,7 +17,7 @@ import {
 	redis,
 	server as serverTable,
 	volumeBackups,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import { and, desc, eq, inArray, isNull, max, or } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import type {
@@ -357,7 +357,7 @@ function pickVolumeBackupOwner(volumeBackup: {
 	return found ? ownerFrom(...found) : null;
 }
 
-// Ownerless backups (e.g. the Guilderia host's own database) are visible to everyone.
+// Ownerless backups (e.g. the Zenthcloud host's own database) are visible to everyone.
 function ownerAccessCondition(
 	ownerColumns: AnyPgColumn[],
 	accessedServices: string[] | null,
@@ -565,7 +565,7 @@ export const getAllBackupsForOrganization = async (
 				databaseType: deployment.backup.databaseType,
 				serviceType: null,
 				backupType: deployment.backup.backupType,
-				serviceName: owner?.name ?? "Guilderia Server",
+				serviceName: owner?.name ?? "Zenthcloud Server",
 				serviceOwnerId: owner?.id ?? null,
 				serviceOwnerType: owner?.type ?? "web-server",
 				serverId: owner?.serverId ?? null,

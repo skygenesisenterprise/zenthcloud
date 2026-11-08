@@ -1,7 +1,7 @@
 /**
  * Build script: bundles the package entry points to `dist/` for consumers
  * that do not transpile workspace sources. The status application imports
- * the TypeScript sources directly (transpilePackages), like `@guilderia/server`
+ * the TypeScript sources directly (transpilePackages), like `@zenthcloud/server`
  * in the console app.
  */
 import esbuild from "esbuild";

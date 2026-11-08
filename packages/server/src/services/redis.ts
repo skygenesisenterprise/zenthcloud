@@ -1,16 +1,16 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateRedis,
 	buildAppName,
 	redis,
-} from "@guilderia/server/db/schema";
-import { generatePassword } from "@guilderia/server/templates";
-import { buildRedis } from "@guilderia/server/utils/databases/redis";
+} from "@zenthcloud/server/db/schema";
+import { generatePassword } from "@zenthcloud/server/templates";
+import { buildRedis } from "@zenthcloud/server/utils/databases/redis";
 import {
 	pullImage,
 	waitForSwarmServiceConvergence,
-} from "@guilderia/server/utils/docker/utils";
-import { execAsyncRemote } from "@guilderia/server/utils/process/execAsync";
+} from "@zenthcloud/server/utils/docker/utils";
+import { execAsyncRemote } from "@zenthcloud/server/utils/process/execAsync";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { quote } from "shell-quote";

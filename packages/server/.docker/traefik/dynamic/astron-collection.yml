@@ -1,13 +1,13 @@
 http:
   routers:
-    guilderia-router-app:
-      rule: Host(`guilderia.docker.localhost`) && PathPrefix(`/`)
-      service: guilderia-service-app
+    zenthcloud-router-app:
+      rule: Host(`zenthcloud.docker.localhost`) && PathPrefix(`/`)
+      service: zenthcloud-service-app
       entryPoints:
         - web
   services:
-    guilderia-service-app:
+    zenthcloud-service-app:
       loadBalancer:
         servers:
-          - url: http://guilderia:3000
+          - url: http://zenthcloud:3000
         passHostHeader: true

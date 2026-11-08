@@ -14,7 +14,7 @@ import {
 	runMySqlBackup,
 	runPostgresBackup,
 	runVolumeBackup,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import {
 	and,
 	backups,
@@ -23,7 +23,7 @@ import {
 	schedules,
 	server,
 	volumeBackups,
-} from "@guilderia/server/db";
+} from "@zenthcloud/server/db";
 import { logger } from "./logger.js";
 import { scheduleJob } from "./queue.js";
 import type { QueueJob } from "./schema.js";

@@ -1,5 +1,5 @@
-import type { ComposeSpecification } from "@guilderia/server";
-import { addSuffixToNetworksRoot, generateRandomHash } from "@guilderia/server";
+import type { ComposeSpecification } from "@zenthcloud/server";
+import { addSuffixToNetworksRoot, generateRandomHash } from "@zenthcloud/server";
 import { expect, test } from "vitest";
 import { parse } from "yaml";
 
@@ -286,13 +286,13 @@ services:
   web:
     image: nginx:latest
     networks:
-      - guilderia-network
+      - zenthcloud-network
 
 networks:
-  guilderia-network:
+  zenthcloud-network:
 `;
 
-test("It shouldn't add suffix to guilderia-network", () => {
+test("It shouldn't add suffix to zenthcloud-network", () => {
 	const composeData = parse(composeFile7) as ComposeSpecification;
 
 	const suffix = generateRandomHash();
@@ -304,6 +304,6 @@ test("It shouldn't add suffix to guilderia-network", () => {
 
 	expect(networks).toBeDefined();
 	for (const networkKey of Object.keys(networks)) {
-		expect(networkKey).toContain("guilderia-network");
+		expect(networkKey).toContain("zenthcloud-network");
 	}
 });

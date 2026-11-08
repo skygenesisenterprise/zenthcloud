@@ -2,7 +2,7 @@ import {
 	type UpdateStatus,
 	UPDATE_INSTALLABLE_STATUS,
 	UPDATE_PENDING_STATUSES,
-} from "@guilderia/server/services/update";
+} from "@zenthcloud/server/services/update";
 import { Download } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/utils/api";

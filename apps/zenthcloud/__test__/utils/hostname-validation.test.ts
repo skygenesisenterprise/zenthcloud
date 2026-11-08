@@ -1,4 +1,4 @@
-import { VALID_HOSTNAME_REGEX } from "@guilderia/server";
+import { VALID_HOSTNAME_REGEX } from "@zenthcloud/server";
 import { describe, expect, it } from "vitest";
 
 describe("VALID_HOSTNAME_REGEX", () => {
@@ -10,12 +10,12 @@ describe("VALID_HOSTNAME_REGEX", () => {
 		"xn--80ak6aa92e.com",
 		"123.example.com",
 		"example",
-		"guilderia-server",
+		"zenthcloud-server",
 		"localhost",
 		"app.localhost",
 		"api.lan",
 		"app.local",
-		"gitlab.guilderia.local",
+		"gitlab.zenthcloud.local",
 		"server-01.lan",
 		"service.internal.example",
 		"app.home.arpa",

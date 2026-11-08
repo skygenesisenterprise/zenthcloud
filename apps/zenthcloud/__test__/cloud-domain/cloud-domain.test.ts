@@ -7,11 +7,11 @@ const appMocks = vi.hoisted(() => ({
 	removeDomain: vi.fn(),
 }));
 
-vi.mock("@guilderia/server/services/application", () => ({
+vi.mock("@zenthcloud/server/services/application", () => ({
 	findApplicationById: appMocks.findApplicationById,
 }));
 
-vi.mock("@guilderia/server/utils/traefik/domain", () => ({
+vi.mock("@zenthcloud/server/utils/traefik/domain", () => ({
 	manageDomain: appMocks.manageDomain,
 	removeDomain: appMocks.removeDomain,
 }));
@@ -36,7 +36,7 @@ const mocks = vi.hoisted(() => {
 	return { db, findFirst, insert, insertReturning, update, updateReturning };
 });
 
-vi.mock("@guilderia/server/db", () => ({
+vi.mock("@zenthcloud/server/db", () => ({
 	db: mocks.db,
 	dbUrl: "postgres://mock:mock@localhost:5432/mock",
 }));
@@ -50,11 +50,11 @@ import {
 	releaseCloudDomain,
 	toCloudDomainLabel,
 	toCloudDomainView,
-} from "@guilderia/server/services/cloud-domain";
+} from "@zenthcloud/server/services/cloud-domain";
 
 const reserved = {
 	cloudDomainId: "cloud-1",
-	hostname: "my-app.guilderia.app",
+	hostname: "my-app.zenthcloud.app",
 	label: "my-app",
 	organizationId: "org-1",
 	projectId: "project-1",
@@ -93,27 +93,27 @@ describe("toCloudDomainLabel", () => {
 
 describe("cloudHostnameCandidates", () => {
 	it("is deterministic and collision-suffixed", () => {
-		expect(cloudHostnameCandidates("My App", "guilderia.app", 3)).toEqual([
-			"my-app.guilderia.app",
-			"my-app-2.guilderia.app",
-			"my-app-3.guilderia.app",
+		expect(cloudHostnameCandidates("My App", "zenthcloud.app", 3)).toEqual([
+			"my-app.zenthcloud.app",
+			"my-app-2.zenthcloud.app",
+			"my-app-3.zenthcloud.app",
 		]);
 	});
 
 	it("never produces duplicates", () => {
-		const candidates = cloudHostnameCandidates("Shop", "guilderia.app", 20);
+		const candidates = cloudHostnameCandidates("Shop", "zenthcloud.app", 20);
 		expect(new Set(candidates).size).toBe(candidates.length);
 	});
 });
 
 describe("getCloudDomainBase / normalizeCloudDomainBase", () => {
 	it("normalizes a valid wildcard zone", () => {
-		expect(normalizeCloudDomainBase(".guilderia.App.")).toBe("guilderia.app");
+		expect(normalizeCloudDomainBase(".zenthcloud.App.")).toBe("zenthcloud.app");
 	});
 
 	it("rejects invalid zones", () => {
-		expect(normalizeCloudDomainBase("guilderia")).toBeNull();
-		expect(normalizeCloudDomainBase("*.guilderia.app")).toBeNull();
+		expect(normalizeCloudDomainBase("zenthcloud")).toBeNull();
+		expect(normalizeCloudDomainBase("*.zenthcloud.app")).toBeNull();
 		expect(normalizeCloudDomainBase("")).toBeNull();
 	});
 
@@ -121,15 +121,15 @@ describe("getCloudDomainBase / normalizeCloudDomainBase", () => {
 		expect(getCloudDomainBase({}, false)).toBeNull();
 	});
 
-	it("defaults to guilderia.app on managed cloud and honors the override", () => {
-		expect(getCloudDomainBase({}, true)).toBe("guilderia.app");
+	it("defaults to zenthcloud.app on managed cloud and honors the override", () => {
+		expect(getCloudDomainBase({}, true)).toBe("zenthcloud.app");
 		expect(
-			getCloudDomainBase({ GUILDERIA_CLOUD_DOMAIN: "apps.example.com" }, true),
+			getCloudDomainBase({ ZENTHCLOUD_CLOUD_DOMAIN: "apps.example.com" }, true),
 		).toBe("apps.example.com");
 	});
 
 	it("can be disabled explicitly on managed cloud", () => {
-		expect(getCloudDomainBase({ GUILDERIA_CLOUD_DOMAIN: "" }, true)).toBeNull();
+		expect(getCloudDomainBase({ ZENTHCLOUD_CLOUD_DOMAIN: "" }, true)).toBeNull();
 	});
 });
 
@@ -141,7 +141,7 @@ describe("allocateCloudDomain", () => {
 		environmentId: "env-1",
 		appName: "My App",
 		port: 8080,
-		base: "guilderia.app",
+		base: "zenthcloud.app",
 	};
 
 	it("returns the existing reservation without inserting a second one", async () => {
@@ -155,7 +155,7 @@ describe("allocateCloudDomain", () => {
 		const second = {
 			...reserved,
 			cloudDomainId: "cloud-2",
-			hostname: "my-app-2.guilderia.app",
+			hostname: "my-app-2.zenthcloud.app",
 		};
 		mocks.insertReturning
 			.mockResolvedValueOnce([])
@@ -166,7 +166,7 @@ describe("allocateCloudDomain", () => {
 	});
 
 	it("returns the hostname reserved by a concurrent deploy of the same app", async () => {
-		const raced = { ...reserved, hostname: "my-app-3.guilderia.app" };
+		const raced = { ...reserved, hostname: "my-app-3.zenthcloud.app" };
 		mocks.insertReturning.mockResolvedValueOnce([]);
 		mocks.findFirst
 			.mockResolvedValueOnce(undefined) // initial check
@@ -179,7 +179,7 @@ describe("allocateCloudDomain", () => {
 		mocks.insertReturning.mockResolvedValue([]);
 
 		await expect(
-			allocateCloudDomain({ ...input, base: "guilderia.app" }),
+			allocateCloudDomain({ ...input, base: "zenthcloud.app" }),
 		).rejects.toMatchObject({ code: "CONFLICT" } satisfies Partial<TRPCError>);
 		expect(mocks.insertReturning).toHaveBeenCalledTimes(20);
 	});
@@ -195,8 +195,8 @@ describe("allocateCloudDomain", () => {
 describe("toCloudDomainView", () => {
 	it("exposes an HTTPS URL and the provisioning status", () => {
 		expect(toCloudDomainView(reserved)).toMatchObject({
-			hostname: "my-app.guilderia.app",
-			url: "https://my-app.guilderia.app",
+			hostname: "my-app.zenthcloud.app",
+			url: "https://my-app.zenthcloud.app",
 			status: "pending",
 			port: 3000,
 		});
@@ -235,7 +235,7 @@ describe("releaseCloudDomain", () => {
 		const released = await releaseCloudDomain("app-1");
 
 		expect(released?.status).toBe("released");
-		expect(released?.hostname).toBe("my-app.guilderia.app");
+		expect(released?.hostname).toBe("my-app.zenthcloud.app");
 		expect(mocks.update).toHaveBeenCalledTimes(1);
 	});
 

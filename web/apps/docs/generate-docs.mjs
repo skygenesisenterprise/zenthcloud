@@ -1,7 +1,7 @@
 /**
  * Generates the API endpoint reference under content/docs/api/reference from
  * public/openapi.json, the spec produced by
- * apps/guilderia/scripts/generate-openapi.ts from the tRPC router.
+ * apps/zenthcloud/scripts/generate-openapi.ts from the tRPC router.
  *
  * Usage:
  *   node generate-docs.mjs            # write content/docs/api/reference
@@ -89,7 +89,7 @@ async function main() {
 		console.error(`API reference is out of date (${problems.length} file(s)):`);
 		for (const problem of problems) console.error(`  ${problem}`);
 		console.error(
-			"Run 'pnpm --filter @guilderia/docs run generate:api' and commit the result.",
+			"Run 'pnpm --filter @zenthcloud/docs run generate:api' and commit the result.",
 		);
 		process.exitCode = 1;
 		return;

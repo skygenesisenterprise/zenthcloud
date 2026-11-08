@@ -1,4 +1,4 @@
-import { getSubnetCapacity } from "@guilderia/server/services/server-health";
+import { getSubnetCapacity } from "@zenthcloud/server/services/server-health";
 import { describe, expect, test } from "vitest";
 
 describe("getSubnetCapacity", () => {

@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createGrafanaClient } from "@guilderia/server/services/observability/grafana-client";
+import { createGrafanaClient } from "@zenthcloud/server/services/observability/grafana-client";
 import {
 	createPrometheusClient,
 	PROMETHEUS_STALE_THRESHOLD_SECONDS,
-} from "@guilderia/server/services/observability/prometheus-client";
-import { isFreshSample } from "@guilderia/server/services/observability/types";
+} from "@zenthcloud/server/services/observability/prometheus-client";
+import { isFreshSample } from "@zenthcloud/server/services/observability/types";
 
 const jsonResponse = (body: unknown, status = 200) =>
 	new Response(JSON.stringify(body), {
@@ -131,7 +131,7 @@ describe("grafana client", () => {
 			token: "glsa_secret",
 		});
 		await expect(client.health()).resolves.toBe(true);
-		const imported = await client.importDashboard({ title: "Guilderia" });
+		const imported = await client.importDashboard({ title: "Zenthcloud" });
 		expect(imported.uid).toBe("abc");
 		expect(seen).toHaveLength(1);
 		expect(JSON.parse(seen[0]?.body ?? "{}").overwrite).toBe(false);

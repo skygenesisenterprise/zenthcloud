@@ -21,9 +21,9 @@ import {
 	readContainerFile,
 	uploadFileToContainer,
 	writeContainerFile,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
-import { checkPermission } from "@guilderia/server/services/permission";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
+import { checkPermission } from "@zenthcloud/server/services/permission";
 import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -135,7 +135,7 @@ export const dockerRouter = createTRPCRouter({
 		});
 		const targets = [
 			...(!IS_CLOUD
-				? [{ serverId: null, name: "Guilderia instance", local: true }]
+				? [{ serverId: null, name: "Zenthcloud instance", local: true }]
 				: []),
 			...configuredServers
 				.filter((item) => accessibleIds.has(item.serverId) && item.sshKeyId)

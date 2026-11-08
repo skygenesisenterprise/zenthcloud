@@ -115,7 +115,7 @@ for (const bot of bots) {
         const foreign =
           new RegExp(`(^|/)bot/${other}(/|$)`).test(specifier) ||
           new RegExp(`(^|/|\\.\\./)${other}/`).test(specifier) ||
-          specifier === `@guilderia/${other}`;
+          specifier === `@zenthcloud/${other}`;
 
         if (foreign) {
           failures.push(`${relative(file)}: imports the '${other}' bot ('${specifier}')`);

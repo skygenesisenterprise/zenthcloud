@@ -18,7 +18,7 @@ const applicationId = z
   .string()
   .min(1)
   .max(128)
-  .describe("Guilderia application identifier (not the application name)");
+  .describe("Zenthcloud application identifier (not the application name)");
 const deploymentId = z
   .string()
   .min(1)
@@ -141,7 +141,7 @@ export const getApplicationLogsCapability = defineCapability({
   name: "get_application_logs",
   title: "Get application logs",
   description:
-    "Returns recent runtime or build logs for an application, with bounded tail size and optional text filter. Use it with diagnose_deployment when a deployment failed. Logs are returned as stored by Guilderia; known credentials are redacted but application secrets may appear in application output.",
+    "Returns recent runtime or build logs for an application, with bounded tail size and optional text filter. Use it with diagnose_deployment when a deployment failed. Logs are returned as stored by Zenthcloud; known credentials are redacted but application secrets may appear in application output.",
   category: "diagnostics",
   mode: "business",
   source: "business",
@@ -303,7 +303,7 @@ const FAILURE_SIGNALS: FailureSignal[] = [
   {
     pattern: /cannot connect to the docker daemon|cannot connect to docker/i,
     summary: "The deployment could not reach the Docker daemon",
-    nextStep: "Check that Docker is running on the target server and reachable by Guilderia.",
+    nextStep: "Check that Docker is running on the target server and reachable by Zenthcloud.",
   },
   {
     pattern: /npm err!|yarn error|pnpm err|failed to compile|build failed/i,
@@ -428,7 +428,7 @@ export const diagnoseDeploymentCapability = defineCapability({
           signals.length > 0
             ? signals.map((signal) => signal.nextStep)
             : [
-                "Open the full deployment logs in Guilderia for the raw build output.",
+                "Open the full deployment logs in Zenthcloud for the raw build output.",
                 "Check the target server health with list_servers.",
               ],
         logExcerpt,

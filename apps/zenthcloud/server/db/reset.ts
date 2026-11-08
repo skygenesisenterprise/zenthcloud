@@ -1,6 +1,6 @@
-import { dbUrl } from "@guilderia/server/db";
+import { dbUrl } from "@zenthcloud/server/db";
 import { sql } from "drizzle-orm";
-// Credits to Louistiti from Drizzle Discord: https://guilderia.com/channels/1043890932593987624/1130802621750448160/1143083373535973406
+// Credits to Louistiti from Drizzle Discord: https://zenthcloud.com/channels/1043890932593987624/1130802621750448160/1143083373535973406
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 

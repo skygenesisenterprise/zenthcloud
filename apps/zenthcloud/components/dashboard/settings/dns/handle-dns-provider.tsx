@@ -73,7 +73,7 @@ const PROVIDER_TYPES = [
 	"coredns",
 	"unbound",
 	"custom",
-	"guilderia-internal",
+	"zenthcloud-internal",
 ] as const;
 
 type ProviderType = (typeof PROVIDER_TYPES)[number];
@@ -101,7 +101,7 @@ const CATEGORY_BY_TYPE: Record<ProviderType, string> = {
 	coredns: "self-hosted",
 	unbound: "self-hosted",
 	custom: "managed",
-	"guilderia-internal": "internal",
+	"zenthcloud-internal": "internal",
 };
 
 const ovhEndpointLabels = {
@@ -345,9 +345,9 @@ const buildConfig = (data: DnsProviderForm) => {
 				zones,
 				allowInsecureTls: data.allowInsecureTls,
 			};
-		case "guilderia-internal":
+		case "zenthcloud-internal":
 			return {
-				providerType: "guilderia-internal" as const,
+				providerType: "zenthcloud-internal" as const,
 				defaultTtl: Number(data.defaultTtl || 300),
 			};
 	}
@@ -627,7 +627,7 @@ export const HandleDnsProvider = ({
 				return textField("apiToken", "API Token", {
 					type: "password",
 					description:
-						"Create a scoped token for the zones guilderia should manage.",
+						"Create a scoped token for the zones zenthcloud should manage.",
 				});
 			case "route53":
 				return (
@@ -763,9 +763,9 @@ export const HandleDnsProvider = ({
 			case "bind":
 				return (
 					<>
-						{textField("serverId", "guilderia server", {
+						{textField("serverId", "zenthcloud server", {
 							description:
-								"Registered server guilderia connects to over SSH to run nsupdate.",
+								"Registered server zenthcloud connects to over SSH to run nsupdate.",
 						})}
 						{textField("serverAddress", "Nameserver address", {
 							placeholder: "dns01.sge.internal",
@@ -800,7 +800,7 @@ export const HandleDnsProvider = ({
 						/>
 						{textField("tsigSecret", "TSIG secret", { type: "password" })}
 						{zonesField(
-							"BIND exposes no zone discovery, so list the zones guilderia may update.",
+							"BIND exposes no zone discovery, so list the zones zenthcloud may update.",
 						)}
 					</>
 				);
@@ -826,9 +826,9 @@ export const HandleDnsProvider = ({
 			case "unbound":
 				return (
 					<>
-						{textField("serverId", "guilderia server", {
+						{textField("serverId", "zenthcloud server", {
 							description:
-								"Registered server guilderia connects to over SSH to run unbound-control.",
+								"Registered server zenthcloud connects to over SSH to run unbound-control.",
 						})}
 						{textField("configPath", "unbound.conf path", {
 							placeholder: "/etc/unbound/unbound.conf",
@@ -844,7 +844,7 @@ export const HandleDnsProvider = ({
 						{textField("baseUrl", "Base URL", {
 							placeholder: "https://dns.example.com/api",
 							description:
-								"Endpoint implementing guilderia's documented DNS adapter contract.",
+								"Endpoint implementing zenthcloud's documented DNS adapter contract.",
 						})}
 						{textField("apiToken", "API Token", { type: "password" })}
 						{zonesField("Optional zones to expose before discovery.")}
@@ -855,11 +855,11 @@ export const HandleDnsProvider = ({
 						)}
 					</>
 				);
-			case "guilderia-internal":
+			case "zenthcloud-internal":
 				return (
 					<>
 						<AlertBlock type="info">
-							guilderia stores these zones and records itself, so no external
+							zenthcloud stores these zones and records itself, so no external
 							DNS dependency is required. Ideal for private networks and
 							internal domains such as <code>sge.lan</code>.
 						</AlertBlock>
@@ -908,7 +908,7 @@ export const HandleDnsProvider = ({
 						{dnsProviderId ? "Update DNS Provider" : "Add DNS Provider"}
 					</DialogTitle>
 					<DialogDescription>
-						Connect a DNS provider so guilderia can create records for your
+						Connect a DNS provider so zenthcloud can create records for your
 						domains automatically instead of setting them up by hand.
 					</DialogDescription>
 				</DialogHeader>
@@ -973,11 +973,11 @@ export const HandleDnsProvider = ({
 									<FormDescription>
 										{dnsProviderCategoryLabels[CATEGORY_BY_TYPE[providerType]]}
 										{" · "}
-										{providerType === "guilderia-internal"
+										{providerType === "zenthcloud-internal"
 											? "No external dependency."
 											: providerType === "custom"
 												? "Your own DNS platform."
-												: "guilderia manages records through its API."}
+												: "zenthcloud manages records through its API."}
 									</FormDescription>
 									<FormMessage />
 								</FormItem>

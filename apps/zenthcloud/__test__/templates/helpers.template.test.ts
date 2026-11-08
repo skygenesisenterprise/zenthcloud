@@ -1,5 +1,5 @@
-import type { Schema } from "@guilderia/server/templates";
-import { processValue } from "@guilderia/server/templates/processors";
+import type { Schema } from "@zenthcloud/server/templates";
+import { processValue } from "@zenthcloud/server/templates/processors";
 import { describe, expect, it } from "vitest";
 
 describe("helpers functions", () => {
@@ -213,7 +213,7 @@ describe("helpers functions", () => {
 			expect(decodedPayload).toHaveProperty("iat");
 			expect(decodedPayload).toHaveProperty("iss");
 			expect(decodedPayload).toHaveProperty("exp");
-			expect(decodedPayload.iss).toEqual("guilderia");
+			expect(decodedPayload.iss).toEqual("zenthcloud");
 		});
 		it.each([6, 8, 12, 16, 32])(
 			"should generate a random hex string from parameter %d byte length",
@@ -239,7 +239,7 @@ describe("helpers functions", () => {
 			expect(decodedPayload).toHaveProperty("iat");
 			expect(decodedPayload).toHaveProperty("iss");
 			expect(decodedPayload).toHaveProperty("exp");
-			expect(decodedPayload.iss).toEqual("guilderia");
+			expect(decodedPayload.iss).toEqual("zenthcloud");
 		});
 	});
 	describe("${jwt:secret:payload}", () => {

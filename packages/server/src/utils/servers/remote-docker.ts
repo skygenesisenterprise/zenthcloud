@@ -1,5 +1,5 @@
-import { docker } from "@guilderia/server/constants";
-import { findServerById } from "@guilderia/server/services/server";
+import { docker } from "@zenthcloud/server/constants";
+import { findServerById } from "@zenthcloud/server/services/server";
 import Dockerode from "dockerode";
 
 export const getRemoteDocker = async (serverId?: string | null) => {

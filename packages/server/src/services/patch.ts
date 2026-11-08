@@ -1,7 +1,7 @@
 import { join } from "node:path";
-import { paths } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
-import { type apiCreatePatch, patch } from "@guilderia/server/db/schema";
+import { paths } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
+import { type apiCreatePatch, patch } from "@zenthcloud/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import type { z } from "zod";

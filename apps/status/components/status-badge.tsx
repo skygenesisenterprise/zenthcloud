@@ -1,4 +1,4 @@
-import type { GlobalStatus, IncidentSeverity } from "@guilderia/status";
+import type { GlobalStatus, IncidentSeverity } from "@zenthcloud/status";
 import { cn } from "@/lib/utils";
 import {
 	componentStatusLabel,

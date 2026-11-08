@@ -2,8 +2,8 @@ import { writeTraefikConfig, writeTraefikConfigRemote } from "./application";
 import type { FileConfig } from "./file-types";
 
 export const GATEWAY_ERRORS_CONFIG_NAME = "gateway-errors";
-export const GATEWAY_ERRORS_MIDDLEWARE_NAME = "guilderia-gateway-errors";
-export const GATEWAY_ERRORS_SERVICE_NAME = "guilderia-gateway-errors";
+export const GATEWAY_ERRORS_MIDDLEWARE_NAME = "zenthcloud-gateway-errors";
+export const GATEWAY_ERRORS_SERVICE_NAME = "zenthcloud-gateway-errors";
 export const GATEWAY_ERRORS_ERROR_PATH = "/__astron_collectionerror";
 
 const GATEWAY_ERRORS_PORT = 8080;
@@ -11,13 +11,13 @@ const GATEWAY_ERRORS_PORT = 8080;
 export const buildGatewayErrorsConfig = (): FileConfig => ({
 	http: {
 		routers: {
-			"guilderia-gateway-errors-web": {
+			"zenthcloud-gateway-errors-web": {
 				rule: "PathPrefix(`/`)",
 				priority: 1,
 				service: GATEWAY_ERRORS_SERVICE_NAME,
 				entryPoints: ["web"],
 			},
-			"guilderia-gateway-errors-websecure": {
+			"zenthcloud-gateway-errors-websecure": {
 				rule: "PathPrefix(`/`)",
 				priority: 1,
 				service: GATEWAY_ERRORS_SERVICE_NAME,

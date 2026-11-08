@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
 	getIdentityProviderHealth,
 	resolveIdentityProviderProtocol,
-} from "@guilderia/server/services/identity-provider";
+} from "@zenthcloud/server/services/identity-provider";
 import {
 	escapeLdapFilter,
 	parseLdapConfig,
-} from "@guilderia/server/utils/identity/ldap";
+} from "@zenthcloud/server/utils/identity/ldap";
 
 describe("escapeLdapFilter", () => {
 	it("escapes LDAP filter metacharacters (RFC 4515)", () => {

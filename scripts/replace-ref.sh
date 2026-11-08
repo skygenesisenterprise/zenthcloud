@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-# Script to replace guilderia, guilderia, and discord references with guilderia
+# Script to replace zenthcloud, zenthcloud, and discord references with zenthcloud
 
-REPO_ROOT="/home/liam/Bureau/enterprise/guilderia"
+REPO_ROOT="/home/liam/Bureau/enterprise/zenthcloud"
 cd "$REPO_ROOT"
 
 echo "Starting replacements..."
@@ -34,15 +34,15 @@ replace_in_files() {
     echo ""
 }
 
-# Step 1: Replace guilderia (case-insensitive)
-echo "=== Step 1: Replacing guilderia ==="
+# Step 1: Replace zenthcloud (case-insensitive)
+echo "=== Step 1: Replacing zenthcloud ==="
 find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.json" -o -name "*.md" -o -name "*.yaml" -o -name "*.yml" -o -name "*.txt" -o -name "*.html" -o -name "*.css" \) \
     ! -path "./node_modules/*" \
     ! -path "./.git/*" \
     ! -path "./.pnpm-store/*" \
-    -exec grep -l "guilderia" {} + | while read -r file; do
+    -exec grep -l "zenthcloud" {} + | while read -r file; do
     echo "  Processing: $file"
-    sed -i 's/guilderia/guilderia/gi' "$file"
+    sed -i 's/zenthcloud/zenthcloud/gi' "$file"
 done
 
 echo "Step 1 completed"
@@ -56,21 +56,21 @@ find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx"
     ! -path "./.pnpm-store/*" \
     -exec grep -l "Astron Collection" {} + | while read -r file; do
     echo "  Processing: $file"
-    sed -i 's/Astron Collection/Guilderia/g' "$file"
+    sed -i 's/Astron Collection/Zenthcloud/g' "$file"
 done
 
 echo "Step 2 completed"
 echo ""
 
-# Step 3: Replace guilderia (case-insensitive)
-echo "=== Step 3: Replacing guilderia ==="
+# Step 3: Replace zenthcloud (case-insensitive)
+echo "=== Step 3: Replacing zenthcloud ==="
 find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.json" -o -name "*.md" -o -name "*.yaml" -o -name="*.yml" -o -name "*.txt" -o -name "*.html" -o -name "*.css" \) \
     ! -path "./node_modules/*" \
     ! -path "./.git/*" \
     ! -path "./.pnpm-store/*" \
-    -exec grep -l "guilderia" {} + | while read -r file; do
+    -exec grep -l "zenthcloud" {} + | while read -r file; do
     echo "  Processing: $file"
-    sed -i 's/guilderia/guilderia/gi' "$file"
+    sed -i 's/zenthcloud/zenthcloud/gi' "$file"
 done
 
 echo "Step 3 completed"
@@ -84,7 +84,7 @@ find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx"
     ! -path "./.pnpm-store/*" \
     -exec grep -l "Notploy" {} + | while read -r file; do
     echo "  Processing: $file"
-    sed -i 's/Notploy/Guilderia/g' "$file"
+    sed -i 's/Notploy/Zenthcloud/g' "$file"
 done
 
 echo "Step 4 completed"

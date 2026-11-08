@@ -23,12 +23,12 @@
 		"incremental": true,
 		"paths": {
 			"@/*": ["./*"],
-			"@guilderia/status": ["../../packages/status/src/index.ts"],
-			"@guilderia/status/api": ["../../packages/status/src/api/index.ts"],
-			"@guilderia/status/client": [
+			"@zenthcloud/status": ["../../packages/status/src/index.ts"],
+			"@zenthcloud/status/api": ["../../packages/status/src/api/index.ts"],
+			"@zenthcloud/status/client": [
 				"../../packages/status/src/integration/client.ts"
 			],
-			"@guilderia/status/*": ["../../packages/status/src/*"]
+			"@zenthcloud/status/*": ["../../packages/status/src/*"]
 		}
 	},
 	"include": [

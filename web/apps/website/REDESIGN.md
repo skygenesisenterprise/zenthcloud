@@ -1,4 +1,4 @@
-# Refonte du site guilderia.com — plan à valider
+# Refonte du site zenthcloud.com — plan à valider
 
 Document de cadrage. **Aucune implémentation n'a été faite** : ce plan doit être validé (et les
 questions de la section 12 tranchées) avant d'attaquer l'issue.
@@ -17,8 +17,8 @@ questions de la section 12 tranchées) avant d'attaquer l'issue.
 | Composants | shadcn-like maison (`components/ui/*`), Radix, Headless UI, Tabler + Lucide, framer-motion |
 | Build serveur | `next build --webpack` (`pnpm web:build`) — routes API contact / OG / GitHub actives |
 | Build statique | `scripts/build-static.mjs` → `NEXT_OUTPUT=export` (GitHub Pages / Cloudflare Pages), routes API écartées, blueprints copiés dans `public/` |
-| Déploiement | image Docker `guilderia-website` (`web/Dockerfile.website`, workflow `docker-publish.yml`) + export statique |
-| Redirects | un seul : `/dokploy-vs-:slug` → `/guilderia-vs-:slug` (config serveur uniquement — **pas d'effet en export statique**) |
+| Déploiement | image Docker `zenthcloud-website` (`web/Dockerfile.website`, workflow `docker-publish.yml`) + export statique |
+| Redirects | un seul : `/dokploy-vs-:slug` → `/zenthcloud-vs-:slug` (config serveur uniquement — **pas d'effet en export statique**) |
 | Qualité | `typecheck` = `tsc --noEmit` ; **pas de script `lint`** dans le package ; `next.config.js` contient `typescript.ignoreBuildErrors: true` |
 
 Conséquence : le `typecheck` est le seul vrai garde-fou TypeScript, et toute nouvelle route doit
@@ -28,7 +28,7 @@ rester compatible avec l'export statique (pas de `redirects()`, pas de route han
 
 - **Cœur** : `/`, `/self`, `/cloud`, `/platform`, `/pricing`, `/enterprise`, `/comparison`, `/integrations`, `/community`, `/contact`, `/partners`, `/jobs`
 - **Capacités** : 9 pages `/features/*` (application deployment, application management, databases, monitoring, security, RBAC, SSO, audit logs, white labeling)
-- **Comparaisons** : `/guilderia-vs-{coolify,portainer,caprover,dokku,render,vercel}`
+- **Comparaisons** : `/zenthcloud-vs-{coolify,portainer,caprover,dokku,render,vercel}`
 - **Secteurs** : `/industries` + 8 pages (agencies, finance-banking, government, healthcare, higher-education, manufacturing, pharmaceuticals)
 - **Landings** : `/deploy-ai`, `/sandbox-software`, `/self-hosted-paas`, `/lp/deployment-platform`
 - **Catalogue** : `/templates`, `/templates/[id]`
@@ -64,12 +64,12 @@ Points qui vont à l'encontre de la direction demandée (site « SaaS/AI » gén
 ### 1.5 Composants hérités non importés (vérifié par recherche d'imports)
 
 `Hero.tsx`, `SecondaryFeatures.tsx`, `first-features.tsx`, `secondary-features.tsx`,
-`features-second.tsx`, `pricing-legacy.tsx`, `self-vs-cloud.tsx`, `what-is-guilderia.tsx`,
+`features-second.tsx`, `pricing-legacy.tsx`, `self-vs-cloud.tsx`, `what-is-zenthcloud.tsx`,
 `who-is-it-for.tsx`, `ways-of-working.tsx`, `how-it-works.tsx`, `problem-section.tsx`,
-`sponsors.tsx`, `guilderiaLogo*` s'il en reste.
+`sponsors.tsx`, `zenthcloudLogo*` s'il en reste.
 
 À l'inverse, `Testimonials`, `stats`, `comparison-stats`, `EnterpriseLanding`,
-`industries/IndustryPage`, `PartnerForm`, `ContactFormModal`, `guilderiaTraffic` sont bien utilisés.
+`industries/IndustryPage`, `PartnerForm`, `ContactFormModal`, `zenthcloudTraffic` sont bien utilisés.
 
 ### 1.6 Écarts entre le site actuel et l'issue
 
@@ -77,9 +77,9 @@ Points qui vont à l'encontre de la direction demandée (site « SaaS/AI » gén
 | --- | --- | --- |
 | 1 | Le hero parle « Deploy and operate **applications** on infrastructure you control » ; l'eyebrow est « Open source · Apache-2.0 / Self-hosted or managed » | Vision plateforme large (services, infra, contrôle) + origine européenne dès le premier écran |
 | 2 | **Aucune mention de l'Europe** sur le site en dehors des pages légales (le mot n'apparaît nulle part dans les pages marketing) | Axe européen porté par la home et une page de confiance |
-| 3 | Trois « éditions » présentées au même niveau (Self, Cloud, Enterprise) ; le composant `self-vs-cloud` dit « guilderia Enterprise operates it for you » pour Cloud | Self et Cloud = deux façons d'utiliser la plateforme ; Enterprise = offre commerciale, pas une troisième plateforme |
+| 3 | Trois « éditions » présentées au même niveau (Self, Cloud, Enterprise) ; le composant `self-vs-cloud` dit « zenthcloud Enterprise operates it for you » pour Cloud | Self et Cloud = deux façons d'utiliser la plateforme ; Enterprise = offre commerciale, pas une troisième plateforme |
 | 4 | Toutes les capacités sont présentées comme disponibles, sans statut ; `content.ts` inclut Vault, air-gapped, MCP, desktop, VS Code | Matrice Available / In development / Planned, aucune fonctionnalité de roadmap présentée comme livrée |
-| 5 | Le CTA Cloud (`app.guilderia.com/register`) est utilisé dans ~20 fichiers, y compris le header | CTA Cloud vers une inscription réellement fonctionnelle, sinon page produit / contact |
+| 5 | Le CTA Cloud (`app.zenthcloud.com/register`) est utilisé dans ~20 fichiers, y compris le header | CTA Cloud vers une inscription réellement fonctionnelle, sinon page produit / contact |
 | 6 | Aucune page « cas d'usage » générique ; le parcours public passe par `/industries` (8 verticales) et 3 landings | 5 cas d'usage comme exemples d'une plateforme générale, secteur non structurant |
 | 7 | Aucune page capacités consolidée, aucune page de confiance, aucun lien statut | `/capabilities`, `/trust`, liens docs/install/GitHub/statut |
 | 8 | Le header ne contient ni Docs ni GitHub en clair (GitHub est une pastille d'étoiles) | Choix rapide entre Self, Cloud, docs, code source |
@@ -109,7 +109,7 @@ Points qui vont à l'encontre de la direction demandée (site « SaaS/AI » gén
 | D4 | URL « Produit » | Garder `/platform` et le retitrer « Platform » (pas de nouvelle route `/product`) | Préserve le SEO et les liens existants |
 | D5 | Capacités | Nouvelle page `/capabilities` (matrice) ; les 9 pages `/features/*` restent les pages de détail | Évite de casser 9 pages indexées, ajoute le niveau de synthèse manquant |
 | D6 | Cas d'usage | Nouvelle page `/use-cases` avec 5 cas **en sections ancrées** (pas 5 pages) ; `/industries/*` conservées mais **retirées de la nav principale** (footer + renvoi depuis `/use-cases`) | Contenu non dupliqué, pas de pages minces, SEO conservé |
-| D7 | CTA Cloud | Vérifier `app.guilderia.com/register` ; si l'inscription publique n'est pas ouverte → CTA vers `/cloud` + formulaire de contact, jamais un faux bouton | Critère d'acceptation explicite de l'issue |
+| D7 | CTA Cloud | Vérifier `app.zenthcloud.com/register` ; si l'inscription publique n'est pas ouverte → CTA vers `/cloud` + formulaire de contact, jamais un faux bouton | Critère d'acceptation explicite de l'issue |
 | D8 | Design | Rester **sombre par défaut** (cohérence produit), mais retirer les effets décoratifs : grille animée, soulignement manuscrit, marquee, cartes dégradées, tickers. Grille éditoriale à filets, un seul accent, typographie resserrée | « European public-service-inspired clarity » sans renier l'UI produit |
 | D9 | Preuves produit | Captures d'écran réelles uniquement (`public/*.png` existants) ; aucun chiffre inventé ; pas de témoignages non sourcés | Évite les fausses preuves de capacités |
 | D10 | Périmètre technique | Aucune dépendance externe nouvelle ; aucune dépendance à un service tiers pour que le site fonctionne (analytics et formulaires restent optionnels, comme aujourd'hui) | Non-goal de l'issue |
@@ -121,7 +121,7 @@ Points qui vont à l'encontre de la direction demandée (site « SaaS/AI » gén
 ### Conservé sans changement d'URL
 
 `/`, `/self`, `/cloud`, `/platform`, `/pricing`, `/enterprise`, `/comparison`,
-`/comparison` + 6 `/guilderia-vs-*`, 9 `/features/*`, `/integrations`, `/templates`,
+`/comparison` + 6 `/zenthcloud-vs-*`, 9 `/features/*`, `/integrations`, `/templates`,
 `/templates/[id]`, `/community`, `/contact`, `/partners`, `/jobs`, `/industries` + 8,
 `/deploy-ai`, `/sandbox-software`, `/self-hosted-paas`, `/lp/deployment-platform`,
 `/privacy`, `/terms`, `/terms-of-service`.
@@ -139,14 +139,14 @@ seule option compatible avec l'export statique.
 
 ### Non créées (volontairement)
 
-- `/docs` interne → les liens pointent vers `docs.guilderia.com` (évite un doublon et un redirect
+- `/docs` interne → les liens pointent vers `docs.zenthcloud.com` (évite un doublon et un redirect
   inopérant en statique).
-- `/status` → lien externe **uniquement si** `status.guilderia.com` répond (voir Q5).
+- `/status` → lien externe **uniquement si** `status.zenthcloud.com` répond (voir Q5).
 - `/console` → jamais publique.
 
 ### Navigation cible
 
-**Header** : Self · Cloud · Platform · Use cases · Docs ↗ · GitHub ↗ · [Install guilderia] · Sign in
+**Header** : Self · Cloud · Platform · Use cases · Docs ↗ · GitHub ↗ · [Install zenthcloud] · Sign in
 (dans l'ordre : produit, modes d'usage, docs, code, action).
 
 **Footer** : Product (Platform, Capabilities, Self, Cloud, Enterprise, Pricing) · Use cases
@@ -221,14 +221,14 @@ Suppressions : composants listés en 1.5 (uniquement après confirmation du grep
 1. **Hero**
    - Eyebrow : `European application infrastructure`
    - H1 : **Your services. Your infrastructure. Your control.**
-   - Sous-titre : « guilderia is the platform to deploy, operate and control the services you
+   - Sous-titre : « zenthcloud is the platform to deploy, operate and control the services you
      depend on — on a server you already own, in a homelab, or across a growing infrastructure.
      Start with Self on infrastructure you control, or choose Cloud for a managed experience. »
-   - CTA principal : **Install guilderia** → `/self#install` · CTA secondaire : **Explore guilderia
+   - CTA principal : **Install zenthcloud** → `/self#install` · CTA secondaire : **Explore zenthcloud
      Cloud** → `/cloud`
-   - Liens tertiaires : Read the docs ↗ · View source ↗ · **guilderia for teams** → `/enterprise`
+   - Liens tertiaires : Read the docs ↗ · View source ↗ · **zenthcloud for teams** → `/enterprise`
    - Bandeau install (Linux / Windows Server, copie en un clic) — conserve la commande
-     `https://guilderia.com/install.sh` (le fichier existe dans `public/`)
+     `https://zenthcloud.com/install.sh` (le fichier existe dans `public/`)
 2. **Cycle de vie** — Infrastructure → Platform services → Applications & workloads (3 colonnes
    + renvoi `/platform`)
 3. **Parcours par audience** — Personal & homelab / Developers & small teams / Businesses
@@ -249,15 +249,15 @@ Capacités par domaine plutôt que par secteur : Workloads · Infrastructure · 
 Platform services · Integrations. Chaque bloc liste ce qui est supporté **et** ce qui ne l'est
 pas, avec renvoi vers `/capabilities` pour la matrice complète.
 
-### 6.3 guilderia Self (`/self`)
+### 6.3 zenthcloud Self (`/self`)
 
 Conservé et densifié : installation en une commande (ancre `#install`), point de départ
 mono-serveur, montée vers homelab puis multi-nœuds, ce qui fonctionne hors ligne et ce qui exige
 un fournisseur externe (DNS, S3, Git, IdP), liens installation / prérequis / environnements
-supportés / mise à jour / sauvegarde / restauration / dépannage. CTA primaire **Install guilderia**,
+supportés / mise à jour / sauvegarde / restauration / dépannage. CTA primaire **Install zenthcloud**,
 secondaire **Documentation**.
 
-### 6.4 guilderia Cloud (`/cloud`)
+### 6.4 zenthcloud Cloud (`/cloud`)
 
 Ce que l'utilisateur n'a plus à exploiter (control plane hébergé, mises à jour, supervision),
 ce qui reste chez lui (workloads, serveurs, accès), limites de ressources/plans **uniquement si
@@ -265,19 +265,19 @@ disponibles**, distinction explicite avec Self, CTA vers l'onboarding réel ou `
 
 ### 6.5 Enterprise (`/enterprise`)
 
-Repositionnée : « guilderia for teams and organisations » — SSO/RBAC/audit/support comme
+Repositionnée : « zenthcloud for teams and organisations » — SSO/RBAC/audit/support comme
 compléments, sans laisser entendre une plateforme différente. Les mentions SLA/compliance
 restent **conditionnées à validation** (voir Q5).
 
 ### 6.6 Use cases (`/use-cases`)
 
-5 sections ancrées, chacune : valeur opérationnelle, ce que guilderia prend en charge, prérequis,
+5 sections ancrées, chacune : valeur opérationnelle, ce que zenthcloud prend en charge, prérequis,
 limites. Aucune promesse « production-ready » fondée sur le seul fait qu'un conteneur démarre.
 
 ### 6.7 Trust (`/trust`)
 
 Développement européen (entité, équipe) · autonomie et contrôle · licence et dépendances ·
-télémétrie du site (GA4 / OpenPanel / guilderiaTraffic, à décrire factuellement) vs télémétrie
+télémétrie du site (GA4 / OpenPanel / zenthcloudTraffic, à décrire factuellement) vs télémétrie
 produit (à vérifier) · hébergement Cloud (si confirmé) · signalement de sécurité · section
 « Ce que nous n'affirmons pas » (pas de « fully sovereign », pas de « GDPR compliant » générique,
 pas de « 100% European infrastructure » sans preuve).
@@ -292,8 +292,8 @@ contribution, release notes, canaux communautaires, statut (si disponible).
 ## 7. Matrice de capacités — méthode
 
 Aucun statut ne sera inventé. Règle de traçabilité : une ligne est **Available** seulement si elle
-est attestée par (a) une page de `docs.guilderia.com`, (b) une route de
-`apps/guilderia/server/api/routers`, ou (c) un écran de l'app ; sinon **In development** ou
+est attestée par (a) une page de `docs.zenthcloud.com`, (b) une route de
+`apps/zenthcloud/server/api/routers`, ou (c) un écran de l'app ; sinon **In development** ou
 **Planned**, ou la ligne est retirée.
 
 Domaines et lignes à statuer (statut à remplir avec toi, Q4) :
@@ -314,7 +314,7 @@ Domaines et lignes à statuer (statut à remplir avec toi, Q4) :
 
 ## 8. SEO & métadonnées
 
-- Titre home : `guilderia — European PaaS tools for people & businesses` (≈ 58 car.), description
+- Titre home : `zenthcloud — European PaaS tools for people & businesses` (≈ 58 car.), description
   ≈ 155 car. avec la promesse Self/Cloud.
 - `alternates.canonical` sur **toutes** les pages ; OG/Twitter par page (image `/og.png`
   aujourd'hui) ; `openGraph.locale` + `siteName` ; `robots` inchangé.
@@ -344,14 +344,14 @@ supprime d'URL publique.
 
 ## 10. Vérifications prévues
 
-1. `pnpm --filter=@guilderia/website run typecheck`
-2. `pnpm --filter=@guilderia/website run build` (serveur, routes API incluses)
-3. `pnpm --filter=@guilderia/website run build:static` (export, vérifie qu'aucune nouvelle page ne
+1. `pnpm --filter=@zenthcloud/website run typecheck`
+2. `pnpm --filter=@zenthcloud/website run build` (serveur, routes API incluses)
+3. `pnpm --filter=@zenthcloud/website run build:static` (export, vérifie qu'aucune nouvelle page ne
    casse l'export)
-4. `pnpm --filter=@guilderia/website exec biome check <fichiers modifiés>` (le package n'a pas de
+4. `pnpm --filter=@zenthcloud/website exec biome check <fichiers modifiés>` (le package n'a pas de
    script lint)
 5. Audit de liens : script one-off sur `out/` (cibles internes) + `curl -I` sur docs, GitHub,
-   Discord, `app.guilderia.com/register`, statut
+   Discord, `app.zenthcloud.com/register`, statut
 6. Revue statique a11y : hiérarchie de titres, skip link, `aria-*` des onglets, contrastes des
    badges, `reduced-motion`
 7. Contrôle visuel mobile/desktop — **limite** : aucun navigateur (Chrome) n'est disponible dans
@@ -383,7 +383,7 @@ supprime d'URL publique.
 1. **Baseline** : on garde « European PaaS tools for people & businesses » telle quelle (signature,
    pas H1) ou tu préfères une formulation plus large du type « European tools to deploy, operate
    and control your services » ?
-2. **Cloud** : l'inscription publique sur `app.guilderia.com/register` est-elle ouverte ? Sinon,
+2. **Cloud** : l'inscription publique sur `app.zenthcloud.com/register` est-elle ouverte ? Sinon,
    quel CTA pour Cloud (contact, liste d'attente, page produit seule) ?
 3. **Enterprise** : on conserve une offre Enterprise distincte (page + entrée de nav) ou on la
    fond dans « Cloud for teams » / support Self ?
@@ -392,7 +392,7 @@ supprime d'URL publique.
    Vault, air-gapped, multi-nœuds, desktop, VS Code, MCP, templates, SLA.)
 5. **Europe / confiance** : quelles affirmations sont vérifiables aujourd'hui — entité légale et
    pays, localisation d'hébergement du control plane Cloud, télémétrie du produit, existence de
-   `status.guilderia.com`, contact sécurité ? Je n'écrirai que ce qui est confirmé.
+   `status.zenthcloud.com`, contact sécurité ? Je n'écrirai que ce qui est confirmé.
 6. **Thème** : on reste en sombre uniquement (recommandé, cohérent avec l'app) ou tu veux des
    sections claires façon site institutionnel ?
 7. **Langue** : anglais seul pour cette itération (recommandé) ou version FR + hreflang dès
@@ -411,7 +411,7 @@ Décisions prises (30/10), conformes aux recommandations de la section 2 :
 | # | Décision |
 | --- | --- |
 | Q1 | Baseline **« European PaaS tools for people & businesses »** conservée comme signature (hero, footer, JSON-LD) ; le H1 reste orienté bénéfice. |
-| Q2 | **CTA Cloud → `/cloud`** dans tout le marketing. `app.guilderia.com` ne répond pas depuis l'environnement de build : aucun bouton d'inscription directe n'est exposé. `app.guilderia.com` reste utilisé pour « Sign in » uniquement. |
+| Q2 | **CTA Cloud → `/cloud`** dans tout le marketing. `app.zenthcloud.com` ne répond pas depuis l'environnement de build : aucun bouton d'inscription directe n'est exposé. `app.zenthcloud.com` reste utilisé pour « Sign in » uniquement. |
 | Q3 | **Enterprise** conservée comme offre commerciale (« For teams & organisations »), pas comme troisième plateforme. |
 | Q4 | Statuts de capacités **non publiés** tant qu'ils ne sont pas tracés (docs + code). La home renvoie vers la feature matrix de la doc ; `/capabilities` arrive au lot 3 avec les statuts validés. |
 | Q5 | Aucune affirmation d'hébergement, de souveraineté ou de conformité ajoutée. « European development » est formulé comme un fait sur l'équipe, avec la mention de ce que cela ne garantit pas. `/trust` au lot 4. |
@@ -446,25 +446,25 @@ télémétrie), et arbitrage juridique des `[99.9%]` / `[10%]` des CGU.
 | Question | Décision |
 | --- | --- |
 | Q1 Baseline | Conservée **« European PaaS tools for people & businesses »** comme signature (footer, OG, `/trust`) ; le H1 reste « Your services. Your infrastructure. Your control. » |
-| Q2 Cloud | `app.guilderia.com` n'a pas répondu depuis l'environnement de build (échec de connexion) ; l'inscription publique n'est donc pas vérifiable. **Tous les CTA Cloud pointent vers `/cloud`**, jamais vers `/register`. « Sign in » reste le seul lien vers `app.guilderia.com` (sessions existantes). |
+| Q2 Cloud | `app.zenthcloud.com` n'a pas répondu depuis l'environnement de build (échec de connexion) ; l'inscription publique n'est donc pas vérifiable. **Tous les CTA Cloud pointent vers `/cloud`**, jamais vers `/register`. « Sign in » reste le seul lien vers `app.zenthcloud.com` (sessions existantes). |
 | Q3 Enterprise | Offre commerciale distincte conservée (`/enterprise`), présentée comme complément de Self et Cloud, jamais comme une troisième plateforme. |
-| Q4 Capacités | Statuts établis depuis `docs.guilderia.com` (`feature-matrix`, `limitations`) + le code ; aucune ligne sans source. À remplir au lot 3. |
+| Q4 Capacités | Statuts établis depuis `docs.zenthcloud.com` (`feature-matrix`, `limitations`) + le code ; aucune ligne sans source. À remplir au lot 3. |
 | Q5 Europe | Seules les affirmations vérifiables sont publiées : licence Apache-2.0, développement par Sky Genesis Enterprise, auto-hébergement, dépendances (Docker, Compose, Traefik, Swarm). Aucune localisation d'hébergement ni conformité générique. |
 | Q6 Thème | Sombre uniquement, cohérent avec l'UI produit. |
 | Q7 Langue | Anglais uniquement, pas de hreflang. |
 | Q8 Secteurs | `/industries/*` conservées, hors navigation principale. |
 | Q9 Périmètre | Site marketing seulement. |
 
-Vérifications d'infrastructure effectuées : `https://guilderia.com/install.sh` et `install.ps1` → 200 ;
-`https://status.guilderia.com` → 200 ; docs `feature-matrix`, `limitations`,
+Vérifications d'infrastructure effectuées : `https://zenthcloud.com/install.sh` et `install.ps1` → 200 ;
+`https://status.zenthcloud.com` → 200 ; docs `feature-matrix`, `limitations`,
 `vulnerability-disclosure`, `comparison` présentes dans la navigation de la doc ;
-`https://app.guilderia.com` → échec de connexion (non vérifiable).
+`https://app.zenthcloud.com` → échec de connexion (non vérifiable).
 
 ### Lot 1 — état
 
 - [x] `lib/content/links.ts` : source unique des URLs (docs, GitHub, Discord, statut, installateurs).
 - [x] `lib/site-navigation.ts` : navigation `Platform / Use cases / Self / Cloud / Docs / GitHub`, 5 colonnes de footer, `cta` centralisé.
-- [x] `components/Header.tsx` : menu compact, Docs et GitHub en clair, CTA « Install guilderia » → `/self`, `aria-current`, bascule mobile à `lg`.
+- [x] `components/Header.tsx` : menu compact, Docs et GitHub en clair, CTA « Install zenthcloud » → `/self`, `aria-current`, bascule mobile à `lg`.
 - [x] `components/Footer.tsx` : baseline européenne, colonnes Product / Use cases / Resources / Community / Company & legal, liens statut, matrice et limitations.
 - [x] `components/marketing/StatusBadge.tsx` : `available` / `in-development` / `planned` (texte + icône).
 - [x] `PageHero` : support de l'`eyebrow`.

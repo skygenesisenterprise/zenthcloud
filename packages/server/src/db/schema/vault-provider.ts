@@ -233,9 +233,9 @@ export const apiFindOneVaultProvider = z.object({
 });
 
 /**
- * Secrets stored and managed directly by Guilderia. Values are encrypted at rest
+ * Secrets stored and managed directly by Zenthcloud. Values are encrypted at rest
  * (AES-256-GCM) and resolve like any other vault reference, so a provider can
- * hold both externally-managed and Guilderia-managed secrets.
+ * hold both externally-managed and Zenthcloud-managed secrets.
  */
 export const vaultSecret = pgTable(
 	"vault_secret",

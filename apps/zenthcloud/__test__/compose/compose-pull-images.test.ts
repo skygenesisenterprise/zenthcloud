@@ -1,4 +1,4 @@
-import { createCommand } from "@guilderia/server/utils/builders/compose";
+import { createCommand } from "@zenthcloud/server/utils/builders/compose";
 import { describe, expect, it } from "vitest";
 
 const base = {

@@ -139,13 +139,13 @@ export function buildPendingResult(options: {
 }
 
 const ERROR_HINTS: Partial<Record<ToolErrorCode, string>> = {
-  unauthenticated: "Check that GUILDERIA_API_KEY is valid and not expired.",
+  unauthenticated: "Check that ZENTHCLOUD_API_KEY is valid and not expired.",
   permission_denied:
     "The identity behind the API key lacks this permission in the active organization.",
   approval_required:
-    "Ask the Guilderia operator for an approval token and pass it as the approvalToken argument.",
+    "Ask the Zenthcloud operator for an approval token and pass it as the approvalToken argument.",
   unsupported_environment:
-    "Switch GUILDERIA_MCP_ENVIRONMENT or use a capability available in this deployment.",
+    "Switch ZENTHCLOUD_MCP_ENVIRONMENT or use a capability available in this deployment.",
   not_found: "Verify the resource identifier and that it belongs to the active organization.",
   operation_not_found:
     "Operation ids are scoped to the authenticated identity and expire after the retention window.",
@@ -154,8 +154,8 @@ const ERROR_HINTS: Partial<Record<ToolErrorCode, string>> = {
   conflict: "The target resource is not in the expected state; re-inspect it before retrying.",
   idempotency_mismatch:
     "Reuse an idempotency key only for the same capability, identity and organization.",
-  api_error: "Inspect the Guilderia server logs for this request id before retrying.",
-  network_error: "Check network connectivity to GUILDERIA_URL.",
+  api_error: "Inspect the Zenthcloud server logs for this request id before retrying.",
+  network_error: "Check network connectivity to ZENTHCLOUD_URL.",
   internal_error: "This is an MCP server bug or an unexpected response; report the request id.",
 };
 

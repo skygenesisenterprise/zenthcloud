@@ -1,4 +1,4 @@
-import type { PublicComponentDto } from "@guilderia/status";
+import type { PublicComponentDto } from "@zenthcloud/status";
 import { LayoutList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {

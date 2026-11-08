@@ -20,7 +20,7 @@ import {
 	type PublicIncidentDto,
 	type PublicMaintenanceDto,
 	type PublicPageDto,
-} from "@guilderia/status";
+} from "@zenthcloud/status";
 import { getPlatform } from "./engine";
 
 export interface PageSummary {

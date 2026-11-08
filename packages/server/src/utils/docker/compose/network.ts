@@ -10,8 +10,8 @@ export const addSuffixToNetworksRoot = (
 	suffix: string,
 ): { [key: string]: DefinitionsNetwork } => {
 	return _.mapKeys(networks, (_value, key) => {
-		if (key === "guilderia-network") {
-			return "guilderia-network";
+		if (key === "zenthcloud-network") {
+			return "zenthcloud-network";
 		}
 		return `${key}-${suffix}`;
 	});
@@ -26,16 +26,16 @@ export const addSuffixToServiceNetworks = (
 			// 1 Case the most common
 			if (Array.isArray(service.networks)) {
 				service.networks = service.networks.map((network: string) => {
-					if (network === "guilderia-network") {
-						return "guilderia-network";
+					if (network === "zenthcloud-network") {
+						return "zenthcloud-network";
 					}
 					return `${network}-${suffix}`;
 				});
 			} else {
 				// 2 Case
 				service.networks = _.mapKeys(service.networks, (_value, key) => {
-					if (key === "guilderia-network") {
-						return "guilderia-network";
+					if (key === "zenthcloud-network") {
+						return "zenthcloud-network";
 					}
 					return `${key}-${suffix}`;
 				});

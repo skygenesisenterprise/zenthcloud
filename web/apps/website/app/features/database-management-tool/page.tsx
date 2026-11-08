@@ -35,7 +35,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Database Management Tool & Deployment Software",
 	description:
-		"Create, manage, and back up databases easily with guilderia's database management tool, and customize the process to suit your project needs.",
+		"Create, manage, and back up databases easily with zenthcloud's database management tool, and customize the process to suit your project needs.",
 };
 
 const databaseSystems = [
@@ -82,13 +82,13 @@ const protectionFeatures = [
 		icon: FileText,
 		title: "Logs",
 		description:
-			"View real-time logs from any running database directly in your guilderia dashboard. Spot errors as they happen, trace unexpected behavior back to its source, and keep a clear record of what\u2019s happening inside your containers.",
+			"View real-time logs from any running database directly in your zenthcloud dashboard. Spot errors as they happen, trace unexpected behavior back to its source, and keep a clear record of what\u2019s happening inside your containers.",
 	},
 	{
 		icon: RotateCcw,
 		title: "Restore",
 		description:
-			"Restore any database from a backup stored in your S3 bucket in a few clicks\u2014critical for disaster recovery when you need to act fast. Select the source bucket, search for your backup file with autocomplete, and kick off the restoration process\u2014guilderia handles the correct restore commands automatically.",
+			"Restore any database from a backup stored in your S3 bucket in a few clicks\u2014critical for disaster recovery when you need to act fast. Select the source bucket, search for your backup file with autocomplete, and kick off the restoration process\u2014zenthcloud handles the correct restore commands automatically.",
 	},
 	{
 		icon: Link2,
@@ -142,7 +142,7 @@ const securityFeatures = [
 		icon: Lock,
 		title: "Your server, your data",
 		description:
-			"guilderia creates Docker containers on your own server. Your database data never leaves your infrastructure\u2014you have full ownership and control over where it lives.",
+			"zenthcloud creates Docker containers on your own server. Your database data never leaves your infrastructure\u2014you have full ownership and control over where it lives.",
 	},
 	{
 		icon: KeyRound,
@@ -154,7 +154,7 @@ const securityFeatures = [
 		icon: ShieldCheck,
 		title: "No third-party access",
 		description:
-			"guilderia doesn\u2019t store or proxy your data. Everything runs on your machine, so there\u2019s no middleman between your applications and your databases.",
+			"zenthcloud doesn\u2019t store or proxy your data. Everything runs on your machine, so there\u2019s no middleman between your applications and your databases.",
 	},
 ];
 
@@ -167,12 +167,12 @@ const faqs = [
 	{
 		question: "What is the best database management tool?",
 		answer:
-			"There\u2019s no single best tool. The right choice depends on your specific use cases, team size, and infrastructure. Some tools require expertise to configure and come with a steeper learning curve, which can slow teams down. guilderia is designed to remove that friction and improve database performance, offering a secure, scalable solution that covers deployment, monitoring, backups, and data privacy without requiring specialist knowledge. It won\u2019t replace dedicated analysis or AI assistant tooling, but it gives developers a reliable foundation for managing databases in production.",
+			"There\u2019s no single best tool. The right choice depends on your specific use cases, team size, and infrastructure. Some tools require expertise to configure and come with a steeper learning curve, which can slow teams down. zenthcloud is designed to remove that friction and improve database performance, offering a secure, scalable solution that covers deployment, monitoring, backups, and data privacy without requiring specialist knowledge. It won\u2019t replace dedicated analysis or AI assistant tooling, but it gives developers a reliable foundation for managing databases in production.",
 	},
 	{
-		question: "What database systems does guilderia support?",
+		question: "What database systems does zenthcloud support?",
 		answer:
-			"guilderia supports five widely used database tools: PostgreSQL, MySQL, MariaDB, MongoDB, and Redis. That covers the most common SQL server databases and NoSQL use cases, from relational workloads that rely on structured query language to flexible document and key-value stores. All five\u2014both SQL databases and noSQL systems\u2014can be deployed, backed up, and monitored using the same tools and workflows inside guilderia.",
+			"zenthcloud supports five widely used database tools: PostgreSQL, MySQL, MariaDB, MongoDB, and Redis. That covers the most common SQL server databases and NoSQL use cases, from relational workloads that rely on structured query language to flexible document and key-value stores. All five\u2014both SQL databases and noSQL systems\u2014can be deployed, backed up, and monitored using the same tools and workflows inside zenthcloud.",
 	},
 ];
 
@@ -183,11 +183,11 @@ export default function DatabaseManagementToolPage() {
 			badgeDetail="Databases & backups"
 			title="Database management,"
 			highlight="done right"
-			description="Create, manage, and back up databases easily with guilderia's database tool, and customize the process to suit your project needs. Deploy in minutes, maintain full control over your stored data, and recover fast when it matters."
+			description="Create, manage, and back up databases easily with zenthcloud's database tool, and customize the process to suit your project needs. Deploy in minutes, maintain full control over your stored data, and recover fast when it matters."
 			actions={
 				<>
 					<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
-						<Link href="https://app.guilderia.com/register" target="_blank">
+						<Link href="https://app.zenthcloud.com/register" target="_blank">
 							Get Started
 						</Link>
 					</Button>
@@ -210,7 +210,7 @@ export default function DatabaseManagementToolPage() {
 					id: "deploy-your-database",
 					title: "Deploy the database you already use",
 					description:
-						"guilderia's database management tool supports five widely used database systems out of the box, so you're not locked into a single technology. You pick what fits your stack and your data management needs.",
+						"zenthcloud's database management tool supports five widely used database systems out of the box, so you're not locked into a single technology. You pick what fits your stack and your data management needs.",
 					items: databaseSystems,
 					columns: 3,
 				},
@@ -227,7 +227,7 @@ export default function DatabaseManagementToolPage() {
 					id: "advanced-options",
 					title: "Advanced options, your way",
 					description:
-						"guilderia goes beyond the basics, giving you granular control over how each database runs, from the image it uses to the resources it consumes and everything in between.",
+						"zenthcloud goes beyond the basics, giving you granular control over how each database runs, from the image it uses to the resources it consumes and everything in between.",
 					items: advancedOptions,
 					columns: 3,
 				},
@@ -235,7 +235,7 @@ export default function DatabaseManagementToolPage() {
 					id: "data-stays-secure",
 					title: "Your data stays secure",
 					description:
-						"Your database data is stored on your own server. guilderia creates Docker containers on your infrastructure, so you have full control over your data — no third parties, no external dependencies.",
+						"Your database data is stored on your own server. zenthcloud creates Docker containers on your infrastructure, so you have full control over your data — no third parties, no external dependencies.",
 					items: securityFeatures,
 					columns: 3,
 				},
@@ -243,23 +243,23 @@ export default function DatabaseManagementToolPage() {
 			faqs={{
 				id: "database-faqs",
 				title: "Database management tool FAQs",
-				description: "Answers before you start managing databases with guilderia.",
+				description: "Answers before you start managing databases with zenthcloud.",
 				items: faqs,
 			}}
 			finalCta={{
 				title: "Start managing databases smarter",
 				description:
-					"guilderia gives you everything you need to deploy, monitor, and protect your databases — without the complexity.",
+					"zenthcloud gives you everything you need to deploy, monitor, and protect your databases — without the complexity.",
 				cta: "Create your account",
-				href: "https://app.guilderia.com",
+				href: "https://app.zenthcloud.com",
 				external: true,
 			}}
 		>
 			<Container className="pb-20 sm:pb-28">
 				<ProductFrame
 					src="/backups.png"
-					alt="guilderia backup configuration for a managed database"
-					path="app.guilderia.com/databases/backups"
+					alt="zenthcloud backup configuration for a managed database"
+					path="app.zenthcloud.com/databases/backups"
 					caption="Provision, monitor and back up databases from the same control plane."
 				/>
 			</Container>
@@ -273,7 +273,7 @@ export default function DatabaseManagementToolPage() {
 									Watch your databases in real time
 								</h2>
 								<p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
-									guilderia surfaces live monitoring graphs for memory, CPU,
+									zenthcloud surfaces live monitoring graphs for memory, CPU,
 									disk, and network directly in the dashboard. The data
 									updates as you view it, so you can see exactly what your
 									database is doing and catch problems before they become

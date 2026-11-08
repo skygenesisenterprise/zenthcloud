@@ -1,9 +1,9 @@
 ---
-"@guilderia/server": patch
-"@guilderia/app": patch
+"@zenthcloud/server": patch
+"@zenthcloud/app": patch
 ---
 
-Harden guilderia against secret leakage and orphaned resources: central secret
+Harden zenthcloud against secret leakage and orphaned resources: central secret
 redaction for logs, errors and notifications, idempotent WebSocket/SSH/PTY
 cleanup, portable database backups without a container shell or gzip,
 explicit port-mapping conflict validation, and project-level access inheritance

@@ -15,7 +15,7 @@ set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 INSTALL="$ROOT/install.sh"
 
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/guilderia-install-test.XXXXXX")"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/zenthcloud-install-test.XXXXXX")"
 MOCKS="$WORK/bin"
 CASE_DIR="$WORK/case"
 STATE="$CASE_DIR/state"
@@ -365,11 +365,11 @@ case "$*" in
     i\ -g\ *|install\ -g\ *)
         home="${PNPM_HOME:?PNPM_HOME unset}"
         mkdir -p "$home/bin"
-        cat > "$home/bin/guilderia" <<'SH'
+        cat > "$home/bin/zenthcloud" <<'SH'
 #!/bin/sh
 printf '1.0.3\n'
 SH
-        chmod +x "$home/bin/guilderia"
+        chmod +x "$home/bin/zenthcloud"
         ;;
     'bin -g') printf '%s/bin\n' "${PNPM_HOME:?}" ;;
 esac
@@ -413,7 +413,7 @@ printf '0\n' > "$STATE/fail_cli"
     : > "$STATE/dump"
     : > "$STATE/secret_values"
     : > "$STATE/dokploy_auth_secret"
-    printf 'https://github.com/skygenesisenterprise/guilderia/releases/tag/v1.2.3\n' > "$STATE/release_url"
+    printf 'https://github.com/skygenesisenterprise/zenthcloud/releases/tag/v1.2.3\n' > "$STATE/release_url"
     printf '203.0.113.10\n' > "$STATE/public_ip"
     : > "$LOG"
 }
@@ -421,9 +421,9 @@ printf '0\n' > "$STATE/fail_cli"
 run_install() {
     PATH="$MOCKS:$PATH" \
     MOCK_STATE="$STATE" \
-    GUILDERIA_CONFIG_PATH="$CASE_DIR/etc/guilderia" \
-    GUILDERIA_CLI_HOME="$CASE_DIR/cli" \
-    GUILDERIA_CLI_BIN="$CASE_DIR/bin/guilderia" \
+    ZENTHCLOUD_CONFIG_PATH="$CASE_DIR/etc/zenthcloud" \
+    ZENTHCLOUD_CLI_HOME="$CASE_DIR/cli" \
+    ZENTHCLOUD_CLI_BIN="$CASE_DIR/bin/zenthcloud" \
     sh "$INSTALL" "$@"
 }
 
@@ -444,19 +444,19 @@ assert_logged "docker swarm init" "initializes a new Swarm"
 assert_not_logged "docker swarm leave" "never leaves a Swarm on a fresh host"
 assert_logged "docker network create" "creates the overlay network"
 assert_logged "docker service create" "creates services"
-assert_file_exists "$CASE_DIR/etc/guilderia/identity/instance.key" "bootstraps the identity"
+assert_file_exists "$CASE_DIR/etc/zenthcloud/identity/instance.key" "bootstraps the identity"
 assert_contains "$OUT" "Running as root" "detects root without needing sudo"
 assert_not_logged "sudo docker" "does not invoke sudo when already root"
 assert_contains "$OUT" "Astron Collection CLI ready: 1.0.3" "installs the official Astron Collection CLI"
-assert_logged "pnpm i -g @guilderia/cli@latest" "installs @guilderia/cli through pnpm"
-assert_file_exists "$CASE_DIR/bin/guilderia" "exposes the CLI launcher"
+assert_logged "pnpm i -g @zenthcloud/cli@latest" "installs @zenthcloud/cli through pnpm"
+assert_file_exists "$CASE_DIR/bin/zenthcloud" "exposes the CLI launcher"
 
 # ==========================================================================
 # 2. Astron Collection already installed
 # ==========================================================================
 echo "2. Astron Collection already installed"
 init_state
-printf 'guilderia\nguilderia-postgres\n' > "$STATE/services"
+printf 'zenthcloud\nzenthcloud-postgres\n' > "$STATE/services"
 run_install_capture
 assert_rc "$RC" 1 "refuses a fresh install over an existing Astron Collection"
 assert_contains "$OUT" "existing Astron Collection installation" "explains the existing install"
@@ -467,11 +467,11 @@ assert_not_logged "docker swarm init" "does not re-initialize the Swarm"
 # ==========================================================================
 echo "3. Existing network and secrets are reused"
 init_state
-printf 'guilderia-network|overlay\n' > "$STATE/networks"
+printf 'zenthcloud-network|overlay\n' > "$STATE/networks"
 printf 'astron_collectionpostgres_password\nastron_collectionauth_secret\n' > "$STATE/secrets"
 run_install_capture
 assert_rc "$RC" 0 "completes a partial install"
-assert_contains "$OUT" "Reusing the existing 'guilderia-network'" "reuses the overlay network"
+assert_contains "$OUT" "Reusing the existing 'zenthcloud-network'" "reuses the overlay network"
 assert_contains "$OUT" "already exists; reusing" "reuses existing secrets"
 assert_not_logged "docker network rm" "never removes an existing network"
 
@@ -542,16 +542,16 @@ printf '1\n' > "$STATE/fail_secret"
 run_install_capture
 assert_rc "$RC" 1 "fails when a required secret cannot be created"
 assert_contains "$OUT" "failed to create the required Docker secret" "explains the secret failure"
-assert_not_logged "docker service create --name guilderia " "does not start services after a secret failure"
+assert_not_logged "docker service create --name zenthcloud " "does not start services after a secret failure"
 
 # ==========================================================================
 # 10. Image pull fails during update
 # ==========================================================================
 echo "10. Image pull fails during update"
 init_state
-printf 'guilderia\nguilderia-postgres\n' > "$STATE/services"
+printf 'zenthcloud\nzenthcloud-postgres\n' > "$STATE/services"
 printf '1\n' > "$STATE/fail_pull"
-GUILDERIA_VERSION=v2.0.0 run_install_capture update
+ZENTHCLOUD_VERSION=v2.0.0 run_install_capture update
 assert_rc "$RC" 1 "fails when the update image cannot be pulled"
 assert_contains "$OUT" "could not pull" "explains the pull failure"
 assert_not_logged "docker service update" "does not update the service before a successful pull"
@@ -561,11 +561,11 @@ assert_not_logged "docker service update" "does not update the service before a 
 # ==========================================================================
 echo "11. Service fails to converge after update"
 init_state
-printf 'guilderia\nguilderia-postgres\n' > "$STATE/services"
+printf 'zenthcloud\nzenthcloud-postgres\n' > "$STATE/services"
 printf 'rollback_started\n' > "$STATE/update_state"
-GUILDERIA_VERSION=v2.0.0 run_install_capture update
+ZENTHCLOUD_VERSION=v2.0.0 run_install_capture update
 assert_rc "$RC" 1 "fails when the update does not converge"
-assert_contains "$OUT" "rollback guilderia" "suggests an explicit rollback"
+assert_contains "$OUT" "rollback zenthcloud" "suggests an explicit rollback"
 assert_contains "$OUT" "does not undo database schema migrations" "documents the rollback limitation"
 
 # ==========================================================================
@@ -573,12 +573,12 @@ assert_contains "$OUT" "does not undo database schema migrations" "documents the
 # ==========================================================================
 echo "12. Successful update"
 init_state
-printf 'guilderia\nguilderia-postgres\n' > "$STATE/services"
-GUILDERIA_VERSION=v2.0.0 run_install_capture update
+printf 'zenthcloud\nzenthcloud-postgres\n' > "$STATE/services"
+ZENTHCLOUD_VERSION=v2.0.0 run_install_capture update
 assert_rc "$RC" 0 "update succeeds when the service converges"
 assert_logged "docker service update" "updates the service"
 assert_contains "$OUT" "has been updated to version: v2.0.0" "reports the updated version"
-assert_logged "pnpm i -g @guilderia/cli@latest" "refreshes the Astron Collection CLI on update"
+assert_logged "pnpm i -g @zenthcloud/cli@latest" "refreshes the Astron Collection CLI on update"
 assert_contains "$OUT" "Astron Collection CLI ready: 1.0.3" "reports the refreshed CLI"
 
 # ==========================================================================
@@ -586,26 +586,26 @@ assert_contains "$OUT" "Astron Collection CLI ready: 1.0.3" "reports the refresh
 # ==========================================================================
 echo "13. Coherent identity is preserved"
 init_state
-mkdir -p "$CASE_DIR/etc/guilderia/identity"
-printf 'EXISTING-KEY' > "$CASE_DIR/etc/guilderia/identity/instance.key"
-printf 'EXISTING-CRT' > "$CASE_DIR/etc/guilderia/identity/instance.crt"
-printf 'EXISTING-CA' > "$CASE_DIR/etc/guilderia/identity/ca.crt"
+mkdir -p "$CASE_DIR/etc/zenthcloud/identity"
+printf 'EXISTING-KEY' > "$CASE_DIR/etc/zenthcloud/identity/instance.key"
+printf 'EXISTING-CRT' > "$CASE_DIR/etc/zenthcloud/identity/instance.crt"
+printf 'EXISTING-CA' > "$CASE_DIR/etc/zenthcloud/identity/ca.crt"
 run_install_capture
 assert_rc "$RC" 0 "install proceeds with a coherent identity"
 assert_contains "$OUT" "coherent at" "keeps the existing identity"
-assert_eq "$(cat "$CASE_DIR/etc/guilderia/identity/instance.key")" "EXISTING-KEY" "does not overwrite the private key"
+assert_eq "$(cat "$CASE_DIR/etc/zenthcloud/identity/instance.key")" "EXISTING-KEY" "does not overwrite the private key"
 
 # ==========================================================================
 # 14. Incoherent identity is not silently regenerated
 # ==========================================================================
 echo "14. Incoherent identity"
 init_state
-mkdir -p "$CASE_DIR/etc/guilderia/identity"
-printf 'PARTIAL' > "$CASE_DIR/etc/guilderia/identity/instance.key"
+mkdir -p "$CASE_DIR/etc/zenthcloud/identity"
+printf 'PARTIAL' > "$CASE_DIR/etc/zenthcloud/identity/instance.key"
 run_install_capture
 assert_rc "$RC" 1 "fails on an incomplete identity"
 assert_contains "$OUT" "incomplete or incoherent" "explains the identity problem"
-assert_eq "$(cat "$CASE_DIR/etc/guilderia/identity/instance.key")" "PARTIAL" "does not overwrite the partial key"
+assert_eq "$(cat "$CASE_DIR/etc/zenthcloud/identity/instance.key")" "PARTIAL" "does not overwrite the partial key"
 
 # ==========================================================================
 # 15. --dry-run is non-destructive
@@ -616,7 +616,7 @@ printf 'abc123|dokploy-app|app:1||dokploy-network|\n' > "$STATE/containers"
 run_install_capture --dry-run
 assert_rc "$RC" 0 "dry-run exits cleanly"
 assert_contains "$OUT" "Dry-run: the assessment report was not written" "does not persist the report"
-assert_file_absent "$CASE_DIR/etc/guilderia" "does not create the config directory"
+assert_file_absent "$CASE_DIR/etc/zenthcloud" "does not create the config directory"
 assert_not_logged "docker swarm init" "does not mutate the host"
 
 # ==========================================================================
@@ -635,12 +635,12 @@ case "$OUT" in
 esac
 
 # ==========================================================================
-# 17. GUILDERIA_SOURCE_ONLY=1 is a library
+# 17. ZENTHCLOUD_SOURCE_ONLY=1 is a library
 # ==========================================================================
-echo "17. GUILDERIA_SOURCE_ONLY=1"
+echo "17. ZENTHCLOUD_SOURCE_ONLY=1"
 init_state
-OUT="$(PATH="$MOCKS:$PATH" MOCK_STATE="$STATE" GUILDERIA_CONFIG_PATH="$CASE_DIR/etc/guilderia" \
-    GUILDERIA_SOURCE_ONLY=1 sh -c '. "$1"; command -v bootstrap_identity && command -v install_guilderia' _ "$INSTALL" 2>&1)"
+OUT="$(PATH="$MOCKS:$PATH" MOCK_STATE="$STATE" ZENTHCLOUD_CONFIG_PATH="$CASE_DIR/etc/zenthcloud" \
+    ZENTHCLOUD_SOURCE_ONLY=1 sh -c '. "$1"; command -v bootstrap_identity && command -v install_zenthcloud' _ "$INSTALL" 2>&1)"
 RC=$?
 assert_rc "$RC" 0 "sourcing the library defines the exported functions"
 assert_not_logged "docker swarm init" "does not install when sourced"
@@ -670,20 +670,20 @@ printf 'dokploy-network|overlay\n' > "$STATE/networks"
 printf 'CREATE TABLE project (id text primary key);\n\INSERT INTO project VALUES (1);\n' > "$STATE/dump"
 mkdir -p "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic"
 printf 'http:\n  routers:\n' > "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic/example.yml"
-GUILDERIA_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
+ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
 assert_rc "$RC" 0 "migration succeeds"
 assert_contains "$OUT" "Migration complete" "reports migration success"
 assert_contains "$OUT" "Database imported" "reports the DB dump/restore"
 assert_logged "docker exec c1 pg_dump" "dumps the Dokploy database"
 assert_logged "--no-owner" "drops ownership-dependent clauses from the dump"
 assert_logged "--no-acl" "drops GRANTs that would abort the import"
-assert_logged "docker service create --name guilderia-postgres" "creates the Astron Collection Postgres service"
+assert_logged "docker service create --name zenthcloud-postgres" "creates the Astron Collection Postgres service"
 assert_logged "docker service rm dokploy" "stops Dokploy's management service"
-assert_logged "docker network connect dokploy-network guilderia-traefik" "joins the Dokploy network for routing"
+assert_logged "docker network connect dokploy-network zenthcloud-traefik" "joins the Dokploy network for routing"
 assert_logged "docker service update --network-add dokploy-network" "attaches the Astron Collection service to the Dokploy network"
 assert_not_logged "docker swarm leave" "never leaves the Swarm during migration"
-assert_file_exists "$CASE_DIR/etc/guilderia/traefik/dynamic/example.yml" "adopts the Dokploy config into Astron Collection"
-backup_dir="$(echo "$CASE_DIR"/etc/guilderia/backups/dokploy-* | awk '{print $1}')"
+assert_file_exists "$CASE_DIR/etc/zenthcloud/traefik/dynamic/example.yml" "adopts the Dokploy config into Astron Collection"
+backup_dir="$(echo "$CASE_DIR"/etc/zenthcloud/backups/dokploy-* | awk '{print $1}')"
 if [ -f "$backup_dir/database.sql" ] && [ -f "$backup_dir/config.tar.gz" ]; then
     pass "creates DB and config backups"
 else
@@ -714,7 +714,7 @@ printf 'dokploy-network|overlay\n' > "$STATE/networks"
 printf 'CREATE TABLE project (id text primary key);\n' > "$STATE/dump"
 mkdir -p "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic"
 printf 'http:\n  routers:\n' > "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic/example.yml"
-GUILDERIA_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture
+ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture
 assert_rc "$RC" 0 "a Dokploy host is not treated as a fresh host"
 assert_contains "$OUT" "Migration complete" "migrates automatically without flags"
 assert_logged "docker service rm dokploy" "stops Dokploy management services"
@@ -728,10 +728,10 @@ init_state
 printf 'active\n' > "$STATE/swarm_state"
 printf 'abc123|dokploy-app|app:1||dokploy-network|\n' > "$STATE/containers"
 printf 'dokploy-network|overlay\n' > "$STATE/networks"
-GUILDERIA_DOKPLOY_CONFIG_PATH="$CASE_DIR/none/dokploy" run_install_capture --migrate
+ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/none/dokploy" run_install_capture --migrate
 assert_rc "$RC" 1 "refuses to migrate an incomplete runtime"
 assert_contains "$OUT" "No change was made to this host" "explains the refusal"
-assert_not_logged "docker service create --name guilderia " "does not deploy Astron Collection services"
+assert_not_logged "docker service create --name zenthcloud " "does not deploy Astron Collection services"
 assert_not_logged "docker service rm dokploy" "does not stop Dokploy services"
 
 # ==========================================================================
@@ -749,7 +749,7 @@ printf 'CREATE TABLE project (id text primary key);\n' > "$STATE/dump"
 printf 'LISTEN 0 128 0.0.0.0:80 0.0.0.0:*\n' > "$STATE/listen"
 mkdir -p "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic"
 printf 'http:\n  routers:\n' > "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic/example.yml"
-GUILDERIA_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
+ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
 assert_rc "$RC" 0 "migration succeeds even when Dokploy holds port 80"
 assert_contains "$OUT" "Migration complete" "reports migration success"
 assert_contains "$OUT" "Reclaiming port 80" "explains the port reclaim"
@@ -768,7 +768,7 @@ printf 'dokploy-network|bridge\n' > "$STATE/networks"
 printf 'CREATE TABLE project (id text primary key);\n' > "$STATE/dump"
 mkdir -p "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic"
 printf 'http:\n  routers:\n' > "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic/example.yml"
-GUILDERIA_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
+ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
 assert_rc "$RC" 0 "migrates a Compose-based Dokploy host"
 assert_contains "$OUT" "No active Docker Swarm detected" "announces the Swarm initialization"
 assert_logged "docker swarm init" "initializes the missing Swarm"
@@ -790,23 +790,23 @@ mkdir -p "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic"
 printf 'provider:\n  file:\n    directory: /etc/dokploy/traefik/dynamic\n' > "$CASE_DIR/dokploy/etc/dokploy/traefik/traefik.yml"
 printf '{}' > "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic/acme.json"
 printf 'certificates: /etc/dokploy/certificates\n' > "$CASE_DIR/dokploy/etc/dokploy/dokploy.yml"
-GUILDERIA_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
+ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
 assert_rc "$RC" 0 "migration succeeds with path rewriting"
-backup_dir="$(echo "$CASE_DIR"/etc/guilderia/backups/dokploy-* | awk '{print $1}')"
+backup_dir="$(echo "$CASE_DIR"/etc/zenthcloud/backups/dokploy-* | awk '{print $1}')"
 import_dump="$backup_dir/database-import.sql"
 assert_file_exists "$import_dump" "writes a rewritten import dump"
-if grep -q "/etc/guilderia/certificates/abc" "$import_dump" 2>/dev/null; then
-    pass "rewrites DB paths to /etc/guilderia"
+if grep -q "/etc/zenthcloud/certificates/abc" "$import_dump" 2>/dev/null; then
+    pass "rewrites DB paths to /etc/zenthcloud"
 else
-    fail "rewrites DB paths to /etc/guilderia"
+    fail "rewrites DB paths to /etc/zenthcloud"
 fi
 assert_file_exists "$backup_dir/database.sql" "keeps the pristine Dokploy dump"
-if grep -q "/etc/dokploy" "$CASE_DIR/etc/guilderia/traefik/traefik.yml" 2>/dev/null; then
+if grep -q "/etc/dokploy" "$CASE_DIR/etc/zenthcloud/traefik/traefik.yml" 2>/dev/null; then
     fail "rewrites the adopted Traefik config paths"
 else
     pass "rewrites the adopted Traefik config paths"
 fi
-if grep -q "/etc/guilderia/certificates" "$CASE_DIR/etc/guilderia/dokploy.yml" 2>/dev/null; then
+if grep -q "/etc/zenthcloud/certificates" "$CASE_DIR/etc/zenthcloud/dokploy.yml" 2>/dev/null; then
     pass "rewrites every adopted config file, not just traefik.yml"
 else
     fail "rewrites every adopted config file, not just traefik.yml"
@@ -816,7 +816,7 @@ if grep -q "/etc/dokploy" "$backup_dir/database.sql" 2>/dev/null; then
 else
     fail "leaves the pristine backup directory untouched"
 fi
-assert_eq "$(stat -c %a "$CASE_DIR/etc/guilderia/traefik/dynamic/acme.json" 2>/dev/null)" "600" "secures acme.json"
+assert_eq "$(stat -c %a "$CASE_DIR/etc/zenthcloud/traefik/dynamic/acme.json" 2>/dev/null)" "600" "secures acme.json"
 
 # ==========================================================================
 # 26. Non-root user with passwordless sudo (rootless)
@@ -832,7 +832,7 @@ assert_contains "$OUT" "Running as deploy with sudo privileges" "reports the ele
 assert_logged "sudo docker swarm init" "initializes the Swarm through sudo"
 assert_logged "sudo docker service create" "creates services through sudo"
 assert_logged "sudo docker network create" "creates the network through sudo"
-assert_file_exists "$CASE_DIR/etc/guilderia/identity/instance.key" "bootstraps the identity as the sudoer"
+assert_file_exists "$CASE_DIR/etc/zenthcloud/identity/instance.key" "bootstraps the identity as the sudoer"
 assert_not_contains "$OUT" "must be run as root" "no longer demands running as root"
 
 # ==========================================================================
@@ -864,7 +864,7 @@ printf 'CREATE TABLE project (id text primary key);\n' > "$STATE/dump"
 printf 'dokployauthsecretvalue\n' > "$STATE/dokploy_auth_secret"
 mkdir -p "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic"
 printf 'http:\n  routers:\n' > "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic/example.yml"
-GUILDERIA_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
+ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
 assert_rc "$RC" 0 "migration succeeds while reusing the secret"
 assert_logged "docker exec app1 cat /run/secrets/dokploy_auth_secret" "reads Dokploy's auth secret while it still runs"
 assert_contains "$OUT" "Reusing the Dokploy auth secret" "announces the reuse"
@@ -887,17 +887,17 @@ printf 'dokploy-network|overlay\n' > "$STATE/networks"
 printf "CREATE TABLE project (id text primary key);\nINSERT INTO project VALUES ('enc:v1:AAAABBBBCCCC');\n" > "$STATE/dump"
 mkdir -p "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic"
 printf 'http:\n  routers:\n' > "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic/example.yml"
-GUILDERIA_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
+ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
 assert_rc "$RC" 1 "aborts instead of orphaning encrypted values"
 assert_contains "$OUT" "contains encrypted values" "explains the encryption risk"
-assert_contains "$OUT" "GUILDERIA_DOKPLOY_AUTH_SECRET" "documents the recovery override"
+assert_contains "$OUT" "ZENTHCLOUD_DOKPLOY_AUTH_SECRET" "documents the recovery override"
 assert_not_logged "docker service rm dokploy" "leaves Dokploy running"
-assert_file_absent "$CASE_DIR/etc/guilderia/traefik/dynamic/example.yml" "does not adopt the config before resolving the secret"
+assert_file_absent "$CASE_DIR/etc/zenthcloud/traefik/dynamic/example.yml" "does not adopt the config before resolving the secret"
 
 # ==========================================================================
 # 30. Migration uses an explicitly provided auth secret as a fallback
 # ==========================================================================
-echo "30. Migration uses GUILDERIA_DOKPLOY_AUTH_SECRET"
+echo "30. Migration uses ZENTHCLOUD_DOKPLOY_AUTH_SECRET"
 init_state
 printf 'active\n' > "$STATE/swarm_state"
 printf 'c1|dokploy-postgres|postgres:16||dokploy-network|\n' > "$STATE/containers"
@@ -907,10 +907,10 @@ printf 'dokploy-network|overlay\n' > "$STATE/networks"
 printf "CREATE TABLE project (id text primary key);\nINSERT INTO project VALUES ('enc:v1:AAAABBBBCCCC');\n" > "$STATE/dump"
 mkdir -p "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic"
 printf 'http:\n  routers:\n' > "$CASE_DIR/dokploy/etc/dokploy/traefik/dynamic/example.yml"
-GUILDERIA_DOKPLOY_AUTH_SECRET=overridesecretvalue \
-    GUILDERIA_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
+ZENTHCLOUD_DOKPLOY_AUTH_SECRET=overridesecretvalue \
+    ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
 assert_rc "$RC" 0 "migrates with an explicitly provided secret"
-assert_contains "$OUT" "GUILDERIA_DOKPLOY_AUTH_SECRET" "reports the override source"
+assert_contains "$OUT" "ZENTHCLOUD_DOKPLOY_AUTH_SECRET" "reports the override source"
 if grep -q '^astron_collectionauth_secret|overridesecretvalue$' "$STATE/secret_values" 2>/dev/null; then
     pass "stores the provided auth secret for Astron Collection"
 else
@@ -927,7 +927,7 @@ run_install_capture
 assert_rc "$RC" 0 "install still succeeds when the CLI cannot be installed"
 assert_contains "$OUT" "Warning: the Astron Collection CLI could not be installed or updated" "warns about the CLI failure"
 assert_contains "$OUT" "is installed and the service is running" "still reports the server as installed"
-assert_file_absent "$CASE_DIR/bin/guilderia" "does not leave a broken launcher"
+assert_file_absent "$CASE_DIR/bin/zenthcloud" "does not leave a broken launcher"
 
 # ==========================================================================
 echo ""

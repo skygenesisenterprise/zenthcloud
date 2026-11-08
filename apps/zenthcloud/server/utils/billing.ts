@@ -1,5 +1,5 @@
-import { findUserById, IS_CLOUD } from "@guilderia/server";
-import { getOrganizationOwnerId } from "@guilderia/server/services/proprietary/sso";
+import { findUserById, IS_CLOUD } from "@zenthcloud/server";
+import { getOrganizationOwnerId } from "@zenthcloud/server/services/proprietary/sso";
 import Stripe from "stripe";
 import {
 	HOBBY_PRICE_ANNUAL_ID,

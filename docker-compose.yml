@@ -1,6 +1,6 @@
-# Guilderia — root Docker Compose stack.
+# Zenthcloud — root Docker Compose stack.
 #
-# This is the single entry point for running Guilderia from the repository root.
+# This is the single entry point for running Zenthcloud from the repository root.
 # It builds the root `Dockerfile` and exposes the dashboard in the browser.
 #
 # Exactly four services:
@@ -18,7 +18,7 @@
 # Profiles and environments
 # ---------------------------------------------------------------------------
 #   prod   docker compose --profile prod up -d --build    (default, COMPOSE_PROFILES)
-#   dev    GUILDERIA_MODE=development GUILDERIA_BUILD_TARGET=dev \
+#   dev    ZENTHCLOUD_MODE=development ZENTHCLOUD_BUILD_TARGET=dev \
 #          NODE_ENV=development docker compose --profile dev up --build --watch
 #
 # `make docker-up [self|cloud|console]` and `make docker-dev [self|cloud|console]` set that whole
@@ -27,11 +27,11 @@
 #
 # Each service belongs to both profiles and reads its mode from the environment:
 #
-#   GUILDERIA_MODE          production | development (entrypoint behaviour)
-#   GUILDERIA_BUILD_TARGET  api | client (prod) or dev (hot reload)
+#   ZENTHCLOUD_MODE          production | development (entrypoint behaviour)
+#   ZENTHCLOUD_BUILD_TARGET  api | client (prod) or dev (hot reload)
 #   NODE_ENV                        production | development
 #
-# `GUILDERIA_BUILD_TARGET` therefore has a different default per service:
+# `ZENTHCLOUD_BUILD_TARGET` therefore has a different default per service:
 # unset means "build this service's production target", `dev` means "build the
 # development stage", which ships the sources and dependencies the dev servers need.
 #
@@ -52,9 +52,9 @@
 # NEXT_PUBLIC_API_URL (baked into the browser bundle at build time).
 #
 # Only these two ports are published. PostgreSQL and Redis are reachable exclusively on
-# the `guilderia-internal` network.
+# the `zenthcloud-internal` network.
 
-name: guilderia
+name: zenthcloud
 
 # Shared backend configuration: the `api` service owns the credentials and the
 # migrations, in both modes.
@@ -63,7 +63,7 @@ x-api-environment: &api-environment
   TZ: ${TZ:-UTC}
   # --- PostgreSQL ----------------------------------------------------------
   # `postgres` is the internal service name — never localhost from inside a container.
-  DATABASE_URL: postgres://${POSTGRES_USER:-guilderia}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required — see .env.example}@postgres:5432/${POSTGRES_DB:-guilderia}
+  DATABASE_URL: postgres://${POSTGRES_USER:-zenthcloud}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required — see .env.example}@postgres:5432/${POSTGRES_DB:-zenthcloud}
   POSTGRES_HOST: postgres
   POSTGRES_PORT: "5432"
   # --- Redis ---------------------------------------------------------------
@@ -76,14 +76,14 @@ x-api-environment: &api-environment
   BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
   BETTER_AUTH_TRUSTED_ORIGINS: ${BETTER_AUTH_TRUSTED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
   # --- Environment (self | cloud | console) --------------------------------
-  # `self` is the self-hosted platform, `cloud` is Guilderia Cloud and
-  # `console` is Guilderia Console (the cloud-side fleet manager). All three
+  # `self` is the self-hosted platform, `cloud` is Zenthcloud Cloud and
+  # `console` is Zenthcloud Console (the cloud-side fleet manager). All three
   # run the exact same images and services: the environment only changes runtime
-  # behaviour (IS_CLOUD and GUILDERIA_PRODUCT), never the container
+  # behaviour (IS_CLOUD and ZENTHCLOUD_PRODUCT), never the container
   # topology. Selected by the Makefile:
   #   make docker-up self | make docker-up cloud | make docker-up console
-  GUILDERIA_FLAVOR: ${GUILDERIA_FLAVOR:-selfhosted}
-  GUILDERIA_PRODUCT: ${GUILDERIA_PRODUCT:-self}
+  ZENTHCLOUD_FLAVOR: ${ZENTHCLOUD_FLAVOR:-selfhosted}
+  ZENTHCLOUD_PRODUCT: ${ZENTHCLOUD_PRODUCT:-self}
   IS_CLOUD: ${IS_CLOUD:-false}
   # Browser-facing origin of the API, used for the WebSocket connection.
   NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
@@ -100,21 +100,21 @@ services:
   # GROUP 1 — DATABASE
   #
   # PostgreSQL 16, official image. No host port is published: only the services
-  # attached to `guilderia-internal` can reach it.
+  # attached to `zenthcloud-internal` can reach it.
   # -------------------------------------------------------------------------
   postgres:
     profiles: ["prod", "dev"]
     image: postgres:16-alpine
-    container_name: guilderia-postgres
+    container_name: zenthcloud-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-guilderia}
+      POSTGRES_USER: ${POSTGRES_USER:-zenthcloud}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required — see .env.example}
-      POSTGRES_DB: ${POSTGRES_DB:-guilderia}
+      POSTGRES_DB: ${POSTGRES_DB:-zenthcloud}
       # Deterministic encoding, independent from the host locale.
       POSTGRES_INITDB_ARGS: ${POSTGRES_INITDB_ARGS:---encoding=UTF8}
     volumes:
-      - guilderia-postgres-data:/var/lib/postgresql/data
+      - zenthcloud-postgres-data:/var/lib/postgresql/data
     healthcheck:
       test:
         [
@@ -126,7 +126,7 @@ services:
       retries: 10
       start_period: 15s
     networks:
-      - guilderia
+      - zenthcloud
 
   # -------------------------------------------------------------------------
   # GROUP 2 — CACHE / QUEUE
@@ -138,7 +138,7 @@ services:
   redis:
     profiles: ["prod", "dev"]
     image: redis:7-alpine
-    container_name: guilderia-redis
+    container_name: zenthcloud-redis
     restart: unless-stopped
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required — see .env.example}
@@ -147,7 +147,7 @@ services:
       - -c
       - exec redis-server --appendonly yes --appendfsync everysec --requirepass "$${REDIS_PASSWORD}"
     volumes:
-      - guilderia-redis-data:/data
+      - zenthcloud-redis-data:/data
     healthcheck:
       test:
         [
@@ -159,7 +159,7 @@ services:
       retries: 10
       start_period: 10s
     networks:
-      - guilderia
+      - zenthcloud
 
   # -------------------------------------------------------------------------
   # GROUP 3 — FRONTEND
@@ -167,7 +167,7 @@ services:
   # Next.js dashboard. `next start` in production, `next dev` in development. Both
   # are the same platform image: `platform` is the production target, `dev` ships
   # the sources and dependencies the dev server watches. The target comes from
-  # GUILDERIA_BUILD_TARGET, the mode from GUILDERIA_MODE.
+  # ZENTHCLOUD_BUILD_TARGET, the mode from ZENTHCLOUD_MODE.
   #
   # Deliberately without DATABASE_URL or REDIS_URL — even a mistakenly reached API
   # route cannot run backend work in this container.
@@ -177,21 +177,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: ${GUILDERIA_BUILD_TARGET:-platform}
+      target: ${ZENTHCLOUD_BUILD_TARGET:-platform}
       args:
         # Baked into the browser bundle: origin used for the WebSocket connection.
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
-        GUILDERIA_VERSION: ${GUILDERIA_VERSION:-latest}
+        ZENTHCLOUD_VERSION: ${ZENTHCLOUD_VERSION:-latest}
     # The same image as `api`: the edition (self | cloud | console) picks the tag,
     # the role decides what the container runs.
-    image: ${GUILDERIA_IMAGE:-ghcr.io/skygenesisenterprise/guilderia}:${GUILDERIA_VERSION:-latest}
-    container_name: guilderia-client
+    image: ${ZENTHCLOUD_IMAGE:-ghcr.io/skygenesisenterprise/zenthcloud}:${ZENTHCLOUD_VERSION:-latest}
+    container_name: zenthcloud-client
     restart: unless-stopped
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       # Selects the frontend role in the shared entrypoint.
-      GUILDERIA_ROLE: client
-      GUILDERIA_MODE: ${GUILDERIA_MODE:-production}
+      ZENTHCLOUD_ROLE: client
+      ZENTHCLOUD_MODE: ${ZENTHCLOUD_MODE:-production}
       PORT: 3000
       HOST: 0.0.0.0
       TZ: ${TZ:-UTC}
@@ -205,7 +205,7 @@ services:
       WATCHPACK_POLLING: ${DEV_POLLING:-false}
     ports:
       # Host port is configurable; the container always listens on 3000.
-      - "${GUILDERIA_PORT:-3000}:3000"
+      - "${ZENTHCLOUD_PORT:-3000}:3000"
     depends_on:
       api:
         condition: service_healthy
@@ -232,19 +232,19 @@ services:
         - action: rebuild
           path: pnpm-lock.yaml
     networks:
-      - guilderia
+      - zenthcloud
 
   # -------------------------------------------------------------------------
   # GROUP 4 — BACKEND
   #
   # Node server: tRPC and OpenAPI routes, better-auth, WebSockets, BullMQ workers
   # and cron jobs. It owns both dependency connections and closes them on SIGTERM.
-  # Same image as `client` (`GUILDERIA_IMAGE`), role `api`: `node
+  # Same image as `client` (`ZENTHCLOUD_IMAGE`), role `api`: `node
   # dist/server.mjs` in production, `tsx server/server.ts` in development, chosen
-  # by GUILDERIA_BUILD_TARGET.
+  # by ZENTHCLOUD_BUILD_TARGET.
   #
   # It is the only service with PostgreSQL and Redis credentials, and the only one
-  # that applies migrations: once at startup (GUILDERIA_RUN_MIGRATIONS=1,
+  # that applies migrations: once at startup (ZENTHCLOUD_RUN_MIGRATIONS=1,
   # the default) so a deployment never starts against a stale schema. Scaling the
   # API horizontally means setting that to 0 and running `make migrate` once.
   # -------------------------------------------------------------------------
@@ -253,21 +253,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: ${GUILDERIA_BUILD_TARGET:-platform}
+      target: ${ZENTHCLOUD_BUILD_TARGET:-platform}
       args:
-        GUILDERIA_VERSION: ${GUILDERIA_VERSION:-latest}
-        GUILDERIA_FLAVOR: ${GUILDERIA_FLAVOR:-selfhosted}
-        GUILDERIA_PRODUCT: ${GUILDERIA_PRODUCT:-self}
-    image: ${GUILDERIA_IMAGE:-ghcr.io/skygenesisenterprise/guilderia}:${GUILDERIA_VERSION:-latest}
-    container_name: guilderia-api
+        ZENTHCLOUD_VERSION: ${ZENTHCLOUD_VERSION:-latest}
+        ZENTHCLOUD_FLAVOR: ${ZENTHCLOUD_FLAVOR:-selfhosted}
+        ZENTHCLOUD_PRODUCT: ${ZENTHCLOUD_PRODUCT:-self}
+    image: ${ZENTHCLOUD_IMAGE:-ghcr.io/skygenesisenterprise/zenthcloud}:${ZENTHCLOUD_VERSION:-latest}
+    container_name: zenthcloud-api
     restart: unless-stopped
     environment:
       <<: *api-environment
       # Selects the backend role in the shared entrypoint.
-      GUILDERIA_ROLE: api
-      GUILDERIA_MODE: ${GUILDERIA_MODE:-production}
+      ZENTHCLOUD_ROLE: api
+      ZENTHCLOUD_MODE: ${ZENTHCLOUD_MODE:-production}
       # Single API instance: it owns the migrations of this deployment.
-      GUILDERIA_RUN_MIGRATIONS: ${GUILDERIA_RUN_MIGRATIONS:-1}
+      ZENTHCLOUD_RUN_MIGRATIONS: ${ZENTHCLOUD_RUN_MIGRATIONS:-1}
       PORT: 4000
       HOST: 0.0.0.0
       NEXT_TELEMETRY_DISABLED: "1"
@@ -275,7 +275,7 @@ services:
       WATCHPACK_POLLING: ${DEV_POLLING:-false}
     ports:
       # Published so the browser can open the WebSocket connection (and for API clients).
-      - "${GUILDERIA_API_PORT:-4000}:4000"
+      - "${ZENTHCLOUD_API_PORT:-4000}:4000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -300,20 +300,20 @@ services:
         - action: rebuild
           path: pnpm-lock.yaml
     networks:
-      - guilderia
+      - zenthcloud
 
 volumes:
   # Application data. Deleting these volumes destroys the database and the queued
   # jobs; `docker compose down` alone preserves them.
-  guilderia-postgres-data:
-    name: guilderia-postgres-data
-  guilderia-redis-data:
-    name: guilderia-redis-data
+  zenthcloud-postgres-data:
+    name: zenthcloud-postgres-data
+  zenthcloud-redis-data:
+    name: zenthcloud-redis-data
 
 networks:
   # Single internal bridge network. PostgreSQL and Redis are reachable only through
   # it; it is not `internal: true` because the API needs outbound access (git
   # providers, OAuth, AI providers, notifications).
-  guilderia:
-    name: guilderia-internal
+  zenthcloud:
+    name: zenthcloud-internal
     driver: bridge

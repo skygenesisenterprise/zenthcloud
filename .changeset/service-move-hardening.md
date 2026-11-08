@@ -1,6 +1,6 @@
 ---
-"@guilderia/server": patch
-"@guilderia/app": patch
+"@zenthcloud/server": patch
+"@zenthcloud/app": patch
 ---
 
 Harden logical service moves: refuse cross-organization targets, require

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // is which host ends up in the clone URL, so the app auth is stubbed out.
 const mockFindGithubById = vi.hoisted(() => vi.fn());
 
-vi.mock("@guilderia/server/services/github", () => ({
+vi.mock("@zenthcloud/server/services/github", () => ({
 	findGithubById: mockFindGithubById,
 }));
 
@@ -19,7 +19,7 @@ vi.mock("octokit", () => ({
 }));
 
 const { cloneGithubRepository } = await import(
-	"@guilderia/server/utils/providers/github"
+	"@zenthcloud/server/utils/providers/github"
 );
 
 const provider = (githubUrl: string) => ({

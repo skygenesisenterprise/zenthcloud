@@ -1,7 +1,7 @@
 /**
  * Identity & Access provider model.
  *
- * Guilderia integrates with the identity infrastructure the user already runs
+ * Zenthcloud integrates with the identity infrastructure the user already runs
  * instead of forcing a specific vendor. Providers are addressed by protocol
  * (OIDC, SAML 2.0, LDAP, Active Directory) rather than by product, so a new
  * OIDC-compatible vendor needs no dedicated implementation.
@@ -11,7 +11,7 @@
  */
 
 /**
- * Provider types Guilderia can describe.
+ * Provider types Zenthcloud can describe.
  *
  * `ldap`, `active-directory`, `oauth2` and `custom` are part of the target
  * architecture (issue #46) and are already surfaced in the capability catalog;
@@ -94,7 +94,7 @@ export const identityProviderCategoryDescriptions: Record<
 	social:
 		"Sign-in with an account from a developer platform that speaks OAuth 2.0.",
 	custom:
-		"A generic adapter for identity infrastructure Guilderia does not model yet.",
+		"A generic adapter for identity infrastructure Zenthcloud does not model yet.",
 };
 
 /** Capabilities a provider may expose. Mirrors the adapter responsibilities. */

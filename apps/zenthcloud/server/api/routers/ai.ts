@@ -1,15 +1,15 @@
-import { IS_CLOUD } from "@guilderia/server/constants";
+import { IS_CLOUD } from "@zenthcloud/server/constants";
 import {
 	apiCreateAi,
 	apiSaveAiCustomProviders,
 	apiUpdateAi,
 	deploySuggestionSchema,
-} from "@guilderia/server/db/schema/ai";
+} from "@zenthcloud/server/db/schema/ai";
 import {
 	createDomain,
 	createMount,
 	findEnvironmentById,
-} from "@guilderia/server/index";
+} from "@zenthcloud/server/index";
 import {
 	deleteAiSettings,
 	findAiSettingById,
@@ -21,22 +21,22 @@ import {
 	suggestVariants,
 	testAiConnectionForSetting,
 	toAiSettingView,
-} from "@guilderia/server/services/ai";
-import { createComposeByTemplate } from "@guilderia/server/services/compose";
+} from "@zenthcloud/server/services/ai";
+import { createComposeByTemplate } from "@zenthcloud/server/services/compose";
 import {
 	addNewService,
 	checkServiceAccess,
-} from "@guilderia/server/services/permission";
-import { findProjectById } from "@guilderia/server/services/project";
+} from "@zenthcloud/server/services/permission";
+import { findProjectById } from "@zenthcloud/server/services/project";
 import {
 	getAiProviderLabel,
 	getModelCapabilities,
 	resolveAiProviderId,
-} from "@guilderia/server/utils/ai/contracts";
+} from "@zenthcloud/server/utils/ai/contracts";
 import {
 	generateAiText,
 	normalizeAiError,
-} from "@guilderia/server/utils/ai/runtime";
+} from "@zenthcloud/server/utils/ai/runtime";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { slugify } from "@/lib/slug";

@@ -16,12 +16,12 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 for candidate in \
     "$script_dir/install.sh" \
     "$script_dir/../install.sh" \
-    "$script_dir/install-guilderia.sh"; do
+    "$script_dir/install-zenthcloud.sh"; do
     if [ -f "$candidate" ]; then
         exec sh "$candidate" "$@"
     fi
 done
 
 echo "Error: install.sh was not found next to $0 or in its parent directory." >&2
-echo "This wrapper is deprecated; fetch the installer from https://guilderia.com/install.sh" >&2
+echo "This wrapper is deprecated; fetch the installer from https://zenthcloud.com/install.sh" >&2
 exit 1

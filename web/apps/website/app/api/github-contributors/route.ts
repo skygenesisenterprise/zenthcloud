@@ -25,11 +25,11 @@ export async function GET() {
 	try {
 		// Request 1 per page to get total count from Link header
 		const response = await fetch(
-			"https://api.github.com/repos/skygenesisenterprise/guilderia/contributors?per_page=1&anon=false",
+			"https://api.github.com/repos/skygenesisenterprise/zenthcloud/contributors?per_page=1&anon=false",
 			{
 				headers: {
 					Accept: "application/vnd.github.v3+json",
-					"User-Agent": "guilderia-Website",
+					"User-Agent": "zenthcloud-Website",
 				},
 			},
 		);

@@ -1,4 +1,4 @@
-import { paths } from "@guilderia/server/constants";
+import { paths } from "@zenthcloud/server/constants";
 import { relations, sql } from "drizzle-orm";
 import {
 	boolean,

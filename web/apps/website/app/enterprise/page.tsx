@@ -11,8 +11,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "For teams & organisations",
 	description:
-		"guilderia for teams that need repeatable deployments, access control, audit trails and support — on infrastructure they control or through the managed platform.",
-	alternates: { canonical: "https://guilderia.com/enterprise" },
+		"zenthcloud for teams that need repeatable deployments, access control, audit trails and support — on infrastructure they control or through the managed platform.",
+	alternates: { canonical: "https://zenthcloud.com/enterprise" },
 };
 
 const capabilities = [
@@ -57,7 +57,7 @@ const faqs = [
 	{
 		question: "Do you provide compliance certification?",
 		answer:
-			"No. guilderia provides controls — access management, audit logs, self-hosting — that support your own compliance work. Certification and legal obligations stay with your organisation.",
+			"No. zenthcloud provides controls — access management, audit logs, self-hosting — that support your own compliance work. Certification and legal obligations stay with your organisation.",
 	},
 	{
 		question: "Where can I get contractual terms?",
@@ -71,7 +71,7 @@ export default function EnterprisePage() {
 		<main>
 			<PageIntro
 				eyebrow="For teams & organisations"
-				title="guilderia,"
+				title="zenthcloud,"
 				highlight="with governance"
 				description="The same platform, with the access control, audit trail and support a team needs when infrastructure is shared and decisions have to be explained."
 				actions={
@@ -87,7 +87,7 @@ export default function EnterprisePage() {
 							className="w-full rounded-full px-6 sm:w-auto"
 							asChild
 						>
-							<Link href="/cloud">Explore guilderia Cloud</Link>
+							<Link href="/cloud">Explore zenthcloud Cloud</Link>
 						</Button>
 					</>
 				}
@@ -162,7 +162,7 @@ export default function EnterprisePage() {
 									href="/self"
 									className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-4 hover:text-primary"
 								>
-									guilderia Self
+									zenthcloud Self
 									<ArrowRight className="h-4 w-4" aria-hidden="true" />
 								</Link>
 								<Link

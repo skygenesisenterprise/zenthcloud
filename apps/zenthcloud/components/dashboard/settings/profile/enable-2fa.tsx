@@ -70,7 +70,7 @@ const AUTHENTICATOR_APP_IDS = AUTHENTICATOR_APPS.map((app) => app.id) as [
 	...AuthenticatorAppId[],
 ];
 
-const OTP_ISSUER = "guilderia";
+const OTP_ISSUER = "zenthcloud";
 
 const DEFAULT_AUTHENTICATOR_APP = AUTHENTICATOR_APPS[0].id;
 
@@ -100,7 +100,7 @@ export const USERNAME_PLACEHOLDER = "%username%";
 export const DATE_PLACEHOLDER = "%date%";
 export const BACKUP_CODES_PLACEHOLDER = "%backupCodes%";
 
-export const backupCodeTemplate = `guilderia - BACKUP VERIFICATION CODES
+export const backupCodeTemplate = `zenthcloud - BACKUP VERIFICATION CODES
 
 Points to note
 --------------
@@ -261,7 +261,7 @@ export const Enable2FA = ({ label = "Enable 2FA" }: { label?: string }) => {
 		const year = date.getFullYear();
 		const month = String(date.getMonth() + 1).padStart(2, "0");
 		const day = String(date.getDate()).padStart(2, "0");
-		const filename = `guilderia-2fa-backup-codes-${year}${month}${day}.txt`;
+		const filename = `zenthcloud-2fa-backup-codes-${year}${month}${day}.txt`;
 
 		const backupCodesText = backupCodeTemplate
 			.replace(USERNAME_PLACEHOLDER, currentUser?.user?.email || "unknown")
@@ -367,7 +367,7 @@ export const Enable2FA = ({ label = "Enable 2FA" }: { label?: string }) => {
 											</SelectContent>
 										</Select>
 										<FormDescription>
-											Choose the authenticator app you use. guilderia is shown as
+											Choose the authenticator app you use. zenthcloud is shown as
 											the issuer for this account.
 										</FormDescription>
 										<FormMessage />

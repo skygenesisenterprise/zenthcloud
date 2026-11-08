@@ -1,4 +1,4 @@
-import type { Domain } from "@guilderia/server/services/domain";
+import type { Domain } from "@zenthcloud/server/services/domain";
 import type { ApplicationNested } from "../builders";
 import {
 	createServiceConfig,

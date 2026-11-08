@@ -81,7 +81,7 @@ export const ShowNotifications = () => {
 																	<TelegramIcon className="size-7 " />
 																</div>
 															)}
-															{notification.notificationType === "guilderia" && (
+															{notification.notificationType === "zenthcloud" && (
 																<div className="flex  items-center justify-center rounded-lg">
 																	<DiscordIcon className="size-7 " />
 																</div>

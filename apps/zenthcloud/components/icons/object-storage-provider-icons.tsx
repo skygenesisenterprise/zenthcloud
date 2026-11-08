@@ -162,12 +162,12 @@ export const S3CompatibleIcon = ({ className }: Props) => (
 );
 
 /**
- * First-party Guilderia Internal Storage. Uses the Guilderia brand mark published
- * in `public/guilderia.png`.
+ * First-party Zenthcloud Internal Storage. Uses the Zenthcloud brand mark published
+ * in `public/zenthcloud.png`.
  */
 export const AstronCollectionInternalIcon = ({ className }: Props) => (
 	<Image
-		src="/guilderia.png"
+		src="/zenthcloud.png"
 		alt=""
 		aria-hidden="true"
 		width={1254}
@@ -193,7 +193,7 @@ export const objectStorageProviderIcons = {
 	seaweedfs: SeaweedfsIcon,
 	garage: GarageIcon,
 	"s3-compatible": S3CompatibleIcon,
-	"guilderia-internal": AstronCollectionInternalIcon,
+	"zenthcloud-internal": AstronCollectionInternalIcon,
 } as const;
 
 export type ObjectStorageProviderIconKey =

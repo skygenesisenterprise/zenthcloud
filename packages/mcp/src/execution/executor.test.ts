@@ -66,8 +66,8 @@ function testConfig(
   overrides: { policy?: Partial<McpConfig["policy"]>; limits?: Partial<McpConfig["limits"]> } = {},
 ): McpConfig {
   const base = loadConfig({
-    GUILDERIA_URL: "https://guilderia.example.com",
-    GUILDERIA_API_KEY: API_KEY,
+    ZENTHCLOUD_URL: "https://zenthcloud.example.com",
+    ZENTHCLOUD_API_KEY: API_KEY,
   } as NodeJS.ProcessEnv);
 
   return {
@@ -310,7 +310,7 @@ describe("ToolExecutor", () => {
       { requestId: "req-6" },
     );
     expect(result.error?.code).toBe("policy_denied");
-    expect(result.error?.message).toContain("GUILDERIA_MCP_ALLOW_DESTRUCTIVE");
+    expect(result.error?.message).toContain("ZENTHCLOUD_MCP_ALLOW_DESTRUCTIVE");
   });
 
   it("enforces the per-identity rate limit", async () => {

@@ -16,7 +16,7 @@ import { findServerById } from "./server";
 
 export type ScheduleExtended = Awaited<ReturnType<typeof findScheduleById>>;
 
-// Host-level schedules (server / guilderia-server) run their script as root on the
+// Host-level schedules (server / zenthcloud-server) run their script as root on the
 // host and must stay restricted to owners/admins, regardless of whether the
 // request is also tied to a service. Attaching an accessible applicationId must
 // not downgrade this to a service-access check.
@@ -25,9 +25,9 @@ export const assertHostScheduleAccess = async (
 	scheduleType: Schedule["scheduleType"] | null | undefined,
 	serverId: string | null | undefined,
 ) => {
-	if (scheduleType !== "server" && scheduleType !== "guilderia-server") return;
+	if (scheduleType !== "server" && scheduleType !== "zenthcloud-server") return;
 
-	if (scheduleType === "guilderia-server" && IS_CLOUD) {
+	if (scheduleType === "zenthcloud-server" && IS_CLOUD) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
 			message: "Host-level schedules are not available in the cloud version.",
@@ -67,7 +67,7 @@ export const createSchedule = async (
 
 	if (
 		newSchedule &&
-		(newSchedule.scheduleType === "guilderia-server" ||
+		(newSchedule.scheduleType === "zenthcloud-server" ||
 			newSchedule.scheduleType === "server")
 	) {
 		await handleScript(newSchedule);
@@ -185,7 +185,7 @@ export const updateSchedule = async (
 	}
 
 	if (
-		updatedSchedule?.scheduleType === "guilderia-server" ||
+		updatedSchedule?.scheduleType === "zenthcloud-server" ||
 		updatedSchedule?.scheduleType === "server"
 	) {
 		await handleScript(updatedSchedule);
@@ -211,7 +211,7 @@ ${schedule?.script || ""}`;
 		 echo "${encodedContent}" | base64 -d > ${fullPath}/script.sh
 	`;
 
-	if (schedule?.scheduleType === "guilderia-server") {
+	if (schedule?.scheduleType === "zenthcloud-server") {
 		await execAsync(script);
 	} else if (schedule?.scheduleType === "server") {
 		await execAsyncRemote(schedule?.serverId || "", script);

@@ -1,6 +1,6 @@
 "use client";
 
-import type { AdminPageDto } from "@guilderia/status";
+import type { AdminPageDto } from "@zenthcloud/status";
 import Link from "next/link";
 import * as React from "react";
 import { adminRequest } from "@/lib/admin-client";
@@ -94,7 +94,7 @@ export const PagesAdmin = () => {
 								onChange={(event) =>
 									setForm({ ...form, slug: event.target.value })
 								}
-								placeholder="guilderia"
+								placeholder="zenthcloud"
 								pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
 								required
 							/>
@@ -105,7 +105,7 @@ export const PagesAdmin = () => {
 								onChange={(event) =>
 									setForm({ ...form, name: event.target.value })
 								}
-								placeholder="Guilderia Status"
+								placeholder="Zenthcloud Status"
 								required
 							/>
 						</Field>

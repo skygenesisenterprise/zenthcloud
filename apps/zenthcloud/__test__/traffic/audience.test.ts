@@ -4,8 +4,8 @@ import {
 	MAX_AUDIENCE_EVENTS_PER_REQUEST,
 	MAX_AUDIENCE_PAYLOAD_BYTES,
 	normalizeAudienceEvents,
-} from "@guilderia/server/utils/traffic/audience";
-import { isAudienceOriginAllowed } from "@guilderia/server/services/traffic";
+} from "@zenthcloud/server/utils/traffic/audience";
+import { isAudienceOriginAllowed } from "@zenthcloud/server/services/traffic";
 import { describe, expect, it } from "vitest";
 
 const pageview = (overrides: Record<string, unknown> = {}) => ({
@@ -13,7 +13,7 @@ const pageview = (overrides: Record<string, unknown> = {}) => ({
 	path: "/pricing",
 	sessionId: "session-1",
 	visitorId: "visitor-1",
-	referrer: "https://www.google.com/search?q=guilderia",
+	referrer: "https://www.google.com/search?q=zenthcloud",
 	timestamp: "2026-10-12T09:00:00.000Z",
 	...overrides,
 });
@@ -87,7 +87,7 @@ describe("audience payload validation", () => {
 describe("normalizeAudienceEvents", () => {
 	const options = {
 		now: new Date("2026-10-12T09:00:30.000Z"),
-		siteHost: "guilderia.com",
+		siteHost: "zenthcloud.com",
 	};
 
 	it("normalises a page view", () => {
@@ -105,7 +105,7 @@ describe("normalizeAudienceEvents", () => {
 
 	it("drops an internal referrer instead of counting the site as its own source", () => {
 		const parsed = audienceIngestPayloadSchema.parse(
-			payload([pageview({ referrer: "https://guilderia.com/docs?token=1" })]),
+			payload([pageview({ referrer: "https://zenthcloud.com/docs?token=1" })]),
 		);
 		expect(normalizeAudienceEvents(parsed, options)[0]?.referrerHost).toBe("");
 	});
@@ -139,16 +139,16 @@ describe("isAudienceOriginAllowed", () => {
 	it("accepts the property domain and its sub-domains by default", () => {
 		expect(
 			isAudienceOriginAllowed({
-				origin: "https://guilderia.com",
+				origin: "https://zenthcloud.com",
 				allowedOrigins: undefined,
-				propertyDomain: "guilderia.com",
+				propertyDomain: "zenthcloud.com",
 			}),
 		).toBe(true);
 		expect(
 			isAudienceOriginAllowed({
-				origin: "https://www.guilderia.com",
+				origin: "https://www.zenthcloud.com",
 				allowedOrigins: undefined,
-				propertyDomain: "guilderia.com",
+				propertyDomain: "zenthcloud.com",
 			}),
 		).toBe(true);
 	});
@@ -158,14 +158,14 @@ describe("isAudienceOriginAllowed", () => {
 			isAudienceOriginAllowed({
 				origin: "https://evil.example.com",
 				allowedOrigins: undefined,
-				propertyDomain: "guilderia.com",
+				propertyDomain: "zenthcloud.com",
 			}),
 		).toBe(false);
 		expect(
 			isAudienceOriginAllowed({
 				origin: "not-an-origin",
 				allowedOrigins: undefined,
-				propertyDomain: "guilderia.com",
+				propertyDomain: "zenthcloud.com",
 			}),
 		).toBe(false);
 	});
@@ -173,16 +173,16 @@ describe("isAudienceOriginAllowed", () => {
 	it("honours an explicit allow-list, including sub-domain look-alikes", () => {
 		expect(
 			isAudienceOriginAllowed({
-				origin: "https://docs.guilderia.com",
-				allowedOrigins: ["docs.guilderia.com"],
-				propertyDomain: "guilderia.com",
+				origin: "https://docs.zenthcloud.com",
+				allowedOrigins: ["docs.zenthcloud.com"],
+				propertyDomain: "zenthcloud.com",
 			}),
 		).toBe(true);
 		expect(
 			isAudienceOriginAllowed({
-				origin: "https://guilderia.com",
-				allowedOrigins: ["docs.guilderia.com"],
-				propertyDomain: "guilderia.com",
+				origin: "https://zenthcloud.com",
+				allowedOrigins: ["docs.zenthcloud.com"],
+				propertyDomain: "zenthcloud.com",
 			}),
 		).toBe(false);
 	});
@@ -191,8 +191,8 @@ describe("isAudienceOriginAllowed", () => {
 		expect(
 			isAudienceOriginAllowed({
 				origin: undefined,
-				allowedOrigins: ["docs.guilderia.com"],
-				propertyDomain: "guilderia.com",
+				allowedOrigins: ["docs.zenthcloud.com"],
+				propertyDomain: "zenthcloud.com",
 			}),
 		).toBe(true);
 	});

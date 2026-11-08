@@ -8,7 +8,7 @@
 		"jsx": "react-jsx",
 		"declaration": false,
 		"paths": {
-			"@guilderia/server/*": ["../../packages/server/src/*"]
+			"@zenthcloud/server/*": ["../../packages/server/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist"],

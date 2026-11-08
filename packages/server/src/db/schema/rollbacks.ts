@@ -1,9 +1,9 @@
-import type { Application } from "@guilderia/server/services/application";
-import type { Environment } from "@guilderia/server/services/environment";
-import type { Mount } from "@guilderia/server/services/mount";
-import type { Port } from "@guilderia/server/services/port";
-import type { Project } from "@guilderia/server/services/project";
-import type { Registry } from "@guilderia/server/services/registry";
+import type { Application } from "@zenthcloud/server/services/application";
+import type { Environment } from "@zenthcloud/server/services/environment";
+import type { Mount } from "@zenthcloud/server/services/mount";
+import type { Port } from "@zenthcloud/server/services/port";
+import type { Project } from "@zenthcloud/server/services/project";
+import type { Registry } from "@zenthcloud/server/services/registry";
 import { relations } from "drizzle-orm";
 import { jsonb, pgTable, serial, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";

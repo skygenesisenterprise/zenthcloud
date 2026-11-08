@@ -6,7 +6,7 @@ import {
 	apiUpdateOnionService,
 	onionServiceStatus,
 	onionServices,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import { describe, expect, it } from "vitest";
 
 const validInput = {

@@ -1,8 +1,8 @@
 import {
   DOKPLOY_DESTINATION_CAPABILITIES,
   DOKPLOY_SOURCE_CAPABILITIES,
-  GUILDERIA_DESTINATION_CAPABILITIES,
-  GUILDERIA_SOURCE_CAPABILITIES,
+  ZENTHCLOUD_DESTINATION_CAPABILITIES,
+  ZENTHCLOUD_SOURCE_CAPABILITIES,
 } from "./capabilities";
 import { buildCompatibilityReport, buildMigrationPlan } from "./planning";
 import type {
@@ -25,12 +25,12 @@ export interface DockerMetadataInput {
 }
 
 function isAstronCollectionInfra(name: string): boolean {
-  return name === "guilderia" || name.startsWith("guilderia-") || name.startsWith("guilderia.");
+  return name === "zenthcloud" || name.startsWith("zenthcloud-") || name.startsWith("zenthcloud.");
 }
 
 function isDokployAttributed(networks: string, labels: string): boolean {
   const nets = networks.split(",").map((s) => s.trim());
-  if (nets.some((n) => /dokploy/i.test(n) && !/guilderia/i.test(n))) return true;
+  if (nets.some((n) => /dokploy/i.test(n) && !/zenthcloud/i.test(n))) return true;
   if (/(^|[, ])com\.dokploy/i.test(labels)) return true;
   return false;
 }
@@ -94,7 +94,7 @@ export function buildInventoryFromDockerMetadata(args: {
   }
 
   for (const n of args.networks) {
-    if (/guilderia/i.test(n)) continue;
+    if (/zenthcloud/i.test(n)) continue;
     if (!/dokploy/i.test(n)) continue;
     resources.push({
       id: `network:${n}`,
@@ -106,7 +106,7 @@ export function buildInventoryFromDockerMetadata(args: {
   }
 
   for (const v of args.volumes) {
-    if (/guilderia/i.test(v)) continue;
+    if (/zenthcloud/i.test(v)) continue;
     if (!/dokploy/i.test(v)) continue;
     resources.push({
       id: `volume:${v}`,
@@ -136,7 +136,7 @@ export function buildInventoryFromDockerMetadata(args: {
 
 export class DokploySourceAdapter implements MigrationSourceAdapter {
   readonly product = "dokploy" as const;
-  readonly direction = "dokploy-to-guilderia" as const;
+  readonly direction = "dokploy-to-zenthcloud" as const;
   constructor(private input?: { containers?: DockerMetadataInput[]; networks?: string[]; volumes?: string[] }) {}
   capabilities(): CapabilityMatrix {
     return DOKPLOY_SOURCE_CAPABILITIES;
@@ -153,7 +153,7 @@ export class DokploySourceAdapter implements MigrationSourceAdapter {
   }
   async inventory(detected: DetectedInstallation): Promise<MigrationInventory> {
     return buildInventoryFromDockerMetadata({
-      direction: "dokploy-to-guilderia",
+      direction: "dokploy-to-zenthcloud",
       source: detected,
       containers: this.input?.containers ?? [],
       networks: this.input?.networks ?? [],
@@ -163,10 +163,10 @@ export class DokploySourceAdapter implements MigrationSourceAdapter {
 }
 
 export class AstronCollectionDestinationAdapter implements MigrationDestinationAdapter {
-  readonly product = "guilderia" as const;
-  readonly direction = "dokploy-to-guilderia" as const;
+  readonly product = "zenthcloud" as const;
+  readonly direction = "dokploy-to-zenthcloud" as const;
   capabilities(): CapabilityMatrix {
-    return GUILDERIA_DESTINATION_CAPABILITIES;
+    return ZENTHCLOUD_DESTINATION_CAPABILITIES;
   }
   async verifyDestination(): Promise<{ ok: boolean; errors: string[] }> {
     return { ok: true, errors: [] };
@@ -175,28 +175,28 @@ export class AstronCollectionDestinationAdapter implements MigrationDestinationA
     return buildMigrationPlan(inventory, compatibility);
   }
   compatibility(inventory: MigrationInventory): CompatibilityReport {
-    return buildCompatibilityReport(inventory, GUILDERIA_DESTINATION_CAPABILITIES);
+    return buildCompatibilityReport(inventory, ZENTHCLOUD_DESTINATION_CAPABILITIES);
   }
 }
 
 export class AstronCollectionSourceAdapter implements MigrationSourceAdapter {
-  readonly product = "guilderia" as const;
-  readonly direction = "guilderia-to-dokploy" as const;
+  readonly product = "zenthcloud" as const;
+  readonly direction = "zenthcloud-to-dokploy" as const;
   capabilities(): CapabilityMatrix {
-    return GUILDERIA_SOURCE_CAPABILITIES;
+    return ZENTHCLOUD_SOURCE_CAPABILITIES;
   }
   async detect(): Promise<DetectedInstallation> {
     return {
-      product: "guilderia",
+      product: "zenthcloud",
       version: "unknown",
       installationType: "swarm",
       confidence: "medium",
-      evidence: ["Guilderia source declared by caller"],
+      evidence: ["Zenthcloud source declared by caller"],
     };
   }
   async inventory(detected: DetectedInstallation): Promise<MigrationInventory> {
     return {
-      direction: "guilderia-to-dokploy",
+      direction: "zenthcloud-to-dokploy",
       source: detected,
       resources: [],
       unattributedCount: 0,
@@ -208,7 +208,7 @@ export class AstronCollectionSourceAdapter implements MigrationSourceAdapter {
 
 export class DokployDestinationAdapter implements MigrationDestinationAdapter {
   readonly product = "dokploy" as const;
-  readonly direction = "guilderia-to-dokploy" as const;
+  readonly direction = "zenthcloud-to-dokploy" as const;
   constructor(private targetVersion?: string) {}
   capabilities(): CapabilityMatrix {
     return DOKPLOY_DESTINATION_CAPABILITIES;

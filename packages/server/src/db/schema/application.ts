@@ -1,4 +1,4 @@
-import { VALID_BRANCH_REGEX } from "@guilderia/server/utils/git-branch-validation";
+import { VALID_BRANCH_REGEX } from "@zenthcloud/server/utils/git-branch-validation";
 import { relations } from "drizzle-orm";
 import {
 	bigint,
@@ -238,7 +238,7 @@ export const applications = pgTable("application", {
 		.notNull()
 		.default(false),
 	// When true the service gets a dedicated overlay network so it is isolated
-	// from other services, while staying on guilderia-network for Traefik routing.
+	// from other services, while staying on zenthcloud-network for Traefik routing.
 	isolatedNetwork: boolean("isolatedNetwork").notNull().default(false),
 });
 

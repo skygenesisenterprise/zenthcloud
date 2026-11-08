@@ -1,9 +1,9 @@
-import { pickOnionNetwork } from "@guilderia/server/services/onion";
+import { pickOnionNetwork } from "@zenthcloud/server/services/onion";
 import { describe, expect, it } from "vitest";
 
 describe("pickOnionNetwork", () => {
 	it("prefers the default project network", () => {
-		expect(pickOnionNetwork(["guilderia-network", "myapp_default"])).toBe(
+		expect(pickOnionNetwork(["zenthcloud-network", "myapp_default"])).toBe(
 			"myapp_default",
 		);
 	});

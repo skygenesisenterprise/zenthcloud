@@ -15,7 +15,7 @@ import {
 	testObjectStorageConnection,
 	updateObjectStorageBucket,
 	updateObjectStorageProvider,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { TRPCError } from "@trpc/server";
 import { audit } from "@/server/api/utils/audit";
 import {

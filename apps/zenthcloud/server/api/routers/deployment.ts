@@ -14,16 +14,16 @@ import {
 	removeDeployment,
 	resolveServicePath,
 	updateDeploymentStatus,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import {
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
-} from "@guilderia/server/services/permission";
+} from "@zenthcloud/server/services/permission";
 import {
 	findServerById,
 	getAccessibleServerIds,
-} from "@guilderia/server/services/server";
+} from "@zenthcloud/server/services/server";
 import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";

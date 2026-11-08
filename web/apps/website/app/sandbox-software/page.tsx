@@ -29,9 +29,9 @@ import { Reveal } from "@/components/home/Reveal";
 export const metadata: Metadata = {
 	title: "Sandbox Software for Safe Internal Deployments",
 	description:
-		"Deploy, test, and share apps internally with guilderia's sandbox software. Give your team a safe, isolated environment to build without the risk.",
+		"Deploy, test, and share apps internally with zenthcloud's sandbox software. Give your team a safe, isolated environment to build without the risk.",
 	alternates: {
-		canonical: "https://guilderia.com/sandbox-software",
+		canonical: "https://zenthcloud.com/sandbox-software",
 	},
 };
 
@@ -73,7 +73,7 @@ const vibeCodedFeatures = [
 		icon: TrendingUp,
 		title: "Scale as your team grows",
 		description:
-			"Spin up multiple instances as your team expands. guilderia's architecture supports the kind of scale that growing companies need, with resources that flex alongside your workload rather than holding you back.",
+			"Spin up multiple instances as your team expands. zenthcloud's architecture supports the kind of scale that growing companies need, with resources that flex alongside your workload rather than holding you back.",
 	},
 	{
 		icon: KeyRound,
@@ -88,7 +88,7 @@ const platformFeatures = [
 		icon: Rocket,
 		title: "Deploy any application in minutes",
 		description:
-			"guilderia supports Docker, Docker Compose, and Nixpacks out of the box, so you can deploy applications built on virtually any stack. Getting a new app into a sandbox environment takes minutes, not days.",
+			"zenthcloud supports Docker, Docker Compose, and Nixpacks out of the box, so you can deploy applications built on virtually any stack. Getting a new app into a sandbox environment takes minutes, not days.",
 	},
 	{
 		icon: Layers,
@@ -100,7 +100,7 @@ const platformFeatures = [
 		icon: GitBranch,
 		title: "Integrate the tools your team is using",
 		description:
-			"guilderia connects with GitHub, GitLab, and Bitbucket, so developers can trigger deployments directly from their existing workflows. Integrated CI/CD pipelines mean new features move from commit to sandbox seamlessly.",
+			"zenthcloud connects with GitHub, GitLab, and Bitbucket, so developers can trigger deployments directly from their existing workflows. Integrated CI/CD pipelines mean new features move from commit to sandbox seamlessly.",
 	},
 	{
 		icon: Activity,
@@ -133,13 +133,13 @@ const enterpriseFeatures = [
 		icon: Server,
 		title: "Deploy on your own infrastructure",
 		description:
-			"Run guilderia entirely on your own servers, in your own cloud environment, or on-premise. Your data never leaves your infrastructure, especially when you're deploying internal applications or processing sensitive files.",
+			"Run zenthcloud entirely on your own servers, in your own cloud environment, or on-premise. Your data never leaves your infrastructure, especially when you're deploying internal applications or processing sensitive files.",
 	},
 	{
 		icon: Headphones,
 		title: "Access dedicated support when you need it",
 		description:
-			"Enterprise customers get direct access to the guilderia team for onboarding, troubleshooting, and ongoing support. If something needs fixing in your sandbox environment, you won't be waiting on a community forum.",
+			"Enterprise customers get direct access to the zenthcloud team for onboarding, troubleshooting, and ongoing support. If something needs fixing in your sandbox environment, you won't be waiting on a community forum.",
 	},
 	{
 		icon: KeyRound,
@@ -168,14 +168,14 @@ const faqs = [
 		question: "Which sandbox software is best for startups?",
 		answer: [
 			"For startups, the best sandbox software tends to be open-source or competitively priced, quick to set up, and flexible enough to support a fast-moving development process.",
-			"guilderia is a strong option: it's self-hosted, supports Docker and Compose out of the box, and gives small teams a sandbox environment they can spin up in minutes. It also scales well as your team grows, so you won't need to switch platforms when you do.",
+			"zenthcloud is a strong option: it's self-hosted, supports Docker and Compose out of the box, and gives small teams a sandbox environment they can spin up in minutes. It also scales well as your team grows, so you won't need to switch platforms when you do.",
 		],
 	},
 	{
 		question: "Which sandbox software is best for agencies?",
 		answer: [
 			"Agencies need sandbox software that handles multiple clients or projects in parallel, with clear separation between environments and straightforward access controls.",
-			"guilderia's multi-environment management and role-based permissions make it a practical choice: you can maintain isolated development environments for each client, deploy new features for review, and keep everything organized from a single dashboard.",
+			"zenthcloud's multi-environment management and role-based permissions make it a practical choice: you can maintain isolated development environments for each client, deploy new features for review, and keep everything organized from a single dashboard.",
 		],
 	},
 	{
@@ -188,7 +188,7 @@ const faqs = [
 	{
 		question: "How do I use sandbox software?",
 		answer: [
-			"The process varies by platform, but with guilderia, you start by setting up your self-hosted instance, which takes just a few minutes on any VPS.",
+			"The process varies by platform, but with zenthcloud, you start by setting up your self-hosted instance, which takes just a few minutes on any VPS.",
 			"From there, you connect your code repository, configure your deployment settings, and deploy your application into an isolated environment.",
 			"Team members can then access the app through a URL, without ever needing access to the underlying infrastructure. You can manage multiple instances, monitor performance, and move applications through different stages of testing from the same dashboard.",
 		],
@@ -197,8 +197,8 @@ const faqs = [
 		question: "Which sandbox software is best for B2B companies?",
 		answer: [
 			"B2B companies typically need sandbox software that supports internal workflows, integrates with existing tools, and keeps sensitive data protected.",
-			"guilderia Enterprise runs on your own infrastructure, connects with GitHub and GitLab, includes granular access controls, and supports the kind of scale that B2B teams need as they grow. You can also whitelabel the tool to create a seamless, branded experience for customers.",
-			"guilderia is particularly useful for companies that want to deploy AI-assisted or internally developed applications to employees without routing them through a public-facing environment.",
+			"zenthcloud Enterprise runs on your own infrastructure, connects with GitHub and GitLab, includes granular access controls, and supports the kind of scale that B2B teams need as they grow. You can also whitelabel the tool to create a seamless, branded experience for customers.",
+			"zenthcloud is particularly useful for companies that want to deploy AI-assisted or internally developed applications to employees without routing them through a public-facing environment.",
 		],
 	},
 ];
@@ -215,7 +215,7 @@ export default function SandboxSoftwarePage() {
 				<>
 					<Button className="rounded-full" asChild>
 						<Link
-							href="https://app.guilderia.com/register"
+							href="https://app.zenthcloud.com/register"
 							target="_blank"
 							rel="noreferrer"
 						>
@@ -268,7 +268,7 @@ export default function SandboxSoftwarePage() {
 						title: "Governance without slowing teams down",
 						description:
 							"SSO, SCIM, audit logs and custom roles, all deployable on-premises.",
-						cta: "Explore guilderia Enterprise",
+						cta: "Explore zenthcloud Enterprise",
 						href: "/enterprise",
 					},
 				},
@@ -276,7 +276,7 @@ export default function SandboxSoftwarePage() {
 			faqs={{
 				id: "sandbox-faqs",
 				title: "Sandbox software FAQs",
-				description: "How sandboxes work and where guilderia fits.",
+				description: "How sandboxes work and where zenthcloud fits.",
 				items: faqs.map((faq) => ({
 					question: faq.question,
 					answer: (
@@ -293,9 +293,9 @@ export default function SandboxSoftwarePage() {
 			finalCta={{
 				title: "Give your team a safer place to build",
 				description:
-					"Deploy your first sandbox on infrastructure you control, or let guilderia Cloud manage the control plane for you.",
+					"Deploy your first sandbox on infrastructure you control, or let zenthcloud Cloud manage the control plane for you.",
 				cta: "Create your account",
-				href: "https://app.guilderia.com/register",
+				href: "https://app.zenthcloud.com/register",
 				external: true,
 			}}
 		>
@@ -314,7 +314,7 @@ export default function SandboxSoftwarePage() {
 								Deploy from your AI coding tool
 							</h2>
 							<p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-								guilderia&apos;s MCP server lets compatible agents trigger
+								zenthcloud&apos;s MCP server lets compatible agents trigger
 								deployments, inspect app state and manage services without a
 								custom integration.
 							</p>

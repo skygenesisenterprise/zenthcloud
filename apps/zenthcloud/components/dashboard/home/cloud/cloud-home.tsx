@@ -72,7 +72,7 @@ const PlanUsagePanel = ({
 );
 
 /**
- * guilderia Cloud — overview of a customer workspace.
+ * zenthcloud Cloud — overview of a customer workspace.
  *
  * Shows the applications the user is responsible for: their state, their
  * recent activity and the resources they consume. Infrastructure operated by
@@ -100,7 +100,7 @@ export const CloudHome = () => {
 			<HomeHeader
 				title="Workspace overview"
 				description="Your Cloud applications, what they last reported and what is waiting on you."
-				scope="guilderia Cloud"
+				scope="zenthcloud Cloud"
 				scopeDetail="Your workspace only"
 				actions={
 					<>
@@ -125,12 +125,12 @@ export const CloudHome = () => {
 				<HomeEmptyState
 					icon={FolderInput}
 					title="Your workspace is empty"
-					description="Create a project to organise your environments, then add the applications and databases you want guilderia Cloud to run for you. Deployments and workload state appear here once a project exists."
+					description="Create a project to organise your environments, then add the applications and databases you want zenthcloud Cloud to run for you. Deployments and workload state appear here once a project exists."
 				>
 					{permissions?.project.create && <HandleProject />}
 					<Button asChild variant="outline">
 						<a
-							href="https://docs.guilderia.com/docs/core"
+							href="https://docs.zenthcloud.com/docs/core"
 							target="_blank"
 							rel="noreferrer"
 						>

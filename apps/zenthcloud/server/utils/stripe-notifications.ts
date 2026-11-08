@@ -1,6 +1,6 @@
-import InvoiceNotificationEmail from "@guilderia/server/emails/emails/invoice-notification";
-import PaymentFailedEmail from "@guilderia/server/emails/emails/payment-failed";
-import { sendEmail } from "@guilderia/server/verification/send-verification-email";
+import InvoiceNotificationEmail from "@zenthcloud/server/emails/emails/invoice-notification";
+import PaymentFailedEmail from "@zenthcloud/server/emails/emails/payment-failed";
+import { sendEmail } from "@zenthcloud/server/verification/send-verification-email";
 import { render } from "@react-email/components";
 import { format } from "date-fns";
 import type Stripe from "stripe";
@@ -51,7 +51,7 @@ export const sendInvoiceEmail = async (
 			const pdfBuffer = await downloadPdf(invoice.invoice_pdf);
 			if (pdfBuffer) {
 				attachments.push({
-					filename: `guilderia-invoice-${invoice.number || invoice.id}.pdf`,
+					filename: `zenthcloud-invoice-${invoice.number || invoice.id}.pdf`,
 					content: pdfBuffer,
 				});
 			}
@@ -59,7 +59,7 @@ export const sendInvoiceEmail = async (
 
 		await sendEmail({
 			email: admin.email,
-			subject: `Guilderia Invoice ${invoice.number || ""} - ${amountFormatted}`,
+			subject: `Zenthcloud Invoice ${invoice.number || ""} - ${amountFormatted}`,
 			text: htmlContent,
 			attachments,
 		});
@@ -97,7 +97,7 @@ export const sendPaymentFailedEmail = async (
 
 		await sendEmail({
 			email: admin.email,
-			subject: `Action required: Guilderia payment failed - ${amountFormatted}`,
+			subject: `Action required: Zenthcloud payment failed - ${amountFormatted}`,
 			text: htmlContent,
 		});
 

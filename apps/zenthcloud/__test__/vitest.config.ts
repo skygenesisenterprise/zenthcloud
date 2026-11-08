@@ -25,7 +25,7 @@ export default defineConfig({
 	],
 	resolve: {
 		alias: {
-			"@guilderia/server": path.resolve(
+			"@zenthcloud/server": path.resolve(
 				__dirname,
 				"../../../packages/server/src",
 			),

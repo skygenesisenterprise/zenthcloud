@@ -1,5 +1,5 @@
-import type { OverviewBackup } from "@guilderia/server/services/overview-shared";
-import { getBackupOverviewIcon } from "@guilderia/server/services/overview-shared";
+import type { OverviewBackup } from "@zenthcloud/server/services/overview-shared";
+import { getBackupOverviewIcon } from "@zenthcloud/server/services/overview-shared";
 import {
 	ArrowUpDown,
 	CircuitBoard,

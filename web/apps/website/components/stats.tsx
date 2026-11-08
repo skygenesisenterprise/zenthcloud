@@ -17,7 +17,7 @@ export function StatsSection() {
 	useEffect(() => {
 		const fetchStats = async () => {
 			const [starsRes, contribRes] = await Promise.allSettled([
-				fetch("/api/github-stars?owner=skygenesisenterprise&repo=guilderia"),
+				fetch("/api/github-stars?owner=skygenesisenterprise&repo=zenthcloud"),
 				fetch("/api/github-contributors"),
 			]);
 
@@ -42,7 +42,7 @@ export function StatsSection() {
 					Built in the open
 				</h2>
 				<p className="mt-4 text-center text-lg tracking-tight text-muted-foreground">
-					guilderia is developed publicly and licensed for self-hosting. Here is
+					zenthcloud is developed publicly and licensed for self-hosting. Here is
 					where you can see the project for yourself.
 				</p>
 			</div>
@@ -79,7 +79,7 @@ function getGrid({
 	return [
 		{
 			title: "GitHub Stars",
-			description: `guilderia is developed in the open on GitHub. Follow the repository to track releases, issues and roadmap work.`,
+			description: `zenthcloud is developed in the open on GitHub. Follow the repository to track releases, issues and roadmap work.`,
 			icon: (
 				<svg aria-hidden="true" className="h-6 w-6 fill-foreground">
 					<path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z" />
@@ -104,7 +104,7 @@ function getGrid({
 		{
 			title: "License",
 			description:
-				"guilderia is open source under the Apache-2.0 license. Audit it, self-host it and modify it.",
+				"zenthcloud is open source under the Apache-2.0 license. Audit it, self-host it and modify it.",
 			icon: <Scale className="h-6 w-6 stroke-foreground" />,
 			component: (
 				<p className="mt-4 whitespace-pre-wrap text-2xl  !font-semibold tracking-tighter">
@@ -115,7 +115,7 @@ function getGrid({
 		{
 			title: "Self-hosted",
 			description:
-				"Run guilderia on your servers, your network and your database — or use guilderia Cloud if you would rather not manage the control plane.",
+				"Run zenthcloud on your servers, your network and your database — or use zenthcloud Cloud if you would rather not manage the control plane.",
 			icon: <Server className="h-6 w-6 stroke-foreground" />,
 			component: (
 				<p className="mt-4 whitespace-pre-wrap text-2xl  !font-semibold tracking-tighter">

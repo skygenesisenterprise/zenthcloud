@@ -1,12 +1,12 @@
 import { vi } from "vitest";
 
 /**
- * Mock the DB module so tests that import from @guilderia/server (barrel)
+ * Mock the DB module so tests that import from @zenthcloud/server (barrel)
  * never open a real TCP connection to PostgreSQL (e.g. in CI where no DB runs).
  * Without this, loading the server barrel pulls in lib/auth and db, which
  * connect to localhost:5432 and cause ECONNREFUSED.
  */
-vi.mock("@guilderia/server/db", () => {
+vi.mock("@zenthcloud/server/db", () => {
 	const chain = () => chain;
 	chain.set = () => chain;
 	chain.where = () => chain;

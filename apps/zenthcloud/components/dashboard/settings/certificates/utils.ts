@@ -1,4 +1,4 @@
-import type { CertificateStatus } from "@guilderia/server";
+import type { CertificateStatus } from "@zenthcloud/server";
 
 /** Certificate states from issue #59: pending, active, expiring, expired. */
 export type CertificateLifecycleStatus = CertificateStatus;

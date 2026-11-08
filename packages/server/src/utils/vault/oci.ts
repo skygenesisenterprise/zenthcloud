@@ -1,4 +1,4 @@
-import type { ociVaultConfigSchema } from "@guilderia/server/db/schema";
+import type { ociVaultConfigSchema } from "@zenthcloud/server/db/schema";
 import { createSign } from "node:crypto";
 import type { z } from "zod";
 import { type VaultClient, vaultFetch } from "./types";

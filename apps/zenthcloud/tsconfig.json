@@ -27,7 +27,7 @@
 		/* Path Aliases */
 		"paths": {
 			"@/*": ["./*"],
-			"@guilderia/server/*": ["../../packages/server/src/*"]
+			"@zenthcloud/server/*": ["../../packages/server/src/*"]
 		}
 	},
 	"include": [
@@ -42,7 +42,7 @@
 	],
 	"exclude": [
 		"node_modules",
-		"guilderia",
+		"zenthcloud",
 		"config",
 		"dist",
 		"electron",

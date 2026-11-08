@@ -14,8 +14,8 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/mcp ./packages/mcp
 
 # Install dependencies and build
-RUN pnpm install --filter=@guilderia/mcp... --frozen-lockfile
-RUN pnpm --filter=@guilderia/mcp run build
+RUN pnpm install --filter=@zenthcloud/mcp... --frozen-lockfile
+RUN pnpm --filter=@zenthcloud/mcp run build
 
 # ----- Production Stage -----
 FROM node:lts-alpine
@@ -29,7 +29,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/mcp/package.json ./packages/mcp/
 
 # Install only production dependencies
-RUN pnpm install --filter=@guilderia/mcp --prod --frozen-lockfile --ignore-scripts
+RUN pnpm install --filter=@zenthcloud/mcp --prod --frozen-lockfile --ignore-scripts
 
 # Copy built artifacts
 COPY --from=builder /usr/src/app/packages/mcp/build ./packages/mcp/build

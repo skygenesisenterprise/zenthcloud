@@ -1,7 +1,7 @@
 /**
  * Status page administration.
  *
- * A "page" is a publication scope (e.g. `guilderia`, `sge-cloud`). Multiple
+ * A "page" is a publication scope (e.g. `zenthcloud`, `sge-cloud`). Multiple
  * pages let the platform serve several products without duplicating the
  * deployment.
  */

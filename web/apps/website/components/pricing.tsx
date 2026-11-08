@@ -12,19 +12,19 @@ import { PageFaq, SectionHeading } from "./pages/PagePrimitives";
 import { Button } from "./ui/button";
 import { Reveal } from "./home/Reveal";
 
-const CLOUD_APP_URL = "https://app.guilderia.com";
-const DOCS_INSTALL_URL = "https://docs.guilderia.com/docs/core/installation";
+const CLOUD_APP_URL = "https://app.zenthcloud.com";
+const DOCS_INSTALL_URL = "https://docs.zenthcloud.com/docs/core/installation";
 
 const pricingFaqs = [
 	{
-		question: "Is guilderia free?",
+		question: "Is zenthcloud free?",
 		answer:
 			"Yes. The core platform is open source under the Apache-2.0 license and the self-hosted edition is free to run on your own infrastructure.",
 	},
 	{
 		question: "What is the difference between Self and Cloud?",
 		answer:
-			"guilderia Self is the open-source product you host yourself. guilderia Cloud is a managed service operated by guilderia Enterprise: we run the control plane and take on operational responsibility, while you keep using the same platform.",
+			"zenthcloud Self is the open-source product you host yourself. zenthcloud Cloud is a managed service operated by zenthcloud Enterprise: we run the control plane and take on operational responsibility, while you keep using the same platform.",
 	},
 	{
 		question: "Is there a limit on the number of deployments?",
@@ -39,7 +39,7 @@ const pricingFaqs = [
 	{
 		question: "Do I need to provide my own server?",
 		answer:
-			"Yes. You provide your own infrastructure — a VPS, dedicated servers, on-premise hardware or machines from a hosting provider — and guilderia deploys and operates your workloads on it.",
+			"Yes. You provide your own infrastructure — a VPS, dedicated servers, on-premise hardware or machines from a hosting provider — and zenthcloud deploys and operates your workloads on it.",
 	},
 	{
 		question: "What kind of support do I get?",
@@ -114,7 +114,7 @@ export function Pricing() {
 			<PageHero
 				badge="Pricing"
 				badgeDetail="Apache-2.0 · No per-seat fees"
-				badgeHref="https://github.com/skygenesisenterprise/guilderia"
+				badgeHref="https://github.com/skygenesisenterprise/zenthcloud"
 				title="Open source"
 				highlight="at the core"
 				description="Self-host the full platform for free, or let us run it for you. No per-seat charges on Self, and no reduced edition hiding the capabilities you need."
@@ -122,7 +122,7 @@ export function Pricing() {
 					<>
 						<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
 							<Link href={DOCS_INSTALL_URL} target="_blank">
-								Install guilderia
+								Install zenthcloud
 							</Link>
 						</Button>
 						<Button
@@ -147,8 +147,8 @@ export function Pricing() {
 				<Container>
 					<SectionHeading
 						id="pricing-heading"
-						title="Three ways to run guilderia"
-						description="Same platform, different operating responsibility. Start free on your own servers, or hand the control plane to guilderia."
+						title="Three ways to run zenthcloud"
+						description="Same platform, different operating responsibility. Start free on your own servers, or hand the control plane to zenthcloud."
 					/>
 
 					<div className="mx-auto mt-12 grid max-w-6xl gap-4 lg:grid-cols-3">
@@ -175,7 +175,7 @@ export function Pricing() {
 										target="_blank"
 										className="inline-flex h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 									>
-										Install guilderia
+										Install zenthcloud
 									</Link>
 								</div>
 							</section>
@@ -190,7 +190,7 @@ export function Pricing() {
 									</span>
 								</div>
 								<p className="mt-2 text-base font-medium text-primary-foreground">
-									Managed guilderia operated by guilderia Enterprise
+									Managed zenthcloud operated by zenthcloud Enterprise
 								</p>
 								<div className="mt-6">
 									<p className="font-display text-4xl tracking-tight">

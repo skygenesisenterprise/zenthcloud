@@ -1,4 +1,4 @@
-import { validateRequest } from "@guilderia/server";
+import { validateRequest } from "@zenthcloud/server";
 import { createServerSideHelpers } from "@trpc/react-query/server";
 import type { GetServerSidePropsContext, NextPage } from "next";
 import dynamic from "next/dynamic";

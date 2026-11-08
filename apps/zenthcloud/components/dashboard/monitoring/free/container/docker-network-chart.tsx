@@ -1,4 +1,4 @@
-import { formatMb, toMb } from "@guilderia/server/monitoring/units";
+import { formatMb, toMb } from "@zenthcloud/server/monitoring/units";
 import { format } from "date-fns";
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts";
 import {

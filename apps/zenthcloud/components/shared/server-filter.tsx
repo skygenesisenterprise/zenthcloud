@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/utils/api";
 
-const GUILDERIA_SERVER = "guilderia-server";
+const ZENTHCLOUD_SERVER = "zenthcloud-server";
 
 interface Props {
 	children: (serverId?: string) => ReactNode;
@@ -44,7 +44,7 @@ export const ServerFilter = ({ children, emptyAction }: Props) => {
 	const selectedServer = servers?.find(
 		(server) => server.serverId === queryServerId,
 	);
-	// Cloud has no local Guilderia server, so fall back to the first remote server
+	// Cloud has no local Zenthcloud server, so fall back to the first remote server
 	const serverId = selectedServer
 		? selectedServer.serverId
 		: isCloud
@@ -56,7 +56,7 @@ export const ServerFilter = ({ children, emptyAction }: Props) => {
 		router.replace(
 			{
 				pathname: router.pathname,
-				query: value === GUILDERIA_SERVER ? query : { ...query, serverId: value },
+				query: value === ZENTHCLOUD_SERVER ? query : { ...query, serverId: value },
 			},
 			undefined,
 			{ shallow: true },
@@ -116,7 +116,7 @@ export const ServerFilter = ({ children, emptyAction }: Props) => {
 						Viewing server
 					</Label>
 					<Select
-						value={serverId ?? GUILDERIA_SERVER}
+						value={serverId ?? ZENTHCLOUD_SERVER}
 						onValueChange={setServerId}
 					>
 						<SelectTrigger id="server-filter" className="w-fit min-w-[220px]">
@@ -129,9 +129,9 @@ export const ServerFilter = ({ children, emptyAction }: Props) => {
 							<SelectGroup>
 								<SelectLabel>Servers</SelectLabel>
 								{!isCloud && (
-									<SelectItem value={GUILDERIA_SERVER}>
+									<SelectItem value={ZENTHCLOUD_SERVER}>
 										<div className="flex items-center gap-2">
-											<span>Guilderia Server</span>
+											<span>Zenthcloud Server</span>
 											<Badge
 												variant="secondary"
 												className="text-[10px] px-1.5 py-0"
@@ -156,7 +156,7 @@ export const ServerFilter = ({ children, emptyAction }: Props) => {
 					</Select>
 				</div>
 			)}
-			<Fragment key={serverId ?? GUILDERIA_SERVER}>{children(serverId)}</Fragment>
+			<Fragment key={serverId ?? ZENTHCLOUD_SERVER}>{children(serverId)}</Fragment>
 		</div>
 	);
 };

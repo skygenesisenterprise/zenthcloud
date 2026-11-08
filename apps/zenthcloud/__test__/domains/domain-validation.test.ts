@@ -2,7 +2,7 @@ import os from "node:os";
 import {
 	getServerIpCandidates,
 	validateDomain,
-} from "@guilderia/server/services/domain";
+} from "@zenthcloud/server/services/domain";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -21,19 +21,19 @@ vi.mock("node:dns", () => ({
 	},
 }));
 
-vi.mock("@guilderia/server/utils/process/execAsync", () => ({
+vi.mock("@zenthcloud/server/utils/process/execAsync", () => ({
 	execAsyncRemote: mocks.execAsyncRemote,
 }));
 
-vi.mock("@guilderia/server/services/server", () => ({
+vi.mock("@zenthcloud/server/services/server", () => ({
 	findServerById: mocks.findServerById,
 }));
 
-vi.mock("@guilderia/server/services/web-server-settings", () => ({
+vi.mock("@zenthcloud/server/services/web-server-settings", () => ({
 	getWebServerSettings: mocks.getWebServerSettings,
 }));
 
-vi.mock("@guilderia/server/wss/utils", () => ({
+vi.mock("@zenthcloud/server/wss/utils", () => ({
 	getPublicIpWithFallback: mocks.getPublicIpWithFallback,
 }));
 
@@ -67,7 +67,7 @@ describe("getServerIpCandidates", () => {
 		);
 	});
 
-	it("includes every address assigned to the local Guilderia host", async () => {
+	it("includes every address assigned to the local Zenthcloud host", async () => {
 		mocks.getWebServerSettings.mockResolvedValue({
 			serverIp: "10.0.0.10",
 		});
@@ -158,7 +158,7 @@ describe("validateDomain", () => {
 			reason: expect.stringContaining("local DNS"),
 		});
 		await expect(
-			validateDomain("gitlab.guilderia.local"),
+			validateDomain("gitlab.zenthcloud.local"),
 		).resolves.toMatchObject({
 			isValid: true,
 			skipped: true,

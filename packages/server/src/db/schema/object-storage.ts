@@ -18,9 +18,9 @@ import {
 import { organization } from "./account";
 
 /**
- * Every object-storage provider Guilderia can talk to.
+ * Every object-storage provider Zenthcloud can talk to.
  *
- * Guilderia speaks S3, so a "provider" is above all a preset (endpoint, region,
+ * Zenthcloud speaks S3, so a "provider" is above all a preset (endpoint, region,
  * path-style, TLS expectations) over the same protocol. Managed object-storage
  * services and self-hosted S3-compatible stores sit behind a single adapter,
  * which is what lets a bucket be attached to backups or, later, to an
@@ -46,8 +46,8 @@ export const objectStorageProviderTypes = [
 	"garage",
 	// Generic escape hatch for any other S3-compatible endpoint
 	"s3-compatible",
-	// First-party: storage Guilderia manages itself, with no external dependency
-	"guilderia-internal",
+	// First-party: storage Zenthcloud manages itself, with no external dependency
+	"zenthcloud-internal",
 ] as const;
 
 export type ObjectStorageProviderType =
@@ -86,7 +86,7 @@ export const objectStorageConfigSchema = z.object({
 	additionalFlags: z
 		.array(z.string().regex(ADDITIONAL_FLAG_REGEX, ADDITIONAL_FLAG_ERROR))
 		.default([]),
-	/** Internal provider only: Guilderia-managed directory backing the buckets. */
+	/** Internal provider only: Zenthcloud-managed directory backing the buckets. */
 	rootPath: z.string().trim().optional(),
 });
 
@@ -206,7 +206,7 @@ const requireS3Connection = (
 	},
 	ctx: z.RefinementCtx,
 ) => {
-	if (value.providerType === "guilderia-internal") {
+	if (value.providerType === "zenthcloud-internal") {
 		return;
 	}
 	if (!value.config.endpoint) {

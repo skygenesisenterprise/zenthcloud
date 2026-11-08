@@ -1,4 +1,4 @@
-import { redactServerSshKey } from "@guilderia/server/services/server";
+import { redactServerSshKey } from "@zenthcloud/server/services/server";
 import { describe, expect, it } from "vitest";
 
 describe("redactServerSshKey (server SSH private key disclosure guard)", () => {

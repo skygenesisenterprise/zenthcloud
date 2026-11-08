@@ -1,4 +1,4 @@
-import type { ServiceType } from "@guilderia/server/db/schema";
+import type { ServiceType } from "@zenthcloud/server/db/schema";
 import { FolderInput } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";

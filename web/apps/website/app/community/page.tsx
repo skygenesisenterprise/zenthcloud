@@ -26,9 +26,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Community",
 	description:
-		"guilderia is open source under Apache-2.0. Report bugs, join discussions, contribute code, write documentation, translate, publish templates and help shape the roadmap.",
+		"zenthcloud is open source under Apache-2.0. Report bugs, join discussions, contribute code, write documentation, translate, publish templates and help shape the roadmap.",
 	alternates: {
-		canonical: "https://guilderia.com/community",
+		canonical: "https://zenthcloud.com/community",
 	},
 };
 
@@ -67,7 +67,7 @@ const contributionPaths = [
 		icon: IconLanguage,
 		title: "Translate",
 		description:
-			"Help present guilderia to non-English speaking communities and make the project accessible worldwide.",
+			"Help present zenthcloud to non-English speaking communities and make the project accessible worldwide.",
 	},
 	{
 		icon: IconGitPullRequest,
@@ -103,11 +103,11 @@ const principles = [
 
 const startingPoints = [
 	{
-		title: "New to guilderia",
+		title: "New to zenthcloud",
 		description:
 			"Read the documentation, deploy a first application, then tell how it went. Feedback from new users is the most valuable there is.",
 		cta: "Read the docs",
-		href: "https://docs.guilderia.com/docs/core",
+		href: "https://docs.zenthcloud.com/docs/core",
 		external: true,
 	},
 	{
@@ -115,7 +115,7 @@ const startingPoints = [
 		description:
 			"Look for good-first-issue labels on GitHub, or bring a problem you actually have — both are valid entry points.",
 		cta: "Browse issues",
-		href: "https://github.com/skygenesisenterprise/guilderia",
+		href: "https://github.com/skygenesisenterprise/zenthcloud",
 		external: true,
 	},
 	{
@@ -134,15 +134,15 @@ export default function CommunityPage() {
 			<PageHero
 				badge="Community"
 				badgeDetail="Apache-2.0 · Built in the open"
-				badgeHref="https://github.com/skygenesisenterprise/guilderia"
+				badgeHref="https://github.com/skygenesisenterprise/zenthcloud"
 				title="Built with the community,"
 				highlight="in the open"
-				description="guilderia is open-source infrastructure software, Apache-2.0 licensed. Whether you deploy with it, report issues, write docs or ship code — there is a clear way to participate."
+				description="zenthcloud is open-source infrastructure software, Apache-2.0 licensed. Whether you deploy with it, report issues, write docs or ship code — there is a clear way to participate."
 				actions={
 					<>
 						<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
 							<Link
-								href="https://github.com/skygenesisenterprise/guilderia"
+								href="https://github.com/skygenesisenterprise/zenthcloud"
 								target="_blank"
 							>
 								Open GitHub
@@ -155,7 +155,7 @@ export default function CommunityPage() {
 							asChild
 						>
 							<Link
-								href="https://github.com/skygenesisenterprise/guilderia/discussions"
+								href="https://github.com/skygenesisenterprise/zenthcloud/discussions"
 								target="_blank"
 							>
 								Join the discussions
@@ -172,7 +172,7 @@ export default function CommunityPage() {
 						external: true,
 					},
 					{
-						href: "https://github.com/skygenesisenterprise/guilderia/issues",
+						href: "https://github.com/skygenesisenterprise/zenthcloud/issues",
 						label: "Roadmap",
 						external: true,
 					},

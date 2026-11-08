@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 	description:
 		"Use healthcare deployment software to release patient portals, clinical tools, and internal apps in private environments your team controls.",
 	alternates: {
-		canonical: "https://guilderia.com/industries/healthcare",
+		canonical: "https://zenthcloud.com/industries/healthcare",
 	},
 };
 
@@ -18,18 +18,18 @@ const data: IndustryPageData = {
 	hero: {
 		title: "Healthcare deployment software for safer clinical apps",
 		description:
-			"Deploy patient-facing apps, clinical operations tools, and healthcare technology in environments your IT teams can govern. guilderia supports private deployment in healthcare with self-hostable infrastructure, access control, and review workflows.",
+			"Deploy patient-facing apps, clinical operations tools, and healthcare technology in environments your IT teams can govern. zenthcloud supports private deployment in healthcare with self-hostable infrastructure, access control, and review workflows.",
 	},
 	features: {
 		heading: "Release healthcare technology without exposing infrastructure",
 		description:
-			"Healthcare technology deployment needs a balance between speed and control. guilderia enables developers to publish apps efficiently while IT teams keep infrastructure, access, and operational visibility in one place.",
+			"Healthcare technology deployment needs a balance between speed and control. zenthcloud enables developers to publish apps efficiently while IT teams keep infrastructure, access, and operational visibility in one place.",
 		items: [
 			{
 				icon: Lock,
 				title: "Deploy clinical apps inside controlled environments",
 				description:
-					"Run patient portals, care team tools, internal dashboards, and service APIs in environments managed by you with self-hosted guilderia.",
+					"Run patient portals, care team tools, internal dashboards, and service APIs in environments managed by you with self-hosted zenthcloud.",
 			},
 			{
 				icon: KeyRound,
@@ -66,7 +66,7 @@ const data: IndustryPageData = {
 	comparison: {
 		heading: "Private deployment in healthcare on one platform",
 		description:
-			"guilderia gives teams a more consistent way to release and operate healthcare software, rather than a mix of internal servers, cloud projects, vendor portals, and one-off deployment scripts.",
+			"zenthcloud gives teams a more consistent way to release and operate healthcare software, rather than a mix of internal servers, cloud projects, vendor portals, and one-off deployment scripts.",
 		without: {
 			title: "Ad hoc healthcare deployments",
 			items: [
@@ -77,8 +77,8 @@ const data: IndustryPageData = {
 				"Internal apps can become difficult for IT teams to support.",
 			],
 		},
-		withguilderia: {
-			title: "guilderia for healthcare deployment",
+		withzenthcloud: {
+			title: "zenthcloud for healthcare deployment",
 			items: [
 				"Applications deploy through one governed platform.",
 				"Teams can use Git, Docker, Docker Compose, and supported databases.",
@@ -91,7 +91,7 @@ const data: IndustryPageData = {
 	workflow: {
 		heading: "From healthcare app repository to governed release",
 		description:
-			"guilderia gives healthcare technology teams a repeatable path from code to a running application. Developers can keep working from Git while IT teams manage the release environment.",
+			"zenthcloud gives healthcare technology teams a repeatable path from code to a running application. Developers can keep working from Git while IT teams manage the release environment.",
 		steps: [
 			{
 				title: "Create the application environment",
@@ -102,7 +102,7 @@ const data: IndustryPageData = {
 			{
 				title: "Connect the codebase",
 				description:
-					"Connect a Git provider or bring a Docker-based configuration. guilderia supports common deployment methods, so teams can match the workflow to the application stack.",
+					"Connect a Git provider or bring a Docker-based configuration. zenthcloud supports common deployment methods, so teams can match the workflow to the application stack.",
 				flow: "Select provider → Choose repository → Set branch",
 			},
 			{
@@ -122,12 +122,12 @@ const data: IndustryPageData = {
 	builtFor: {
 		heading: "Built for patient-facing apps and internal healthcare platforms",
 		paragraphs: [
-			"guilderia gives healthcare technology teams a practical deployment layer for apps that need tighter operational control.",
+			"zenthcloud gives healthcare technology teams a practical deployment layer for apps that need tighter operational control.",
 			"Teams can deploy services from Git or Docker, manage domains and environments, and keep logs, monitoring, and releases close to the application.",
-			"For organizations with stricter infrastructure needs, guilderia can be self-hosted. Teams that want guilderia to manage the control plane can use guilderia Cloud while connecting their own servers for application workloads.",
+			"For organizations with stricter infrastructure needs, zenthcloud can be self-hosted. Teams that want zenthcloud to manage the control plane can use zenthcloud Cloud while connecting their own servers for application workloads.",
 		],
 		screenshotAlt:
-			"guilderia dashboard for a healthcare technology project with production and staging environments and running services",
+			"zenthcloud dashboard for a healthcare technology project with production and staging environments and running services",
 	},
 	detailRows: [
 		{
@@ -171,12 +171,12 @@ const data: IndustryPageData = {
 				question:
 					"How is healthcare technology deployment different from general software deployment?",
 				answer:
-					"Healthcare technology deployment often needs tighter control over access, infrastructure, review workflows, and operational visibility. guilderia helps by keeping releases, environments, logs, monitoring, and access management closer together, while also offering self-hosted deployment.",
+					"Healthcare technology deployment often needs tighter control over access, infrastructure, review workflows, and operational visibility. zenthcloud helps by keeping releases, environments, logs, monitoring, and access management closer together, while also offering self-hosted deployment.",
 			},
 			{
-				question: "Can guilderia support private deployment in healthcare?",
+				question: "Can zenthcloud support private deployment in healthcare?",
 				answer:
-					"Yes. guilderia can be self-hosted, and guilderia Cloud lets teams connect their own servers while guilderia manages the control plane. This gives healthcare teams options for private deployment in healthcare environments.",
+					"Yes. zenthcloud can be self-hosted, and zenthcloud Cloud lets teams connect their own servers while zenthcloud manages the control plane. This gives healthcare teams options for private deployment in healthcare environments.",
 			},
 			{
 				question: "Can healthcare teams review apps before release?",
@@ -184,9 +184,9 @@ const data: IndustryPageData = {
 					"Yes. Preview deployments and staging environments help teams test a running application before it reaches staff, patients, or operational users.",
 			},
 			{
-				question: "Does guilderia support healthcare app databases?",
+				question: "Does zenthcloud support healthcare app databases?",
 				answer:
-					"Yes. guilderia supports common databases, including PostgreSQL, MySQL, MongoDB, Redis, and MariaDB, along with backup options for supported services.",
+					"Yes. zenthcloud supports common databases, including PostgreSQL, MySQL, MongoDB, Redis, and MariaDB, along with backup options for supported services.",
 			},
 		],
 	},

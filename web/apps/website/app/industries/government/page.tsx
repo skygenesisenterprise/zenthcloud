@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 	description:
 		"Use software deployment tools for government teams to release citizen services and internal apps in self-hosted, audit-ready environments.",
 	alternates: {
-		canonical: "https://guilderia.com/industries/government",
+		canonical: "https://zenthcloud.com/industries/government",
 	},
 };
 
@@ -18,13 +18,13 @@ const data: IndustryPageData = {
 	hero: {
 		title: "Software deployment tools for governments",
 		description:
-			"Deploy citizen-facing services, case management systems, and internal department tools without handing infrastructure control to an outside vendor. guilderia gives teams a self-hosted platform for private deployment and consistent oversight.",
+			"Deploy citizen-facing services, case management systems, and internal department tools without handing infrastructure control to an outside vendor. zenthcloud gives teams a self-hosted platform for private deployment and consistent oversight.",
 	},
 	features: {
 		heading:
 			"Ship public sector software without losing infrastructure control",
 		description:
-			"Government agencies need to ship software while keeping data and infrastructure under direct control. With guilderia, teams release from Git and Docker, while IT manages access and audit trails.",
+			"Government agencies need to ship software while keeping data and infrastructure under direct control. With zenthcloud, teams release from Git and Docker, while IT manages access and audit trails.",
 		items: [
 			{
 				icon: Server,
@@ -67,7 +67,7 @@ const data: IndustryPageData = {
 	comparison: {
 		heading: "Government software deployment without losing data control",
 		description:
-			"Commercial cloud accounts can become difficult to govern across departments, citizen-facing services, and compliance-sensitive systems. guilderia centralizes the deployment layer while teams stay productive.",
+			"Commercial cloud accounts can become difficult to govern across departments, citizen-facing services, and compliance-sensitive systems. zenthcloud centralizes the deployment layer while teams stay productive.",
 		without: {
 			title: "Generic cloud deployment",
 			items: [
@@ -78,8 +78,8 @@ const data: IndustryPageData = {
 				"Security teams have limited visibility into unsanctioned or shadow IT apps.",
 			],
 		},
-		withguilderia: {
-			title: "guilderia self-hosted",
+		withzenthcloud: {
+			title: "zenthcloud self-hosted",
 			items: [
 				"Applications deploy inside self-hosted or air-gapped infrastructure your agency controls.",
 				"Admins manage projects, users, services, and servers centrally.",
@@ -92,7 +92,7 @@ const data: IndustryPageData = {
 	workflow: {
 		heading: "From government app repository to controlled release",
 		description:
-			"guilderia makes release management a clear, repeatable workflow. Developers can ship from their repositories, while IT teams keep the environment, access model, and release path consistent.",
+			"zenthcloud makes release management a clear, repeatable workflow. Developers can ship from their repositories, while IT teams keep the environment, access model, and release path consistent.",
 		steps: [
 			{
 				title: "Create the governed environment",
@@ -103,7 +103,7 @@ const data: IndustryPageData = {
 			{
 				title: "Connect the repository",
 				description:
-					"Connect a Git provider or bring a Docker-based deployment. guilderia can trigger deployments through webhooks when approved changes are pushed.",
+					"Connect a Git provider or bring a Docker-based deployment. zenthcloud can trigger deployments through webhooks when approved changes are pushed.",
 				flow: "Select provider → Choose repository → Set branch",
 			},
 			{
@@ -124,10 +124,10 @@ const data: IndustryPageData = {
 		heading: "Built for government IT and departmental teams",
 		paragraphs: [
 			"Government IT teams often end up stitching together one-off servers, scripts, and vendor tools per department.",
-			"guilderia replaces that patchwork with a single deployment layer, so oversight bodies get one consistent audit trail instead of piecing records together from a dozen systems, and smaller departments can ship without waiting on a custom platform build.",
+			"zenthcloud replaces that patchwork with a single deployment layer, so oversight bodies get one consistent audit trail instead of piecing records together from a dozen systems, and smaller departments can ship without waiting on a custom platform build.",
 		],
 		screenshotAlt:
-			"guilderia dashboard for a government project with production and staging environments and running services",
+			"zenthcloud dashboard for a government project with production and staging environments and running services",
 	},
 	detailRows: [
 		{
@@ -168,27 +168,27 @@ const data: IndustryPageData = {
 					"Government software deployment is the process of releasing citizen-facing services, case management systems, internal dashboards, and other public sector applications into environments that agency IT teams can control and audit.",
 			},
 			{
-				question: "Can guilderia run in an air-gapped government environment?",
+				question: "Can zenthcloud run in an air-gapped government environment?",
 				answer:
-					"Yes. guilderia Enterprise Self-Hosted can run in air-gapped or private networks, so the application, database, and control plane stay inside infrastructure your agency owns.",
+					"Yes. zenthcloud Enterprise Self-Hosted can run in air-gapped or private networks, so the application, database, and control plane stay inside infrastructure your agency owns.",
 			},
 			{
 				question:
-					"Does guilderia support SSO and audit logs for government agencies?",
+					"Does zenthcloud support SSO and audit logs for government agencies?",
 				answer:
-					"Yes. guilderia Enterprise includes SSO via SAML and OIDC, with native integrations for Okta, Azure AD, Auth0, and Keycloak, along with audit logs covering logins, deployments, and configuration changes, and custom RBAC roles.",
+					"Yes. zenthcloud Enterprise includes SSO via SAML and OIDC, with native integrations for Okta, Azure AD, Auth0, and Keycloak, along with audit logs covering logins, deployments, and configuration changes, and custom RBAC roles.",
 			},
 			{
 				question:
-					"Can non-technical staff safely test AI-generated tools with guilderia?",
+					"Can non-technical staff safely test AI-generated tools with zenthcloud?",
 				answer:
-					"Yes. guilderia is an application deployment platform that lets teams create sandboxed environments where non-technical staff can deploy and test AI-generated or vibe-coded tools without touching production systems, while IT keeps oversight through audit logs, multitenancy, and access controls.",
+					"Yes. zenthcloud is an application deployment platform that lets teams create sandboxed environments where non-technical staff can deploy and test AI-generated or vibe-coded tools without touching production systems, while IT keeps oversight through audit logs, multitenancy, and access controls.",
 			},
 			{
 				question:
-					"Should government agencies choose guilderia Cloud or self-hosted guilderia?",
+					"Should government agencies choose zenthcloud Cloud or self-hosted zenthcloud?",
 				answer:
-					"Use guilderia Cloud when you want guilderia to manage the control plane while your agency's applications run on your own servers. Choose self-hosted guilderia, including air-gapped installs, when your agency needs to operate the full platform entirely within its own network.",
+					"Use zenthcloud Cloud when you want zenthcloud to manage the control plane while your agency's applications run on your own servers. Choose self-hosted zenthcloud, including air-gapped installs, when your agency needs to operate the full platform entirely within its own network.",
 			},
 		],
 	},

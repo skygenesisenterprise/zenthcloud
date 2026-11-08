@@ -6,13 +6,13 @@ import {
 	getMongoBackupCommand,
 	getMysqlBackupCommand,
 	getPostgresBackupCommand,
-} from "@guilderia/server/utils/backups/utils";
+} from "@zenthcloud/server/utils/backups/utils";
 import {
 	getMariadbRestoreCommand,
 	getMongoRestoreCommand,
 	getMysqlRestoreCommand,
 	getPostgresRestoreCommand,
-} from "@guilderia/server/utils/restore/utils";
+} from "@zenthcloud/server/utils/restore/utils";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 // A stub replacing the real `docker` binary. It ignores exec/-i/$CONTAINER_ID,

@@ -1,7 +1,7 @@
 import { source } from "@/lib/source";
 import type { MetadataRoute } from "next";
 
-const baseUrl = "https://docs.guilderia.com";
+const baseUrl = "https://docs.zenthcloud.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
 	const pages = source.getPages().map((page) => ({

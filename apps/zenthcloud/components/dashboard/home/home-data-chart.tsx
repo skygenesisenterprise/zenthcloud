@@ -84,7 +84,7 @@ function getDefaultPanels(sources: HomeChartSource[]): HomeDataPanel[] {
 }
 
 export function HomeDataChart({ dashboardId, sources }: HomeDataChartProps) {
-	const storageKey = `guilderia.dashboard.${dashboardId}.chart.v${STORAGE_VERSION}`;
+	const storageKey = `zenthcloud.dashboard.${dashboardId}.chart.v${STORAGE_VERSION}`;
 	const defaultSource = sources[0];
 	const [panels, setPanels] = useState<HomeDataPanel[]>([]);
 	const [loadedStorageKey, setLoadedStorageKey] = useState<string | null>(null);

@@ -1,8 +1,8 @@
 import path from "node:path";
-import { paths } from "@guilderia/server/constants";
-import { findComposeById } from "@guilderia/server/services/compose";
-import { findDestinationById } from "@guilderia/server/services/destination";
-import type { findVolumeBackupById } from "@guilderia/server/services/volume-backups";
+import { paths } from "@zenthcloud/server/constants";
+import { findComposeById } from "@zenthcloud/server/services/compose";
+import { findDestinationById } from "@zenthcloud/server/services/destination";
+import type { findVolumeBackupById } from "@zenthcloud/server/services/volume-backups";
 import {
 	getBackupTimestamp,
 	getS3Credentials,
@@ -27,21 +27,21 @@ export const createRestartSafeBackupCommand = ({
 	(
 		${backupCommand}
 	)
-	GUILDERIA_VOLUME_BACKUP_STATUS=$?
+	ZENTHCLOUD_VOLUME_BACKUP_STATUS=$?
 	(
 		set -e
 		${startCommand}
 	)
-	GUILDERIA_VOLUME_RESTART_STATUS=$?
+	ZENTHCLOUD_VOLUME_RESTART_STATUS=$?
 	set -e
-	if [ "$GUILDERIA_VOLUME_BACKUP_STATUS" -ne 0 ]; then
-		if [ "$GUILDERIA_VOLUME_RESTART_STATUS" -ne 0 ]; then
-			echo "Service restart also failed with exit code $GUILDERIA_VOLUME_RESTART_STATUS"
+	if [ "$ZENTHCLOUD_VOLUME_BACKUP_STATUS" -ne 0 ]; then
+		if [ "$ZENTHCLOUD_VOLUME_RESTART_STATUS" -ne 0 ]; then
+			echo "Service restart also failed with exit code $ZENTHCLOUD_VOLUME_RESTART_STATUS"
 		fi
-		exit "$GUILDERIA_VOLUME_BACKUP_STATUS"
+		exit "$ZENTHCLOUD_VOLUME_BACKUP_STATUS"
 	fi
-	if [ "$GUILDERIA_VOLUME_RESTART_STATUS" -ne 0 ]; then
-		exit "$GUILDERIA_VOLUME_RESTART_STATUS"
+	if [ "$ZENTHCLOUD_VOLUME_RESTART_STATUS" -ne 0 ]; then
+		exit "$ZENTHCLOUD_VOLUME_RESTART_STATUS"
 	fi
 	${uploadCommand}
 `;

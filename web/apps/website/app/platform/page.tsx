@@ -14,8 +14,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Platform",
 	description:
-		"The guilderia platform in one control plane: workloads, infrastructure, operations, networking, access and automation — on infrastructure you control or as a managed service.",
-	alternates: { canonical: "https://guilderia.com/platform" },
+		"The zenthcloud platform in one control plane: workloads, infrastructure, operations, networking, access and automation — on infrastructure you control or as a managed service.",
+	alternates: { canonical: "https://zenthcloud.com/platform" },
 };
 
 const domains = [
@@ -55,17 +55,17 @@ const faqs = [
 	{
 		question: "What is the difference between the platform, Self and Cloud?",
 		answer:
-			"guilderia is one platform. Self and Cloud are the two ways to run it: with Self you operate the control plane on your own servers; with Cloud, guilderia operates it for you. The capabilities are documented once, in the platform documentation.",
+			"zenthcloud is one platform. Self and Cloud are the two ways to run it: with Self you operate the control plane on your own servers; with Cloud, zenthcloud operates it for you. The capabilities are documented once, in the platform documentation.",
 	},
 	{
 		question: "Do I need Kubernetes?",
 		answer:
-			"No. guilderia runs on Docker, uses Docker Swarm for multi-node deployments and Traefik for routing and certificates.",
+			"No. zenthcloud runs on Docker, uses Docker Swarm for multi-node deployments and Traefik for routing and certificates.",
 	},
 	{
 		question: "Can I use my existing servers?",
 		answer:
-			"Yes. Any Linux server with Docker can host guilderia, and remote servers are added over SSH. Existing VPS, bare-metal and homelab setups are supported.",
+			"Yes. Any Linux server with Docker can host zenthcloud, and remote servers are added over SSH. Existing VPS, bare-metal and homelab setups are supported.",
 	},
 	{
 		question: "Where is the authoritative list of capabilities?",
@@ -81,12 +81,12 @@ export default function PlatformPage() {
 				eyebrow="Platform"
 				title="One control plane for"
 				highlight="every layer"
-				description="guilderia covers the lifecycle of a service: the infrastructure it runs on, the deployment that puts it there, and the operations that keep it healthy. You keep ownership of the machines and the data."
+				description="zenthcloud covers the lifecycle of a service: the infrastructure it runs on, the deployment that puts it there, and the operations that keep it healthy. You keep ownership of the machines and the data."
 				actions={
 					<>
 						<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
 							<Link href="/self">
-								Install guilderia Self
+								Install zenthcloud Self
 								<ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
 							</Link>
 						</Button>
@@ -95,7 +95,7 @@ export default function PlatformPage() {
 							className="w-full rounded-full px-6 sm:w-auto"
 							asChild
 						>
-							<Link href="/cloud">Explore guilderia Cloud</Link>
+							<Link href="/cloud">Explore zenthcloud Cloud</Link>
 						</Button>
 					</>
 				}

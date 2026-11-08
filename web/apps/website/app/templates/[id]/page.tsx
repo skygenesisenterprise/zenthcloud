@@ -49,15 +49,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 		return { title: "Template Not Found" };
 	}
 
-	const title = `Deploy ${template.name} on guilderia`;
-	const description = `${template.description} Deploy ${template.name} on your own server with one click using guilderia's open source template.`;
-	const url = `https://guilderia.com/templates/${template.id}`;
+	const title = `Deploy ${template.name} on zenthcloud`;
+	const description = `${template.description} Deploy ${template.name} on your own server with one click using zenthcloud's open source template.`;
+	const url = `https://zenthcloud.com/templates/${template.id}`;
 
 	const ogUrl = new URL(
 		// Static export has no image route; fall back to the committed OG image.
 		process.env.NEXT_OUTPUT === "export" ? "/og.png" : "/api/og",
 		process.env.NODE_ENV === "production"
-			? "https://guilderia.com"
+			? "https://zenthcloud.com"
 			: "http://localhost:3001",
 	);
 	if (process.env.NEXT_OUTPUT !== "export") {
@@ -116,7 +116,7 @@ export default async function TemplatePage({ params }: Props) {
 		description: template.description,
 		applicationCategory: "DeveloperApplication",
 		operatingSystem: "Docker",
-		url: `https://guilderia.com/templates/${template.id}`,
+		url: `https://zenthcloud.com/templates/${template.id}`,
 		image: logoUrl,
 		softwareVersion: template.version,
 		offers: {
@@ -174,7 +174,7 @@ export default async function TemplatePage({ params }: Props) {
 					</div>
 				</div>
 				<a href="#deploy" className={`${primaryButtonClasses} h-11 px-8`}>
-					Deploy on guilderia
+					Deploy on zenthcloud
 				</a>
 			</div>
 
@@ -223,27 +223,27 @@ export default async function TemplatePage({ params }: Props) {
 					id="deploy-title"
 					className="font-display text-3xl tracking-tight text-foreground sm:text-4xl"
 				>
-					Deploy {template.name} on guilderia
+					Deploy {template.name} on zenthcloud
 				</h2>
 				<ol className="mt-4 list-decimal space-y-2 pl-6 text-muted-foreground">
 					<li>
 						<a
-							href="https://docs.guilderia.com/docs/core/installation"
+							href="https://docs.zenthcloud.com/docs/core/installation"
 							target="_blank"
 							rel="noopener noreferrer"
 							className="text-blue-500 hover:text-blue-500/80"
 						>
-							Install guilderia
+							Install zenthcloud
 						</a>{" "}
 						on your server if you haven't already.
 					</li>
 					<li>
-						In your guilderia panel, open a project and click{" "}
+						In your zenthcloud panel, open a project and click{" "}
 						<strong>Create Service → Template</strong>.
 					</li>
 					<li>
 						Search for <strong>{template.name}</strong> and click{" "}
-						<strong>Create</strong> — guilderia configures domains, environment
+						<strong>Create</strong> — zenthcloud configures domains, environment
 						variables, and volumes for you.
 					</li>
 				</ol>
@@ -336,13 +336,13 @@ export default async function TemplatePage({ params }: Props) {
 					Self-host {template.name} in minutes
 				</h2>
 				<p className="mt-4 text-lg tracking-tight text-muted-foreground">
-					guilderia is a free, open source deployment platform. Deploy{" "}
+					zenthcloud is a free, open source deployment platform. Deploy{" "}
 					{template.name} and {templates.length - 1}+ other templates on your
 					own infrastructure with a single click.
 				</p>
 				<div className="mt-6 flex flex-wrap gap-3">
 					<a
-						href="https://docs.guilderia.com/docs/core/installation"
+						href="https://docs.zenthcloud.com/docs/core/installation"
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`${primaryButtonClasses} h-10 px-4 py-2`}

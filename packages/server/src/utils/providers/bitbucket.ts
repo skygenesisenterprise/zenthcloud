@@ -1,14 +1,14 @@
 import { join } from "node:path";
-import { paths } from "@guilderia/server/constants";
+import { paths } from "@zenthcloud/server/constants";
 import type {
 	apiBitbucketTestConnection,
 	apiFindBitbucketBranches,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import {
 	type Bitbucket,
 	findBitbucketById,
-} from "@guilderia/server/services/bitbucket";
-import type { InferResultType } from "@guilderia/server/types/with";
+} from "@zenthcloud/server/services/bitbucket";
+import type { InferResultType } from "@zenthcloud/server/types/with";
 import { TRPCError } from "@trpc/server";
 import { quote } from "shell-quote";
 import type { z } from "zod";
@@ -292,7 +292,7 @@ export const testBitbucketConnection = async (
  *
  * Bitbucket has no application-install model, so the connection is a static
  * Atlassian API token (or an app password) plus the workspace to act in. That
- * has two consequences the rest of Guilderia has to know about: the identity is
+ * has two consequences the rest of Zenthcloud has to know about: the identity is
  * the Atlassian account, and repositories are always scoped to a workspace —
  * which is why `organizations` and `webhooks` are reported as unsupported.
  */

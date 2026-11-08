@@ -1,5 +1,5 @@
-import { IS_CLOUD } from "@guilderia/server/constants";
-import { getWebServerSettings } from "@guilderia/server/services/web-server-settings";
+import { IS_CLOUD } from "@zenthcloud/server/constants";
+import { getWebServerSettings } from "@zenthcloud/server/services/web-server-settings";
 
 export interface PublicWhitelabelingConfig {
 	appName: string | null;
@@ -18,7 +18,7 @@ export interface PublicWhitelabelingConfig {
  * Public whitelabeling config for unauthenticated contexts (login page, SSR
  * document shell). No active organization/session is available here.
  *
- * Whitelabeling is a self-hosted-only feature; Guilderia Cloud has a fixed brand
+ * Whitelabeling is a self-hosted-only feature; Zenthcloud Cloud has a fixed brand
  * and therefore returns null.
  */
 export const getPublicWhitelabelingConfig =

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 	description:
 		"Use pharmaceutical deployment software to release research tools, lab apps, and regulated internal platforms in controlled environments.",
 	alternates: {
-		canonical: "https://guilderia.com/industries/pharmaceuticals",
+		canonical: "https://zenthcloud.com/industries/pharmaceuticals",
 	},
 };
 
@@ -30,13 +30,13 @@ const data: IndustryPageData = {
 	features: {
 		heading: "Release pharma software with more control and less manual work",
 		description:
-			"Pharmaceutical teams need to support research, quality, digital operations, and internal tools without letting deployments fragment. guilderia creates a single deployment workflow that teams can adapt to different applications.",
+			"Pharmaceutical teams need to support research, quality, digital operations, and internal tools without letting deployments fragment. zenthcloud creates a single deployment workflow that teams can adapt to different applications.",
 		items: [
 			{
 				icon: FlaskConical,
 				title: "Deploy lab and research tools privately",
 				description:
-					"Run internal applications, data tools, dashboards, and service APIs on infrastructure that matches your policy. Choose self-hosted guilderia or guilderia Cloud.",
+					"Run internal applications, data tools, dashboards, and service APIs on infrastructure that matches your policy. Choose self-hosted zenthcloud or zenthcloud Cloud.",
 			},
 			{
 				icon: ScrollText,
@@ -73,7 +73,7 @@ const data: IndustryPageData = {
 	comparison: {
 		heading: "Regulated software delivery without fragmented infrastructure",
 		description:
-			"Pharmaceutical technology environments often include research tools, vendor systems, internal apps, and controlled workflows. guilderia gives teams one platform for releasing and operating software safely.",
+			"Pharmaceutical technology environments often include research tools, vendor systems, internal apps, and controlled workflows. zenthcloud gives teams one platform for releasing and operating software safely.",
 		without: {
 			title: "Fragmented pharma deployments",
 			items: [
@@ -85,8 +85,8 @@ const data: IndustryPageData = {
 				"Separate tools means more work to maintain security.",
 			],
 		},
-		withguilderia: {
-			title: "guilderia for pharmaceutical deployment",
+		withzenthcloud: {
+			title: "zenthcloud for pharmaceutical deployment",
 			items: [
 				"Applications deploy through a repeatable platform.",
 				"Projects and environments can support research, quality, and digital operations.",
@@ -111,7 +111,7 @@ const data: IndustryPageData = {
 			{
 				title: "Connect the service",
 				description:
-					"Connect a Git repository, Docker image, or Docker Compose file. guilderia supports flexible build types so each app can use the deployment model that fits its stack.",
+					"Connect a Git repository, Docker image, or Docker Compose file. zenthcloud supports flexible build types so each app can use the deployment model that fits its stack.",
 				flow: "Select provider → Configure build → Set variables",
 			},
 			{
@@ -131,12 +131,12 @@ const data: IndustryPageData = {
 	builtFor: {
 		heading: "Built for R&D, quality, and digital operations teams",
 		paragraphs: [
-			"guilderia gives pharmaceutical organizations a flexible deployment layer for internal software.",
+			"zenthcloud gives pharmaceutical organizations a flexible deployment layer for internal software.",
 			"Teams can deploy research platforms, lab tooling, dashboards, APIs, and multi-service apps without creating a separate process for every system.",
 			"The platform supports both self-hosted and cloud control-plane models, which gives infrastructure and compliance stakeholders room to choose how closely the deployment platform should sit inside the organization’s own environment.",
 		],
 		screenshotAlt:
-			"guilderia dashboard for a pharmaceutical R&D platform with separate production and staging environments and running services",
+			"zenthcloud dashboard for a pharmaceutical R&D platform with separate production and staging environments and running services",
 	},
 	detailRows: [
 		{
@@ -177,24 +177,24 @@ const data: IndustryPageData = {
 					"Pharmaceutical deployment is the process of releasing research tools, lab applications, quality workflows, internal platforms, and related services into controlled environments.",
 			},
 			{
-				question: "How does guilderia support regulated software teams?",
+				question: "How does zenthcloud support regulated software teams?",
 				answer:
-					"guilderia supports controlled deployment workflows with projects, environments, permissions, logs, monitoring, backups, and rollback options. Enterprise features add SSO, custom roles, audit logs, and whitelabeling.",
+					"zenthcloud supports controlled deployment workflows with projects, environments, permissions, logs, monitoring, backups, and rollback options. Enterprise features add SSO, custom roles, audit logs, and whitelabeling.",
 			},
 			{
-				question: "Can guilderia run private pharmaceutical applications?",
+				question: "Can zenthcloud run private pharmaceutical applications?",
 				answer:
-					"Yes. guilderia can be self-hosted, or teams can use guilderia Cloud while deploying applications on their own connected servers. Both models can support internal and private application deployment.",
+					"Yes. zenthcloud can be self-hosted, or teams can use zenthcloud Cloud while deploying applications on their own connected servers. Both models can support internal and private application deployment.",
 			},
 			{
-				question: "Does guilderia support databases for pharma apps?",
+				question: "Does zenthcloud support databases for pharma apps?",
 				answer:
-					"Yes. guilderia supports PostgreSQL, MySQL, MongoDB, Redis, and MariaDB, which can be used for internal tools, dashboards, and application services.",
+					"Yes. zenthcloud supports PostgreSQL, MySQL, MongoDB, Redis, and MariaDB, which can be used for internal tools, dashboards, and application services.",
 			},
 			{
-				question: "Should pharmaceutical teams self-host guilderia?",
+				question: "Should pharmaceutical teams self-host zenthcloud?",
 				answer:
-					"Self-hosting is a good fit when teams need to operate the full platform internally. guilderia Cloud can be a better fit when teams want a managed control plane while keeping application workloads on their own servers.",
+					"Self-hosting is a good fit when teams need to operate the full platform internally. zenthcloud Cloud can be a better fit when teams want a managed control plane while keeping application workloads on their own servers.",
 			},
 		],
 	},

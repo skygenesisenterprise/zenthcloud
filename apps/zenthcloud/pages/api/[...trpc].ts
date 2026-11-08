@@ -2,8 +2,8 @@ import {
 	OPENAPI_MAX_JSON_BODY_SIZE,
 	OPENAPI_MAX_UPLOAD_SIZE,
 	validateRequest,
-} from "@guilderia/server";
-import { createOpenApiNextHandler } from "@guilderia/trpc-openapi";
+} from "@zenthcloud/server";
+import { createOpenApiNextHandler } from "@zenthcloud/trpc-openapi";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { appRouter } from "@/server/api/root";
 import { createTRPCContext } from "@/server/api/trpc";

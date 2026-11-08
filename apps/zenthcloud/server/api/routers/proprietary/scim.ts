@@ -1,7 +1,7 @@
-import { db } from "@guilderia/server/db";
-import { scimProvider } from "@guilderia/server/db/schema";
-import { requestToHeaders } from "@guilderia/server/index";
-import { auth } from "@guilderia/server/lib/auth";
+import { db } from "@zenthcloud/server/db";
+import { scimProvider } from "@zenthcloud/server/db/schema";
+import { requestToHeaders } from "@zenthcloud/server/index";
+import { auth } from "@zenthcloud/server/lib/auth";
 import { TRPCError } from "@trpc/server";
 import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod";

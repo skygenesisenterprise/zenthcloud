@@ -1,4 +1,4 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateNetworkProvider,
 	type NetworkPeerInput,
@@ -6,12 +6,12 @@ import {
 	networkPeer,
 	networkProvider,
 	networkProviderTypes,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import {
 	getNetworkCapabilities,
 	getNetworkProviderCategory,
-} from "@guilderia/server/utils/network";
-import { isValidCidr } from "@guilderia/server/utils/network/cidr";
+} from "@zenthcloud/server/utils/network";
+import { isValidCidr } from "@zenthcloud/server/utils/network/cidr";
 import { TRPCError } from "@trpc/server";
 import { asc, eq } from "drizzle-orm";
 import type { z } from "zod";

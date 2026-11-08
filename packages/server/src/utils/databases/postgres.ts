@@ -1,4 +1,4 @@
-import type { InferResultType } from "@guilderia/server/types/with";
+import type { InferResultType } from "@zenthcloud/server/types/with";
 import type { CreateServiceOptions } from "dockerode";
 import { resolveServiceNetworks } from "../../services/network";
 import {

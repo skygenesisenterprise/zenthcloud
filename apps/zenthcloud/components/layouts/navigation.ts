@@ -56,8 +56,8 @@ type PermissionsOutput =
 /**
  * Deployment environments a navigation node can target.
  *
- * - `self`    self-hosted Guilderia
- * - `cloud`   managed Guilderia Cloud
+ * - `self`    self-hosted Zenthcloud
+ * - `cloud`   managed Zenthcloud Cloud
  * - `console` platform operator console
  */
 export type NavigationEnvironment = "self" | "cloud" | "console";
@@ -732,12 +732,12 @@ type ExternalNavigationDestination = {
 const EXTERNAL_DESTINATIONS = {
 	documentation: {
 		label: "Documentation",
-		href: "https://docs.guilderia.com/docs/core",
+		href: "https://docs.zenthcloud.com/docs/core",
 		icon: BookIcon,
 	},
 	support: {
 		label: "Support",
-		href: "https://guilderia.com/community",
+		href: "https://zenthcloud.com/community",
 		icon: CircleHelp,
 	},
 } satisfies Record<string, ExternalNavigationDestination>;

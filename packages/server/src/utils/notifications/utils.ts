@@ -1,6 +1,6 @@
 import type {
 	custom,
-	guilderia,
+	zenthcloud,
 	email,
 	gotify,
 	lark,
@@ -11,7 +11,7 @@ import type {
 	slack,
 	teams,
 	telegram,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
 
@@ -77,7 +77,7 @@ export const sendResendNotification = async (
 		);
 	}
 };export const sendDiscordNotification = async (
-	connection: typeof guilderia.$inferInsert,
+	connection: typeof zenthcloud.$inferInsert,
 	embed: any,
 ) => {
 	let response: Response;
@@ -89,7 +89,7 @@ export const sendResendNotification = async (
 		});
 	} catch (err) {
 		throw new Error(
-			`Failed to send guilderia notification: could not reach the webhook URL (${err instanceof Error ? err.message : "Unknown error"}). Check that the Guilderia server has outbound HTTPS access and that the URL is correct.`,
+			`Failed to send zenthcloud notification: could not reach the webhook URL (${err instanceof Error ? err.message : "Unknown error"}). Check that the Zenthcloud server has outbound HTTPS access and that the URL is correct.`,
 		);
 	}
 	if (!response.ok) {
@@ -107,7 +107,7 @@ export const sendResendNotification = async (
 			}
 		}
 		throw new Error(
-			`Failed to send guilderia notification: Discord answered HTTP ${response.status}${detail}`,
+			`Failed to send zenthcloud notification: Discord answered HTTP ${response.status}${detail}`,
 		);
 	}
 };

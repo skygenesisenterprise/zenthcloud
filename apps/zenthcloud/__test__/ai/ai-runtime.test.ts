@@ -4,13 +4,13 @@ import {
 	getCapabilityWarnings,
 	getModelCapabilities,
 	resolveAiProviderId,
-} from "@guilderia/server/utils/ai/contracts";
-import { toAiSettingView } from "@guilderia/server/services/ai";
+} from "@zenthcloud/server/utils/ai/contracts";
+import { toAiSettingView } from "@zenthcloud/server/services/ai";
 import {
 	AiRuntimeError,
 	normalizeAiError,
 	validateAiEndpointUrl,
-} from "@guilderia/server/utils/ai/runtime";
+} from "@zenthcloud/server/utils/ai/runtime";
 
 describe("resolveAiProviderId", () => {
 	it("resolves known provider hostnames", () => {

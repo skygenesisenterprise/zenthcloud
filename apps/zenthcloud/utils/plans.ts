@@ -1,5 +1,5 @@
 /**
- * Guilderia Cloud plan catalogue and pricing helpers.
+ * Zenthcloud Cloud plan catalogue and pricing helpers.
  *
  * This module is the single source of truth for the plans we market (Hobby,
  * Startup, Enterprise) and for the price maths used by both the billing page

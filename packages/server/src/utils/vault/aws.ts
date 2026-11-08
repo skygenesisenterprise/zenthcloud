@@ -3,7 +3,7 @@ import {
 	ListSecretsCommand,
 	SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import type { awsVaultConfigSchema } from "@guilderia/server/db/schema";
+import type { awsVaultConfigSchema } from "@zenthcloud/server/db/schema";
 import type { z } from "zod";
 import type { VaultClient } from "./types";
 

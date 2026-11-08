@@ -1,7 +1,7 @@
 import { constants as fsConstants } from "node:fs";
 import { access, mkdir } from "node:fs/promises";
 import path from "node:path";
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateObjectStorageProvider,
 	destinations,
@@ -10,7 +10,7 @@ import {
 	type ObjectStorageProviderType,
 	objectStorageBucket,
 	objectStorageProvider,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { quote } from "shell-quote";
@@ -203,15 +203,15 @@ export const OBJECT_STORAGE_PROVIDER_META: Record<
 		pathStyle: true,
 		rcloneProvider: "Other",
 	},
-	"guilderia-internal": {
-		providerType: "guilderia-internal",
+	"zenthcloud-internal": {
+		providerType: "zenthcloud-internal",
 		category: "internal",
-		label: "Guilderia Internal Storage",
+		label: "Zenthcloud Internal Storage",
 		endpointTemplate: "",
-		defaultRegion: "guilderia",
+		defaultRegion: "zenthcloud",
 		pathStyle: false,
 		// The internal provider does not speak S3: it stores buckets as
-		// directories under Guilderia's own storage root.
+		// directories under Zenthcloud's own storage root.
 		rcloneProvider: "local",
 	},
 };
@@ -328,7 +328,7 @@ export const findInternalObjectStorageProvider = async (
 	db.query.objectStorageProvider.findFirst({
 		where: and(
 			eq(objectStorageProvider.organizationId, organizationId),
-			eq(objectStorageProvider.providerType, "guilderia-internal"),
+			eq(objectStorageProvider.providerType, "zenthcloud-internal"),
 		),
 	});
 
@@ -590,7 +590,7 @@ const buildRcloneFlags = ({
  */
 /**
  * Root directory backing the first-party internal provider. Providers may
- * override it, otherwise it lives under the Guilderia config path so it survives
+ * override it, otherwise it lives under the Zenthcloud config path so it survives
  * restarts and can itself be backed up.
  */
 export const internalObjectStorageRoot = (rootPath?: string) =>
@@ -620,9 +620,9 @@ export const testObjectStorageConnection = async ({
 	bucket,
 	serverId,
 }: RcloneConnectionInput) => {
-	// The internal provider is Guilderia's own storage root, so a connection test
+	// The internal provider is Zenthcloud's own storage root, so a connection test
 	// just proves the directory exists and is writable.
-	if (providerType === "guilderia-internal") {
+	if (providerType === "zenthcloud-internal") {
 		try {
 			await ensureInternalStorageRoot(config.rootPath);
 			if (bucket) {
@@ -756,7 +756,7 @@ export const resolveObjectStorageConnection = async (
 		organizationId,
 	);
 
-	if (provider.providerType === "guilderia-internal") {
+	if (provider.providerType === "zenthcloud-internal") {
 		const root = internalObjectStorageRoot(provider.config.rootPath);
 		return {
 			backend: "local" as const,
@@ -764,7 +764,7 @@ export const resolveObjectStorageConnection = async (
 			bucket: bucket.bucket,
 			rootPath: root,
 			path: path.join(root, sanitizeBucketPath(bucket.bucket)),
-			region: bucket.region || provider.config.region || "guilderia",
+			region: bucket.region || provider.config.region || "zenthcloud",
 			endpoint: "",
 			providerType: provider.providerType,
 			pathStyle: false,

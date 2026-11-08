@@ -1,40 +1,40 @@
 services:
-  guilderia-mcp-http:
+  zenthcloud-mcp-http:
     build:
       context: ../..
       dockerfile: packages/mcp/Dockerfile
-    container_name: guilderia-mcp-http
+    container_name: zenthcloud-mcp-http
     ports:
       - "${EXTERNAL_PORT:-3000}:3000"
     environment:
       - MCP_TRANSPORT=${MCP_TRANSPORT:-http}
       # Required: the remote transport refuses to start without a bearer token.
-      - GUILDERIA_MCP_HTTP_TOKEN=${GUILDERIA_MCP_HTTP_TOKEN:?set GUILDERIA_MCP_HTTP_TOKEN}
-      - GUILDERIA_MCP_HTTP_HOST=0.0.0.0
-      - GUILDERIA_URL=${GUILDERIA_URL:-https://your-guilderia-server.com}
-      - GUILDERIA_API_KEY=${GUILDERIA_API_KEY:-your_token_here}
-      - GUILDERIA_MCP_MODE=${GUILDERIA_MCP_MODE:-business}
-      - GUILDERIA_MCP_ENVIRONMENT=${GUILDERIA_MCP_ENVIRONMENT:-self}
+      - ZENTHCLOUD_MCP_HTTP_TOKEN=${ZENTHCLOUD_MCP_HTTP_TOKEN:?set ZENTHCLOUD_MCP_HTTP_TOKEN}
+      - ZENTHCLOUD_MCP_HTTP_HOST=0.0.0.0
+      - ZENTHCLOUD_URL=${ZENTHCLOUD_URL:-https://your-zenthcloud-server.com}
+      - ZENTHCLOUD_API_KEY=${ZENTHCLOUD_API_KEY:-your_token_here}
+      - ZENTHCLOUD_MCP_MODE=${ZENTHCLOUD_MCP_MODE:-business}
+      - ZENTHCLOUD_MCP_ENVIRONMENT=${ZENTHCLOUD_MCP_ENVIRONMENT:-self}
       # Optional operator approval for high-impact capabilities.
-      - GUILDERIA_MCP_APPROVAL_TOKEN=${GUILDERIA_MCP_APPROVAL_TOKEN:-}
+      - ZENTHCLOUD_MCP_APPROVAL_TOKEN=${ZENTHCLOUD_MCP_APPROVAL_TOKEN:-}
       # Persist long-running operations and the audit trail on a volume.
-      - GUILDERIA_MCP_OPERATION_STORE=/data/operations.json
-      - GUILDERIA_MCP_AUDIT_LOG=/data/audit.jsonl
+      - ZENTHCLOUD_MCP_OPERATION_STORE=/data/operations.json
+      - ZENTHCLOUD_MCP_AUDIT_LOG=/data/audit.jsonl
     volumes:
       - mcp-data:/data
     restart: unless-stopped
     networks:
       - mcp-network
 
-  guilderia-mcp-stdio:
+  zenthcloud-mcp-stdio:
     build:
       context: ../..
       dockerfile: packages/mcp/Dockerfile
-    container_name: guilderia-mcp-stdio
+    container_name: zenthcloud-mcp-stdio
     environment:
-      - GUILDERIA_URL=${GUILDERIA_URL:-https://your-guilderia-server.com}
-      - GUILDERIA_API_KEY=${GUILDERIA_API_KEY:-your_token_here}
-      - GUILDERIA_MCP_MODE=${GUILDERIA_MCP_MODE:-business}
+      - ZENTHCLOUD_URL=${ZENTHCLOUD_URL:-https://your-zenthcloud-server.com}
+      - ZENTHCLOUD_API_KEY=${ZENTHCLOUD_API_KEY:-your_token_here}
+      - ZENTHCLOUD_MCP_MODE=${ZENTHCLOUD_MCP_MODE:-business}
     restart: "no"
     stdin_open: true
     tty: true

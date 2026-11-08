@@ -7,13 +7,13 @@
  * rewritten. This script re-encrypts every existing row in place.
  *
  * Usage:
- *   npx tsx apps/guilderia/scripts/encrypt-certificate-keys.ts [--dry-run]
+ *   npx tsx apps/zenthcloud/scripts/encrypt-certificate-keys.ts [--dry-run]
  *
  * Safe to run more than once: values already prefixed with `enc:v1:` are skipped.
  */
-import { db } from "@guilderia/server/db";
-import { certificates } from "@guilderia/server/db/schema";
-import { isEncrypted } from "@guilderia/server/lib/encryption";
+import { db } from "@zenthcloud/server/db";
+import { certificates } from "@zenthcloud/server/db/schema";
+import { isEncrypted } from "@zenthcloud/server/lib/encryption";
 import { eq } from "drizzle-orm";
 
 const DRY_RUN = process.argv.includes("--dry-run");

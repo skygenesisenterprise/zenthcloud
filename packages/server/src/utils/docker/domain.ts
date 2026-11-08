@@ -1,10 +1,10 @@
 import fs, { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { paths } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
-import { network, patch } from "@guilderia/server/db/schema";
-import type { Compose } from "@guilderia/server/services/compose";
-import type { Domain } from "@guilderia/server/services/domain";
+import { paths } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
+import { network, patch } from "@zenthcloud/server/db/schema";
+import type { Compose } from "@zenthcloud/server/services/compose";
+import type { Domain } from "@zenthcloud/server/services/domain";
 import { eq, inArray } from "drizzle-orm";
 import { quote } from "shell-quote";
 import { parse, stringify } from "yaml";
@@ -382,7 +382,7 @@ export const addDomainToCompose = async (
 				: "traefik.swarm.network";
 		const networkName = compose.isolatedDeployment
 			? compose.suffix || compose.appName
-			: "guilderia-network";
+			: "zenthcloud-network";
 
 		if (Array.isArray(labels)) {
 			if (!labels.includes("traefik.enable=true")) {
@@ -405,7 +405,7 @@ export const addDomainToCompose = async (
 		}
 
 		if (!compose.isolatedDeployment) {
-			// Add the guilderia-network to the service
+			// Add the zenthcloud-network to the service
 			result.services[serviceName].networks = addAstronCollectionNetworkToService(
 				result.services[serviceName].networks,
 			);
@@ -454,7 +454,7 @@ export const applyServiceNetworks = async (
 		}
 
 		if (config.detachAstronCollectionNetwork) {
-			removeNetworkFromService(service, "guilderia-network");
+			removeNetworkFromService(service, "zenthcloud-network");
 			removeNetworkFromService(service, "default");
 			removeAstronCollectionNetworkLabel(service);
 		}
@@ -475,7 +475,7 @@ export const declareUsedNetworksInRoot = (
 			return false;
 		});
 
-	if (isUsed("guilderia-network")) {
+	if (isUsed("zenthcloud-network")) {
 		result.networks = addAstronCollectionNetworkToRoot(result.networks);
 	}
 	for (const name of injectedNetworkNames) {
@@ -608,7 +608,7 @@ export const createDomainLabels = (
 
 export const addAstronCollectionNetworkToService = (
 	networkService: DefinitionsService["networks"],
-	networkName = "guilderia-network",
+	networkName = "zenthcloud-network",
 ) => {
 	let networks = networkService;
 	const network = networkName;
@@ -653,8 +653,8 @@ const removeAstronCollectionNetworkLabel = (service: DefinitionsService) => {
 		if (Array.isArray(labels)) {
 			return labels.filter(
 				(l) =>
-					l !== "traefik.docker.network=guilderia-network" &&
-					l !== "traefik.swarm.network=guilderia-network",
+					l !== "traefik.docker.network=zenthcloud-network" &&
+					l !== "traefik.swarm.network=zenthcloud-network",
 			);
 		}
 		return labels;
@@ -666,7 +666,7 @@ const removeAstronCollectionNetworkLabel = (service: DefinitionsService) => {
 
 export const addAstronCollectionNetworkToRoot = (
 	networkRoot: PropertiesNetworks | undefined,
-	networkName = "guilderia-network",
+	networkName = "zenthcloud-network",
 ) => {
 	let networks = networkRoot;
 	const network = networkName;

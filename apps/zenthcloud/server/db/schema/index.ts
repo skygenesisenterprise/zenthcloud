@@ -1,1 +1,1 @@
-export * from "@guilderia/server/db/schema";
+export * from "@zenthcloud/server/db/schema";

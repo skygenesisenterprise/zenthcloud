@@ -1,4 +1,4 @@
-import { findGiteaById } from "@guilderia/server";
+import { findGiteaById } from "@zenthcloud/server";
 import type { NextApiResponse } from "next";
 
 export interface Gitea {

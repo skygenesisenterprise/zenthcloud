@@ -1,6 +1,6 @@
-import { db } from "@guilderia/server/db";
-import TrialExpiringEmail from "@guilderia/server/emails/emails/trial-expiring";
-import { sendEmail } from "@guilderia/server/verification/send-verification-email";
+import { db } from "@zenthcloud/server/db";
+import TrialExpiringEmail from "@zenthcloud/server/emails/emails/trial-expiring";
+import { sendEmail } from "@zenthcloud/server/verification/send-verification-email";
 import { render } from "@react-email/components";
 import { format } from "date-fns";
 import { eq } from "drizzle-orm";
@@ -69,8 +69,8 @@ export const sendTrialExpiringEmail = async (
 		email: owner.email,
 		subject:
 			daysRemaining === 1
-				? "Your Guilderia trial ends tomorrow"
-				: `Your Guilderia trial ends in ${daysRemaining} days`,
+				? "Your Zenthcloud trial ends tomorrow"
+				: `Your Zenthcloud trial ends in ${daysRemaining} days`,
 		text: htmlContent,
 	});
 

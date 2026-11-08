@@ -3,7 +3,7 @@ import {
 	cleanupAll,
 	isExternalJobsEnabled,
 	sendDockerCleanupNotifications,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { scheduledJobs, scheduleJob } from "node-schedule";
 import { removeJob, schedule } from "./backup";
 

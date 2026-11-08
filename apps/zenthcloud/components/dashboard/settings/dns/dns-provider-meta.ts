@@ -23,7 +23,7 @@ export const dnsProviderLabels: Record<string, string> = {
 	coredns: "CoreDNS",
 	unbound: "Unbound",
 	custom: "Custom provider",
-	"guilderia-internal": "guilderia Internal DNS",
+	"zenthcloud-internal": "zenthcloud Internal DNS",
 };
 
 export const dnsProviderCategoryLabels: Record<string, string> = {
@@ -36,7 +36,7 @@ export const dnsProviderCategoryDescriptions: Record<string, string> = {
 	managed: "Hosted DNS services reached through their own API.",
 	"self-hosted":
 		"DNS servers you operate yourself, reached through their management interface.",
-	internal: "guilderia's own internal DNS, with no external dependency.",
+	internal: "zenthcloud's own internal DNS, with no external dependency.",
 };
 
 export const dnsProviderCategoryOrder = [

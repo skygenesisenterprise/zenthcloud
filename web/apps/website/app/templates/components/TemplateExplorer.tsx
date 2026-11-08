@@ -38,11 +38,11 @@ export function TemplateExplorer({
 				badgeDetail={`${templates.length}+ ready to deploy`}
 				title="Open source,"
 				highlight="one click away"
-				description={`${templates.length}+ pre-configured open source templates you can deploy on guilderia with a single click. Databases, CMS, analytics, AI tools and more — each one packaged as a working Docker Compose stack.`}
+				description={`${templates.length}+ pre-configured open source templates you can deploy on zenthcloud with a single click. Databases, CMS, analytics, AI tools and more — each one packaged as a working Docker Compose stack.`}
 				actions={
 					<>
 						<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
-							<Link href="https://templates.guilderia.com" target="_blank">
+							<Link href="https://templates.zenthcloud.com" target="_blank">
 								Open the gallery
 								<ArrowUpRight className="ml-2 h-4 w-4" aria-hidden="true" />
 							</Link>
@@ -53,16 +53,16 @@ export function TemplateExplorer({
 							asChild
 						>
 							<Link
-								href="https://docs.guilderia.com/docs/core/installation"
+								href="https://docs.zenthcloud.com/docs/core/installation"
 								target="_blank"
 							>
-								Install guilderia
+								Install zenthcloud
 							</Link>
 						</Button>
 					</>
 				}
 				links={[
-					{ href: "/self", label: "Explore guilderia Self" },
+					{ href: "/self", label: "Explore zenthcloud Self" },
 					{ href: "/platform", label: "Platform capabilities" },
 					{ href: "/community", label: "Publish a template" },
 				]}

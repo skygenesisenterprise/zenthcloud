@@ -1,10 +1,10 @@
-import { db } from "@guilderia/server/db";
-import { forwardAuthSettings } from "@guilderia/server/db/schema";
-import type { Domain } from "@guilderia/server/services/domain";
+import { db } from "@zenthcloud/server/db";
+import { forwardAuthSettings } from "@zenthcloud/server/db/schema";
+import type { Domain } from "@zenthcloud/server/services/domain";
 import {
 	FORWARD_AUTH_PORT,
 	FORWARD_AUTH_SERVICE_NAME,
-} from "@guilderia/server/setup/forward-auth-setup";
+} from "@zenthcloud/server/setup/forward-auth-setup";
 import { eq, isNull } from "drizzle-orm";
 import type { ApplicationNested } from "../builders";
 import {

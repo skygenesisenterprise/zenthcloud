@@ -5,7 +5,7 @@ import type { MetadataRoute } from "next";
 // Required for `output: "export"` (GitHub Pages).
 export const dynamic = "force-static";
 
-const BASE_URL = "https://guilderia.com";
+const BASE_URL = "https://zenthcloud.com";
 
 const featurePages = [
 	"/features/application-deployment-platform",
@@ -20,12 +20,12 @@ const featurePages = [
 
 const comparisonPages = [
 	"/comparison",
-	"/guilderia-vs-coolify",
-	"/guilderia-vs-portainer",
-	"/guilderia-vs-caprover",
-	"/guilderia-vs-dokku",
-	"/guilderia-vs-render",
-	"/guilderia-vs-vercel",
+	"/zenthcloud-vs-coolify",
+	"/zenthcloud-vs-portainer",
+	"/zenthcloud-vs-caprover",
+	"/zenthcloud-vs-dokku",
+	"/zenthcloud-vs-render",
+	"/zenthcloud-vs-vercel",
 ];
 
 const industryPages = [

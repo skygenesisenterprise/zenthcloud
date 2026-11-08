@@ -14,12 +14,12 @@ export const OnboardingLayout = ({ children }: Props) => {
 			<Card className="w-full max-w-md p-6">{children}</Card>
 			<div className="mt-6 mx-auto flex w-full max-w-md items-center justify-center gap-1 text-muted-foreground">
 				<Button variant="ghost" size="icon">
-					<Link href="https://github.com/skygenesisenterprise/guilderia">
+					<Link href="https://github.com/skygenesisenterprise/zenthcloud">
 						<GithubIcon />
 					</Link>
 				</Button>
 				<Button variant="ghost" size="icon">
-					<Link href="https://x.com/getguilderia">
+					<Link href="https://x.com/getzenthcloud">
 						<svg
 							stroke="currentColor"
 							fill="currentColor"
@@ -33,7 +33,7 @@ export const OnboardingLayout = ({ children }: Props) => {
 					</Link>
 				</Button>
 				<Button variant="ghost" size="icon">
-					<Link href="https://guilderia.com/invite/GUkDugVh34">
+					<Link href="https://zenthcloud.com/invite/GUkDugVh34">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							viewBox="0 0 48 48"

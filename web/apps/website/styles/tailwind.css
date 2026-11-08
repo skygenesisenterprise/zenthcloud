@@ -1,7 +1,7 @@
 /*
- * guilderia website styles.
+ * zenthcloud website styles.
  *
- * Based on `apps/guilderia/styles/globals.css` so the website shares the product's
+ * Based on `apps/zenthcloud/styles/globals.css` so the website shares the product's
  * design tokens (oklch palette, radii, scrollbars, motion). The app uses
  * Tailwind CSS v4 (CSS-first `@theme`), while the website still runs Tailwind
  * v3, so the tokens are consumed here as raw oklch components
@@ -18,7 +18,7 @@
 
 @layer base {
 	:root {
-		/* Application dark theme (apps/guilderia/styles/globals.css — `.dark`). */
+		/* Application dark theme (apps/zenthcloud/styles/globals.css — `.dark`). */
 		--terminal-paste: rgba(255, 255, 255, 0.2);
 
 		--background: 0.1913 0 0;
@@ -74,7 +74,7 @@
 			0px 8px 10px -1px hsl(0 0% 0% / 0.3);
 		--shadow-2xl: 0px 6px 15px 0px hsl(0 0% 0% / 0.75);
 
-		/* Motion tokens (apps/guilderia/styles/globals.css). */
+		/* Motion tokens (apps/zenthcloud/styles/globals.css). */
 		--duration-quick: 150ms;
 		--duration-fast: 250ms;
 		--duration-medium: 350ms;

@@ -1,6 +1,6 @@
 import type { IncomingMessage } from "node:http";
-import { db } from "@guilderia/server/db";
-import { githubWebhookDelivery } from "@guilderia/server/db/schema";
+import { db } from "@zenthcloud/server/db";
+import { githubWebhookDelivery } from "@zenthcloud/server/db/schema";
 import { Webhooks } from "@octokit/webhooks";
 import { and, eq, lt, sql } from "drizzle-orm";
 

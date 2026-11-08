@@ -18,7 +18,7 @@ import {
 /** Config pointing at a fresh temporary data directory. */
 export const testConfig = () =>
 	loadConfig({
-		STATUS_DATA_DIR: mkdtempSync(join(tmpdir(), "guilderia-status-test-")),
+		STATUS_DATA_DIR: mkdtempSync(join(tmpdir(), "zenthcloud-status-test-")),
 	});
 
 export interface Harness {

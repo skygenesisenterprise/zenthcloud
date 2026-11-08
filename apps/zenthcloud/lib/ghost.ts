@@ -1,7 +1,7 @@
 import GhostContentAPI from "@tryghost/content-api";
 
 const ghostConfig = {
-	url: process.env.GHOST_URL || "https://guilderia.com",
+	url: process.env.GHOST_URL || "https://zenthcloud.com",
 	key: process.env.GHOST_KEY || "42424242424242424242424242424242",
 	version: "v5.0",
 };

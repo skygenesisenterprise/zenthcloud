@@ -1,37 +1,37 @@
 import { join } from "node:path";
-import { paths } from "@guilderia/server/constants";
-import { db } from "@guilderia/server/db";
+import { paths } from "@zenthcloud/server/constants";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateCompose,
 	buildAppName,
 	cleanAppName,
 	compose,
-} from "@guilderia/server/db/schema";
-import { getBuildComposeCommand } from "@guilderia/server/utils/builders/compose";
-import { randomizeSpecificationFile } from "@guilderia/server/utils/docker/compose";
+} from "@zenthcloud/server/db/schema";
+import { getBuildComposeCommand } from "@zenthcloud/server/utils/builders/compose";
+import { randomizeSpecificationFile } from "@zenthcloud/server/utils/docker/compose";
 import {
 	cloneCompose,
 	loadDockerCompose,
 	loadDockerComposeRemote,
-} from "@guilderia/server/utils/docker/domain";
-import type { ComposeSpecification } from "@guilderia/server/utils/docker/types";
-import { sendBuildErrorNotifications } from "@guilderia/server/utils/notifications/build-error";
-import { sendBuildSuccessNotifications } from "@guilderia/server/utils/notifications/build-success";
+} from "@zenthcloud/server/utils/docker/domain";
+import type { ComposeSpecification } from "@zenthcloud/server/utils/docker/types";
+import { sendBuildErrorNotifications } from "@zenthcloud/server/utils/notifications/build-error";
+import { sendBuildSuccessNotifications } from "@zenthcloud/server/utils/notifications/build-success";
 import {
 	ExecError,
 	execAsync,
 	execAsyncRemote,
-} from "@guilderia/server/utils/process/execAsync";
-import { cloneBitbucketRepository } from "@guilderia/server/utils/providers/bitbucket";
+} from "@zenthcloud/server/utils/process/execAsync";
+import { cloneBitbucketRepository } from "@zenthcloud/server/utils/providers/bitbucket";
 import {
 	cloneGitRepository,
 	getGitCommitInfo,
-} from "@guilderia/server/utils/providers/git";
-import { cloneGiteaRepository } from "@guilderia/server/utils/providers/gitea";
-import { cloneGithubRepository } from "@guilderia/server/utils/providers/github";
-import { cloneGitlabRepository } from "@guilderia/server/utils/providers/gitlab";
-import { getCreateComposeFileCommand } from "@guilderia/server/utils/providers/raw";
-import { redactSecrets } from "@guilderia/server/utils/security/redact";
+} from "@zenthcloud/server/utils/providers/git";
+import { cloneGiteaRepository } from "@zenthcloud/server/utils/providers/gitea";
+import { cloneGithubRepository } from "@zenthcloud/server/utils/providers/github";
+import { cloneGitlabRepository } from "@zenthcloud/server/utils/providers/gitlab";
+import { getCreateComposeFileCommand } from "@zenthcloud/server/utils/providers/raw";
+import { redactSecrets } from "@zenthcloud/server/utils/security/redact";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { quote } from "shell-quote";
@@ -474,7 +474,7 @@ export const removeCompose = async (
 
 		if (compose.composeType === "stack") {
 			const command = `
-			docker network disconnect ${compose.appName} guilderia-traefik;
+			docker network disconnect ${compose.appName} zenthcloud-traefik;
 			docker stack rm ${compose.appName};
 			rm -rf ${projectPath}`;
 
@@ -485,7 +485,7 @@ export const removeCompose = async (
 			}
 		} else {
 			const command = `
-			docker network disconnect ${compose.appName} guilderia-traefik;
+			docker network disconnect ${compose.appName} zenthcloud-traefik;
 			env -i PATH="$PATH" docker compose -p ${compose.appName} down ${
 				deleteVolumes ? "--volumes" : ""
 			};

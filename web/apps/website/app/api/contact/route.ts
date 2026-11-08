@@ -122,17 +122,17 @@ Message:
 ${body.message}
 
 ---
-Sent from guilderia website contact form
+Sent from zenthcloud website contact form
 		`.trim();
 
-		// Send email to the guilderia team
+		// Send email to the zenthcloud team
 		const recipients =
 			body.inquiryType === "sales"
-				? ["sales@guilderia.com", "contact@guilderia.com"]
-				: ["support@guilderia.com"];
+				? ["sales@zenthcloud.com", "contact@zenthcloud.com"]
+				: ["support@zenthcloud.com"];
 
 		await resend.emails.send({
-			from: "guilderia Team <hello@notifications.guilderia.com>",
+			from: "zenthcloud Team <hello@notifications.zenthcloud.com>",
 			to: recipients,
 			subject: emailSubject,
 			text: emailBody,
@@ -141,7 +141,7 @@ Sent from guilderia website contact form
 
 		// Send confirmation email to the user
 		const confirmationSubject =
-			"Thank you for contacting guilderia - We received your message";
+			"Thank you for contacting zenthcloud - We received your message";
 		const confirmationBody = `
 Hello ${body.firstName} ${body.lastName},
 
@@ -156,15 +156,15 @@ Message: ${body.message}
 We typically respond within 24-48 hours during business days. If your inquiry is urgent, please don't hesitate to reach out to us directly.
 
 Best regards,
-The guilderia Team
+The zenthcloud Team
 
 ---
 This is an automated confirmation email. Please do not reply to this email.
-If you need immediate assistance, contact us at contact@guilderia.com
+If you need immediate assistance, contact us at contact@zenthcloud.com
 		`.trim();
 
 		await resend.emails.send({
-			from: "guilderia Team <hello@notifications.guilderia.com>",
+			from: "zenthcloud Team <hello@notifications.zenthcloud.com>",
 			to: [body.email],
 			subject: confirmationSubject,
 			text: confirmationBody,

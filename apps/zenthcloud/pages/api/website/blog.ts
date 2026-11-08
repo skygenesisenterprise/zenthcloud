@@ -1,4 +1,4 @@
-import { validateRequest } from "@guilderia/server";
+import { validateRequest } from "@zenthcloud/server";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createPost } from "@/lib/ghost-admin";
 

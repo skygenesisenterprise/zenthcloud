@@ -5,8 +5,8 @@ import { parse as parseYaml } from "yaml";
 
 const LOGO_EXTENSIONS = [".svg", ".png", ".webp", ".jpg", ".jpeg"];
 const REQUIRED_LINK_KEYS = ["github", "website", "docs"];
-const ALLOW_HOST_PORTS = "# guilderia: allow-host-ports";
-const ALLOW_CONTAINER_NAMES = "# guilderia: allow-container-names";
+const ALLOW_HOST_PORTS = "# zenthcloud: allow-host-ports";
+const ALLOW_CONTAINER_NAMES = "# zenthcloud: allow-container-names";
 // Injected by the template processor; APP_NAME is documented as always present.
 const BUILTIN_VARIABLES = new Set(["APP_NAME"]);
 

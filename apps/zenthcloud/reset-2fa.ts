@@ -1,12 +1,12 @@
-import { findOwner } from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+import { findOwner } from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import {
 	securityKey,
 	securityKeyBackupCode,
 	securityKeyLoginRequest,
 	twoFactor,
 	user,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import { eq } from "drizzle-orm";
 
 /**

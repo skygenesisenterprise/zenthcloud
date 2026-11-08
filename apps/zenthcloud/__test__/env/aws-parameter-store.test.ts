@@ -40,7 +40,7 @@ vi.mock("@aws-sdk/client-ssm", () => ({
 	paginateDescribeParameters: paginate,
 }));
 
-vi.mock("@guilderia/server/db", () => ({
+vi.mock("@zenthcloud/server/db", () => ({
 	db: {
 		query: {
 			vaultProvider: {
@@ -50,8 +50,8 @@ vi.mock("@guilderia/server/db", () => ({
 	},
 }));
 
-import { resolveVaultReferences } from "@guilderia/server/utils/vault";
-import { awsParameterStoreClient } from "@guilderia/server/utils/vault/aws-parameter-store";
+import { resolveVaultReferences } from "@zenthcloud/server/utils/vault";
+import { awsParameterStoreClient } from "@zenthcloud/server/utils/vault/aws-parameter-store";
 
 const config = {
 	providerType: "aws-parameter-store" as const,

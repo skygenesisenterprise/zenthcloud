@@ -26,12 +26,12 @@ Casing is not enforced.
 ## How this was verified
 
 <!--
-Tests, or the exact manual steps you followed. guilderia's test suite lives in
-apps/guilderia/__test__ (vitest) and runs with `pnpm test`; `pnpm typecheck` and
+Tests, or the exact manual steps you followed. zenthcloud's test suite lives in
+apps/zenthcloud/__test__ (vitest) and runs with `pnpm test`; `pnpm typecheck` and
 `pnpm lint` (Biome) cover the workspace.
 -->
 
-- [ ] Added or updated a test in `apps/guilderia/__test__/` that fails without this change
+- [ ] Added or updated a test in `apps/zenthcloud/__test__/` that fails without this change
 - [ ] Verified manually — steps: <!-- ... -->
 - [ ] No new test — the fix is in wiring, styling, or configuration
 

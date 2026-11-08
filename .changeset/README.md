@@ -28,16 +28,16 @@ version and publish the packages in the pnpm workspace.
 
 Published to npmjs (public):
 
-- `@guilderia/cli`
-- `@guilderia/sdk`
-- `@guilderia/trpc-openapi`
+- `@zenthcloud/cli`
+- `@zenthcloud/sdk`
+- `@zenthcloud/trpc-openapi`
 
 Other workspace packages are not published by this workflow. Some may be
 versioned by Changesets or shipped as containers:
 
-- `@guilderia/app` (the dashboard/server, shipped as a Docker image)
-- `@guilderia/docs`, `@guilderia/website` (deployed to GitHub Pages and Docker)
-- `@guilderia/api`, `@guilderia/schedules` (internal services, ignored by changesets)
+- `@zenthcloud/app` (the dashboard/server, shipped as a Docker image)
+- `@zenthcloud/docs`, `@zenthcloud/website` (deployed to GitHub Pages and Docker)
+- `@zenthcloud/api`, `@zenthcloud/schedules` (internal services, ignored by changesets)
 
 ## Common commands
 

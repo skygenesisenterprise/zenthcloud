@@ -54,9 +54,9 @@ const notificationBaseSchema = z.object({
 	appDeploy: z.boolean().default(false),
 	appBuildError: z.boolean().default(false),
 	databaseBackup: z.boolean().default(false),
-	guilderiaBackup: z.boolean().default(false),
+	zenthcloudBackup: z.boolean().default(false),
 	volumeBackup: z.boolean().default(false),
-	guilderiaRestart: z.boolean().default(false),
+	zenthcloudRestart: z.boolean().default(false),
 	dockerCleanup: z.boolean().default(false),
 	serverThreshold: z.boolean().default(false),
 });
@@ -79,7 +79,7 @@ export const notificationSchema = z.discriminatedUnion("type", [
 		.merge(notificationBaseSchema),
 	z
 		.object({
-			type: z.literal("guilderia"),
+			type: z.literal("zenthcloud"),
 			webhookUrl: z.string().min(1, { message: "Webhook URL is required" }),
 			decoration: z.boolean().default(true),
 		})
@@ -192,7 +192,7 @@ export const notificationsMap = {
 		icon: <TelegramIcon />,
 		label: "Telegram",
 	},
-	guilderia: {
+	zenthcloud: {
 		icon: <DiscordIcon />,
 		label: "Discord",
 	},
@@ -354,9 +354,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					volumeBackup: notification.volumeBackup,
 					dockerCleanup: notification.dockerCleanup,
 					webhookUrl: notification.slack?.webhookUrl,
@@ -369,9 +369,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					volumeBackup: notification.volumeBackup,
 					botToken: notification.telegram?.botToken,
 					messageThreadId: notification.telegram?.messageThreadId || "",
@@ -381,17 +381,17 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 					dockerCleanup: notification.dockerCleanup,
 					serverThreshold: notification.serverThreshold,
 				});
-			} else if (notification.notificationType === "guilderia") {
+			} else if (notification.notificationType === "zenthcloud") {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
-					webhookUrl: notification.guilderia?.webhookUrl,
-					decoration: notification.guilderia?.decoration ?? undefined,
+					webhookUrl: notification.zenthcloud?.webhookUrl,
+					decoration: notification.zenthcloud?.decoration ?? undefined,
 					name: notification.name,
 					dockerCleanup: notification.dockerCleanup,
 					serverThreshold: notification.serverThreshold,
@@ -400,9 +400,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					smtpServer: notification.email?.smtpServer,
@@ -419,9 +419,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					apiKey: notification.resend?.apiKey,
@@ -435,9 +435,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					appToken: notification.gotify?.appToken,
@@ -452,9 +452,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					accessToken: notification.ntfy?.accessToken || "",
@@ -469,9 +469,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					webhookUrl: notification.mattermost?.webhookUrl,
@@ -485,9 +485,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					type: notification.notificationType,
 					webhookUrl: notification.lark?.webhookUrl,
 					name: notification.name,
@@ -499,9 +499,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					webhookUrl: notification.teams?.webhookUrl,
@@ -513,9 +513,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					type: notification.notificationType,
 					endpoint: notification.custom?.endpoint || "",
 					headers: notification.custom?.headers
@@ -535,9 +535,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					guilderiaRestart: notification.guilderiaRestart,
+					zenthcloudRestart: notification.zenthcloudRestart,
 					databaseBackup: notification.databaseBackup,
-					guilderiaBackup: notification.guilderiaBackup,
+					zenthcloudBackup: notification.zenthcloudBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					userKey: notification.pushover?.userKey,
@@ -558,7 +558,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 	const activeMutation = {
 		slack: slackMutation,
 		telegram: telegramMutation,
-		guilderia: discordMutation,
+		zenthcloud: discordMutation,
 		email: emailMutation,
 		resend: resendMutation,
 		gotify: gotifyMutation,
@@ -574,9 +574,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 		const {
 			appBuildError,
 			appDeploy,
-			guilderiaRestart,
+			zenthcloudRestart,
 			databaseBackup,
-			guilderiaBackup,
+			zenthcloudBackup,
 			volumeBackup,
 			dockerCleanup,
 			serverThreshold,
@@ -586,9 +586,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = slackMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				webhookUrl: data.webhookUrl,
 				channel: data.channel,
@@ -602,9 +602,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = telegramMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				botToken: data.botToken,
 				messageThreadId: data.messageThreadId || "",
@@ -615,13 +615,13 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				telegramId: notification?.telegramId || "",
 				serverThreshold: serverThreshold,
 			});
-		} else if (data.type === "guilderia") {
+		} else if (data.type === "zenthcloud") {
 			promise = discordMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				webhookUrl: data.webhookUrl,
 				decoration: data.decoration,
@@ -635,9 +635,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = emailMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				smtpServer: data.smtpServer,
 				smtpPort: data.smtpPort,
@@ -655,9 +655,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = resendMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				apiKey: data.apiKey,
 				fromAddress: data.fromAddress,
@@ -672,9 +672,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = gotifyMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				serverUrl: data.serverUrl,
 				appToken: data.appToken,
@@ -690,9 +690,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = ntfyMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				serverUrl: data.serverUrl,
 				accessToken: data.accessToken || "",
@@ -708,9 +708,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = mattermostMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				webhookUrl: data.webhookUrl,
 				channel: data.channel || undefined,
@@ -725,9 +725,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = larkMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				webhookUrl: data.webhookUrl,
 				name: data.name,
@@ -740,9 +740,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = teamsMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				webhookUrl: data.webhookUrl,
 				name: data.name,
@@ -767,9 +767,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = customMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				endpoint: data.endpoint,
 				headers: headersRecord,
@@ -787,9 +787,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = pushoverMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				guilderiaRestart: guilderiaRestart,
+				zenthcloudRestart: zenthcloudRestart,
 				databaseBackup: databaseBackup,
-				guilderiaBackup: guilderiaBackup,
+				zenthcloudBackup: zenthcloudBackup,
 				volumeBackup: volumeBackup,
 				userKey: data.userKey,
 				apiToken: data.apiToken,
@@ -1029,7 +1029,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 									</>
 								)}
 
-								{type === "guilderia" && (
+								{type === "zenthcloud" && (
 									<>
 										<FormField
 											control={form.control}
@@ -1039,7 +1039,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 													<FormLabel>Webhook URL</FormLabel>
 													<FormControl>
 														<Input
-															placeholder="https://guilderia.com/api/webhooks/123456789/ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+															placeholder="https://zenthcloud.com/api/webhooks/123456789/ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 															{...field}
 														/>
 													</FormControl>
@@ -1529,7 +1529,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 												<FormItem>
 													<FormLabel>Username</FormLabel>
 													<FormControl>
-														<Input placeholder="guilderia" {...field} />
+														<Input placeholder="zenthcloud" {...field} />
 													</FormControl>
 													<FormDescription>
 														Optional. Display name for the webhook.
@@ -1883,13 +1883,13 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 
 								<FormField
 									control={form.control}
-									name="guilderiaBackup"
+									name="zenthcloudBackup"
 									render={({ field }) => (
 										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-xs gap-2">
 											<div className="space-y-0.5">
-												<FormLabel>guilderia Backup</FormLabel>
+												<FormLabel>zenthcloud Backup</FormLabel>
 												<FormDescription>
-													Trigger the action when a guilderia backup is created.
+													Trigger the action when a zenthcloud backup is created.
 												</FormDescription>
 											</div>
 											<FormControl>
@@ -1947,13 +1947,13 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 								{!isCloud && (
 									<FormField
 										control={form.control}
-										name="guilderiaRestart"
+										name="zenthcloudRestart"
 										render={({ field }) => (
 											<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-xs gap-2">
 												<div className="space-y-0.5">
-													<FormLabel>guilderia Restart</FormLabel>
+													<FormLabel>zenthcloud Restart</FormLabel>
 													<FormDescription>
-														Trigger the action when guilderia is restarted.
+														Trigger the action when zenthcloud is restarted.
 													</FormDescription>
 												</div>
 												<FormControl>
@@ -2030,7 +2030,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 											chatId: data.chatId,
 											messageThreadId: data.messageThreadId || "",
 										});
-									} else if (data.type === "guilderia") {
+									} else if (data.type === "zenthcloud") {
 										await testDiscordConnection({
 											webhookUrl: data.webhookUrl,
 											decoration: data.decoration,

@@ -8,7 +8,7 @@ import {
 	updateApplicationStatus,
 	updateCompose,
 	updatePreviewDeployment,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import type { InMemoryJob } from "./in-memory-queue";
 
 /**

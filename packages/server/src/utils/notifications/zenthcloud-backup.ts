@@ -1,7 +1,7 @@
-import { db } from "@guilderia/server/db";
-import { notifications } from "@guilderia/server/db/schema";
-import GuilderiaBackupEmail from "@guilderia/server/emails/emails/guilderia-backup";
-import { redactSecrets } from "@guilderia/server/utils/security/redact";
+import { db } from "@zenthcloud/server/db";
+import { notifications } from "@zenthcloud/server/db/schema";
+import ZenthcloudBackupEmail from "@zenthcloud/server/emails/emails/zenthcloud-backup";
+import { redactSecrets } from "@zenthcloud/server/utils/security/redact";
 import { render } from "@react-email/components";
 import { format } from "date-fns";
 import { eq } from "drizzle-orm";
@@ -20,7 +20,7 @@ import {
 	sendTelegramNotification,
 } from "./utils";
 
-export const sendGuilderiaBackupNotifications = async ({
+export const sendZenthcloudBackupNotifications = async ({
 	type,
 	errorMessage: rawErrorMessage,
 	backupSize,
@@ -35,10 +35,10 @@ export const sendGuilderiaBackupNotifications = async ({
 	const date = new Date();
 	const unixDate = ~~(Number(date) / 1000);
 	const notificationList = await db.query.notifications.findMany({
-		where: eq(notifications.guilderiaBackup, true),
+		where: eq(notifications.zenthcloudBackup, true),
 		with: {
 			email: true,
-			guilderia: true,
+			zenthcloud: true,
 			telegram: true,
 			slack: true,
 			resend: true,
@@ -55,7 +55,7 @@ export const sendGuilderiaBackupNotifications = async ({
 	for (const notification of notificationList) {
 		const {
 			email,
-			guilderia,
+			zenthcloud,
 			telegram,
 			slack,
 			resend,
@@ -71,7 +71,7 @@ export const sendGuilderiaBackupNotifications = async ({
 		try {
 			if (email || resend) {
 				const template = await render(
-					GuilderiaBackupEmail({
+					ZenthcloudBackupEmail({
 						type,
 						errorMessage,
 						date: date.toLocaleString(),
@@ -82,7 +82,7 @@ export const sendGuilderiaBackupNotifications = async ({
 				if (email) {
 					await sendEmailNotification(
 						email,
-						"Guilderia instance backup",
+						"Zenthcloud instance backup",
 						template,
 					);
 				}
@@ -90,26 +90,26 @@ export const sendGuilderiaBackupNotifications = async ({
 				if (resend) {
 					await sendResendNotification(
 						resend,
-						"Guilderia instance backup",
+						"Zenthcloud instance backup",
 						template,
 					);
 				}
 			}
 
-			if (guilderia) {
+			if (zenthcloud) {
 				const decorate = (decoration: string, text: string) =>
-					`${guilderia.decoration ? decoration : ""} ${text}`.trim();
+					`${zenthcloud.decoration ? decoration : ""} ${text}`.trim();
 
-				await sendDiscordNotification(guilderia, {
+				await sendDiscordNotification(zenthcloud, {
 					title:
 						type === "success"
-							? decorate(">", "`✅` Guilderia Backup Successful")
-							: decorate(">", "`❌` Guilderia Backup Failed"),
+							? decorate(">", "`✅` Zenthcloud Backup Successful")
+							: decorate(">", "`❌` Zenthcloud Backup Failed"),
 					color: type === "success" ? 0x57f287 : 0xed4245,
 					fields: [
 						{
 							name: decorate("`📦`", "Backup Type"),
-							value: "Complete Guilderia Instance",
+							value: "Complete Zenthcloud Instance",
 							inline: true,
 						},
 						...(backupSize
@@ -149,7 +149,7 @@ export const sendGuilderiaBackupNotifications = async ({
 					],
 					timestamp: date.toISOString(),
 					footer: {
-						text: "Guilderia Instance Backup Notification",
+						text: "Zenthcloud Instance Backup Notification",
 					},
 				});
 			}
@@ -162,9 +162,9 @@ export const sendGuilderiaBackupNotifications = async ({
 					gotify,
 					decorate(
 						type === "success" ? "✅" : "❌",
-						`Guilderia Backup ${type === "success" ? "Successful" : "Failed"}`,
+						`Zenthcloud Backup ${type === "success" ? "Successful" : "Failed"}`,
 					),
-					`${decorate("📦", "Backup Type: Complete Guilderia Instance")}` +
+					`${decorate("📦", "Backup Type: Complete Zenthcloud Instance")}` +
 						`${backupSize ? decorate("💾", `Backup Size: ${backupSize}`) : ""}` +
 						`${decorate("🕒", `Date: ${date.toLocaleString()}`)}` +
 						`${type === "error" && errorMessage ? decorate("❌", `Error:\n${errorMessage}`) : ""}`,
@@ -174,10 +174,10 @@ export const sendGuilderiaBackupNotifications = async ({
 			if (ntfy) {
 				await sendNtfyNotification(
 					ntfy,
-					`Guilderia Backup ${type === "success" ? "Successful" : "Failed"}`,
+					`Zenthcloud Backup ${type === "success" ? "Successful" : "Failed"}`,
 					`${type === "success" ? "white_check_mark" : "x"}`,
 					"",
-					"📦Backup Type: Complete Guilderia Instance\n" +
+					"📦Backup Type: Complete Zenthcloud Instance\n" +
 						`${backupSize ? `💾Backup Size: ${backupSize}\n` : ""}` +
 						`🕒Date: ${date.toLocaleString()}\n` +
 						`${type === "error" && errorMessage ? `❌Error:\n${errorMessage}` : ""}`,
@@ -196,7 +196,7 @@ export const sendGuilderiaBackupNotifications = async ({
 					? `\n<b>Backup Size:</b> ${backupSize}`
 					: "";
 
-				const messageText = `<b>${statusEmoji} Guilderia Backup ${typeStatus}</b>\n\n<b>Backup Type:</b> Complete Guilderia Instance${sizeInfo}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}${isError ? errorMsg : ""}`;
+				const messageText = `<b>${statusEmoji} Zenthcloud Backup ${typeStatus}</b>\n\n<b>Backup Type:</b> Complete Zenthcloud Instance${sizeInfo}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}${isError ? errorMsg : ""}`;
 
 				await sendTelegramNotification(telegram, messageText);
 			}
@@ -210,8 +210,8 @@ export const sendGuilderiaBackupNotifications = async ({
 							color: type === "success" ? "#00FF00" : "#FF0000",
 							pretext:
 								type === "success"
-									? ":white_check_mark: *Guilderia Backup Successful*"
-									: ":x: *Guilderia Backup Failed*",
+									? ":white_check_mark: *Zenthcloud Backup Successful*"
+									: ":x: *Zenthcloud Backup Failed*",
 							fields: [
 								...(type === "error" && errorMessage
 									? [
@@ -224,7 +224,7 @@ export const sendGuilderiaBackupNotifications = async ({
 									: []),
 								{
 									title: "Backup Type",
-									value: "Complete Guilderia Instance",
+									value: "Complete Zenthcloud Instance",
 									short: true,
 								},
 								...(backupSize
@@ -280,8 +280,8 @@ export const sendGuilderiaBackupNotifications = async ({
 								tag: "plain_text",
 								content:
 									type === "success"
-										? "✅ Guilderia Backup Successful"
-										: "❌ Guilderia Backup Failed",
+										? "✅ Zenthcloud Backup Successful"
+										: "❌ Zenthcloud Backup Failed",
 							},
 							subtitle: {
 								tag: "plain_text",
@@ -304,7 +304,7 @@ export const sendGuilderiaBackupNotifications = async ({
 												{
 													tag: "markdown",
 													content:
-														"**Backup Type:**\nComplete Guilderia Instance",
+														"**Backup Type:**\nComplete Zenthcloud Instance",
 													text_align: "left",
 													text_size: "normal_v2",
 												},
@@ -364,43 +364,43 @@ export const sendGuilderiaBackupNotifications = async ({
 				const statusEmoji = type === "success" ? ":white_check_mark:" : ":x:";
 				const typeStatus = type === "success" ? "Successful" : "Failed";
 				await sendMattermostNotification(mattermost, {
-					text: `${statusEmoji} **Guilderia Backup ${typeStatus}**
+					text: `${statusEmoji} **Zenthcloud Backup ${typeStatus}**
 
-**Backup Type:** Complete Guilderia Instance${backupSize ? `\n**Backup Size:** ${backupSize}` : ""}
+**Backup Type:** Complete Zenthcloud Instance${backupSize ? `\n**Backup Size:** ${backupSize}` : ""}
 **Date:** ${date.toLocaleString()}
 **Status:** ${typeStatus}${type === "error" && errorMessage ? `\n\n**Error:**\n\`\`\`\n${errorMessage}\n\`\`\`` : ""}`,
 					channel: mattermost.channel,
-					username: mattermost.username || "Guilderia Bot",
+					username: mattermost.username || "Zenthcloud Bot",
 				});
 			}
 
 			if (custom) {
 				await sendCustomNotification(custom, {
-					title: `Guilderia Backup ${type === "success" ? "Successful" : "Failed"}`,
-					message: `Guilderia instance backup ${type === "success" ? "completed successfully" : "failed"}`,
-					backupType: "Complete Guilderia Instance",
+					title: `Zenthcloud Backup ${type === "success" ? "Successful" : "Failed"}`,
+					message: `Zenthcloud instance backup ${type === "success" ? "completed successfully" : "failed"}`,
+					backupType: "Complete Zenthcloud Instance",
 					...(backupSize ? { backupSize } : {}),
 					...(type === "error" && errorMessage ? { errorMessage } : {}),
 					timestamp: date.toISOString(),
 					date: date.toLocaleString(),
 					status: type,
-					type: "guilderia-backup",
+					type: "zenthcloud-backup",
 				});
 			}
 
 			if (pushover) {
 				await sendPushoverNotification(
 					pushover,
-					`Guilderia Backup ${type === "success" ? "Successful" : "Failed"}`,
-					`Backup Type: Complete Guilderia Instance${backupSize ? `\nBackup Size: ${backupSize}` : ""}\nDate: ${date.toLocaleString()}${type === "error" && errorMessage ? `\nError: ${errorMessage}` : ""}`,
+					`Zenthcloud Backup ${type === "success" ? "Successful" : "Failed"}`,
+					`Backup Type: Complete Zenthcloud Instance${backupSize ? `\nBackup Size: ${backupSize}` : ""}\nDate: ${date.toLocaleString()}${type === "error" && errorMessage ? `\nError: ${errorMessage}` : ""}`,
 				);
 			}
 
 			if (teams) {
 				await sendTeamsNotification(teams, {
-					title: `${type === "success" ? "✅" : "❌"} Guilderia Backup ${type === "success" ? "Successful" : "Failed"}`,
+					title: `${type === "success" ? "✅" : "❌"} Zenthcloud Backup ${type === "success" ? "Successful" : "Failed"}`,
 					facts: [
-						{ name: "Backup Type", value: "Complete Guilderia Instance" },
+						{ name: "Backup Type", value: "Complete Zenthcloud Instance" },
 						...(backupSize ? [{ name: "Backup Size", value: backupSize }] : []),
 						{ name: "Date", value: format(date, "PP pp") },
 						{

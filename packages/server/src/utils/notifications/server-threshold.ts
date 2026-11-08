@@ -66,7 +66,7 @@ export const sendServerThresholdNotifications = async (
 		),
 		with: {
 			email: true,
-			guilderia: true,
+			zenthcloud: true,
 			telegram: true,
 			slack: true,
 			resend: true,
@@ -86,7 +86,7 @@ export const sendServerThresholdNotifications = async (
 	for (const notification of notificationList) {
 		const {
 			email,
-			guilderia,
+			zenthcloud,
 			telegram,
 			slack,
 			resend,
@@ -158,11 +158,11 @@ export const sendServerThresholdNotifications = async (
 				);
 			}
 
-			if (guilderia) {
+			if (zenthcloud) {
 				const decorate = (decoration: string, text: string) =>
-					`${guilderia.decoration ? decoration : ""} ${text}`.trim();
+					`${zenthcloud.decoration ? decoration : ""} ${text}`.trim();
 
-				await sendDiscordNotification(guilderia, {
+				await sendDiscordNotification(zenthcloud, {
 					title: decorate(">", `\`⚠️\` Server ${payload.Type} Alert`),
 					color: typeColor,
 					fields: [
@@ -203,7 +203,7 @@ export const sendServerThresholdNotifications = async (
 					],
 					timestamp: date.toISOString(),
 					footer: {
-						text: "Guilderia Server Monitoring Alert",
+						text: "Zenthcloud Server Monitoring Alert",
 					},
 				});
 			}
@@ -271,7 +271,7 @@ export const sendServerThresholdNotifications = async (
 				await sendMattermostNotification(mattermost, {
 					text: `**⚠️ Server ${payload.Type} Alert**\n\n**Server Name:** ${payload.ServerName}\n**Type:** ${payload.Type}\n**Current Value:** ${payload.Value.toFixed(2)}%\n**Threshold:** ${payload.Threshold.toFixed(2)}%\n**Message:** ${payload.Message}\n**Time:** ${date.toLocaleString()}`,
 					channel: mattermost.channel,
-					username: mattermost.username || "Guilderia",
+					username: mattermost.username || "Zenthcloud",
 				});
 			}
 

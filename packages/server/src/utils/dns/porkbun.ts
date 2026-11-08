@@ -1,4 +1,4 @@
-import type { porkbunDnsConfigSchema } from "@guilderia/server/db/schema";
+import type { porkbunDnsConfigSchema } from "@zenthcloud/server/db/schema";
 import type { z } from "zod";
 import { type DnsClient, dnsFetch } from "./types";
 

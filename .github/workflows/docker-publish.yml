@@ -5,11 +5,11 @@ name: Docker Publish
 #   GitHub Actions -> Buildx -> GHCR -> cosign (keyless)
 #
 # Publishing is tag-only. Each package has its own `v<major>.<minor>.<patch>`
-# tag suffix (for example, `v1.2.3-cloud` publishes only `guilderia-cloud`).
+# tag suffix (for example, `v1.2.3-cloud` publishes only `zenthcloud-cloud`).
 #
-# Every suffix also publishes a GitHub Release, titled `guilderia {Suffix}
-# v{major}.{minor}.{patch}` (`guilderia App v1.2.3`, `guilderia Cloud v1.2.3`,
-# `guilderia Console v1.2.3`, `guilderia Status v1.2.3`, `guilderia MCP v1.2.3`, ...),
+# Every suffix also publishes a GitHub Release, titled `zenthcloud {Suffix}
+# v{major}.{minor}.{patch}` (`zenthcloud App v1.2.3`, `zenthcloud Cloud v1.2.3`,
+# `zenthcloud Console v1.2.3`, `zenthcloud Status v1.2.3`, `zenthcloud MCP v1.2.3`, ...),
 # so a release always reads the same way whatever image it advertises. The
 # suffix label and the assets a release carries come from the catalog in
 # `select`, which is the single place to add an image.
@@ -60,7 +60,7 @@ env:
 
 jobs:
   # The pushed tag selects exactly one image (`v1.0.2-app` publishes only
-  # `guilderia`). The matrix is filtered here rather than letting every job
+  # `zenthcloud`). The matrix is filtered here rather than letting every job
   # disable itself, so a tag push shows a single job in the run instead of
   # seven, six of them no-ops.
   select:
@@ -94,87 +94,87 @@ jobs:
           # and adding its suffix to the tag filters above.
           #
           # `release_name` is the label the GitHub Release is titled with
-          # (`guilderia {release_name} {version}`) and `release_assets` says
+          # (`zenthcloud {release_name} {version}`) and `release_assets` says
           # whether that release carries the install scripts.
           #
           # `platforms` defaults to linux/amd64,linux/arm64 when omitted.
           read -r -d '' CATALOG <<'JSON' || true
           [
             {
-              "image": "guilderia",
+              "image": "zenthcloud",
               "file": "./Dockerfile",
               "target": "selfhosted",
               "platforms": "linux/amd64",
               "tag_suffix": "-app",
-              "description": "guilderia self-hosted (dashboard, server and build tooling)",
+              "description": "zenthcloud self-hosted (dashboard, server and build tooling)",
               "release_name": "App",
               "release_assets": true
             },
             {
-              "image": "guilderia-cloud",
+              "image": "zenthcloud-cloud",
               "file": "./Dockerfile",
               "target": "cloud",
               "tag_suffix": "-cloud",
-              "description": "guilderia Cloud (dashboard + server)",
+              "description": "zenthcloud Cloud (dashboard + server)",
               "release_name": "Cloud",
               "release_assets": true
             },
             {
-              "image": "guilderia-console",
+              "image": "zenthcloud-console",
               "file": "./Dockerfile",
               "target": "console",
               "tag_suffix": "-console",
-              "description": "guilderia Console (instance and fleet management)",
+              "description": "zenthcloud Console (instance and fleet management)",
               "release_name": "Console",
               "release_assets": true
             },
             {
-              "image": "guilderia-status",
+              "image": "zenthcloud-status",
               "file": "./Dockerfile",
               "target": "status",
               "tag_suffix": "-status",
-              "description": "guilderia Status (status page, incidents and uptime history)",
+              "description": "zenthcloud Status (status page, incidents and uptime history)",
               "release_name": "Status",
               "release_assets": false
             },
             {
-              "image": "guilderia-mcp",
+              "image": "zenthcloud-mcp",
               "file": "./packages/mcp/Dockerfile",
               "tag_suffix": "-mcp",
-              "description": "guilderia MCP server",
+              "description": "zenthcloud MCP server",
               "release_name": "MCP",
               "release_assets": false
             },
             {
-              "image": "guilderia-github",
+              "image": "zenthcloud-github",
               "file": "./packages/github/Dockerfile",
               "tag_suffix": "-github",
-              "description": "guilderia GitHub integration",
+              "description": "zenthcloud GitHub integration",
               "release_name": "GitHub",
               "release_assets": false
             },
             {
-              "image": "guilderia-website",
+              "image": "zenthcloud-website",
               "file": "./web/Dockerfile.website",
               "platforms": "linux/amd64",
               "tag_suffix": "-website",
-              "description": "guilderia official website",
+              "description": "zenthcloud official website",
               "release_name": "Website",
               "release_assets": false
             },
             {
-              "image": "guilderia-docs",
+              "image": "zenthcloud-docs",
               "file": "./web/Dockerfile.docs",
               "tag_suffix": "-docs",
-              "description": "guilderia documentation",
+              "description": "zenthcloud documentation",
               "release_name": "Docs",
               "release_assets": false
             },
             {
-              "image": "guilderia-templates",
+              "image": "zenthcloud-templates",
               "file": "./templates/Dockerfile",
               "tag_suffix": "-templates",
-              "description": "guilderia templates gallery",
+              "description": "zenthcloud templates gallery",
               "release_name": "Templates",
               "release_assets": false
             }
@@ -198,7 +198,7 @@ jobs:
           # The release fields are for the `release` job only: the build matrix
           # does not need them.
           echo "matrix=$(jq -c 'map(del(.release_name, .release_assets))' <<< "$selected")" >> "$GITHUB_OUTPUT"
-          echo "release_title=guilderia $release_name $version" >> "$GITHUB_OUTPUT"
+          echo "release_title=zenthcloud $release_name $version" >> "$GITHUB_OUTPUT"
           echo "release_assets=$(jq -r '.[0].release_assets' <<< "$selected")" >> "$GITHUB_OUTPUT"
 
           # The self-hosted release is the one a running server and install.sh
@@ -357,8 +357,8 @@ jobs:
             exit 0
           fi
 
-          cp install.sh install-guilderia.sh
-          chmod +x install.sh install-guilderia.sh install.ps1
+          cp install.sh install-zenthcloud.sh
+          chmod +x install.sh install-zenthcloud.sh install.ps1
           echo "enabled=true" >> "$GITHUB_OUTPUT"
 
       # Idempotent: re-running the workflow updates the existing release instead
@@ -378,5 +378,5 @@ jobs:
           # publishes no file instead of failing on an unmatched glob.
           files: |
             ${{ steps.assets.outputs.enabled == 'true' && 'install.sh' || '' }}
-            ${{ steps.assets.outputs.enabled == 'true' && 'install-guilderia.sh' || '' }}
+            ${{ steps.assets.outputs.enabled == 'true' && 'install-zenthcloud.sh' || '' }}
             ${{ steps.assets.outputs.enabled == 'true' && 'install.ps1' || '' }}

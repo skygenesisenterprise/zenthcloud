@@ -1,14 +1,14 @@
 import { createWriteStream } from "node:fs";
 import path from "node:path";
-import { paths } from "@guilderia/server/constants";
-import { isManagedCloud } from "@guilderia/server/services/instance-identity";
-import type { Schedule } from "@guilderia/server/db/schema/schedule";
+import { paths } from "@zenthcloud/server/constants";
+import { isManagedCloud } from "@zenthcloud/server/services/instance-identity";
+import type { Schedule } from "@zenthcloud/server/db/schema/schedule";
 import {
 	createDeploymentSchedule,
 	updateDeployment,
 	updateDeploymentStatus,
-} from "@guilderia/server/services/deployment";
-import { findScheduleById } from "@guilderia/server/services/schedule";
+} from "@zenthcloud/server/services/deployment";
+import { findScheduleById } from "@zenthcloud/server/services/schedule";
 import { scheduledJobs, scheduleJob as scheduleJobNode } from "node-schedule";
 import { quote } from "shell-quote";
 import { getComposeContainer, getServiceContainer } from "../docker/utils";
@@ -146,7 +146,7 @@ export const runCommand = async (scheduleId: string) => {
 					throw error;
 				}
 			}
-		} else if (scheduleType === "guilderia-server") {
+		} else if (scheduleType === "zenthcloud-server") {
 			const writeStream = createWriteStream(deployment.logPath, { flags: "a" });
 			const { SCHEDULES_PATH } = paths();
 			const fullPath = path.join(SCHEDULES_PATH, appName || "");

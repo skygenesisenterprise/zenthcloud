@@ -1,5 +1,5 @@
-import type { OverviewService } from "@guilderia/server/services/overview";
-import { sortOverviewServices } from "@guilderia/server/services/overview";
+import type { OverviewService } from "@zenthcloud/server/services/overview";
+import { sortOverviewServices } from "@zenthcloud/server/services/overview";
 import { describe, expect, test } from "vitest";
 
 const makeService = (overrides: Partial<OverviewService>): OverviewService => ({

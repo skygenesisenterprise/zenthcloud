@@ -1,5 +1,5 @@
-import type { ApplicationNested } from "@guilderia/server/utils/builders";
-import { mechanizeDockerContainer } from "@guilderia/server/utils/builders";
+import type { ApplicationNested } from "@zenthcloud/server/utils/builders";
+import { mechanizeDockerContainer } from "@zenthcloud/server/utils/builders";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type MockCreateServiceOptions = {
@@ -31,7 +31,7 @@ const { inspectMock, getServiceMock, createServiceMock, getRemoteDockerMock } =
 		};
 	});
 
-vi.mock("@guilderia/server/utils/servers/remote-docker", () => ({
+vi.mock("@zenthcloud/server/utils/servers/remote-docker", () => ({
 	getRemoteDocker: getRemoteDockerMock,
 }));
 

@@ -2,7 +2,7 @@ import {
 	MAX_TRAFFIC_RANGE_DAYS,
 	resolveTrafficRange,
 	TrafficRangeError,
-} from "@guilderia/server/services/traffic-analytics";
+} from "@zenthcloud/server/services/traffic-analytics";
 import { describe, expect, it } from "vitest";
 
 const now = new Date("2026-10-12T12:00:00.000Z");

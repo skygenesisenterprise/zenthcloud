@@ -89,7 +89,7 @@ function AuditLogsContent() {
 							Audit Logs
 						</h1>
 						<p className="text-sm text-muted-foreground">
-							Track user and administrative actions across your Guilderia
+							Track user and administrative actions across your Zenthcloud
 							organization.
 						</p>
 					</div>

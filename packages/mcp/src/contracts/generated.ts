@@ -2,7 +2,7 @@ import type { ZodObject, ZodRawShape } from "zod";
 import type { ToolAnnotations } from "./capability.js";
 
 /**
- * One operation from the Guilderia OpenAPI document.
+ * One operation from the Zenthcloud OpenAPI document.
  *
  * The generated file contains only API metadata and a Zod input schema; risk,
  * environment availability, authorization and approval are decided at runtime

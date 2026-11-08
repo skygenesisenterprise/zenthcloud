@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { IdentityResolver } from "../adapters/identity.js";
-import { guilderiaApi } from "../adapters/guilderiaApi.js";
+import { zenthcloudApi } from "../adapters/zenthcloudApi.js";
 import { buildCatalog, CapabilityRegistry } from "../catalog/registry.js";
 import { getConfig } from "../config.js";
 import { ToolExecutor } from "../execution/executor.js";
@@ -38,7 +38,7 @@ function registerCapability(server, capability, executor) {
 export async function createServerParts(options = {}) {
     const config = options.config ?? getConfig();
     setLogLevel(config.logLevel);
-    const api = options.api ?? new guilderiaApi(config);
+    const api = options.api ?? new zenthcloudApi(config);
     const operations = options.operations ??
         new OperationStore({
             ...(config.operationStorePath ? { path: config.operationStorePath } : {}),
@@ -66,8 +66,8 @@ export async function createServerParts(options = {}) {
 }
 /** Creates an MCP protocol server bound to shared parts (one per transport). */
 export function buildMcpServer(parts) {
-    const server = new McpServer({ name: "guilderia", version: MCP_SERVER_VERSION }, {
-        instructions: "guilderia automation server. Start with the discovery capabilities, use read-only diagnostics before mutating anything, and poll get_operation_status after long-running actions.",
+    const server = new McpServer({ name: "zenthcloud", version: MCP_SERVER_VERSION }, {
+        instructions: "zenthcloud automation server. Start with the discovery capabilities, use read-only diagnostics before mutating anything, and poll get_operation_status after long-running actions.",
     });
     for (const capability of parts.registry.list()) {
         registerCapability(server, capability, parts.executor);

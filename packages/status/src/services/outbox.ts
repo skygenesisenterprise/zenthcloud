@@ -119,12 +119,12 @@ const deliverWebhook = async (
 				method: "POST",
 				headers: {
 					"content-type": "application/json",
-					"x-guilderia-status-delivery": row.id,
-					"x-guilderia-status-event": String(
+					"x-zenthcloud-status-delivery": row.id,
+					"x-zenthcloud-status-event": String(
 						(JSON.parse(payload) as { event?: string }).event ?? "",
 					),
-					"x-guilderia-status-timestamp": timestamp,
-					"x-guilderia-status-signature": `sha256=${signature}`,
+					"x-zenthcloud-status-timestamp": timestamp,
+					"x-zenthcloud-status-signature": `sha256=${signature}`,
 				},
 				body: payload,
 				signal: AbortSignal.timeout(10_000),

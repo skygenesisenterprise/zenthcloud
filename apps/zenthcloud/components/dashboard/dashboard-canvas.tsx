@@ -50,7 +50,7 @@ export function DashboardCanvas({
 	title,
 	description,
 	widgets,
-	dataSourceLabel = "guilderia API",
+	dataSourceLabel = "zenthcloud API",
 	emptyMessage = "No dashboard blocks are available.",
 }: DashboardCanvasProps) {
 	const [preferences, setPreferences] = useState<DashboardPreferences>({
@@ -62,7 +62,7 @@ export function DashboardCanvas({
 	const [isCustomizing, setIsCustomizing] = useState(false);
 	const widgetIds = widgets.map(({ id: widgetId }) => widgetId);
 	const widgetIdKey = widgetIds.join(",");
-	const storageKey = `guilderia.dashboard.${id}.layout.v1`;
+	const storageKey = `zenthcloud.dashboard.${id}.layout.v1`;
 
 	useEffect(() => {
 		setPreferencesLoaded(false);

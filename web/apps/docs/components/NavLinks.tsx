@@ -20,22 +20,22 @@ export function NavLinks() {
 	const links = [
 		{
 			text: "Login",
-			url: "https://app.guilderia.com/",
+			url: "https://app.zenthcloud.com/",
 			icon: LogIn,
 		},
 		{
 			text: "Sign Up",
-			url: "https://app.guilderia.com/register",
+			url: "https://app.zenthcloud.com/register",
 			icon: UserPlus,
 		},
 		{
 			text: "Website",
-			url: "https://guilderia.com",
+			url: "https://zenthcloud.com",
 			icon: Globe,
 		},
 		{
 			text: "Templates",
-			url: "https://templates.guilderia.com",
+			url: "https://templates.zenthcloud.com",
 			icon: LayoutGrid,
 		},
 		{
@@ -60,12 +60,12 @@ export function NavLinks() {
 		},
 		{
 			text: "Github",
-			url: "https://github.com/skygenesisenterprise/guilderia",
+			url: "https://github.com/skygenesisenterprise/zenthcloud",
 			icon: Github,
 		},
 		{
 			text: "Blog",
-			url: "https://guilderia.com/blog",
+			url: "https://zenthcloud.com/blog",
 			icon: Rss,
 		},
 	];

@@ -1,6 +1,6 @@
 /**
  * Badges shared by the incident and maintenance views. They map the status
- * platform vocabulary (`@guilderia/status`) onto the console badge variants so
+ * platform vocabulary (`@zenthcloud/status`) onto the console badge variants so
  * a severity, a lifecycle state or a publication status reads the same
  * everywhere on the dashboard.
  */

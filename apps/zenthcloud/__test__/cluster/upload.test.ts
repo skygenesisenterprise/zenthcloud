@@ -1,5 +1,5 @@
-import type { Registry } from "@guilderia/server";
-import { getRegistryTag } from "@guilderia/server";
+import type { Registry } from "@zenthcloud/server";
+import { getRegistryTag } from "@zenthcloud/server";
 import { describe, expect, it } from "vitest";
 
 describe("getRegistryTag", () => {
@@ -214,12 +214,12 @@ describe("getRegistryTag", () => {
 	});
 
 	describe("special characters in username", () => {
-		it("should handle Harbor robot account username with $ (e.g. robot$library+guilderia)", () => {
+		it("should handle Harbor robot account username with $ (e.g. robot$library+zenthcloud)", () => {
 			const registry = createMockRegistry({
-				username: "robot$library+guilderia",
+				username: "robot$library+zenthcloud",
 			});
 			const result = getRegistryTag(registry, "nginx");
-			expect(result).toBe("docker.io/robot$library+guilderia/nginx");
+			expect(result).toBe("docker.io/robot$library+zenthcloud/nginx");
 		});
 
 		it("should handle username with $ and other special characters", () => {

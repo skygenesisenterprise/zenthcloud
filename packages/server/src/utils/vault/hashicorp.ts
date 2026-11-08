@@ -1,4 +1,4 @@
-import type { hashicorpVaultConfigSchema } from "@guilderia/server/db/schema";
+import type { hashicorpVaultConfigSchema } from "@zenthcloud/server/db/schema";
 import type { z } from "zod";
 import { type VaultClient, vaultFetch } from "./types";
 

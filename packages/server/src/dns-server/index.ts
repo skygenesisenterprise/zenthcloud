@@ -1,14 +1,14 @@
 import dgram from "node:dgram";
 import net from "node:net";
-import { db } from "@guilderia/server/db";
-import { dnsRecord } from "@guilderia/server/db/schema";
+import { db } from "@zenthcloud/server/db";
+import { dnsRecord } from "@zenthcloud/server/db/schema";
 import { and, eq } from "drizzle-orm";
 
 /**
  * Minimal authoritative-forwarding DNS server. Names that fall inside a
- * Guilderia Internal DNS zone (`dns_zone` rows owned by a `guilderia-internal`
+ * Zenthcloud Internal DNS zone (`dns_zone` rows owned by a `zenthcloud-internal`
  * provider) are answered from `dns_record`; every other name is forwarded to
- * the configured upstream resolvers. That is what makes `gitlab.guilderia.lan`
+ * the configured upstream resolvers. That is what makes `gitlab.zenthcloud.lan`
  * resolve for LAN clients while the rest of DNS keeps working.
  */
 
@@ -215,7 +215,7 @@ const getInternalZones = async (): Promise<InternalZone[]> => {
 	}
 	const zones = await db.query.dnsZone.findMany({ with: { provider: true } });
 	const internal = zones
-		.filter((zone) => zone.provider?.providerType === "guilderia-internal")
+		.filter((zone) => zone.provider?.providerType === "zenthcloud-internal")
 		.map((zone) => ({ dnsZoneId: zone.dnsZoneId, name: normalizeName(zone.name) }));
 	zoneCache = { at: Date.now(), zones: internal };
 	return internal;
@@ -262,7 +262,7 @@ const resolveInternal = async (
 };
 
 const parseUpstreams = () =>
-	(process.env.GUILDERIA_DNS_UPSTREAM ?? "1.1.1.1,8.8.8.8")
+	(process.env.ZENTHCLOUD_DNS_UPSTREAM ?? "1.1.1.1,8.8.8.8")
 		.split(",")
 		.map((server) => server.trim())
 		.filter(Boolean);
@@ -316,16 +316,16 @@ export interface InternalDnsServerOptions {
 /**
  * Starts the UDP and TCP listeners. Binding is best-effort: an unavailable
  * port (for example 53 in a container without the capability) is logged and
- * never crashes the main Guilderia server.
+ * never crashes the main Zenthcloud server.
  */
 export const startInternalDnsServer = (options: InternalDnsServerOptions = {}) => {
 	const enabled =
-		options.enabled ?? process.env.GUILDERIA_DNS_SERVER !== "false";
+		options.enabled ?? process.env.ZENTHCLOUD_DNS_SERVER !== "false";
 	if (!enabled) {
 		return;
 	}
-	const host = options.host ?? process.env.GUILDERIA_DNS_HOST ?? "0.0.0.0";
-	const port = options.port ?? Number.parseInt(process.env.GUILDERIA_DNS_PORT ?? "53", 10);
+	const host = options.host ?? process.env.ZENTHCLOUD_DNS_HOST ?? "0.0.0.0";
+	const port = options.port ?? Number.parseInt(process.env.ZENTHCLOUD_DNS_PORT ?? "53", 10);
 
 	const udp = dgram.createSocket("udp4");
 	udp.on("message", (message, remote) => {

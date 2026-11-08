@@ -50,11 +50,11 @@ let quota = {
 	memoryReservation: null as string | null,
 };
 
-vi.mock("@guilderia/server/services/permission", () => ({
+vi.mock("@zenthcloud/server/services/permission", () => ({
 	checkServiceAccess: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("@guilderia/server/db", () => ({
+vi.mock("@zenthcloud/server/db", () => ({
 	db: {
 		execute: vi.fn(),
 		query: {
@@ -65,16 +65,16 @@ vi.mock("@guilderia/server/db", () => ({
 	},
 }));
 
-const { db } = await import("@guilderia/server/db");
+const { db } = await import("@zenthcloud/server/db");
 const { checkServiceAccess } = await import(
-	"@guilderia/server/services/permission"
+	"@zenthcloud/server/services/permission"
 );
 const {
 	assertServiceMoveAllowed,
 	previewServiceMove,
-} = await import("@guilderia/server/services/service-move");
+} = await import("@zenthcloud/server/services/service-move");
 const { ProjectQuotaExceededError } = await import(
-	"@guilderia/server/services/project-quota"
+	"@zenthcloud/server/services/project-quota"
 );
 
 const ctx = {

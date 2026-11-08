@@ -1,4 +1,4 @@
-import type { gitProvider } from "@guilderia/server/db/schema";
+import type { gitProvider } from "@zenthcloud/server/db/schema";
 import { bitbucketGitProviderAdapter } from "./bitbucket";
 import { giteaGitProviderAdapter } from "./gitea";
 import { githubGitProviderAdapter } from "./github";

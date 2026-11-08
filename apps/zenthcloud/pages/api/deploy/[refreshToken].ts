@@ -3,8 +3,8 @@ import {
 	getBitbucketHeaders,
 	IS_CLOUD,
 	shouldDeploy,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
 import { eq } from "drizzle-orm";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { applications } from "@/server/db/schema";

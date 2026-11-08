@@ -1,5 +1,5 @@
 ---
-"@guilderia/cli": patch
+"@zenthcloud/cli": patch
 ---
 
 cloud command support

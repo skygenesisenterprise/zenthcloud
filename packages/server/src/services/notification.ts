@@ -1,4 +1,4 @@
-import { db } from "@guilderia/server/db";
+import { db } from "@zenthcloud/server/db";
 import {
 	type apiCreateCustom,
 	type apiCreateDiscord,
@@ -25,7 +25,7 @@ import {
 	type apiUpdateTeams,
 	type apiUpdateTelegram,
 	custom,
-	guilderia,
+	zenthcloud,
 	email,
 	gotify,
 	lark,
@@ -37,7 +37,7 @@ import {
 	slack,
 	teams,
 	telegram,
-} from "@guilderia/server/db/schema";
+} from "@zenthcloud/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
@@ -240,7 +240,7 @@ export const createDiscordNotification = async (
 ) => {
 	await db.transaction(async (tx) => {
 		const newDiscord = await tx
-			.insert(guilderia)
+			.insert(zenthcloud)
 			.values({
 				webhookUrl: input.webhookUrl,
 				decoration: input.decoration,
@@ -251,7 +251,7 @@ export const createDiscordNotification = async (
 		if (!newDiscord) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: "Error input: Inserting guilderia",
+				message: "Error input: Inserting zenthcloud",
 			});
 		}
 
@@ -267,7 +267,7 @@ export const createDiscordNotification = async (
 				volumeBackup: input.volumeBackup,
 				astronCollectionRestart: input.astronCollectionRestart,
 				dockerCleanup: input.dockerCleanup,
-				notificationType: "guilderia",
+				notificationType: "zenthcloud",
 				organizationId: organizationId,
 				serverThreshold: input.serverThreshold,
 			})
@@ -315,12 +315,12 @@ export const updateDiscordNotification = async (
 		}
 
 		await tx
-			.update(guilderia)
+			.update(zenthcloud)
 			.set({
 				webhookUrl: input.webhookUrl,
 				decoration: input.decoration,
 			})
-			.where(eq(guilderia.discordId, input.discordId))
+			.where(eq(zenthcloud.discordId, input.discordId))
 			.returning()
 			.then((value) => value[0]);
 
@@ -816,7 +816,7 @@ export const findNotificationById = async (notificationId: string) => {
 		with: {
 			slack: true,
 			telegram: true,
-			guilderia: true,
+			zenthcloud: true,
 			email: true,
 			resend: true,
 			gotify: true,

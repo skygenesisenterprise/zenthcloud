@@ -26,11 +26,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-	title: "guilderia Self — Open-source, self-hosted infrastructure platform",
+	title: "zenthcloud Self — Open-source, self-hosted infrastructure platform",
 	description:
-		"Run guilderia on infrastructure you control: your own servers, VPS, bare metal or hosting provider. Free, open source (Apache-2.0), with full control over data, updates and network boundaries.",
+		"Run zenthcloud on infrastructure you control: your own servers, VPS, bare metal or hosting provider. Free, open source (Apache-2.0), with full control over data, updates and network boundaries.",
 	alternates: {
-		canonical: "https://guilderia.com/self",
+		canonical: "https://zenthcloud.com/self",
 	},
 };
 
@@ -39,19 +39,19 @@ const infrastructureTargets = [
 		icon: IconServer2,
 		title: "Your own servers and VPS",
 		description:
-			"Any Linux machine — from a small VPS to a rack of bare metal — can run guilderia. Docker is the only prerequisite.",
+			"Any Linux machine — from a small VPS to a rack of bare metal — can run zenthcloud. Docker is the only prerequisite.",
 	},
 	{
 		icon: IconCpu,
 		title: "Homelabs",
 		description:
-			"guilderia runs comfortably on modest hardware, making it a natural fit for homelab and personal infrastructure.",
+			"zenthcloud runs comfortably on modest hardware, making it a natural fit for homelab and personal infrastructure.",
 	},
 	{
 		icon: IconCloudComputing,
 		title: "Any hosting provider",
 		description:
-			"No preferred cloud: use AWS, Hetzner, OVH, Scaleway or your regional provider. Nothing ties guilderia to one vendor.",
+			"No preferred cloud: use AWS, Hetzner, OVH, Scaleway or your regional provider. Nothing ties zenthcloud to one vendor.",
 	},
 	{
 		icon: IconWorld,
@@ -110,7 +110,7 @@ const quickStart = [
 	{
 		title: "Run the installer",
 		description:
-			"One command sets up Docker and the guilderia stack on the host.",
+			"One command sets up Docker and the zenthcloud stack on the host.",
 		label: "One command",
 	},
 	{
@@ -129,14 +129,14 @@ const quickStart = [
 
 const selfFaqs = [
 	{
-		question: "What do I need to run guilderia Self?",
+		question: "What do I need to run zenthcloud Self?",
 		answer:
 			"A Linux server with Docker installed. The installer sets up the rest of the stack; afterwards you manage everything from the web interface. A single small VPS is enough to get started.",
 	},
 	{
-		question: "Is guilderia Self really free?",
+		question: "Is zenthcloud Self really free?",
 		answer:
-			"Yes. guilderia Self is open source under the Apache-2.0 license: no platform fees, no per-seat charges, no usage-based billing. You pay only for the infrastructure you already run.",
+			"Yes. zenthcloud Self is open source under the Apache-2.0 license: no platform fees, no per-seat charges, no usage-based billing. You pay only for the infrastructure you already run.",
 	},
 	{
 		question: "How are updates delivered?",
@@ -149,9 +149,9 @@ const selfFaqs = [
 			"Yes. Both editions run the same platform capabilities, so the way you model applications, environments and teams stays the same if you change operating model.",
 	},
 	{
-		question: "What happens if the guilderia project disappears?",
+		question: "What happens if the zenthcloud project disappears?",
 		answer:
-			"Your running instance does not depend on any guilderia-hosted service. The source code and your data remain fully under your control, which is the point of self-hosting.",
+			"Your running instance does not depend on any zenthcloud-hosted service. The source code and your data remain fully under your control, which is the point of self-hosting.",
 	},
 ];
 
@@ -159,17 +159,17 @@ export default function SelfPage() {
 	return (
 		<div className="min-h-screen bg-background">
 			<PageIntro
-				badge="guilderia Self"
+				badge="zenthcloud Self"
 				badgeDetail="Open source · Apache-2.0"
-				badgeHref="https://github.com/skygenesisenterprise/guilderia"
+				badgeHref="https://github.com/skygenesisenterprise/zenthcloud"
 				title="The platform"
 				highlight="you run yourself"
-				description="guilderia Self is the free, Apache-2.0 licensed edition of guilderia. Install it on infrastructure you control — your servers, your VPS, your hosting provider — and deploy applications and databases without handing ownership of your stack to anyone."
+				description="zenthcloud Self is the free, Apache-2.0 licensed edition of zenthcloud. Install it on infrastructure you control — your servers, your VPS, your hosting provider — and deploy applications and databases without handing ownership of your stack to anyone."
 				actions={
 					<>
 						<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
 							<Link
-								href="https://docs.guilderia.com/docs/core/installation"
+								href="https://docs.zenthcloud.com/docs/core/installation"
 								target="_blank"
 							>
 								Installation guide
@@ -182,7 +182,7 @@ export default function SelfPage() {
 							asChild
 						>
 							<Link
-								href="https://github.com/skygenesisenterprise/guilderia"
+								href="https://github.com/skygenesisenterprise/zenthcloud"
 								target="_blank"
 							>
 								View on GitHub
@@ -201,7 +201,7 @@ export default function SelfPage() {
 			<Container className="pb-20 sm:pb-28">
 				<ProductFrame
 					src="/dashboard.png"
-					alt="guilderia dashboard listing applications and their deployments"
+					alt="zenthcloud dashboard listing applications and their deployments"
 					path="your-server/dashboard"
 					caption="The full control plane, running on a machine you own."
 				/>
@@ -210,7 +210,7 @@ export default function SelfPage() {
 			<CellGrid
 				id="runs-on-infrastructure-you-choose"
 				title="Runs on infrastructure you choose"
-				description="guilderia does not require a specific provider or data center. If it runs Linux and Docker, it can run guilderia."
+				description="zenthcloud does not require a specific provider or data center. If it runs Linux and Docker, it can run zenthcloud."
 				items={infrastructureTargets}
 				columns={2}
 			/>
@@ -222,7 +222,7 @@ export default function SelfPage() {
 				items={controlPrinciples}
 				aside={
 					<Link
-						href="https://docs.guilderia.com/docs/core/architecture"
+						href="https://docs.zenthcloud.com/docs/core/architecture"
 						target="_blank"
 						className="mt-6 inline-flex items-center gap-1 text-base font-medium text-foreground underline underline-offset-4 hover:text-primary"
 					>
@@ -235,13 +235,13 @@ export default function SelfPage() {
 			<ProcessRail
 				id="from-a-blank-server-to-your-first-deployment"
 				title="From a blank server to your first deployment"
-				description="guilderia is designed to be operational in minutes, not in a sprint."
+				description="zenthcloud is designed to be operational in minutes, not in a sprint."
 				steps={quickStart}
 			/>
 
 			<PageFaq
-				id="guilderia-self-faqs"
-				title="guilderia Self FAQs"
+				id="zenthcloud-self-faqs"
+				title="zenthcloud Self FAQs"
 				description="The practical questions that come up before the first install."
 				faqs={selfFaqs}
 			/>

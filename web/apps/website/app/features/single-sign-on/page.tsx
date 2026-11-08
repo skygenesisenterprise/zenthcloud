@@ -18,7 +18,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
 	title: "Single Sign-On for Businesses and Enterprise Teams",
 	description:
-		"Connect guilderia to your existing identity provider with SSO. Centralize access control and keep your organization secure at scale.",
+		"Connect zenthcloud to your existing identity provider with SSO. Centralize access control and keep your organization secure at scale.",
 };
 
 const coreFeatures = [
@@ -26,25 +26,25 @@ const coreFeatures = [
 		icon: Link2,
 		title: "Connect your existing identity provider",
 		description:
-			"guilderia supports SSO via OpenID Connect (OIDC) and SAML, with native integrations for Okta, Azure AD (Microsoft Entra ID), Auth0, and Keycloak. If you use a different provider, you can configure it manually using standard OIDC or SAML endpoints.",
+			"zenthcloud supports SSO via OpenID Connect (OIDC) and SAML, with native integrations for Okta, Azure AD (Microsoft Entra ID), Auth0, and Keycloak. If you use a different provider, you can configure it manually using standard OIDC or SAML endpoints.",
 	},
 	{
 		icon: Users,
 		title: "Remove friction for your team",
 		description:
-			"With SSO enabled, your team signs in to guilderia using the same credentials they use across the rest of your organization\u2014no extra passwords, no separate accounts to keep in sync.",
+			"With SSO enabled, your team signs in to zenthcloud using the same credentials they use across the rest of your organization\u2014no extra passwords, no separate accounts to keep in sync.",
 	},
 	{
 		icon: ShieldCheck,
 		title: "Enforce centralized access policies",
 		description:
-			"Authentication flows through your identity provider, so you can apply your existing security policies\u2014MFA requirements, conditional access rules, session timeouts\u2014without configuring them separately in guilderia.",
+			"Authentication flows through your identity provider, so you can apply your existing security policies\u2014MFA requirements, conditional access rules, session timeouts\u2014without configuring them separately in zenthcloud.",
 	},
 	{
 		icon: UserMinus,
 		title: "Provision and deprovision automatically",
 		description:
-			"With SCIM provisioning, your identity provider creates, updates, and deactivates guilderia accounts as your directory changes. When someone leaves, their access is revoked automatically\u2014no manual cleanup across multiple tools.",
+			"With SCIM provisioning, your identity provider creates, updates, and deactivates zenthcloud accounts as your directory changes. When someone leaves, their access is revoked automatically\u2014no manual cleanup across multiple tools.",
 	},
 ];
 
@@ -53,21 +53,21 @@ const relatedFeatures = [
 		icon: Shield,
 		title: "RBAC",
 		description:
-			"Define exactly what each user can do once they\u2019re in guilderia, with granular role and permission controls across projects, services, and features.",
+			"Define exactly what each user can do once they\u2019re in zenthcloud, with granular role and permission controls across projects, services, and features.",
 		href: "/features/role-based-access-control",
 	},
 	{
 		icon: ScrollText,
 		title: "Audit logs",
 		description:
-			"Keep a full record of every login, logout, and action taken across your guilderia environment for compliance and accountability.",
+			"Keep a full record of every login, logout, and action taken across your zenthcloud environment for compliance and accountability.",
 		href: "/features/audit-logs",
 	},
 	{
 		icon: Paintbrush,
 		title: "White labeling",
 		description:
-			"Present guilderia as your own product, with custom branding for your clients or organization.",
+			"Present zenthcloud as your own product, with custom branding for your clients or organization.",
 		href: "/features/white-labeling",
 	},
 ];
@@ -79,7 +79,7 @@ export default function SingleSignOnPage() {
 			badgeDetail="Security & governance"
 			title="One login"
 			highlight="for everyone"
-			description="Connect guilderia to your identity provider and manage access from a single place. Available to Enterprise plan users and as a one-off additional feature."
+			description="Connect zenthcloud to your identity provider and manage access from a single place. Available to Enterprise plan users and as a one-off additional feature."
 			actions={
 				<>
 					<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
@@ -90,7 +90,7 @@ export default function SingleSignOnPage() {
 						className="w-full rounded-full px-6 sm:w-auto"
 						asChild
 					>
-						<Link href="https://docs.guilderia.com/docs/core" target="_blank">
+						<Link href="https://docs.zenthcloud.com/docs/core" target="_blank">
 							View documentation
 						</Link>
 					</Button>
@@ -102,7 +102,7 @@ export default function SingleSignOnPage() {
 					id: "authentication-that-scales",
 					title: "Authentication that scales with you",
 					description:
-						"guilderia's SSO support means your team logs in through the identity provider you already trust, so there are no separate credentials to manage.",
+						"zenthcloud's SSO support means your team logs in through the identity provider you already trust, so there are no separate credentials to manage.",
 					items: coreFeatures,
 					columns: 2,
 					layout: "split",
@@ -112,14 +112,14 @@ export default function SingleSignOnPage() {
 				id: "powerful-features",
 				title: "Powerful features for growing teams",
 				description:
-					"guilderia scales with your team, with features and plans for when you're ready to take the next step.",
+					"zenthcloud scales with your team, with features and plans for when you're ready to take the next step.",
 				items: relatedFeatures,
 				columns: 3,
 			}}
 			finalCta={{
 				title: "Ready to simplify access for your team?",
 				description:
-					"Talk to us about SSO and the rest of guilderia's security features.",
+					"Talk to us about SSO and the rest of zenthcloud's security features.",
 				cta: "Schedule a call",
 				href: "/contact",
 			}}

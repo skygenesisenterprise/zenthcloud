@@ -3,11 +3,11 @@ import {
 	isAllowedObservabilityLabelKey,
 	isFreshSample,
 	toObservabilityLabels,
-} from "@guilderia/server/services/observability/types";
+} from "@zenthcloud/server/services/observability/types";
 import {
 	ObservabilityBackendError,
 	validateObservabilityBackendUrl,
-} from "@guilderia/server/services/observability/backend-validation";
+} from "@zenthcloud/server/services/observability/backend-validation";
 
 describe("observability labels", () => {
 	it("maps resource refs to mastered label keys only", () => {

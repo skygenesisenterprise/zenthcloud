@@ -1,5 +1,5 @@
-import { db } from "@guilderia/server/db";
-import { operationalEvents } from "@guilderia/server/db/schema";
+import { db } from "@zenthcloud/server/db";
+import { operationalEvents } from "@zenthcloud/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import {
 	and,

@@ -152,7 +152,7 @@ const createBetterAuth = () =>
 				allowDifferentEmails: true,
 			},
 		},
-		appName: "Guilderia",
+		appName: "Zenthcloud",
 		// Only register a social provider when its credentials are configured:
 		// an entry with missing env vars makes better-auth warn on every boot
 		// and offers a sign-in path that can never succeed.
@@ -254,7 +254,7 @@ const createBetterAuth = () =>
 						}
 						if (!IS_CLOUD) {
 							const xAstronCollectionToken =
-								context?.request?.headers?.get("x-guilderia-token");
+								context?.request?.headers?.get("x-zenthcloud-token");
 							if (xAstronCollectionToken) {
 								let invitation: Awaited<ReturnType<typeof getUserByToken>>;
 								try {
@@ -594,7 +594,7 @@ export interface RequestApiKey {
 /**
  * Reads the API key from a request.
  *
- * `x-api-key` is Guilderia's own header and stays the documented one, but CI
+ * `x-api-key` is Zenthcloud's own header and stays the documented one, but CI
  * clients (GitHub Actions included) speak `Authorization: Bearer <token>`, so
  * both are accepted rather than forcing every action to build a custom header.
  */

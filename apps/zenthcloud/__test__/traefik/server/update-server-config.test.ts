@@ -5,13 +5,13 @@ vi.mock("node:fs", () => ({
 	default: fs,
 }));
 
-import type { FileConfig } from "@guilderia/server";
+import type { FileConfig } from "@zenthcloud/server";
 import {
 	createDefaultServerTraefikConfig,
 	loadOrCreateConfig,
 	updateServerTraefik,
-} from "@guilderia/server";
-import type { webServerSettings } from "@guilderia/server/db/schema";
+} from "@zenthcloud/server";
+import type { webServerSettings } from "@zenthcloud/server/db/schema";
 import { beforeEach, expect, test, vi } from "vitest";
 
 type WebServerSettings = typeof webServerSettings.$inferSelect;
@@ -37,7 +37,7 @@ const baseSettings: WebServerSettings = {
 			},
 		},
 		server: {
-			type: "Guilderia",
+			type: "Zenthcloud",
 			cronJob: "",
 			port: 4500,
 			refreshRate: 20,
@@ -79,9 +79,9 @@ beforeEach(() => {
 });
 
 test("Should read the configuration file", () => {
-	const config: FileConfig = loadOrCreateConfig("guilderia");
-	expect(config.http?.routers?.["guilderia-router-app"]?.service).toBe(
-		"guilderia-service-app",
+	const config: FileConfig = loadOrCreateConfig("zenthcloud");
+	expect(config.http?.routers?.["zenthcloud-router-app"]?.service).toBe(
+		"zenthcloud-service-app",
 	);
 });
 
@@ -95,9 +95,9 @@ test("Should apply redirect-to-https", () => {
 		"example.com",
 	);
 
-	const config: FileConfig = loadOrCreateConfig("guilderia");
+	const config: FileConfig = loadOrCreateConfig("zenthcloud");
 
-	expect(config.http?.routers?.["guilderia-router-app"]?.middlewares).toContain(
+	expect(config.http?.routers?.["zenthcloud-router-app"]?.middlewares).toContain(
 		"redirect-to-https",
 	);
 });
@@ -105,17 +105,17 @@ test("Should apply redirect-to-https", () => {
 test("Should change only host when no certificate", () => {
 	updateServerTraefik(baseSettings, "example.com");
 
-	const config: FileConfig = loadOrCreateConfig("guilderia");
+	const config: FileConfig = loadOrCreateConfig("zenthcloud");
 
-	expect(config.http?.routers?.["guilderia-router-app-secure"]).toBeUndefined();
+	expect(config.http?.routers?.["zenthcloud-router-app-secure"]).toBeUndefined();
 });
 
 test("Should not touch config without host", () => {
-	const originalConfig: FileConfig = loadOrCreateConfig("guilderia");
+	const originalConfig: FileConfig = loadOrCreateConfig("zenthcloud");
 
 	updateServerTraefik(baseSettings, null);
 
-	const config: FileConfig = loadOrCreateConfig("guilderia");
+	const config: FileConfig = loadOrCreateConfig("zenthcloud");
 
 	expect(originalConfig).toEqual(config);
 });
@@ -131,10 +131,10 @@ test("Should remove websecure if https rollback to http", () => {
 		"example.com",
 	);
 
-	const config: FileConfig = loadOrCreateConfig("guilderia");
+	const config: FileConfig = loadOrCreateConfig("zenthcloud");
 
-	expect(config.http?.routers?.["guilderia-router-app-secure"]).toBeUndefined();
+	expect(config.http?.routers?.["zenthcloud-router-app-secure"]).toBeUndefined();
 	expect(
-		config.http?.routers?.["guilderia-router-app"]?.middlewares,
+		config.http?.routers?.["zenthcloud-router-app"]?.middlewares,
 	).not.toContain("redirect-to-https");
 });

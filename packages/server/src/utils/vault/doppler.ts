@@ -1,4 +1,4 @@
-import type { dopplerVaultConfigSchema } from "@guilderia/server/db/schema";
+import type { dopplerVaultConfigSchema } from "@zenthcloud/server/db/schema";
 import type { z } from "zod";
 import { type VaultClient, vaultFetch } from "./types";
 

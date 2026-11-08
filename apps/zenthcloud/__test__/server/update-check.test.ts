@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-/** Mirrors the payload of https://api.github.com/repos/skygenesisenterprise/guilderia/releases */
+/** Mirrors the payload of https://api.github.com/repos/skygenesisenterprise/zenthcloud/releases */
 const release = (tagName: string, extra: Record<string, unknown> = {}) => ({
 	tag_name: tagName,
 	draft: false,
@@ -14,9 +14,9 @@ const completeRelease = (
 	extra: Record<string, unknown> = {},
 ) =>
 	release(tagName, {
-		html_url: `https://github.com/skygenesisenterprise/guilderia/releases/tag/${tagName}`,
+		html_url: `https://github.com/skygenesisenterprise/zenthcloud/releases/tag/${tagName}`,
 		published_at: "2026-01-01T00:00:00Z",
-		assets: [{ name: "install.sh" }, { name: "install-guilderia.sh" }],
+		assets: [{ name: "install.sh" }, { name: "install-zenthcloud.sh" }],
 		...extra,
 	});
 
@@ -33,7 +33,7 @@ const okResponse = (releases: unknown[]) =>
  */
 const importFresh = async () => {
 	vi.resetModules();
-	return await import("@guilderia/server/services/settings");
+	return await import("@zenthcloud/server/services/settings");
 };
 
 describe("update check", () => {
@@ -47,7 +47,7 @@ describe("update check", () => {
 
 	afterEach(() => {
 		vi.useRealTimers();
-		vi.doUnmock("@guilderia/server/utils/process/execAsync");
+		vi.doUnmock("@zenthcloud/server/utils/process/execAsync");
 		vi.unstubAllGlobals();
 		vi.restoreAllMocks();
 	});
@@ -94,7 +94,7 @@ describe("update check", () => {
 				updateAvailable: true,
 			});
 			expect(fetchMock).toHaveBeenCalledWith(
-				"https://api.github.com/repos/skygenesisenterprise/guilderia/releases?per_page=100",
+				"https://api.github.com/repos/skygenesisenterprise/zenthcloud/releases?per_page=100",
 				expect.objectContaining({ method: "GET" }),
 			);
 		});
@@ -254,7 +254,7 @@ describe("update check", () => {
 
 			const result = checkReleaseAssets([
 				{ name: "install.sh" },
-				{ name: "install-guilderia.sh" },
+				{ name: "install-zenthcloud.sh" },
 			]);
 			expect(result.available).toBe(true);
 			expect(result.reason).toBeNull();
@@ -496,27 +496,27 @@ describe("update check", () => {
 				.fn()
 				.mockResolvedValueOnce({ stdout: "service\n", stderr: "" })
 				.mockResolvedValueOnce({ stdout: "", stderr: "" });
-			vi.doMock("@guilderia/server/utils/process/execAsync", () => ({
+			vi.doMock("@zenthcloud/server/utils/process/execAsync", () => ({
 				execAsync,
 				execAsyncRemote: vi.fn(),
 			}));
 
 			vi.resetModules();
 			const { reloadDockerResource } = await import(
-				"@guilderia/server/services/settings"
+				"@zenthcloud/server/services/settings"
 			);
 
-			await reloadDockerResource("guilderia", undefined, "0.30.7");
+			await reloadDockerResource("zenthcloud", undefined, "0.30.7");
 
 			expect(execAsync).toHaveBeenLastCalledWith(
-				"docker service update --force --image ghcr.io/skygenesisenterprise/guilderia:v0.30.7-app guilderia",
+				"docker service update --force --image ghcr.io/skygenesisenterprise/zenthcloud:v0.30.7-app zenthcloud",
 			);
 		});
 	});
 
 	it("publishes the self-hosted image on the GitHub Container Registry", async () => {
-		const { GUILDERIA_IMAGE } = await importFresh();
+		const { ZENTHCLOUD_IMAGE } = await importFresh();
 
-		expect(GUILDERIA_IMAGE).toBe("ghcr.io/skygenesisenterprise/guilderia");
+		expect(ZENTHCLOUD_IMAGE).toBe("ghcr.io/skygenesisenterprise/zenthcloud");
 	});
 });

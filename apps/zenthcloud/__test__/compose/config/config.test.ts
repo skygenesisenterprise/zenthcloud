@@ -1,5 +1,5 @@
-import type { ComposeSpecification } from "@guilderia/server";
-import { addSuffixToAllConfigs, generateRandomHash } from "@guilderia/server";
+import type { ComposeSpecification } from "@zenthcloud/server";
+import { addSuffixToAllConfigs, generateRandomHash } from "@zenthcloud/server";
 import { expect, test } from "vitest";
 import { parse } from "yaml";
 

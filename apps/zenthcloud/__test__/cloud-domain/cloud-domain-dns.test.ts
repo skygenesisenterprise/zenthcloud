@@ -3,17 +3,17 @@ import {
 	getCloudDnsConfig,
 	resetCloudDnsCache,
 	selectZoneId,
-} from "@guilderia/server/services/cloud-domain-dns";
+} from "@zenthcloud/server/services/cloud-domain-dns";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const TOKEN = "cf-sentinel-token-value";
 
 const env = {
 	CLOUDFLARE_API_TOKEN: TOKEN,
-	GUILDERIA_CLOUD_INGRESS_TARGET: "203.0.113.10",
+	ZENTHCLOUD_CLOUD_INGRESS_TARGET: "203.0.113.10",
 };
 
-const createClient = (zones = [{ id: "zone-1", name: "guilderia.app" }]) => ({
+const createClient = (zones = [{ id: "zone-1", name: "zenthcloud.app" }]) => ({
 	listZones: vi.fn(async () => zones),
 	upsertRecord: vi.fn(async () => ({ id: "record-1" })),
 });
@@ -33,13 +33,13 @@ describe("getCloudDnsConfig", () => {
 	it("proxies by default and can be switched to DNS-only", () => {
 		expect(getCloudDnsConfig(env)).toMatchObject({ proxied: true });
 		expect(
-			getCloudDnsConfig({ ...env, GUILDERIA_CLOUD_DNS_PROXIED: "false" }),
+			getCloudDnsConfig({ ...env, ZENTHCLOUD_CLOUD_DNS_PROXIED: "false" }),
 		).toMatchObject({ proxied: false });
 	});
 
 	it("accepts an explicit zone id", () => {
 		expect(
-			getCloudDnsConfig({ ...env, GUILDERIA_CLOUD_DNS_ZONE_ID: "zone-explicit" }),
+			getCloudDnsConfig({ ...env, ZENTHCLOUD_CLOUD_DNS_ZONE_ID: "zone-explicit" }),
 		).toMatchObject({ zoneId: "zone-explicit" });
 	});
 });
@@ -49,17 +49,17 @@ describe("selectZoneId", () => {
 		expect(
 			selectZoneId(
 				[
-					{ id: "apex", name: "guilderia.app" },
-					{ id: "sub", name: "cloud.guilderia.app" },
+					{ id: "apex", name: "zenthcloud.app" },
+					{ id: "sub", name: "cloud.zenthcloud.app" },
 				],
-				"cloud.guilderia.app",
+				"cloud.zenthcloud.app",
 			),
 		).toBe("sub");
 	});
 
 	it("returns null when no zone manages the name", () => {
 		expect(
-			selectZoneId([{ id: "other", name: "example.com" }], "guilderia.app"),
+			selectZoneId([{ id: "other", name: "example.com" }], "zenthcloud.app"),
 		).toBeNull();
 	});
 });
@@ -71,7 +71,7 @@ describe("ensureCloudWildcardRecord", () => {
 			ensureCloudWildcardRecord({ base: null, env, client }),
 		).resolves.toMatchObject({ status: "skipped" });
 		await expect(
-			ensureCloudWildcardRecord({ base: "guilderia.app", env: {}, client }),
+			ensureCloudWildcardRecord({ base: "zenthcloud.app", env: {}, client }),
 		).resolves.toMatchObject({ status: "skipped" });
 		expect(client.upsertRecord).not.toHaveBeenCalled();
 	});
@@ -80,7 +80,7 @@ describe("ensureCloudWildcardRecord", () => {
 		const client = createClient();
 
 		const result = await ensureCloudWildcardRecord({
-			base: "guilderia.app",
+			base: "zenthcloud.app",
 			env,
 			client,
 		});
@@ -95,7 +95,7 @@ describe("ensureCloudWildcardRecord", () => {
 			expect.objectContaining({
 				zoneId: "zone-1",
 				type: "A",
-				name: "*.guilderia.app",
+				name: "*.zenthcloud.app",
 				content: "203.0.113.10",
 				proxied: true,
 			}),
@@ -105,20 +105,20 @@ describe("ensureCloudWildcardRecord", () => {
 	it("uses a CNAME for a hostname ingress and AAAA for IPv6", async () => {
 		const cnameClient = createClient();
 		await ensureCloudWildcardRecord({
-			base: "guilderia.app",
-			env: { ...env, GUILDERIA_CLOUD_INGRESS_TARGET: "ingress.guilderia.app" },
+			base: "zenthcloud.app",
+			env: { ...env, ZENTHCLOUD_CLOUD_INGRESS_TARGET: "ingress.zenthcloud.app" },
 			client: cnameClient,
 		});
 		expect(cnameClient.upsertRecord).toHaveBeenCalledWith(
 			expect.anything(),
-			expect.objectContaining({ type: "CNAME", content: "ingress.guilderia.app" }),
+			expect.objectContaining({ type: "CNAME", content: "ingress.zenthcloud.app" }),
 		);
 
 		resetCloudDnsCache();
 		const ipv6Client = createClient();
 		await ensureCloudWildcardRecord({
-			base: "guilderia.app",
-			env: { ...env, GUILDERIA_CLOUD_INGRESS_TARGET: "2001:db8::1" },
+			base: "zenthcloud.app",
+			env: { ...env, ZENTHCLOUD_CLOUD_INGRESS_TARGET: "2001:db8::1" },
 			client: ipv6Client,
 		});
 		expect(ipv6Client.upsertRecord).toHaveBeenCalledWith(
@@ -129,9 +129,9 @@ describe("ensureCloudWildcardRecord", () => {
 
 	it("does not call Cloudflare again within the cache window", async () => {
 		const client = createClient();
-		await ensureCloudWildcardRecord({ base: "guilderia.app", env, client });
+		await ensureCloudWildcardRecord({ base: "zenthcloud.app", env, client });
 		await ensureCloudWildcardRecord({
-			base: "guilderia.app",
+			base: "zenthcloud.app",
 			env,
 			client,
 			now: Date.now() + 60_000,
@@ -143,9 +143,9 @@ describe("ensureCloudWildcardRecord", () => {
 
 	it("bypasses the cache when forced", async () => {
 		const client = createClient();
-		await ensureCloudWildcardRecord({ base: "guilderia.app", env, client });
+		await ensureCloudWildcardRecord({ base: "zenthcloud.app", env, client });
 		await ensureCloudWildcardRecord({
-			base: "guilderia.app",
+			base: "zenthcloud.app",
 			env,
 			client,
 			force: true,
@@ -158,8 +158,8 @@ describe("ensureCloudWildcardRecord", () => {
 		const client = createClient([{ id: "other", name: "example.com" }]);
 
 		await expect(
-			ensureCloudWildcardRecord({ base: "guilderia.app", env, client }),
-		).rejects.toThrow("no zone manages guilderia.app");
+			ensureCloudWildcardRecord({ base: "zenthcloud.app", env, client }),
+		).rejects.toThrow("no zone manages zenthcloud.app");
 	});
 
 	it("never leaks the API token in an error", async () => {
@@ -169,7 +169,7 @@ describe("ensureCloudWildcardRecord", () => {
 		);
 
 		const error = await ensureCloudWildcardRecord({
-			base: "guilderia.app",
+			base: "zenthcloud.app",
 			env,
 			client,
 		}).catch((thrown: unknown) => thrown);

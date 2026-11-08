@@ -215,7 +215,7 @@ export const RestoreBackup = ({
 			backupFile: "",
 			databaseName:
 				databaseType === "web-server"
-					? "guilderia"
+					? "zenthcloud"
 					: databaseType === "libsql"
 						? "iku.db"
 						: "",

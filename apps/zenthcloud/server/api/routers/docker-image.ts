@@ -3,7 +3,7 @@ import {
 	getImageConfig,
 	getImages,
 	removeImage,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";

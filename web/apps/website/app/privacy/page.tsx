@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Privacy Policy",
 	description:
-		"Learn about how guilderia collects, uses, and safeguards your personal information when you use our website and services.",
+		"Learn about how zenthcloud collects, uses, and safeguards your personal information when you use our website and services.",
 };
 
 export default function PrivacyPage() {
@@ -14,11 +14,11 @@ export default function PrivacyPage() {
 			<section className="flex flex-col gap-4">
 				<h2 className="text-2xl font-semibold">Introduction</h2>
 				<p>
-					At guilderia, we are committed to protecting your privacy. This Privacy
+					At zenthcloud, we are committed to protecting your privacy. This Privacy
 					Policy explains how we collect, use and safeguard your personal
-					information when you use our website (guilderia.com), documentation
-					(docs.guilderia.com) and services, including our hosted platform
-					(app.guilderia.com). By using guilderia, you agree to the practices
+					information when you use our website (zenthcloud.com), documentation
+					(docs.zenthcloud.com) and services, including our hosted platform
+					(app.zenthcloud.com). By using zenthcloud, you agree to the practices
 					described in this policy. If you do not agree with these practices,
 					please do not use our services.
 				</p>
@@ -32,8 +32,8 @@ export default function PrivacyPage() {
 						Website and documentation analytics
 					</h3>
 					<p>
-						We use Google Analytics to measure traffic and usage on guilderia.com
-						and docs.guilderia.com. Google Analytics collects cookies, IP
+						We use Google Analytics to measure traffic and usage on zenthcloud.com
+						and docs.zenthcloud.com. Google Analytics collects cookies, IP
 						addresses, device and browser information and usage statistics (for
 						example, page views and session duration) to generate anonymised
 						reports. This data helps us understand how users interact with the
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
 				<div className="flex flex-col gap-2">
 					<h3 className="text-xl font-medium">Application analytics</h3>
 					<p>
-						Our hosted platform (app.guilderia.com) uses{" "}
+						Our hosted platform (app.zenthcloud.com) uses{" "}
 						<a
 							href="https://legal.hubspot.com/privacy-policy"
 							target="_blank"
@@ -76,7 +76,7 @@ export default function PrivacyPage() {
 				<div className="flex flex-col gap-2">
 					<h3 className="text-xl font-medium">Payment and subscription data</h3>
 					<p>
-						When you subscribe to guilderia Cloud, we use Stripe to process
+						When you subscribe to zenthcloud Cloud, we use Stripe to process
 						payments and ProfitWell to analyse subscription metrics. Stripe
 						collects payment details (e.g., credit‑card numbers) and billing
 						information; we receive the Stripe customer ID and subscription ID
@@ -91,7 +91,7 @@ export default function PrivacyPage() {
 						Server metrics and deployment data
 					</h3>
 					<p>
-						If you deploy applications or databases through guilderia, our platform
+						If you deploy applications or databases through zenthcloud, our platform
 						collects server and container metrics (CPU, memory, disk and network
 						usage), environment variables, deployment logs and backup credentials
 						to operate and maintain your deployments. This data is used strictly
@@ -133,7 +133,7 @@ export default function PrivacyPage() {
 					3. Cookies and Tracking Technologies
 				</h2>
 				<p>
-					guilderia uses cookies and similar technologies for two purposes: (1) to
+					zenthcloud uses cookies and similar technologies for two purposes: (1) to
 					manage user sessions (authentication cookies) and (2) to run analytics
 					and marketing tools. Google Analytics sets cookies to distinguish
 					individual browsers and report usage statistics. HubSpot sets cookies
@@ -236,12 +236,12 @@ export default function PrivacyPage() {
 					Privacy Act (CCPA), including the right to know what personal
 					information we collect, the right to request deletion of your personal
 					information and the right to opt out of the sale or sharing of your
-					data. guilderia does not sell your personal data.
+					data. zenthcloud does not sell your personal data.
 				</p>
 				<p>
-					You can delete your guilderia Cloud account at any time, without
+					You can delete your zenthcloud Cloud account at any time, without
 					contacting us, from your account settings in the hosted platform
-					(app.guilderia.com). Deleting your account permanently removes your
+					(app.zenthcloud.com). Deleting your account permanently removes your
 					account and associated personal data, as described in Section 5,
 					except where we are required to retain certain information to comply
 					with legal obligations.
@@ -250,10 +250,10 @@ export default function PrivacyPage() {
 					To exercise these rights or opt out of analytics and marketing cookies,
 					please contact us at{" "}
 					<a
-						href="mailto:support@guilderia.com"
+						href="mailto:support@zenthcloud.com"
 						className="text-blue-500 hover:underline"
 					>
-						support@guilderia.com
+						support@zenthcloud.com
 					</a>
 					. We will honour verified requests within the time frames required by
 					law.
@@ -281,10 +281,10 @@ export default function PrivacyPage() {
 				<p>
 					Email:{" "}
 					<a
-						href="mailto:support@guilderia.com"
+						href="mailto:support@zenthcloud.com"
 						className="text-blue-500 hover:underline"
 					>
-						support@guilderia.com
+						support@zenthcloud.com
 					</a>
 				</p>
 			</section>

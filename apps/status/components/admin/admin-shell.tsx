@@ -21,7 +21,7 @@ const TokenGate = ({ onSubmit }: { onSubmit: (token: string) => void }) => {
 			<div className="flex flex-col gap-1">
 				<h1 className="text-lg font-semibold">Administration</h1>
 				<p className="text-sm text-muted-foreground">
-					Paste a Guilderia Status API token with the scopes you need. It is kept
+					Paste a Zenthcloud Status API token with the scopes you need. It is kept
 					only in this browser.
 				</p>
 			</div>
@@ -36,7 +36,7 @@ const TokenGate = ({ onSubmit }: { onSubmit: (token: string) => void }) => {
 			>
 				<Field
 					label="API token"
-					hint="Bootstrap one with: pnpm --filter @guilderia/status token:create -- --name Admin --scopes admin"
+					hint="Bootstrap one with: pnpm --filter @zenthcloud/status token:create -- --name Admin --scopes admin"
 				>
 					<Input
 						type="password"

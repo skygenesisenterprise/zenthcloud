@@ -5,37 +5,37 @@ import type { ReactNode } from "react";
 import "@/styles/tailwind.css";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { guilderiaTraffic } from "@/components/guilderiaTraffic";
+import { zenthcloudTraffic } from "@/components/zenthcloudTraffic";
 
 type Props = {
 	children: ReactNode;
 };
 
 export const metadata: Metadata = {
-	metadataBase: new URL("https://guilderia.com"),
+	metadataBase: new URL("https://zenthcloud.com"),
 	title: {
 		default:
-			"guilderia - The open-source infrastructure platform for deploying and operating applications",
-		template: "%s | guilderia",
+			"zenthcloud - The open-source infrastructure platform for deploying and operating applications",
+		template: "%s | zenthcloud",
 	},
 	description:
-		"guilderia is an open-source infrastructure platform. Deploy applications, databases and Compose projects, manage servers and clusters, and handle routing, certificates and backups — self-hosted with guilderia Self or managed with guilderia Cloud.",
+		"zenthcloud is an open-source infrastructure platform. Deploy applications, databases and Compose projects, manage servers and clusters, and handle routing, certificates and backups — self-hosted with zenthcloud Self or managed with zenthcloud Cloud.",
 	icons: {
 		icon: "/icon.svg",
 		apple: "/apple-touch-icon.png",
 	},
 	openGraph: {
-		title: "guilderia - The open-source infrastructure platform",
+		title: "zenthcloud - The open-source infrastructure platform",
 		description:
-			"Deploy applications, databases and Compose projects, manage servers and clusters, and handle routing, certificates and backups — self-hosted with guilderia Self or managed with guilderia Cloud.",
+			"Deploy applications, databases and Compose projects, manage servers and clusters, and handle routing, certificates and backups — self-hosted with zenthcloud Self or managed with zenthcloud Cloud.",
 		images: "/og.png",
 		type: "website",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "guilderia - The open-source infrastructure platform",
+		title: "zenthcloud - The open-source infrastructure platform",
 		description:
-			"Deploy applications, databases and Compose projects, manage servers and clusters, and handle routing, certificates and backups — self-hosted with guilderia Self or managed with guilderia Cloud.",
+			"Deploy applications, databases and Compose projects, manage servers and clusters, and handle routing, certificates and backups — self-hosted with zenthcloud Self or managed with zenthcloud Cloud.",
 		images: ["/og.png"],
 	},
 };
@@ -64,7 +64,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 		>
 			<body>
 				{/* Traffic Manager instrumentation (no-op without the env vars). */}
-				<guilderiaTraffic />
+				<zenthcloudTraffic />
 				<a
 					href="#main-content"
 					className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"

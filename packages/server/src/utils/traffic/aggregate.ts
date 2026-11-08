@@ -1,4 +1,4 @@
-import type { TrafficStatusClass } from "@guilderia/server/db/schema/traffic";
+import type { TrafficStatusClass } from "@zenthcloud/server/db/schema/traffic";
 import {
 	bucketStartFor,
 	DEFAULT_BUCKET_SECONDS,

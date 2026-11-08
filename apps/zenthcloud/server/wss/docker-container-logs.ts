@@ -3,11 +3,11 @@ import {
 	findServerById,
 	isManagedCloud,
 	validateRequest,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import {
 	createRedactingLineBuffer,
 	safeErrorMessage,
-} from "@guilderia/server/utils/security/redact";
+} from "@zenthcloud/server/utils/security/redact";
 import { spawn } from "node-pty";
 import { Client, type ClientChannel } from "ssh2";
 import { WebSocketServer } from "ws";

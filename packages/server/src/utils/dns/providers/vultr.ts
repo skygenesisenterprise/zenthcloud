@@ -1,4 +1,4 @@
-import type { vultrDnsConfigSchema } from "@guilderia/server/db/schema";
+import type { vultrDnsConfigSchema } from "@zenthcloud/server/db/schema";
 import type { z } from "zod";
 import {
 	createDnsHttp,

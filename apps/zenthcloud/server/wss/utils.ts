@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execAsync, isManagedCloud, paths } from "@guilderia/server";
+import { execAsync, isManagedCloud, paths } from "@zenthcloud/server";
 
 /**
  * Validates that the container ID matches Docker's expected format.
@@ -119,16 +119,16 @@ export const getShell = () => {
 	}
 };
 
-/** Returns private SSH key for guilderia local server terminal. Uses already created SSH key or generates a new SSH key.
+/** Returns private SSH key for zenthcloud local server terminal. Uses already created SSH key or generates a new SSH key.
  */
 export const setupLocalServerSSHKey = async () => {
 	const { SSH_PATH } = paths(true);
-	const sshKeyPath = path.join(SSH_PATH, "auto_generated-guilderia-local");
+	const sshKeyPath = path.join(SSH_PATH, "auto_generated-zenthcloud-local");
 
 	if (!fs.existsSync(sshKeyPath)) {
 		// Generate new SSH key if it hasn't been created yet
 		await execAsync(
-			`ssh-keygen -t rsa -b 4096 -f ${sshKeyPath} -N "" -C "guilderia-local-access"`,
+			`ssh-keygen -t rsa -b 4096 -f ${sshKeyPath} -N "" -C "zenthcloud-local-access"`,
 		);
 	}
 

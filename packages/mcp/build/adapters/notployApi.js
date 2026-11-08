@@ -2,7 +2,7 @@ import axios from "axios";
 import { getRegisteredSecrets } from "../observability/secrets.js";
 import { createLogger } from "../utils/logger.js";
 import { redactKnownSecrets } from "../utils/redactSensitive.js";
-const logger = createLogger("guilderiaApi");
+const logger = createLogger("zenthcloudApi");
 const PACKAGE_VERSION = "0.31.0";
 const MAX_RESPONSE_BYTES = 16 * 1024 * 1024;
 const MAX_BODY_BYTES = 8 * 1024 * 1024;
@@ -68,8 +68,8 @@ export function normalizeApiError(error) {
         const mapping = mapStatus(status);
         const serverMessage = extractServerMessage(axiosError.response.data);
         const message = status >= 500
-            ? `guilderia API returned HTTP ${status}`
-            : (serverMessage ?? `guilderia API returned HTTP ${status}`);
+            ? `zenthcloud API returned HTTP ${status}`
+            : (serverMessage ?? `zenthcloud API returned HTTP ${status}`);
         return new ApiError({
             message: redactKnownSecrets(message, getRegisteredSecrets()),
             code: mapping.code,
@@ -79,13 +79,13 @@ export function normalizeApiError(error) {
     }
     if (axiosError.code === "ECONNABORTED" || axiosError.code === "ETIMEDOUT") {
         return new ApiError({
-            message: "The guilderia API did not respond before the timeout",
+            message: "The zenthcloud API did not respond before the timeout",
             code: "timeout",
             retryable: true,
         });
     }
     return new ApiError({
-        message: "Could not reach the guilderia API",
+        message: "Could not reach the zenthcloud API",
         code: "network_error",
         retryable: true,
     });
@@ -113,7 +113,7 @@ function abortableDelay(ms, signal) {
         timer.unref?.();
     });
 }
-export class guilderiaApi {
+export class zenthcloudApi {
     http;
     config;
     constructor(config, http) {
@@ -121,7 +121,7 @@ export class guilderiaApi {
         this.http =
             http ??
                 axios.create({
-                    baseURL: `${config.guilderiaUrl}/api`,
+                    baseURL: `${config.zenthcloudUrl}/api`,
                     timeout: Math.min(config.timeoutMs, config.limits.toolTimeoutMs),
                     maxContentLength: MAX_RESPONSE_BYTES,
                     maxBodyLength: MAX_BODY_BYTES,
@@ -129,7 +129,7 @@ export class guilderiaApi {
                         "Content-Type": "application/json",
                         Accept: "application/json",
                         "x-api-key": config.apiKey,
-                        "User-Agent": `guilderia-mcp/${PACKAGE_VERSION}`,
+                        "User-Agent": `zenthcloud-mcp/${PACKAGE_VERSION}`,
                         ...config.customHeaders,
                     },
                 });

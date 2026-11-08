@@ -1,14 +1,14 @@
-import * as adminService from "@guilderia/server/services/admin";
-import * as applicationService from "@guilderia/server/services/application";
-import { deployApplication } from "@guilderia/server/services/application";
-import * as deploymentService from "@guilderia/server/services/deployment";
-import * as builders from "@guilderia/server/utils/builders";
-import * as notifications from "@guilderia/server/utils/notifications/build-success";
-import * as execProcess from "@guilderia/server/utils/process/execAsync";
-import * as gitProvider from "@guilderia/server/utils/providers/git";
+import * as adminService from "@zenthcloud/server/services/admin";
+import * as applicationService from "@zenthcloud/server/services/application";
+import { deployApplication } from "@zenthcloud/server/services/application";
+import * as deploymentService from "@zenthcloud/server/services/deployment";
+import * as builders from "@zenthcloud/server/utils/builders";
+import * as notifications from "@zenthcloud/server/utils/notifications/build-success";
+import * as execProcess from "@zenthcloud/server/utils/process/execAsync";
+import * as gitProvider from "@zenthcloud/server/utils/providers/git";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@guilderia/server/db", () => {
+vi.mock("@zenthcloud/server/db", () => {
 	const createChainableMock = (): any => {
 		const chain = {
 			set: vi.fn(() => chain),
@@ -44,10 +44,10 @@ vi.mock("@guilderia/server/db", () => {
 	};
 });
 
-vi.mock("@guilderia/server/services/application", async () => {
+vi.mock("@zenthcloud/server/services/application", async () => {
 	const actual = await vi.importActual<
-		typeof import("@guilderia/server/services/application")
-	>("@guilderia/server/services/application");
+		typeof import("@zenthcloud/server/services/application")
+	>("@zenthcloud/server/services/application");
 	return {
 		...actual,
 		findApplicationById: vi.fn(),
@@ -55,35 +55,35 @@ vi.mock("@guilderia/server/services/application", async () => {
 	};
 });
 
-vi.mock("@guilderia/server/services/admin", () => ({
+vi.mock("@zenthcloud/server/services/admin", () => ({
 	getAstronCollectionUrl: vi.fn(),
 }));
 
-vi.mock("@guilderia/server/services/deployment", () => ({
+vi.mock("@zenthcloud/server/services/deployment", () => ({
 	createDeployment: vi.fn(),
 	updateDeploymentStatus: vi.fn(),
 	updateDeployment: vi.fn(),
 }));
 
-vi.mock("@guilderia/server/utils/providers/git", async () => {
+vi.mock("@zenthcloud/server/utils/providers/git", async () => {
 	const actual = await vi.importActual<
-		typeof import("@guilderia/server/utils/providers/git")
-	>("@guilderia/server/utils/providers/git");
+		typeof import("@zenthcloud/server/utils/providers/git")
+	>("@zenthcloud/server/utils/providers/git");
 	return {
 		...actual,
 		getGitCommitInfo: vi.fn(),
 	};
 });
 
-vi.mock("@guilderia/server/utils/process/execAsync", () => ({
+vi.mock("@zenthcloud/server/utils/process/execAsync", () => ({
 	execAsync: vi.fn(),
 	ExecError: class ExecError extends Error {},
 }));
 
-vi.mock("@guilderia/server/utils/builders", async () => {
+vi.mock("@zenthcloud/server/utils/builders", async () => {
 	const actual = await vi.importActual<
-		typeof import("@guilderia/server/utils/builders")
-	>("@guilderia/server/utils/builders");
+		typeof import("@zenthcloud/server/utils/builders")
+	>("@zenthcloud/server/utils/builders");
 	return {
 		...actual,
 		mechanizeDockerContainer: vi.fn(),
@@ -91,27 +91,27 @@ vi.mock("@guilderia/server/utils/builders", async () => {
 	};
 });
 
-vi.mock("@guilderia/server/utils/notifications/build-success", () => ({
+vi.mock("@zenthcloud/server/utils/notifications/build-success", () => ({
 	sendBuildSuccessNotifications: vi.fn(),
 }));
 
-vi.mock("@guilderia/server/utils/notifications/build-error", () => ({
+vi.mock("@zenthcloud/server/utils/notifications/build-error", () => ({
 	sendBuildErrorNotifications: vi.fn(),
 }));
 
-vi.mock("@guilderia/server/services/rollbacks", () => ({
+vi.mock("@zenthcloud/server/services/rollbacks", () => ({
 	createRollback: vi.fn(),
 }));
 
-import { db } from "@guilderia/server/db";
-import { cloneGitRepository } from "@guilderia/server/utils/providers/git";
+import { db } from "@zenthcloud/server/db";
+import { cloneGitRepository } from "@zenthcloud/server/utils/providers/git";
 
 const createMockApplication = (overrides = {}) => ({
 	applicationId: "test-app-id",
 	name: "Test App",
 	appName: "test-app",
 	sourceType: "git" as const,
-	customGitUrl: "https://github.com/skygenesisenterprise/guilderia.git",
+	customGitUrl: "https://github.com/skygenesisenterprise/zenthcloud.git",
 	customGitBranch: "main",
 	customGitSSHKeyId: null,
 	buildType: "nixpacks" as const,
@@ -183,7 +183,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		const command = await cloneGitRepository(app);
 		console.log(command);
 
-		expect(command).toContain("https://github.com/skygenesisenterprise/guilderia.git");
+		expect(command).toContain("https://github.com/skygenesisenterprise/zenthcloud.git");
 		expect(command).not.toContain("--recurse-submodules");
 		expect(command).toContain("--branch main");
 		expect(command).toContain("--depth 1");
@@ -195,7 +195,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		const command = await cloneGitRepository(app);
 
 		expect(command).toContain("--recurse-submodules");
-		expect(command).toContain("https://github.com/skygenesisenterprise/guilderia.git");
+		expect(command).toContain("https://github.com/skygenesisenterprise/zenthcloud.git");
 	});
 
 	it("should verify nixpacks command is called with correct app", async () => {
@@ -211,7 +211,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		expect(builders.getBuildCommand).toHaveBeenCalledWith(
 			expect.objectContaining({
 				buildType: "nixpacks",
-				customGitUrl: "https://github.com/skygenesisenterprise/guilderia.git",
+				customGitUrl: "https://github.com/skygenesisenterprise/zenthcloud.git",
 				buildPath: "/astro",
 			}),
 		);

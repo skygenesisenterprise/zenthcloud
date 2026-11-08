@@ -1,21 +1,21 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "guilderia API",
-    "description": "Complete API documentation for guilderia - Deploy applications, manage databases, and orchestrate your infrastructure. This API allows you to programmatically manage all aspects of your guilderia instance.",
+    "title": "zenthcloud API",
+    "description": "Complete API documentation for zenthcloud - Deploy applications, manage databases, and orchestrate your infrastructure. This API allows you to programmatically manage all aspects of your zenthcloud instance.",
     "version": "1.0.0",
     "contact": {
-      "name": "guilderia Team",
-      "url": "https://guilderia.com"
+      "name": "zenthcloud Team",
+      "url": "https://zenthcloud.com"
     },
     "license": {
       "name": "Apache 2.0",
-      "url": "https://github.com/skygenesisenterprise/guilderia/blob/master/LICENSE"
+      "url": "https://github.com/skygenesisenterprise/zenthcloud/blob/master/LICENSE"
     }
   },
   "servers": [
     {
-      "url": "https://your-guilderia-instance.com/api"
+      "url": "https://your-zenthcloud-instance.com/api"
     }
   ],
   "tags": [
@@ -214,7 +214,7 @@
   ],
   "externalDocs": {
     "description": "Full documentation",
-    "url": "https://docs.guilderia.com"
+    "url": "https://docs.zenthcloud.com"
   },
   "paths": {
     "/admin.setupMonitoring": {
@@ -3406,7 +3406,7 @@
                       }
                     ]
                   },
-                  "detachguilderiaNetwork": {
+                  "detachzenthcloudNetwork": {
                     "type": "boolean"
                   },
                   "isolatedNetwork": {
@@ -9871,7 +9871,7 @@
       "post": {
         "operationId": "cicd-deploy",
         "summary": "Deploy a commit",
-        "description": "Queues a deployment for an exact commit sha and returns the guilderia deployment id, which can be polled with the status endpoint.",
+        "description": "Queues a deployment for an exact commit sha and returns the zenthcloud deployment id, which can be polled with the status endpoint.",
         "tags": [
           "cicd"
         ],
@@ -10043,7 +10043,7 @@
       "get": {
         "operationId": "cicd-status",
         "summary": "Get a deployment status",
-        "description": "Returns the guilderia status, the GitHub Deployments state to publish, and the links to the deployment and its logs.",
+        "description": "Returns the zenthcloud status, the GitHub Deployments state to publish, and the links to the deployment and its logs.",
         "tags": [
           "cicd"
         ],
@@ -10133,7 +10133,7 @@
       "get": {
         "operationId": "cicd-logs",
         "summary": "Read deployment logs",
-        "description": "Returns the last lines of the build log, so a workflow can surface a failing build without asking the user to open guilderia.",
+        "description": "Returns the last lines of the build log, so a workflow can surface a failing build without asking the user to open zenthcloud.",
         "tags": [
           "cicd"
         ],
@@ -12737,14 +12737,14 @@
                                 "type": "string"
                               }
                             },
-                            "detachguilderiaNetwork": {
+                            "detachzenthcloudNetwork": {
                               "type": "boolean"
                             }
                           },
                           "required": [
                             "serviceName",
                             "networkIds",
-                            "detachguilderiaNetwork"
+                            "detachzenthcloudNetwork"
                           ]
                         }
                       },
@@ -17779,7 +17779,7 @@
                         "properties": {
                           "providerType": {
                             "type": "string",
-                            "const": "guilderia-internal"
+                            "const": "zenthcloud-internal"
                           },
                           "defaultTtl": {
                             "default": 300,
@@ -18448,7 +18448,7 @@
                         "properties": {
                           "providerType": {
                             "type": "string",
-                            "const": "guilderia-internal"
+                            "const": "zenthcloud-internal"
                           },
                           "defaultTtl": {
                             "default": 300,
@@ -19364,7 +19364,7 @@
                         "properties": {
                           "providerType": {
                             "type": "string",
-                            "const": "guilderia-internal"
+                            "const": "zenthcloud-internal"
                           },
                           "defaultTtl": {
                             "default": 300,
@@ -28609,7 +28609,7 @@
                       }
                     ]
                   },
-                  "detachguilderiaNetwork": {
+                  "detachzenthcloudNetwork": {
                     "type": "boolean"
                   },
                   "createdAt": {
@@ -30489,7 +30489,7 @@
                       }
                     ]
                   },
-                  "detachguilderiaNetwork": {
+                  "detachzenthcloudNetwork": {
                     "type": "boolean"
                   }
                 },
@@ -32601,7 +32601,7 @@
                       }
                     ]
                   },
-                  "detachguilderiaNetwork": {
+                  "detachzenthcloudNetwork": {
                     "type": "boolean"
                   }
                 },
@@ -35389,7 +35389,7 @@
                       }
                     ]
                   },
-                  "detachguilderiaNetwork": {
+                  "detachzenthcloudNetwork": {
                     "type": "boolean"
                   }
                 },
@@ -36013,13 +36013,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -36045,9 +36045,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "guilderiaBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "guilderiaRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -36140,13 +36140,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -36359,13 +36359,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -36395,9 +36395,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "guilderiaBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "guilderiaRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -36491,13 +36491,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -36720,13 +36720,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -36752,9 +36752,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "guilderiaBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "guilderiaRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -36847,13 +36847,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -37066,13 +37066,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -37118,9 +37118,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "guilderiaBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "guilderiaRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -37217,13 +37217,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -37481,13 +37481,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -37521,9 +37521,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "guilderiaBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "guilderiaRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -37617,13 +37617,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -38101,10 +38101,10 @@
                 "type": "object",
                 "properties": {
                   "ServerType": {
-                    "default": "guilderia",
+                    "default": "zenthcloud",
                     "type": "string",
                     "enum": [
-                      "guilderia",
+                      "zenthcloud",
                       "Remote"
                     ]
                   },
@@ -38224,13 +38224,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -38264,9 +38264,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "guilderiaBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "guilderiaRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -38361,13 +38361,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -38598,13 +38598,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -38638,9 +38638,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "guilderiaBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "guilderiaRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -38735,13 +38735,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -38973,13 +38973,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -39008,9 +39008,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "guilderiaBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "guilderiaRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -39102,13 +39102,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -39327,13 +39327,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -39451,13 +39451,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -39682,13 +39682,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -39711,9 +39711,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "guilderiaBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "guilderiaRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -39805,13 +39805,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -40018,13 +40018,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -40047,9 +40047,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "guilderiaBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "guilderiaRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -40141,13 +40141,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -40354,13 +40354,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -40550,13 +40550,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "guilderiaRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -40878,7 +40878,7 @@
                       "seaweedfs",
                       "garage",
                       "s3-compatible",
-                      "guilderia-internal"
+                      "zenthcloud-internal"
                     ]
                   },
                   "category": {
@@ -41043,7 +41043,7 @@
                       "seaweedfs",
                       "garage",
                       "s3-compatible",
-                      "guilderia-internal"
+                      "zenthcloud-internal"
                     ]
                   },
                   "category": {
@@ -41628,7 +41628,7 @@
                       "seaweedfs",
                       "garage",
                       "s3-compatible",
-                      "guilderia-internal"
+                      "zenthcloud-internal"
                     ]
                   },
                   "category": {
@@ -45344,7 +45344,7 @@
                       }
                     ]
                   },
-                  "detachguilderiaNetwork": {
+                  "detachzenthcloudNetwork": {
                     "type": "boolean"
                   }
                 },
@@ -49152,7 +49152,7 @@
                       }
                     ]
                   },
-                  "detachguilderiaNetwork": {
+                  "detachzenthcloudNetwork": {
                     "type": "boolean"
                   }
                 },
@@ -56491,9 +56491,9 @@
         }
       }
     },
-    "/settings.getguilderiaVersion": {
+    "/settings.getzenthcloudVersion": {
       "get": {
-        "operationId": "settings-getguilderiaVersion",
+        "operationId": "settings-getzenthcloudVersion",
         "tags": [
           "settings"
         ],
@@ -58590,9 +58590,9 @@
         }
       }
     },
-    "/settings.getguilderiaCloudIps": {
+    "/settings.getzenthcloudCloudIps": {
       "get": {
-        "operationId": "settings-getguilderiaCloudIps",
+        "operationId": "settings-getzenthcloudCloudIps",
         "tags": [
           "settings"
         ],
@@ -74125,7 +74125,7 @@
                       "application",
                       "compose",
                       "server",
-                      "guilderia-server"
+                      "zenthcloud-server"
                     ]
                   },
                   "command": {
@@ -74296,7 +74296,7 @@
                       "application",
                       "compose",
                       "server",
-                      "guilderia-server"
+                      "zenthcloud-server"
                     ]
                   },
                   "command": {
@@ -74526,7 +74526,7 @@
                 "application",
                 "compose",
                 "server",
-                "guilderia-server"
+                "zenthcloud-server"
               ]
             },
             "required": true
@@ -79983,7 +79983,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "x-api-key",
-        "description": "API key authentication. Generate an API key from your guilderia dashboard under Settings > API Keys."
+        "description": "API key authentication. Generate an API key from your zenthcloud dashboard under Settings > API Keys."
       }
     }
   },

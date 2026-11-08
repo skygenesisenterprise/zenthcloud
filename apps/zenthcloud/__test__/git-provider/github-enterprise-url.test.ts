@@ -4,7 +4,7 @@ import {
 	deriveGithubApiUrl,
 	normalizeGithubUrl,
 	parseGithubBaseUrl,
-} from "@guilderia/server/utils/providers/github";
+} from "@zenthcloud/server/utils/providers/github";
 import { describe, expect, it } from "vitest";
 
 const urlOf = (result: ReturnType<typeof parseGithubBaseUrl>) =>

@@ -1,5 +1,5 @@
-import type { Domain } from "@guilderia/server";
-import { createDomainLabels } from "@guilderia/server";
+import type { Domain } from "@zenthcloud/server";
+import { createDomainLabels } from "@zenthcloud/server";
 import { describe, expect, it } from "vitest";
 
 describe("createDomainLabels", () => {

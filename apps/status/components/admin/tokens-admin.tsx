@@ -1,6 +1,6 @@
 "use client";
 
-import type { AdminTokenDto, TokenScope } from "@guilderia/status";
+import type { AdminTokenDto, TokenScope } from "@zenthcloud/status";
 import * as React from "react";
 import { adminRequest } from "@/lib/admin-client";
 import { useAdminResource } from "@/lib/use-admin";

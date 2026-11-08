@@ -1,5 +1,5 @@
-import { db } from "@guilderia/server/db";
-import { IS_CLOUD, sendInvitationEmail } from "@guilderia/server/index";
+import { db } from "@zenthcloud/server/db";
+import { IS_CLOUD, sendInvitationEmail } from "@zenthcloud/server/index";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, exists } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -379,7 +379,7 @@ export const organizationRouter = createTRPCRouter({
 				const host =
 					process.env.NODE_ENV === "development"
 						? "http://localhost:3000"
-						: "https://app.guilderia.com";
+						: "https://app.zenthcloud.com";
 				const inviteLink = `${host}/invitation?token=${created.id}`;
 
 				const org = await db.query.organization.findFirst({

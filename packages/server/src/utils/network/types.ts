@@ -1,4 +1,4 @@
-import type { NetworkProviderConfig } from "@guilderia/server/db/schema";
+import type { NetworkProviderConfig } from "@zenthcloud/server/db/schema";
 
 /**
  * A network provider is the connectivity layer behind one or more networks.

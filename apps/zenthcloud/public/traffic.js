@@ -2,13 +2,13 @@
 // written for evergreen browsers only (defer + fetch/sendBeacon), and it is not
 // part of the TypeScript build: tsconfig includes `*.js` with `checkJs`.
 /**
- * Guilderia Traffic Manager — web instrumentation.
+ * Zenthcloud Traffic Manager — web instrumentation.
  *
  * First-party, dependency-free and deliberately small. Include it on a watched
  * property with its public key:
  *
- *   <script defer src="https://<guilderia-host>/traffic.js"
- *           data-property-key="pk_..." data-endpoint="https://<guilderia-host>"></script>
+ *   <script defer src="https://<zenthcloud-host>/traffic.js"
+ *           data-property-key="pk_..." data-endpoint="https://<zenthcloud-host>"></script>
  *
  * What it sends: the current path, the referrer host, an event name when one is
  * tracked, and two random identifiers kept in the browser (session in

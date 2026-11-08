@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/utils/api";
-import { ShowguilderiaActions } from "./servers/actions/show-guilderia-actions";
+import { ShowzenthcloudActions } from "./servers/actions/show-zenthcloud-actions";
 import { ShowStorageActions } from "./servers/actions/show-storage-actions";
 import { ShowTraefikActions } from "./servers/actions/show-traefik-actions";
 import { ToggleDockerCleanup } from "./servers/actions/toggle-docker-cleanup";
@@ -28,7 +28,7 @@ export const WebServer = () => {
 							Web Server
 						</h1>
 						<p className="text-sm text-muted-foreground">
-							Configure how this guilderia instance exposes its web interface and
+							Configure how this zenthcloud instance exposes its web interface and
 							API.
 						</p>
 					</div>
@@ -62,7 +62,7 @@ export const WebServer = () => {
 					<>
 						<WebDomain />
 						<div className="grid gap-4 md:grid-cols-2">
-							<ShowguilderiaActions />
+							<ShowzenthcloudActions />
 							<ShowTraefikActions />
 							<ShowStorageActions />
 							<UpdateServer />

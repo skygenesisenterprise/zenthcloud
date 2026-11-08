@@ -9,9 +9,9 @@ const API_KEY = "test-api-key-12345678";
 
 function testConfig(overrides: Record<string, string> = {}): McpConfig {
   return loadConfig({
-    GUILDERIA_URL: "https://guilderia.example.com",
-    GUILDERIA_API_KEY: API_KEY,
-    GUILDERIA_MCP_HTTP_TOKEN: TOKEN,
+    ZENTHCLOUD_URL: "https://zenthcloud.example.com",
+    ZENTHCLOUD_API_KEY: API_KEY,
+    ZENTHCLOUD_MCP_HTTP_TOKEN: TOKEN,
     ...overrides,
   } as NodeJS.ProcessEnv);
 }
@@ -29,22 +29,22 @@ const initializeBody = {
 
 describe("assertHttpSecurity", () => {
   it("requires a token when unauthenticated HTTP is not explicitly allowed", () => {
-    const config = testConfig({ GUILDERIA_MCP_HTTP_TOKEN: "" });
-    expect(() => assertHttpSecurity(config.http)).toThrow(/GUILDERIA_MCP_HTTP_TOKEN/);
+    const config = testConfig({ ZENTHCLOUD_MCP_HTTP_TOKEN: "" });
+    expect(() => assertHttpSecurity(config.http)).toThrow(/ZENTHCLOUD_MCP_HTTP_TOKEN/);
   });
 
   it("only allows the unauthenticated opt-out on loopback", () => {
     const publicConfig = testConfig({
-      GUILDERIA_MCP_HTTP_TOKEN: "",
-      GUILDERIA_MCP_HTTP_ALLOW_UNAUTHENTICATED: "true",
-      GUILDERIA_MCP_HTTP_HOST: "0.0.0.0",
+      ZENTHCLOUD_MCP_HTTP_TOKEN: "",
+      ZENTHCLOUD_MCP_HTTP_ALLOW_UNAUTHENTICATED: "true",
+      ZENTHCLOUD_MCP_HTTP_HOST: "0.0.0.0",
     });
     expect(() => assertHttpSecurity(publicConfig.http)).toThrow(/loopback/);
 
     const loopbackConfig = testConfig({
-      GUILDERIA_MCP_HTTP_TOKEN: "",
-      GUILDERIA_MCP_HTTP_ALLOW_UNAUTHENTICATED: "true",
-      GUILDERIA_MCP_HTTP_HOST: "127.0.0.1",
+      ZENTHCLOUD_MCP_HTTP_TOKEN: "",
+      ZENTHCLOUD_MCP_HTTP_ALLOW_UNAUTHENTICATED: "true",
+      ZENTHCLOUD_MCP_HTTP_HOST: "127.0.0.1",
     });
     expect(() => assertHttpSecurity(loopbackConfig.http)).not.toThrow();
   });
@@ -151,7 +151,7 @@ describe("HTTP transport", () => {
   });
 
   it("enforces the configured body size limit", async () => {
-    const { baseUrl } = await start(testConfig({ GUILDERIA_MCP_HTTP_MAX_BODY_BYTES: "1024" }));
+    const { baseUrl } = await start(testConfig({ ZENTHCLOUD_MCP_HTTP_MAX_BODY_BYTES: "1024" }));
 
     const response = await fetch(`${baseUrl}/mcp`, {
       method: "POST",
@@ -178,8 +178,8 @@ describe("HTTP transport", () => {
   it("serves RFC 9728 metadata when an OAuth issuer is configured", async () => {
     const { baseUrl } = await start(
       testConfig({
-        GUILDERIA_MCP_OAUTH_ISSUER: "https://auth.example.com",
-        GUILDERIA_MCP_PUBLIC_BASE_URL: "https://mcp.example.com",
+        ZENTHCLOUD_MCP_OAUTH_ISSUER: "https://auth.example.com",
+        ZENTHCLOUD_MCP_PUBLIC_BASE_URL: "https://mcp.example.com",
       }),
     );
 

@@ -1,14 +1,14 @@
 /*
- * guilderia documentation styles.
+ * zenthcloud documentation styles.
  *
- * Aligned with the official guilderia design tokens — the same palette, radii,
- * tracking, shadows and motion used by the product (`apps/guilderia/styles/globals.css`)
+ * Aligned with the official zenthcloud design tokens — the same palette, radii,
+ * tracking, shadows and motion used by the product (`apps/zenthcloud/styles/globals.css`)
  * and the website (`web/apps/website/styles/tailwind.css`).
  *
  * The product ships a light theme by default and an opt-in `.dark` theme, so both
  * are declared here. Fumadocs' own component tokens (`--color-fd-*`, registered by
  * the imported theme) are remapped onto these tokens so the documentation UI uses
- * guilderia colours instead of the default theme.
+ * zenthcloud colours instead of the default theme.
  */
 
 @import 'tailwindcss';
@@ -91,7 +91,7 @@
  * ------------------------------------------------------------------------- */
 
 :root {
-	/* guilderia light theme (apps/guilderia/styles/globals.css — `:root`). */
+	/* zenthcloud light theme (apps/zenthcloud/styles/globals.css — `:root`). */
 	--terminal-paste: rgba(0, 0, 0, 0.2);
 
 	--background: oklch(0.9195 0.0169 88.003);
@@ -131,7 +131,7 @@
 	--tracking-normal: 0.01em;
 	--overlay: rgba(0, 0, 0, 0.2);
 
-	/* Motion tokens (apps/guilderia/styles/globals.css). */
+	/* Motion tokens (apps/zenthcloud/styles/globals.css). */
 	--duration-quick: 150ms;
 	--duration-fast: 250ms;
 	--duration-medium: 350ms;
@@ -140,7 +140,7 @@
 }
 
 .dark {
-	/* guilderia dark theme (apps/guilderia/styles/globals.css — `.dark`). */
+	/* zenthcloud dark theme (apps/zenthcloud/styles/globals.css — `.dark`). */
 	--terminal-paste: rgba(255, 255, 255, 0.2);
 
 	--background: oklch(0.1913 0 0);
@@ -190,7 +190,7 @@
 }
 
 /*
- * Remap Fumadocs component tokens onto the guilderia tokens. A higher-specificity
+ * Remap Fumadocs component tokens onto the zenthcloud tokens. A higher-specificity
  * selector (`html:root` / `html.dark`) guarantees these win over the tokens
  * registered by the imported Fumadocs theme, in every colour scheme.
  */

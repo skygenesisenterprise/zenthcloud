@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { findServerById } from "@guilderia/server/services/server";
+import { findServerById } from "@zenthcloud/server/services/server";
 import { Client } from "ssh2";
 
 export interface ProcessStream {

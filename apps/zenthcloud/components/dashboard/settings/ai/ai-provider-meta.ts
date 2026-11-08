@@ -11,7 +11,7 @@ import {
 	getCapabilityWarnings,
 	getModelCapabilities,
 	resolveAiProviderId,
-} from "@guilderia/server/utils/ai/contracts";
+} from "@zenthcloud/server/utils/ai/contracts";
 import {
 	aiProviderIconKey,
 	aiProviderIcons,

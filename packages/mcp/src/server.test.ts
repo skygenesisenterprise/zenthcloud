@@ -52,8 +52,8 @@ class MemoryAudit implements AuditPort {
 
 function testConfig(overrides: Partial<McpConfig> = {}): McpConfig {
   const base = loadConfig({
-    GUILDERIA_URL: "https://guilderia.example.com",
-    GUILDERIA_API_KEY: API_KEY,
+    ZENTHCLOUD_URL: "https://zenthcloud.example.com",
+    ZENTHCLOUD_API_KEY: API_KEY,
   } as NodeJS.ProcessEnv);
   return {
     ...base,
@@ -237,8 +237,8 @@ describe("MCP server", () => {
     expect(tools.map((tool) => tool.name)).not.toContain("list_projects");
     for (const tool of tools) {
       const meta = (tool as ToolListEntry & { _meta?: Record<string, unknown> })._meta;
-      expect(meta?.["guilderia/mode"]).toBe("advanced");
-      expect(meta?.["guilderia/risk"]).toBe(0);
+      expect(meta?.["zenthcloud/mode"]).toBe("advanced");
+      expect(meta?.["zenthcloud/risk"]).toBe(0);
       expect(tool.annotations?.readOnlyHint).toBe(true);
     }
   });

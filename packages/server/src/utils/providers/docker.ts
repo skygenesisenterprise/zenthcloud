@@ -1,4 +1,4 @@
-import { safeDockerLoginCommand } from "@guilderia/server/services/registry";
+import { safeDockerLoginCommand } from "@zenthcloud/server/services/registry";
 import { quote } from "shell-quote";
 import type { ApplicationNested } from "../builders";
 

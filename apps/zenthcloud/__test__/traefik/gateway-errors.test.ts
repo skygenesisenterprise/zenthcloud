@@ -5,7 +5,7 @@ import {
 	createRouterConfig,
 	type ApplicationNested,
 	type Domain,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { describe, expect, test } from "vitest";
 
 const app = {
@@ -46,28 +46,28 @@ describe("buildGatewayErrorsConfig", () => {
 		expect(http?.middlewares?.[GATEWAY_ERRORS_MIDDLEWARE_NAME]).toEqual({
 			errors: {
 				status: ["500-599"],
-				service: "guilderia-gateway-errors",
+				service: "zenthcloud-gateway-errors",
 				query: "/__astron_collectionerror?status={status}",
 			},
 		});
-		expect(http?.services?.["guilderia-gateway-errors"]).toEqual({
+		expect(http?.services?.["zenthcloud-gateway-errors"]).toEqual({
 			loadBalancer: {
-				servers: [{ url: "http://guilderia-gateway-errors:8080" }],
+				servers: [{ url: "http://zenthcloud-gateway-errors:8080" }],
 				passHostHeader: true,
 			},
 		});
-		expect(http?.routers?.["guilderia-gateway-errors-web"]).toMatchObject({
+		expect(http?.routers?.["zenthcloud-gateway-errors-web"]).toMatchObject({
 			rule: "PathPrefix(`/`)",
 			priority: 1,
-			service: "guilderia-gateway-errors",
+			service: "zenthcloud-gateway-errors",
 			entryPoints: ["web"],
 		});
 		expect(
-			http?.routers?.["guilderia-gateway-errors-websecure"],
+			http?.routers?.["zenthcloud-gateway-errors-websecure"],
 		).toMatchObject({
 			rule: "PathPrefix(`/`)",
 			priority: 1,
-			service: "guilderia-gateway-errors",
+			service: "zenthcloud-gateway-errors",
 			entryPoints: ["websecure"],
 		});
 	});

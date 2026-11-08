@@ -117,8 +117,8 @@ export const handleGatewayErrorRequest = (
 	response.setHeader("X-Frame-Options", "DENY");
 	response.setHeader("Referrer-Policy", "no-referrer");
 	response.setHeader("X-Robots-Tag", "noindex, nofollow");
-	response.setHeader("X-Guilderia-Error-Code", definition.code);
-	response.setHeader("X-Guilderia-Request-Id", requestId);
+	response.setHeader("X-Zenthcloud-Error-Code", definition.code);
+	response.setHeader("X-Zenthcloud-Request-Id", requestId);
 	response.setHeader(
 		"Content-Security-Policy",
 		"default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
@@ -161,7 +161,7 @@ export const startGatewayErrorsServer = (
 	options: StartGatewayErrorsServerOptions = {},
 ) => {
 	const env = options.env ?? process.env;
-	const port = options.port ?? resolvePort(env.GUILDERIA_GATEWAY_PORT);
+	const port = options.port ?? resolvePort(env.ZENTHCLOUD_GATEWAY_PORT);
 	const host = options.host ?? "0.0.0.0";
 
 	const server = http.createServer((request, response) => {

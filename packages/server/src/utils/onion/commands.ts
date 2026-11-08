@@ -31,7 +31,7 @@ export const assertDockerNetworkName = (network: string): string => {
 
 /**
  * Sources to bind into the Tor container. They are the paths of the daemon's
- * filesystem, not the ones Guilderia sees: the two only match when the
+ * filesystem, not the ones Zenthcloud sees: the two only match when the
  * configuration tree is mounted at the same path (see `toDockerHostPath`).
  */
 export interface OnionServiceBindSources {
@@ -112,8 +112,8 @@ export const getStartOnionServiceCommand = ({
 		// would be noise. The container is a publisher, not a probe target.
 		"--no-healthcheck",
 		`--network ${quote([dockerNetwork])}`,
-		`--label ${quote([`guilderia.onionServiceId=${onionServiceId}`])}`,
-		`--label ${quote([`guilderia.composeId=${composeId}`])}`,
+		`--label ${quote([`zenthcloud.onionServiceId=${onionServiceId}`])}`,
+		`--label ${quote([`zenthcloud.composeId=${composeId}`])}`,
 		// No `--publish`: the onion address is the only ingress, the target
 		// service is never exposed on a host port by enabling an Onion Service.
 		`-v ${quote([`${bindSources.dataDir}:${paths.containerDataDir}`])}`,

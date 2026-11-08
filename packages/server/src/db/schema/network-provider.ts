@@ -18,7 +18,7 @@ import { server } from "./server";
  * A network provider is the connectivity layer behind one or more networks.
  * Docker's own networking is a provider, WireGuard/Tailscale/OpenVPN are
  * providers, and organizations with their own connectivity platform can plug
- * in through the `custom` adapter. The rest of Guilderia only needs a provider
+ * in through the `custom` adapter. The rest of Zenthcloud only needs a provider
  * id and a network id, never the vendor specifics.
  *
  * Secrets are never stored inline: configs carry *references* to entries in the
@@ -60,7 +60,7 @@ export const dockerNetworkConfigSchema = z.object({
 	// Driver new networks default to when none is chosen explicitly.
 	defaultDriver: z.enum(["bridge", "overlay"]).default("bridge"),
 	// Registered server whose daemon owns these networks. Omit for the local
-	// Guilderia server.
+	// Zenthcloud server.
 	serverId: z.string().trim().optional(),
 });
 
@@ -165,7 +165,7 @@ export const networkProvider = pgTable(
 );
 
 /**
- * A peer is one endpoint inside a VPN network — typically a registered Guilderia
+ * A peer is one endpoint inside a VPN network — typically a registered Zenthcloud
  * server. Docker networks have no peers, so the table stays empty for them.
  */
 export const networkPeer = pgTable(

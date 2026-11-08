@@ -119,7 +119,7 @@ const base: ConsoleHomeData = {
 		pages: [
 			page(
 				"cloud",
-				"Guilderia Cloud",
+				"Zenthcloud Cloud",
 				[
 					component("api", "operational"),
 					component("db", "degraded"),
@@ -180,7 +180,7 @@ describe("buildConsoleHomeModel", () => {
 				platform.segments.map((segment) => [segment.id, segment.value]),
 			),
 		).toEqual({ operational: 1, degraded: 1, outage: 1, unknown: 1 });
-		expect(platform.note).toContain("Guilderia Cloud");
+		expect(platform.note).toContain("Zenthcloud Cloud");
 		expect(platform.note).toContain("is not a healthy state");
 		expect(metric(model, "platform-components")).toMatchObject({
 			value: "1/4",
@@ -197,7 +197,7 @@ describe("buildConsoleHomeModel", () => {
 				configured: true,
 				error: null,
 				pages: [
-					page("cloud", "Guilderia Cloud", [
+					page("cloud", "Zenthcloud Cloud", [
 						component("api", "operational"),
 						component("worker", "unknown", null),
 					]),
@@ -276,7 +276,7 @@ describe("buildConsoleHomeModel", () => {
 				controlPlane.segments.map((segment) => [segment.id, segment.value]),
 			),
 		).toEqual({ healthy: 1, unhealthy: 1 });
-		expect(controlPlane.note).toContain("Guilderia 1.2.3");
+		expect(controlPlane.note).toContain("Zenthcloud 1.2.3");
 		expect(controlPlane.note).toContain("uptime 1d 1h");
 		expect(controlPlane.note).toContain("this instance's own host");
 	});
@@ -317,8 +317,8 @@ describe("buildConsoleHomeModel", () => {
 				configured: true,
 				error: null,
 				pages: [
-					page("cloud", "Guilderia Cloud", [component("api", "operational")]),
-					page("status", "Guilderia Status", [component("web", "operational")]),
+					page("cloud", "Zenthcloud Cloud", [component("api", "operational")]),
+					page("status", "Zenthcloud Status", [component("web", "operational")]),
 				],
 			},
 		});
@@ -326,6 +326,6 @@ describe("buildConsoleHomeModel", () => {
 			multiple.statusGroups
 				.filter((entry) => entry.id.startsWith("status-page-"))
 				.map((entry) => entry.title),
-		).toEqual(["Guilderia Cloud", "Guilderia Status"]);
+		).toEqual(["Zenthcloud Cloud", "Zenthcloud Status"]);
 	});
 });

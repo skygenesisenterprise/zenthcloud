@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Readable } from "node:stream";
-import { docker, paths } from "@guilderia/server/constants";
-import type { Compose } from "@guilderia/server/services/compose";
+import { docker, paths } from "@zenthcloud/server/constants";
+import type { Compose } from "@zenthcloud/server/services/compose";
 import type { ContainerInfo, ResourceRequirements } from "dockerode";
 import { parse } from "dotenv";
 import { quote } from "shell-quote";
@@ -150,7 +150,7 @@ export const getContainerByName = (name: string): Promise<ContainerInfo> => {
 /**
  * Docker commands sent using this method are held in a hold when Docker is busy.
  *
- * https://github.com/skygenesisenterprise/guilderia/pull/3064
+ * https://github.com/skygenesisenterprise/zenthcloud/pull/3064
  */
 export const dockerSafeExec = (exec: string) => `
 CHECK_INTERVAL=10
@@ -388,7 +388,7 @@ export const getBuildCache = async (
 /**
  * Volume cleanup should always be performed manually by the user. The reason is that during automatic cleanup, a volume may be deleted due to a stopped container, which is a dangerous situation.
  *
- * https://github.com/skygenesisenterprise/guilderia/pull/3267
+ * https://github.com/skygenesisenterprise/zenthcloud/pull/3267
  */
 const excludedCleanupAllCommands: (keyof typeof cleanupCommands)[] = [
 	"volumes",
@@ -1017,20 +1017,20 @@ export const waitForSwarmServiceConvergence = async (
 };
 
 export const checkPostgresHealth = async (): Promise<ServiceHealthStatus> => {
-	const serviceCheck = await checkSwarmServiceRunning("guilderia-postgres");
+	const serviceCheck = await checkSwarmServiceRunning("zenthcloud-postgres");
 	if (serviceCheck.status === "unhealthy") {
 		return serviceCheck;
 	}
 
 	// Verify PostgreSQL actually accepts connections
-	const containerId = await getSwarmServiceContainerId("guilderia-postgres");
+	const containerId = await getSwarmServiceContainerId("zenthcloud-postgres");
 	if (!containerId) {
 		return { status: "unhealthy", message: "Could not find running container" };
 	}
 
 	try {
 		const exec = await docker.getContainer(containerId).exec({
-			Cmd: ["pg_isready", "-U", "guilderia"],
+			Cmd: ["pg_isready", "-U", "zenthcloud"],
 			AttachStdout: true,
 			AttachStderr: true,
 		});
@@ -1065,7 +1065,7 @@ export const checkPostgresHealth = async (): Promise<ServiceHealthStatus> => {
 export const checkTraefikHealth = async (): Promise<ServiceHealthStatus> => {
 	// Traefik can run as a standalone container or a swarm service
 	try {
-		const container = docker.getContainer("guilderia-traefik");
+		const container = docker.getContainer("zenthcloud-traefik");
 		const info = await container.inspect();
 		if (!info.State.Running) {
 			return {
@@ -1076,6 +1076,6 @@ export const checkTraefikHealth = async (): Promise<ServiceHealthStatus> => {
 		return { status: "healthy" };
 	} catch {
 		// Not a standalone container, check as swarm service
-		return checkSwarmServiceRunning("guilderia-traefik");
+		return checkSwarmServiceRunning("zenthcloud-traefik");
 	}
 };

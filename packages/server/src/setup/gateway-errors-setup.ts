@@ -5,11 +5,11 @@ import type { ContainerCreateOptions, CreateServiceOptions } from "dockerode";
 import { getGatewayErrorPageConfig } from "../gateway-errors/config";
 import { getRemoteDocker } from "../utils/servers/remote-docker";
 
-export const GATEWAY_ERRORS_RESOURCE_NAME = "guilderia-gateway-errors";
+export const GATEWAY_ERRORS_RESOURCE_NAME = "zenthcloud-gateway-errors";
 export const GATEWAY_ERRORS_INTERNAL_PORT = 8080;
-export const GATEWAY_ERRORS_NETWORK = "guilderia-network";
+export const GATEWAY_ERRORS_NETWORK = "zenthcloud-network";
 
-const DEFAULT_IMAGE = "ghcr.io/skygenesisenterprise/guilderia:latest";
+const DEFAULT_IMAGE = "ghcr.io/skygenesisenterprise/zenthcloud:latest";
 const DEFAULT_VERSION_TAG = "latest";
 
 type Docker = Awaited<ReturnType<typeof getRemoteDocker>>;
@@ -59,18 +59,18 @@ export const getGatewayErrorsImage = async (
 	serverId: string | undefined,
 	env: Record<string, string | undefined>,
 ): Promise<string> => {
-	const explicit = env.GUILDERIA_GATEWAY_ERRORS_IMAGE?.trim();
+	const explicit = env.ZENTHCLOUD_GATEWAY_ERRORS_IMAGE?.trim();
 	if (explicit) return explicit;
 
 	const runningImage = await resolveRunningImage(docker, serverId);
 	if (runningImage) return runningImage;
 
-	const configuredImage = env.GUILDERIA_IMAGE?.trim();
+	const configuredImage = env.ZENTHCLOUD_IMAGE?.trim();
 	if (configuredImage) {
 		if (hasImageTag(configuredImage)) return configuredImage;
 		const version =
-			env.GUILDERIA_VERSION?.trim() ||
-			env.GUILDERIA_VERSION_TAG?.trim() ||
+			env.ZENTHCLOUD_VERSION?.trim() ||
+			env.ZENTHCLOUD_VERSION_TAG?.trim() ||
 			DEFAULT_VERSION_TAG;
 		return `${configuredImage}:${version}`;
 	}
@@ -83,24 +83,24 @@ export const buildGatewayErrorsEnv = (
 ): string[] => {
 	const config = getGatewayErrorPageConfig(env);
 	const values: Record<string, string> = {
-		GUILDERIA_GATEWAY_BRAND_NAME: config.brandName,
-		GUILDERIA_GATEWAY_LOCALE: config.locale,
-		GUILDERIA_GATEWAY_PORT: String(GATEWAY_ERRORS_INTERNAL_PORT),
+		ZENTHCLOUD_GATEWAY_BRAND_NAME: config.brandName,
+		ZENTHCLOUD_GATEWAY_LOCALE: config.locale,
+		ZENTHCLOUD_GATEWAY_PORT: String(GATEWAY_ERRORS_INTERNAL_PORT),
 		IS_CLOUD: config.isCloud ? "true" : "false",
 	};
-	if (config.docsUrl) values.GUILDERIA_GATEWAY_DOCS_URL = config.docsUrl;
-	if (config.statusUrl) values.GUILDERIA_GATEWAY_STATUS_URL = config.statusUrl;
+	if (config.docsUrl) values.ZENTHCLOUD_GATEWAY_DOCS_URL = config.docsUrl;
+	if (config.statusUrl) values.ZENTHCLOUD_GATEWAY_STATUS_URL = config.statusUrl;
 	if (config.supportUrl) {
-		values.GUILDERIA_GATEWAY_SUPPORT_URL = config.supportUrl;
+		values.ZENTHCLOUD_GATEWAY_SUPPORT_URL = config.supportUrl;
 	}
 	return Object.entries(values).map(([key, value]) => `${key}=${value}`);
 };
 
 const readGatewayErrorsScript = (): string | null => {
 	const candidates = [
-		process.env.GUILDERIA_GATEWAY_ERRORS_SCRIPT_PATH,
+		process.env.ZENTHCLOUD_GATEWAY_ERRORS_SCRIPT_PATH,
 		path.join(process.cwd(), "dist/gateway-errors-server.cjs"),
-		path.join(process.cwd(), "apps/guilderia/dist/gateway-errors-server.cjs"),
+		path.join(process.cwd(), "apps/zenthcloud/dist/gateway-errors-server.cjs"),
 	].filter((candidate): candidate is string => Boolean(candidate));
 
 	for (const candidate of candidates) {
@@ -114,12 +114,12 @@ const readGatewayErrorsScript = (): string | null => {
 const resolveGatewayErrorsCommand = (
 	env: Record<string, string | undefined>,
 ): GatewayErrorsCommand | null => {
-	const customCommand = env.GUILDERIA_GATEWAY_ERRORS_COMMAND?.trim();
+	const customCommand = env.ZENTHCLOUD_GATEWAY_ERRORS_COMMAND?.trim();
 	if (customCommand) {
 		return {
 			entrypoint: ["/bin/sh", "-lc"],
 			args: [customCommand],
-			workingDir: env.GUILDERIA_GATEWAY_ERRORS_WORKDIR?.trim() || undefined,
+			workingDir: env.ZENTHCLOUD_GATEWAY_ERRORS_WORKDIR?.trim() || undefined,
 		};
 	}
 
@@ -134,7 +134,7 @@ const resolveGatewayErrorsCommand = (
 
 const detectTraefikMode = async (docker: Docker): Promise<TraefikMode> => {
 	try {
-		await docker.getService("guilderia-traefik").inspect();
+		await docker.getService("zenthcloud-traefik").inspect();
 		return "service";
 	} catch {
 		return "standalone";
@@ -200,7 +200,7 @@ const upsertContainer = async (
 		Env: env,
 		Labels: {
 			"traefik.enable": "false",
-			"guilderia.gateway-errors": "true",
+			"zenthcloud.gateway-errors": "true",
 		},
 		NetworkingConfig: {
 			EndpointsConfig: {
@@ -227,7 +227,7 @@ const upsertService = async (
 	const settings: CreateServiceOptions = {
 		Name: GATEWAY_ERRORS_RESOURCE_NAME,
 		Labels: {
-			"guilderia.gateway-errors": "true",
+			"zenthcloud.gateway-errors": "true",
 		},
 		TaskTemplate: {
 			ContainerSpec: {

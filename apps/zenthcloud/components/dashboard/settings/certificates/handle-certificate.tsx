@@ -156,7 +156,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 					name: data.name,
 					certificateData: data.certificateData,
 					privateKey: privateKey ?? "",
-					serverId: data.serverId === "guilderia" ? undefined : data.serverId,
+					serverId: data.serverId === "zenthcloud" ? undefined : data.serverId,
 				});
 
 		await promise
@@ -295,20 +295,20 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 										<Select
 											onValueChange={field.onChange}
 											defaultValue={
-												field.value || (!isCloud ? "guilderia" : undefined)
+												field.value || (!isCloud ? "zenthcloud" : undefined)
 											}
 										>
 											<SelectTrigger>
 												<SelectValue
-													placeholder={!isCloud ? "guilderia" : "Select a Server"}
+													placeholder={!isCloud ? "zenthcloud" : "Select a Server"}
 												/>
 											</SelectTrigger>
 											<SelectContent>
 												<SelectGroup>
 													{!isCloud && (
-														<SelectItem value="guilderia">
+														<SelectItem value="zenthcloud">
 															<span className="flex items-center gap-2 justify-between w-full">
-																<span>guilderia</span>
+																<span>zenthcloud</span>
 																<span className="text-muted-foreground text-xs self-center">
 																	Default
 																</span>

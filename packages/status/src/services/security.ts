@@ -140,7 +140,7 @@ export const requireScope = (
 ): AuthenticatedActor => {
 	if (!actor) {
 		throw unauthorized(
-			"This endpoint requires a Guilderia Status API token (Authorization: Bearer <token>)",
+			"This endpoint requires a Zenthcloud Status API token (Authorization: Bearer <token>)",
 		);
 	}
 	if (!actor.scopes.includes(scope) && !actor.scopes.includes("admin")) {

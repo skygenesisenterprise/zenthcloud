@@ -24,7 +24,7 @@ export function processLogs(
 		.map((entry) => {
 			try {
 				const log: LogEntry = JSON.parse(entry);
-				if (log.ServiceName === "guilderia-service-app@file") {
+				if (log.ServiceName === "zenthcloud-service-app@file") {
 					return null;
 				}
 				const date = new Date(log.StartUTC);
@@ -99,9 +99,9 @@ export function parseRawConfig(
 			.compact()
 			.value();
 
-		// Filter out Guilderia dashboard requests
+		// Filter out Zenthcloud dashboard requests
 		parsedLogs = parsedLogs.filter(
-			(log) => log.ServiceName !== "guilderia-service-app@file",
+			(log) => log.ServiceName !== "zenthcloud-service-app@file",
 		);
 
 		// Apply date range filter if provided

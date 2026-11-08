@@ -1,4 +1,4 @@
-import { redactRcloneCredentials } from "@guilderia/server/utils/backups/redact";
+import { redactRcloneCredentials } from "@zenthcloud/server/utils/backups/redact";
 import { describe, expect, it } from "vitest";
 
 describe("redactRcloneCredentials (#4621)", () => {

@@ -4,7 +4,7 @@
 # Moves BETTER_AUTH_SECRET into Docker Secrets and re-encrypts existing 2FA data.
 #
 # Usage:
-#   curl -sSL https://guilderia.com/security/1.1.5.sh | sudo bash
+#   curl -sSL https://zenthcloud.com/security/1.1.5.sh | sudo bash
 #
 # Idempotent: if the service already reads BETTER_AUTH_SECRET_FILE, nothing is
 # changed. If a previous run created the Docker secret but failed before
@@ -14,9 +14,9 @@
 
 set -eu
 
-SERVICE_NAME="guilderia"
-SECRET_NAME="guilderia_auth_secret"
-SECRET_TARGET="/run/secrets/guilderia_auth_secret"
+SERVICE_NAME="zenthcloud"
+SECRET_NAME="zenthcloud_auth_secret"
+SECRET_TARGET="/run/secrets/zenthcloud_auth_secret"
 LEGACY_SECRET="better-auth-secret-123456789"
 
 # Check if running as root
@@ -92,8 +92,8 @@ else
     fi
 
     # Run 2FA migration inside the Notploy container. Match the Swarm service
-    # label rather than a name prefix: "guilderia-postgres" and "guilderia-status"
-    # also start with "guilderia".
+    # label rather than a name prefix: "zenthcloud-postgres" and "zenthcloud-status"
+    # also start with "zenthcloud".
     echo "🔄 Migrating existing 2FA records..."
     NOTPLOY_CONTAINER=$(docker ps \
         --filter "label=com.docker.swarm.service.name=$SERVICE_NAME" \

@@ -1,5 +1,5 @@
 ---
-"@guilderia/server": patch
+"@zenthcloud/server": patch
 ---
 
 Defer source cleanup during server-to-server transfers until the target

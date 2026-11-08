@@ -13,7 +13,7 @@ vi.mock("node:fs", async (importOriginal) => {
 	};
 });
 
-import { writeDomainsToCompose } from "@guilderia/server/utils/docker/domain";
+import { writeDomainsToCompose } from "@zenthcloud/server/utils/docker/domain";
 
 const baseCompose = {
 	appName: "my-app",

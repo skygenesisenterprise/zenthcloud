@@ -1,4 +1,4 @@
-import { findServerById } from "@guilderia/server";
+import { findServerById } from "@zenthcloud/server";
 import type { DeploymentJob } from "../queues/queue-types";
 
 export const deploy = async (jobData: DeploymentJob) => {

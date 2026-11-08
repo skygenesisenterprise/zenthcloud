@@ -1,4 +1,4 @@
-import type { azureVaultConfigSchema } from "@guilderia/server/db/schema";
+import type { azureVaultConfigSchema } from "@zenthcloud/server/db/schema";
 import type { z } from "zod";
 import { type VaultClient, vaultFetch } from "./types";
 

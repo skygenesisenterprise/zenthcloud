@@ -25,7 +25,7 @@ function GithubIcon() {
 export function OpenStats({
 	id = "open-stats",
 	title = "Built in the open",
-	description = "guilderia is developed publicly and licensed for self-hosting. Here is where you can see the project for yourself.",
+	description = "zenthcloud is developed publicly and licensed for self-hosting. Here is where you can see the project for yourself.",
 }: {
 	id?: string;
 	title?: string;
@@ -39,7 +39,7 @@ export function OpenStats({
 
 		async function loadStats() {
 			const [starsResult, contributorsResult] = await Promise.allSettled([
-				fetch("/api/github-stars?owner=skygenesisenterprise&repo=guilderia"),
+				fetch("/api/github-stars?owner=skygenesisenterprise&repo=zenthcloud"),
 				fetch("/api/github-contributors"),
 			]);
 
@@ -149,7 +149,7 @@ export function OpenStats({
 
 				<div className="mt-8 text-center">
 					<Link
-						href="https://github.com/skygenesisenterprise/guilderia"
+						href="https://github.com/skygenesisenterprise/zenthcloud"
 						target="_blank"
 						rel="noreferrer"
 						className="text-base font-medium text-foreground underline underline-offset-4 hover:text-primary"

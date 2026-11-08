@@ -1,4 +1,4 @@
-import type { ServiceType } from "@guilderia/server/db/schema";
+import type { ServiceType } from "@zenthcloud/server/db/schema";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
 import { Copy, Trash2 } from "lucide-react";

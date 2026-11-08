@@ -21,7 +21,7 @@ export const objectStorageCategoryDescriptions: Record<string, string> = {
 	"self-hosted":
 		"S3-compatible storage you run yourself, like MinIO, RustFS or Ceph.",
 	internal:
-		"guilderia's own object storage, with no external dependency or credentials.",
+		"zenthcloud's own object storage, with no external dependency or credentials.",
 };
 
 export const objectStorageHealthLabels: Record<string, string> = {
@@ -52,7 +52,7 @@ export const objectStorageProviderLabels: Record<string, string> = {
 	seaweedfs: "SeaweedFS",
 	garage: "Garage",
 	"s3-compatible": "Any S3-compatible endpoint",
-	"guilderia-internal": "guilderia Internal Storage",
+	"zenthcloud-internal": "zenthcloud Internal Storage",
 };
 
 export const objectStorageProviderLabel = (providerType: string) =>

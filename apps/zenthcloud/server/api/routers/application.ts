@@ -35,16 +35,16 @@ import {
 	updateDeploymentStatus,
 	writeConfig,
 	writeConfigRemote,
-} from "@guilderia/server";
-import { db } from "@guilderia/server/db";
-import { canEditDeployGitSource } from "@guilderia/server/services/git-provider";
+} from "@zenthcloud/server";
+import { db } from "@zenthcloud/server/db";
+import { canEditDeployGitSource } from "@zenthcloud/server/services/git-provider";
 import {
 	addNewService,
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
-} from "@guilderia/server/services/permission";
-import { assertServiceMoveAllowed } from "@guilderia/server/services/service-move";
+} from "@zenthcloud/server/services/permission";
+import { assertServiceMoveAllowed } from "@zenthcloud/server/services/service-move";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";

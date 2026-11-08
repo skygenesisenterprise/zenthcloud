@@ -1,4 +1,4 @@
-import { normalizeS3Path } from "@guilderia/server/utils/backups/utils";
+import { normalizeS3Path } from "@zenthcloud/server/utils/backups/utils";
 import { describe, expect, test } from "vitest";
 
 describe("normalizeS3Path", () => {

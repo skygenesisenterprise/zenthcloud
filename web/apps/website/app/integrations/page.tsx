@@ -11,8 +11,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Integrations",
 	description:
-		"Git providers, container registries, identity providers, DNS, object storage, CLI, API, SDK and MCP — the documented ways to connect guilderia to the tools you already use.",
-	alternates: { canonical: "https://guilderia.com/integrations" },
+		"Git providers, container registries, identity providers, DNS, object storage, CLI, API, SDK and MCP — the documented ways to connect zenthcloud to the tools you already use.",
+	alternates: { canonical: "https://zenthcloud.com/integrations" },
 };
 
 interface Integration {
@@ -76,7 +76,7 @@ const workflow = [
 		label: "Git or CI",
 	},
 	{
-		title: "guilderia plans the release",
+		title: "zenthcloud plans the release",
 		description:
 			"Configuration, environment and secrets are resolved before anything is built.",
 		label: "Plan",
@@ -120,7 +120,7 @@ export default function IntegrationsPage() {
 				eyebrow="Integrations"
 				title="Fits"
 				highlight="the way you work"
-				description="guilderia is not only a dashboard. It connects to your repositories, your identity provider and your automation, so the platform fits into existing workflows instead of replacing them."
+				description="zenthcloud is not only a dashboard. It connects to your repositories, your identity provider and your automation, so the platform fits into existing workflows instead of replacing them."
 				actions={
 					<>
 						<Button className="rounded-full px-6" asChild>
@@ -145,7 +145,7 @@ export default function IntegrationsPage() {
 				<Container>
 					<SectionHeading
 						id="integration-list"
-						title="Ways to connect guilderia"
+						title="Ways to connect zenthcloud"
 						description="Each connector solves a concrete workflow; availability is documented per integration."
 						align="left"
 					/>

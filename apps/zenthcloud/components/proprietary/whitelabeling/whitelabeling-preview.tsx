@@ -17,7 +17,7 @@ interface WhitelabelingPreviewProps {
 }
 
 export function WhitelabelingPreview({ config }: WhitelabelingPreviewProps) {
-	const appName = config.appName || "Guilderia";
+	const appName = config.appName || "Zenthcloud";
 
 	return (
 		<Card className="bg-transparent">

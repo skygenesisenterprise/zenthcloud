@@ -1,5 +1,5 @@
-import type { bindDnsConfigSchema } from "@guilderia/server/db/schema";
-import { execAsyncRemote } from "@guilderia/server/utils/process/execAsync";
+import type { bindDnsConfigSchema } from "@zenthcloud/server/db/schema";
+import { execAsyncRemote } from "@zenthcloud/server/utils/process/execAsync";
 import type { z } from "zod";
 import type { DnsClient, DnsRecord, DnsZone } from "./types";
 

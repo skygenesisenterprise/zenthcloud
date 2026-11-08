@@ -3,11 +3,11 @@ import {
 	memberRole,
 	ownerRole,
 	statements,
-} from "@guilderia/server/lib/access-control";
+} from "@zenthcloud/server/lib/access-control";
 import { describe, expect, it } from "vitest";
 
 /**
- * Guilderia does not have licensed resource tiers: every resource in
+ * Zenthcloud does not have licensed resource tiers: every resource in
  * `statements` is reachable by every deployment. What must hold instead is
  * that the static roles cover every resource declared in `statements`, so no
  * resource is silently unreachable for owner/admin and none is accidentally

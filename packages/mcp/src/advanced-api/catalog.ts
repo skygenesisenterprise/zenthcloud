@@ -46,7 +46,7 @@ function buildDescription(operation: GeneratedApiOperation, risk: RiskLevel): st
   const raw = operation.description?.trim();
   const summary =
     raw && !/^(GET|POST)\s+\//i.test(raw) ? raw : `${operation.method} ${operation.path}`;
-  return `${summary}\n\nAdvanced API operation (${operation.method} ${operation.path}, tag "${operation.tag}", risk ${risk}). Prefer a business-domain capability when one covers the same goal. The Guilderia API enforces the credential's permissions; the MCP server additionally applies risk and approval policy.`;
+  return `${summary}\n\nAdvanced API operation (${operation.method} ${operation.path}, tag "${operation.tag}", risk ${risk}). Prefer a business-domain capability when one covers the same goal. The Zenthcloud API enforces the credential's permissions; the MCP server additionally applies risk and approval policy.`;
 }
 
 function toAdvancedCapability(
@@ -91,7 +91,7 @@ function toAdvancedCapability(
       openWorldHint: true,
     },
     preconditions: [
-      "The API key's identity must be allowed to call this operation; the Guilderia API enforces its own permissions.",
+      "The API key's identity must be allowed to call this operation; the Zenthcloud API enforces its own permissions.",
     ],
     limitations: [
       "Generated from OpenAPI; availability can differ between Self, Cloud and Console deployments.",
@@ -131,7 +131,7 @@ function resolveEnabledTags(config: McpConfig, warnings: string[]): Set<string> 
   const preset = LEGACY_TOOL_PRESETS[presetName];
   if (preset === undefined) {
     warnings.push(
-      `Unknown GUILDERIA_TOOL_PRESET "${presetName}"; the advanced catalog exposes all operations allowed by the profile.`,
+      `Unknown ZENTHCLOUD_TOOL_PRESET "${presetName}"; the advanced catalog exposes all operations allowed by the profile.`,
     );
     return null;
   }
@@ -165,7 +165,7 @@ export function buildAdvancedCatalog(
 
   if (summary.usedLegacySelection) {
     warnings.push(
-      "GUILDERIA_TOOL_PRESET / GUILDERIA_ENABLED_TAGS / GUILDERIA_DISABLED_TAGS are deprecated for MCP. Use GUILDERIA_MCP_ADVANCED_TAGS / GUILDERIA_MCP_ADVANCED_DISABLED_TAGS; the legacy variables are still honored.",
+      "ZENTHCLOUD_TOOL_PRESET / ZENTHCLOUD_ENABLED_TAGS / ZENTHCLOUD_DISABLED_TAGS are deprecated for MCP. Use ZENTHCLOUD_MCP_ADVANCED_TAGS / ZENTHCLOUD_MCP_ADVANCED_DISABLED_TAGS; the legacy variables are still honored.",
     );
   }
 
@@ -205,7 +205,7 @@ export function buildAdvancedCatalog(
 
   if (capabilities.length > LARGE_ADVANCED_TOOLSET_THRESHOLD) {
     warnings.push(
-      `${capabilities.length} advanced operations are exposed. Some MCP clients or LLM providers time out on large toolsets; use GUILDERIA_MCP_ADVANCED_PROFILE or tag filters to narrow the catalog.`,
+      `${capabilities.length} advanced operations are exposed. Some MCP clients or LLM providers time out on large toolsets; use ZENTHCLOUD_MCP_ADVANCED_PROFILE or tag filters to narrow the catalog.`,
     );
   }
   if (capabilities.length === 0) {

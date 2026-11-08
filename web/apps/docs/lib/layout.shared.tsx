@@ -8,12 +8,12 @@ export function baseOptions(): BaseLayoutProps {
 			title: (
 				<div className="flex items-center gap-2">
 					<Logo />
-					<span>guilderia</span>
+					<span>zenthcloud</span>
 				</div>
 			),
-			url: "https://guilderia.com",
+			url: "https://zenthcloud.com",
 			children: <NavLinks />,
 		},
-		githubUrl: "https://github.com/skygenesisenterprise/guilderia",
+		githubUrl: "https://github.com/skygenesisenterprise/zenthcloud",
 	};
 }

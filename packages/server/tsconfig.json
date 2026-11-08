@@ -22,7 +22,7 @@
 		"outDir": "./dist",
 		/* Path Aliases */
 		"paths": {
-			"@guilderia/server/*": ["./src/*"]
+			"@zenthcloud/server/*": ["./src/*"]
 		}
 	},
 	"include": ["next-env.d.ts", "./src/**/*.ts"],
@@ -30,7 +30,7 @@
 	"exclude": [
 		"tsup.ts",
 		"node_modules",
-		"guilderia",
+		"zenthcloud",
 		"config",
 		"dist",
 		".next",

@@ -108,10 +108,10 @@ export async function createServerParts(options: CreateRuntimeOptions = {}): Pro
 /** Creates an MCP protocol server bound to shared parts (one per transport). */
 export function buildMcpServer(parts: ServerParts): McpServer {
   const server = new McpServer(
-    { name: "guilderia", version: MCP_SERVER_VERSION },
+    { name: "zenthcloud", version: MCP_SERVER_VERSION },
     {
       instructions:
-        "Guilderia automation server. Start with the discovery capabilities, use read-only diagnostics before mutating anything, and poll get_operation_status after long-running actions.",
+        "Zenthcloud automation server. Start with the discovery capabilities, use read-only diagnostics before mutating anything, and poll get_operation_status after long-running actions.",
     },
   );
 

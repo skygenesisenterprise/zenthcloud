@@ -1,6 +1,6 @@
 "use client";
 
-import type { AuditLog } from "@guilderia/server/db/schema";
+import type { AuditLog } from "@zenthcloud/server/db/schema";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import {

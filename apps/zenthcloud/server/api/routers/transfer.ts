@@ -2,8 +2,8 @@ import {
 	getAccessibleServerIds,
 	IS_CLOUD,
 	transferService,
-} from "@guilderia/server";
-import { checkServicePermissionAndAccess } from "@guilderia/server/services/permission";
+} from "@zenthcloud/server";
+import { checkServicePermissionAndAccess } from "@zenthcloud/server/services/permission";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
@@ -36,7 +36,7 @@ export const transferRouter = createTRPCRouter({
 			} else if (IS_CLOUD) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "The Guilderia server is not available as a target",
+					message: "The Zenthcloud server is not available as a target",
 				});
 			}
 

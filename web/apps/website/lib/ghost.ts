@@ -2,7 +2,7 @@ import GhostContentAPI from "@tryghost/content-api";
 
 // Ghost API configuration
 const ghostConfig = {
-	url: process.env.GHOST_URL || "https://guilderia.com",
+	url: process.env.GHOST_URL || "https://zenthcloud.com",
 	key: process.env.GHOST_KEY || "42424242424242424242424242424242",
 	version: "v5.0",
 };
@@ -82,7 +82,7 @@ export interface Post {
 
 /**
  * Job offers are published as Ghost posts marked with the `job` tag by the
- * guilderia console. The location and application link travel on prefixed tags,
+ * zenthcloud console. The location and application link travel on prefixed tags,
  * so no separate datastore is needed.
  */
 const JOBS_TAG = "job";

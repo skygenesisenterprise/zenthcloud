@@ -11,9 +11,9 @@ const repositoryRoot = path.resolve(
 );
 const npmjsRegistry = "https://registry.npmjs.org/";
 const packages = [
-  { name: "@guilderia/cli", directory: "packages/cli" },
-  { name: "@guilderia/sdk", directory: "packages/sdk" },
-  { name: "@guilderia/trpc-openapi", directory: "packages/trpc-openapi" },
+  { name: "@zenthcloud/cli", directory: "packages/cli" },
+  { name: "@zenthcloud/sdk", directory: "packages/sdk" },
+  { name: "@zenthcloud/trpc-openapi", directory: "packages/trpc-openapi" },
 ];
 
 function run(command, args, options = {}) {
@@ -158,7 +158,7 @@ async function main() {
   }
 
   const tempDirectory = await mkdtemp(
-    path.join(os.tmpdir(), "guilderia-node-release-"),
+    path.join(os.tmpdir(), "zenthcloud-node-release-"),
   );
   const npmConfig = path.join(tempDirectory, "npmrc");
   const completedPackages = [];

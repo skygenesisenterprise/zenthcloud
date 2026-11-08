@@ -125,7 +125,7 @@ const CompleteIntro = ({ onFinish }: { onFinish: () => void }) => {
 					Go to dashboard
 				</Button>
 				<Link
-					href="https://guilderia.com/invite/GUkDugVh34"
+					href="https://zenthcloud.com/invite/GUkDugVh34"
 					target="_blank"
 					className="text-sm text-muted-foreground hover:text-foreground transition-colors"
 				>

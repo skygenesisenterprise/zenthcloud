@@ -196,12 +196,12 @@ export const CustomDnsIcon = ({ className }: Props) => (
 );
 
 /**
- * First-party Guilderia Internal DNS. Uses the Guilderia brand mark published in
- * `public/guilderia.png`.
+ * First-party Zenthcloud Internal DNS. Uses the Zenthcloud brand mark published in
+ * `public/zenthcloud.png`.
  */
 export const AstronCollectionInternalIcon = ({ className }: Props) => (
 	<Image
-		src="/guilderia.png"
+		src="/zenthcloud.png"
 		alt=""
 		aria-hidden="true"
 		width={1254}
@@ -233,7 +233,7 @@ export const dnsProviderIcons = {
 	coredns: CorednsIcon,
 	unbound: UnboundIcon,
 	custom: CustomDnsIcon,
-	"guilderia-internal": AstronCollectionInternalIcon,
+	"zenthcloud-internal": AstronCollectionInternalIcon,
 } as const;
 
 export type DnsProviderIconKey = keyof typeof dnsProviderIcons;

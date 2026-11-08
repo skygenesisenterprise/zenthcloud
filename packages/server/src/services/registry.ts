@@ -1,11 +1,11 @@
-import { db } from "@guilderia/server/db";
-import { type apiCreateRegistry, registry } from "@guilderia/server/db/schema";
-import { execAsync } from "@guilderia/server/utils/process/execAsync";
+import { db } from "@zenthcloud/server/db";
+import { type apiCreateRegistry, registry } from "@zenthcloud/server/db/schema";
+import { execAsync } from "@zenthcloud/server/utils/process/execAsync";
 import {
 	createOciRegistryAdapter,
 	normalizeRegistryEndpoint,
 	type RegistryCredentials,
-} from "@guilderia/server/utils/registry";
+} from "@zenthcloud/server/utils/registry";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";

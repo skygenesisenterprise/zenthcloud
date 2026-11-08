@@ -1,4 +1,4 @@
-import type * as schema from "@guilderia/server/db/schema";
+import type * as schema from "@zenthcloud/server/db/schema";
 import type {
 	BuildQueryResult,
 	DBQueryConfig,

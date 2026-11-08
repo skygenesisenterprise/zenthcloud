@@ -1,17 +1,17 @@
-import type { Compose, ComposeSpecification } from "@guilderia/server";
+import type { Compose, ComposeSpecification } from "@zenthcloud/server";
 import {
 	addAppNameToPreventCollision,
 	addSuffixToAllProperties,
-} from "@guilderia/server";
-import { addDomainToCompose } from "@guilderia/server/utils/docker/domain";
-import { execAsyncRemote } from "@guilderia/server/utils/process/execAsync";
+} from "@zenthcloud/server";
+import { addDomainToCompose } from "@zenthcloud/server/utils/docker/domain";
+import { execAsyncRemote } from "@zenthcloud/server/utils/process/execAsync";
 import { expect, test, vi } from "vitest";
 import { stringify } from "yaml";
 import composeSpec from "../../../components/shared/compose-spec.json";
 
-vi.mock("@guilderia/server/utils/process/execAsync", async (importOriginal) => ({
+vi.mock("@zenthcloud/server/utils/process/execAsync", async (importOriginal) => ({
 	...(await importOriginal<
-		typeof import("@guilderia/server/utils/process/execAsync")
+		typeof import("@zenthcloud/server/utils/process/execAsync")
 	>()),
 	execAsyncRemote: vi.fn(),
 }));

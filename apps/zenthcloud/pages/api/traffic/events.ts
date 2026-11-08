@@ -7,7 +7,7 @@ import {
 	ingestAudienceEvents,
 	MAX_AUDIENCE_PAYLOAD_BYTES,
 	TrafficServiceError,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 /**

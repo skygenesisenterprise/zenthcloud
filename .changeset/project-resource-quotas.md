@@ -1,6 +1,6 @@
 ---
-"@guilderia/server": minor
-"@guilderia/app": minor
+"@zenthcloud/server": minor
+"@zenthcloud/app": minor
 ---
 
 Add logical CPU/memory quotas per project. Service limit updates, quota

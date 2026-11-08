@@ -71,7 +71,7 @@ import {
 import { cn } from "@/lib/utils";
 import { api } from "@/utils/api";
 
-const TEMPLATE_BASE_URL_KEY = "guilderia_template_base_url";
+const TEMPLATE_BASE_URL_KEY = "zenthcloud_template_base_url";
 
 interface Props {
 	environmentId: string;
@@ -209,7 +209,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 	// the card's Create button deploys straight away (local server by
 	// default) instead of opening a second dialog with nothing to pick.
 	const shouldShowServerDropdown = hasServers || requiresServer;
-	const effectiveServerId = serverId === "guilderia" ? undefined : serverId;
+	const effectiveServerId = serverId === "zenthcloud" ? undefined : serverId;
 	const isServerSelectionValid = !requiresServer || !!effectiveServerId;
 
 	const handleToggleBookmark = async (
@@ -491,7 +491,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 											<img
 												src={
 													template?.logoUrl ??
-													`${customBaseUrl || "https://templates.guilderia.com/"}/blueprints/${template?.id}/${template?.logo}`
+													`${customBaseUrl || "https://templates.zenthcloud.com/"}/blueprints/${template?.id}/${template?.logo}`
 												}
 												className={cn(
 													"object-contain",
@@ -623,7 +623,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																	<Select
 																		value={
 																			serverId ??
-																			(showLocalOption ? "guilderia" : "")
+																			(showLocalOption ? "zenthcloud" : "")
 																		}
 																		onValueChange={(e) => {
 																			setServerId(e);
@@ -633,7 +633,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																			<SelectValue
 																				placeholder={
 																					showLocalOption
-																						? "guilderia"
+																						? "zenthcloud"
 																						: "Select a Server"
 																				}
 																			/>
@@ -641,9 +641,9 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																		<SelectContent>
 																			<SelectGroup>
 																				{showLocalOption && (
-																					<SelectItem value="guilderia">
+																					<SelectItem value="zenthcloud">
 																						<span className="flex items-center gap-2 justify-between w-full">
-																							<span>guilderia</span>
+																							<span>zenthcloud</span>
 																							<span className="text-muted-foreground text-xs self-center">
 																								Default
 																							</span>

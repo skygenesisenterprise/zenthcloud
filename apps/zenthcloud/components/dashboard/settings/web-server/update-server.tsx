@@ -1,4 +1,4 @@
-import type { IUpdateStatusData } from "@guilderia/server/index";
+import type { IUpdateStatusData } from "@zenthcloud/server/index";
 import {
 	Bug,
 	Download,
@@ -60,7 +60,7 @@ export const UpdateServer = ({
 	const [isChecking, setIsChecking] = useState(false);
 	const { refetch: refetchUpdateStatus } =
 		api.settings.getUpdateStatus.useQuery(undefined, { enabled: false });
-	const { data: guilderiaVersion } = api.settings.getguilderiaVersion.useQuery();
+	const { data: zenthcloudVersion } = api.settings.getzenthcloudVersion.useQuery();
 	const { data: releaseTag } = api.settings.getReleaseTag.useQuery();
 	const [isOpenInternal, setIsOpenInternal] = useState(false);
 
@@ -145,11 +145,11 @@ export const UpdateServer = ({
 					<DialogTitle className="text-2xl font-semibold mr-auto">
 						Web Server Update
 					</DialogTitle>
-					{guilderiaVersion && (
+					{zenthcloudVersion && (
 						<div className="flex items-center gap-1.5 rounded-full px-3 py-1 bg-muted">
 							<Server className="h-4 w-4 text-muted-foreground" />
 							<span className="text-sm text-muted-foreground">
-								{guilderiaVersion}{" "}
+								{zenthcloudVersion}{" "}
 								{(releaseTag === "canary" || releaseTag === "feature") &&
 									`(${releaseTag})`}
 							</span>
@@ -167,7 +167,7 @@ export const UpdateServer = ({
 				{!hasCheckedUpdate && (
 					<div className="mb-8">
 						<p className="text text-muted-foreground">
-							Check for new releases and update guilderia.
+							Check for new releases and update zenthcloud.
 							<br />
 							<br />
 							We recommend checking for updates regularly to ensure you have the
@@ -285,7 +285,7 @@ export const UpdateServer = ({
 								<Link
 									href={
 										updateData?.releaseUrl ??
-										"https://github.com/skygenesisenterprise/guilderia/releases"
+										"https://github.com/skygenesisenterprise/zenthcloud/releases"
 									}
 									target="_blank"
 									className="text-white underline hover:text-zinc-200"

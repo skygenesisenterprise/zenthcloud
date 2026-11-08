@@ -26,7 +26,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
 	title: "Security, Access Control, & Governance",
 	description:
-		"guilderia gives teams enterprise-grade security with SSO, fine-grained RBAC, audit logs, and 2FA – built for compliance and infrastructure control.",
+		"zenthcloud gives teams enterprise-grade security with SSO, fine-grained RBAC, audit logs, and 2FA – built for compliance and infrastructure control.",
 };
 
 const ssoFeatures = [
@@ -34,7 +34,7 @@ const ssoFeatures = [
 		icon: Link2,
 		title: "Integrate with OIDC and SAML",
 		description:
-			"guilderia's SSO supports both OpenID Connect and SAML 2.0, so it works with virtually any enterprise IdP—no custom engineering work required.",
+			"zenthcloud's SSO supports both OpenID Connect and SAML 2.0, so it works with virtually any enterprise IdP—no custom engineering work required.",
 	},
 	{
 		icon: Plug,
@@ -46,13 +46,13 @@ const ssoFeatures = [
 		icon: UserMinus,
 		title: "Centralize user provisioning",
 		description:
-			"When you add or remove a user in your IdP, it's reflected in guilderia. No parallel user management, no accounts lingering after someone leaves.",
+			"When you add or remove a user in your IdP, it's reflected in zenthcloud. No parallel user management, no accounts lingering after someone leaves.",
 	},
 	{
 		icon: ShieldCheck,
 		title: "Enforce your auth policies",
 		description:
-			"MFA requirements, session timeouts, and conditional access rules configured in your IdP apply to guilderia automatically so your security posture stays consistent.",
+			"MFA requirements, session timeouts, and conditional access rules configured in your IdP apply to zenthcloud automatically so your security posture stays consistent.",
 	},
 ];
 
@@ -164,19 +164,19 @@ const infrastructureFeatures = [
 		icon: Lock,
 		title: "Automate SSL/TLS certificate management",
 		description:
-			"guilderia handles certificate provisioning and renewal automatically via Traefik, so your services stay encrypted without manual intervention or renewal tracking.",
+			"zenthcloud handles certificate provisioning and renewal automatically via Traefik, so your services stay encrypted without manual intervention or renewal tracking.",
 	},
 	{
 		icon: KeyRound,
 		title: "Authenticate with SSH keys, not passwords",
 		description:
-			"guilderia's built-in security checks recommend disabling password authentication on your servers and switching to key-based SSH. You can manage your keys directly within the platform.",
+			"zenthcloud's built-in security checks recommend disabling password authentication on your servers and switching to key-based SSH. You can manage your keys directly within the platform.",
 	},
 	{
 		icon: Server,
 		title: "Keep your data on your own infrastructure",
 		description:
-			"Self-hosted guilderia means your deployments, credentials, and configurations stay on servers you control. No vendor accesses your environment.",
+			"Self-hosted zenthcloud means your deployments, credentials, and configurations stay on servers you control. No vendor accesses your environment.",
 	},
 ];
 
@@ -192,23 +192,23 @@ const relatedFeatures = [
 		icon: Shield,
 		title: "RBAC",
 		description:
-			"Define exactly what each user can do once they're in guilderia, with granular role and permission controls across projects, services, and features.",
+			"Define exactly what each user can do once they're in zenthcloud, with granular role and permission controls across projects, services, and features.",
 		href: "/features/role-based-access-control",
 	},
 	{
 		icon: ScrollText,
 		title: "Audit logs",
 		description:
-			"Keep a full record of every login, logout, and action taken across your guilderia environment for compliance and accountability.",
+			"Keep a full record of every login, logout, and action taken across your zenthcloud environment for compliance and accountability.",
 		href: "/features/audit-logs",
 	},
 ];
 
 const faqs = [
 	{
-		question: "What SSO providers does guilderia support?",
+		question: "What SSO providers does zenthcloud support?",
 		answer:
-			"guilderia supports any OIDC or SAML 2.0 provider. Pre-configured integrations are available for Okta, Azure AD (now Microsoft Entra ID), Auth0, Keycloak, and Zitadel. If your provider isn't listed, you can configure it manually using standard endpoints.",
+			"zenthcloud supports any OIDC or SAML 2.0 provider. Pre-configured integrations are available for Okta, Azure AD (now Microsoft Entra ID), Auth0, Keycloak, and Zitadel. If your provider isn't listed, you can configure it manually using standard endpoints.",
 	},
 	{
 		question: "Is RBAC available on every plan?",
@@ -221,14 +221,14 @@ const faqs = [
 			"Every meaningful action: logins and logouts, user and role changes, deployments, domain and certificate changes, environment variable edits, backup events, and infrastructure modifications.",
 	},
 	{
-		question: "Does guilderia support SOC 2 or GDPR compliance?",
+		question: "Does zenthcloud support SOC 2 or GDPR compliance?",
 		answer:
-			"guilderia's Enterprise features—SSO, custom RBAC, and audit logs—are designed to support compliance with SOC 2, GDPR, and internal governance requirements. For MSA/SLA and compliance documentation, contact the guilderia team.",
+			"zenthcloud's Enterprise features—SSO, custom RBAC, and audit logs—are designed to support compliance with SOC 2, GDPR, and internal governance requirements. For MSA/SLA and compliance documentation, contact the zenthcloud team.",
 	},
 	{
-		question: "Can I use SSO on guilderia Cloud and self-hosted?",
+		question: "Can I use SSO on zenthcloud Cloud and self-hosted?",
 		answer:
-			"SSO is available on both guilderia Cloud and self-hosted Enterprise instances. Contact sales for configuration support.",
+			"SSO is available on both zenthcloud Cloud and self-hosted Enterprise instances. Contact sales for configuration support.",
 	},
 ];
 
@@ -239,11 +239,11 @@ export default function SecurityPage() {
 			badgeDetail="Security & governance"
 			title="Lock down your deployments"
 			highlight="without blocking your team"
-			description="guilderia gives you layered security at every level, from how your team authenticates to exactly what each user can access. Get SSO, custom roles, a complete audit trail, and host in your own secure environment."
+			description="zenthcloud gives you layered security at every level, from how your team authenticates to exactly what each user can access. Get SSO, custom roles, a complete audit trail, and host in your own secure environment."
 			actions={
 				<>
 					<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
-						<Link href="https://app.guilderia.com/register" target="_blank">
+						<Link href="https://app.zenthcloud.com/register" target="_blank">
 							Get Started
 						</Link>
 					</Button>
@@ -266,7 +266,7 @@ export default function SecurityPage() {
 					id: "connect-identity-provider",
 					title: "Connect any identity provider",
 					description:
-						"Enterprise users can authenticate through any OIDC or SAML 2.0-compatible identity provider. If your organization already runs Okta, Azure AD, or Keycloak, guilderia connects to it.",
+						"Enterprise users can authenticate through any OIDC or SAML 2.0-compatible identity provider. If your organization already runs Okta, Azure AD, or Keycloak, zenthcloud connects to it.",
 					items: ssoFeatures,
 					columns: 2,
 					layout: "split",
@@ -291,7 +291,7 @@ export default function SecurityPage() {
 					id: "infrastructure-security",
 					title: "Security from the infrastructure up",
 					description:
-						"Access control is only one part of the picture. guilderia is built with server-level security in mind, including built-in guidance to keep your infrastructure hardened alongside your access policies.",
+						"Access control is only one part of the picture. zenthcloud is built with server-level security in mind, including built-in guidance to keep your infrastructure hardened alongside your access policies.",
 					items: infrastructureFeatures,
 					columns: 2,
 					layout: "split",
@@ -299,7 +299,7 @@ export default function SecurityPage() {
 			]}
 			related={{
 				id: "security-in-depth",
-				title: "Explore guilderia's security features in depth",
+				title: "Explore zenthcloud's security features in depth",
 				description:
 					"Dive deeper into the access control and governance features that keep your organization secure.",
 				items: relatedFeatures,
@@ -312,11 +312,11 @@ export default function SecurityPage() {
 				items: faqs,
 			}}
 			finalCta={{
-				title: "Deploy securely with guilderia",
+				title: "Deploy securely with zenthcloud",
 				description:
-					"Start shipping applications today with guilderia, safe in the knowledge that your environment is secure. For additional governance, choose our Enterprise plan.",
+					"Start shipping applications today with zenthcloud, safe in the knowledge that your environment is secure. For additional governance, choose our Enterprise plan.",
 				cta: "Get Started",
-				href: "https://app.guilderia.com/register",
+				href: "https://app.zenthcloud.com/register",
 				external: true,
 			}}
 		>

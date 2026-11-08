@@ -7,8 +7,8 @@
  * one SQLite handle. The notification outbox worker is started alongside.
  */
 
-import type { OutboxWorkerHandle } from "@guilderia/status";
-import { createStatusPlatform, type StatusPlatform } from "@guilderia/status";
+import type { OutboxWorkerHandle } from "@zenthcloud/status";
+import { createStatusPlatform, type StatusPlatform } from "@zenthcloud/status";
 
 const globalForStatus = globalThis as unknown as {
 	astronCollectionStatus?: StatusPlatform;

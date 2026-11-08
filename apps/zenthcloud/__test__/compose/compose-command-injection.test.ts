@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { existsSync, rmSync } from "node:fs";
-import { createCommand } from "@guilderia/server/utils/builders/compose";
+import { createCommand } from "@zenthcloud/server/utils/builders/compose";
 import { parse, quote } from "shell-quote";
 import { describe, expect, it } from "vitest";
 

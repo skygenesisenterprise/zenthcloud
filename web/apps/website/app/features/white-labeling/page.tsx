@@ -18,7 +18,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "White Label Deployment Platform",
 	description:
-		"Rebrand guilderia as your own product. Customize the name, logo, colors and more to deliver a seamless experience under your own brand.",
+		"Rebrand zenthcloud as your own product. Customize the name, logo, colors and more to deliver a seamless experience under your own brand.",
 };
 
 const coreFeatures = [
@@ -26,7 +26,7 @@ const coreFeatures = [
 		icon: Type,
 		title: "Customize your name and logo",
 		description:
-			"Replace guilderia across the entire interface with your own application name. Upload your logo for the sidebar, header, and login page, and set a custom favicon so your branding carries through to the browser tab.",
+			"Replace zenthcloud across the entire interface with your own application name. Upload your logo for the sidebar, header, and login page, and set a custom favicon so your branding carries through to the browser tab.",
 	},
 	{
 		icon: Palette,
@@ -38,7 +38,7 @@ const coreFeatures = [
 		icon: Link2,
 		title: "Control the metadata and support links",
 		description:
-			"Set your own page title, footer text, sidebar links, and more for documentation and support, so users are always directed to your resources, not guilderia\u2019s.",
+			"Set your own page title, footer text, sidebar links, and more for documentation and support, so users are always directed to your resources, not zenthcloud\u2019s.",
 	},
 	{
 		icon: MonitorCheck,
@@ -53,7 +53,7 @@ const relatedFeatures = [
 		icon: Shield,
 		title: "RBAC",
 		description:
-			"Define exactly what each user can do once they\u2019re in guilderia, with fine-grained permissions across projects, features, and services.",
+			"Define exactly what each user can do once they\u2019re in zenthcloud, with fine-grained permissions across projects, features, and services.",
 		href: "/features/role-based-access-control",
 	},
 	{
@@ -79,7 +79,7 @@ export default function WhiteLabelingPage() {
 			badgeDetail="Enterprise & agencies"
 			title="Your platform,"
 			highlight="your own brand"
-			description="Replace every guilderia mention with your own name, logo, branding, and visual identity — and hand clients a deployment platform that looks entirely yours."
+			description="Replace every zenthcloud mention with your own name, logo, branding, and visual identity — and hand clients a deployment platform that looks entirely yours."
 			actions={
 				<>
 					<Button className="w-full rounded-full px-6 sm:w-auto" asChild>
@@ -90,19 +90,19 @@ export default function WhiteLabelingPage() {
 						className="w-full rounded-full px-6 sm:w-auto"
 						asChild
 					>
-						<Link href="https://docs.guilderia.com/docs/core" target="_blank">
+						<Link href="https://docs.zenthcloud.com/docs/core" target="_blank">
 							View documentation
 						</Link>
 					</Button>
 				</>
 			}
-			links={[{ href: "/enterprise", label: "guilderia Enterprise" }, { href: "/partners", label: "Partner program" }]}
+			links={[{ href: "/enterprise", label: "zenthcloud Enterprise" }, { href: "/partners", label: "Partner program" }]}
 			sections={[
 				{
 					id: "your-product-your-brand",
 					title: "Your product, your brand",
 					description:
-						"guilderia's white labeling lets enterprise teams and agencies deliver a fully branded, professional deployment platform.",
+						"zenthcloud's white labeling lets enterprise teams and agencies deliver a fully branded, professional deployment platform.",
 					items: coreFeatures,
 					columns: 2,
 					layout: "split",
@@ -112,14 +112,14 @@ export default function WhiteLabelingPage() {
 				id: "powerful-features",
 				title: "Powerful features for growing teams",
 				description:
-					"guilderia scales with your team, with features and plans for when you're ready to take the next step.",
+					"zenthcloud scales with your team, with features and plans for when you're ready to take the next step.",
 				items: relatedFeatures,
 				columns: 3,
 			}}
 			finalCta={{
 				title: "Ready to launch your own platform?",
 				description:
-					"Talk to us about white labeling and the rest of guilderia's higher-tier features.",
+					"Talk to us about white labeling and the rest of zenthcloud's higher-tier features.",
 				cta: "Schedule a call",
 				href: "/contact",
 			}}

@@ -8,17 +8,17 @@
  */
 
 // import { getServerAuthSession } from "@/server/auth";
-import { db } from "@guilderia/server/db";
-import type { statements } from "@guilderia/server/lib/access-control";
+import { db } from "@zenthcloud/server/db";
+import type { statements } from "@zenthcloud/server/lib/access-control";
 import {
 	type CicdAction,
 	type CicdTokenScope,
 	cicdScopeAllows,
 	parseCicdTokenScope,
-} from "@guilderia/server/lib/cicd-scope";
-import { validateRequest, type RequestApiKey } from "@guilderia/server/lib/auth";
-import { checkPermission } from "@guilderia/server/services/permission";
-import type { OpenApiMeta } from "@guilderia/trpc-openapi";
+} from "@zenthcloud/server/lib/cicd-scope";
+import { validateRequest, type RequestApiKey } from "@zenthcloud/server/lib/auth";
+import { checkPermission } from "@zenthcloud/server/services/permission";
+import type { OpenApiMeta } from "@zenthcloud/trpc-openapi";
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import type { Session, User } from "better-auth";
@@ -272,7 +272,7 @@ export const cicdProcedure = t.procedure.use(({ ctx, next }) => {
 		throw new TRPCError({
 			code: "UNAUTHORIZED",
 			message:
-				"This endpoint requires a Guilderia CI/CD API token. Send it as `x-api-key` or `Authorization: Bearer <token>`.",
+				"This endpoint requires a Zenthcloud CI/CD API token. Send it as `x-api-key` or `Authorization: Bearer <token>`.",
 		});
 	}
 

@@ -1,4 +1,4 @@
-import type { PublicComponentUptimeDto } from "@guilderia/status";
+import type { PublicComponentUptimeDto } from "@zenthcloud/status";
 import { cn } from "@/lib/utils";
 import {
 	componentStatusLabel,

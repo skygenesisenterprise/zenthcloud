@@ -20,8 +20,8 @@
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"paths": {
-			"@guilderia/status": ["./src/index.ts"],
-			"@guilderia/status/*": ["./src/*"]
+			"@zenthcloud/status": ["./src/index.ts"],
+			"@zenthcloud/status/*": ["./src/*"]
 		}
 	},
 	"include": ["src/**/*.ts", "scripts/**/*.ts", "esbuild.config.ts"],

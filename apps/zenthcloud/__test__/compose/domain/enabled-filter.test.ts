@@ -1,6 +1,6 @@
-import type { Compose } from "@guilderia/server/services/compose";
-import type { Domain } from "@guilderia/server/services/domain";
-import { addDomainToCompose } from "@guilderia/server/utils/docker/domain";
+import type { Compose } from "@zenthcloud/server/services/compose";
+import type { Domain } from "@zenthcloud/server/services/domain";
+import { addDomainToCompose } from "@zenthcloud/server/utils/docker/domain";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // With sourceType "raw", addDomainToCompose parses compose.composeFile
@@ -277,7 +277,7 @@ describe("addDomainToCompose enabled filtering", () => {
 			expect(labels).toMatchObject({
 				"custom.label": "preserved",
 				"traefik.enable": "true",
-				[networkLabel]: "guilderia-network",
+				[networkLabel]: "zenthcloud-network",
 				"traefik.http.routers.test-app-1-web.rule":
 					"Host(`frigate.example.com`)",
 				"traefik.http.services.test-app-1-web.loadbalancer.server.port": "8971",

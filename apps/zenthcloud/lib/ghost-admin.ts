@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { APPLY_TAG_PREFIX, JOBS_TAG, LOCATION_TAG_PREFIX } from "./ghost";
 
-const GHOST_URL = process.env.GHOST_URL || "https://guilderia.com";
+const GHOST_URL = process.env.GHOST_URL || "https://zenthcloud.com";
 const GHOST_ADMIN_KEY = process.env.GHOST_ADMIN_KEY;
 
 export interface CreatePostInput {

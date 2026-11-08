@@ -1,4 +1,4 @@
-import type { AuditLog } from "@guilderia/server/db/schema";
+import type { AuditLog } from "@zenthcloud/server/db/schema";
 import { format } from "date-fns";
 import {
 	CalendarDays,
@@ -466,7 +466,7 @@ function AuditLogDetails({ entry }: { entry: AuditLog }) {
 				<DialogHeader>
 					<DialogTitle>Audit log details</DialogTitle>
 					<DialogDescription>
-						Recorded actor and resource information for this Guilderia action.
+						Recorded actor and resource information for this Zenthcloud action.
 					</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-x-4 gap-y-3 rounded-lg border p-4 text-sm sm:grid-cols-2">

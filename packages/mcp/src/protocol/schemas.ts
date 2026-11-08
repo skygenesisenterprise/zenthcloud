@@ -61,7 +61,7 @@ function stripUnsupportedRegexPatterns(value: unknown): void {
  * built-in Zod converter emits draft-07, so tool listing is served from
  * pre-converted schemas with a custom list handler.
  *
- * See https://github.com/skygenesisenterprise/guilderia/issues/32
+ * See https://github.com/skygenesisenterprise/zenthcloud/issues/32
  */
 export function toDraft2020_12JsonSchema(schema: ZodObject<ZodRawShape>): Record<string, unknown> {
   const result = zodToJsonSchema(schema, {
@@ -117,15 +117,15 @@ export function toToolListEntry(capability: AnyCapability): ToolListEntry {
     outputSchema: capabilityOutputSchema(capability),
     annotations: capability.annotations,
     _meta: {
-      "guilderia/mode": capability.mode,
-      "guilderia/source": capability.source,
-      "guilderia/risk": risk,
-      "guilderia/environments": [...capability.environments],
-      "guilderia/permissions": capability.permissions.map(describePermission),
-      "guilderia/version": capability.version,
-      "guilderia/status": capability.status,
-      "guilderia/effects": capability.effects,
-      "guilderia/approvalRequired": risk >= 2,
+      "zenthcloud/mode": capability.mode,
+      "zenthcloud/source": capability.source,
+      "zenthcloud/risk": risk,
+      "zenthcloud/environments": [...capability.environments],
+      "zenthcloud/permissions": capability.permissions.map(describePermission),
+      "zenthcloud/version": capability.version,
+      "zenthcloud/status": capability.status,
+      "zenthcloud/effects": capability.effects,
+      "zenthcloud/approvalRequired": risk >= 2,
     },
   };
 }

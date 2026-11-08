@@ -240,7 +240,7 @@ export function ContactForm({
 						htmlFor="deploymentType"
 						className="block text-sm font-medium text-foreground"
 					>
-						What version of guilderia are you using?{" "}
+						What version of zenthcloud are you using?{" "}
 						<span className="text-red-500">*</span>
 					</label>
 					<Select
@@ -296,7 +296,7 @@ export function ContactForm({
 									<li>
 										Open a discussion on{" "}
 										<a
-											href="https://github.com/guilderia/guilderia/discussions"
+											href="https://github.com/zenthcloud/zenthcloud/discussions"
 											target="_blank"
 											rel="noopener noreferrer"
 											className="text-primary underline hover:text-primary/80"

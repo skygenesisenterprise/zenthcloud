@@ -7,7 +7,7 @@ const ping = vi.fn();
 const listSecrets = vi.fn();
 const listConfigs = vi.fn();
 
-vi.mock("@guilderia/server/constants", () => ({
+vi.mock("@zenthcloud/server/constants", () => ({
 	docker: {
 		ping: (...args: unknown[]) => ping(...args),
 		listSecrets: (...args: unknown[]) => listSecrets(...args),
@@ -15,7 +15,7 @@ vi.mock("@guilderia/server/constants", () => ({
 	},
 }));
 
-import { dockerClient } from "@guilderia/server/utils/vault/docker";
+import { dockerClient } from "@zenthcloud/server/utils/vault/docker";
 
 let mountPath: string;
 
@@ -25,7 +25,7 @@ beforeEach(async () => {
 	ping.mockReset().mockResolvedValue("OK");
 	listSecrets.mockReset().mockResolvedValue([]);
 	listConfigs.mockReset().mockResolvedValue([]);
-	mountPath = await mkdtemp(join(tmpdir(), "guilderia-docker-vault-"));
+	mountPath = await mkdtemp(join(tmpdir(), "zenthcloud-docker-vault-"));
 });
 
 afterEach(async () => {

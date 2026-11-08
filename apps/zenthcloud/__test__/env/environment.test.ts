@@ -1,7 +1,7 @@
 import {
 	prepareEnvironmentVariables,
 	prepareEnvironmentVariablesForShell,
-} from "@guilderia/server/index";
+} from "@zenthcloud/server/index";
 import { describe, expect, it } from "vitest";
 
 const projectEnv = `

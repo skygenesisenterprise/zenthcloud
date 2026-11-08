@@ -316,7 +316,7 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 						(recommended: 4+ GB RAM and 2+ CPU cores). For production
 						environments, please review our{" "}
 						<a
-							href="https://docs.guilderia.com/docs/core/applications/going-production"
+							href="https://docs.zenthcloud.com/docs/core/applications/going-production"
 							target="_blank"
 							rel="noreferrer"
 							className="font-medium underline underline-offset-4"

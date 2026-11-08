@@ -1,4 +1,4 @@
-import type { ApplicationNested, Domain } from "@guilderia/server";
+import type { ApplicationNested, Domain } from "@zenthcloud/server";
 import {
 	buildForwardAuthEnv,
 	createRouterConfig,
@@ -6,7 +6,7 @@ import {
 	deriveCookieSecret,
 	forwardAuthCallbackUrl,
 	forwardAuthMiddlewareName,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { beforeAll, describe, expect, test } from "vitest";
 
 const app = {

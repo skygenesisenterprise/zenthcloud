@@ -1,4 +1,4 @@
-import type { PublicIncidentDto } from "@guilderia/status";
+import type { PublicIncidentDto } from "@zenthcloud/status";
 import { cn } from "@/lib/utils";
 import { incidentStateLabel, severityTone } from "@/lib/view-model";
 import { RelativeTime } from "./relative-time";

@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { ApiError } from "../adapters/guilderiaApi.js";
+import { ApiError } from "../adapters/zenthcloudApi.js";
 import { defineCapability } from "../contracts/capability.js";
 import { toolResultEnvelopeShape } from "../contracts/result.js";
 import { fetchApplication } from "./helpers.js";
 export const deleteApplicationCapability = defineCapability({
     name: "delete_application",
     title: "Delete application",
-    description: "Permanently deletes an application and its deployments from guilderia. Destructive and irreversible: it requires service delete permission, explicit confirmation (confirm=true), an operator approval token and guilderia_MCP_ALLOW_DESTRUCTIVE=true. Prefer stopping or restarting an application when the goal is only to interrupt it.",
+    description: "Permanently deletes an application and its deployments from zenthcloud. Destructive and irreversible: it requires service delete permission, explicit confirmation (confirm=true), an operator approval token and zenthcloud_MCP_ALLOW_DESTRUCTIVE=true. Prefer stopping or restarting an application when the goal is only to interrupt it.",
     category: "administration",
     mode: "business",
     source: "business",
@@ -27,7 +27,7 @@ export const deleteApplicationCapability = defineCapability({
             .string()
             .min(1)
             .max(128)
-            .describe("guilderia application identifier (not the application name)"),
+            .describe("zenthcloud application identifier (not the application name)"),
         confirm: z
             .literal(true)
             .describe("Must be true; protects against accidental deletions from an agent"),
@@ -47,7 +47,7 @@ export const deleteApplicationCapability = defineCapability({
         openWorldHint: true,
     },
     preconditions: [
-        "guilderia_MCP_ALLOW_DESTRUCTIVE must be true and an approval token must be configured.",
+        "zenthcloud_MCP_ALLOW_DESTRUCTIVE must be true and an approval token must be configured.",
         "The identity needs service delete permission and access to the application.",
     ],
     limitations: ["The deletion cannot be undone from the MCP server."],

@@ -1,7 +1,7 @@
 import {
 	INVALID_HOSTNAME_MESSAGE,
 	VALID_HOSTNAME_REGEX,
-} from "@guilderia/server/utils/hostname-validation";
+} from "@zenthcloud/server/utils/hostname-validation";
 import { z } from "zod";
 
 export const domain = z

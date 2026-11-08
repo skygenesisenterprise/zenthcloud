@@ -10,18 +10,18 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Trust & principles",
 	description:
-		"What European development means at guilderia, what self-hosting changes, which dependencies the platform relies on, and the claims we deliberately do not make.",
-	alternates: { canonical: "https://guilderia.com/trust" },
+		"What European development means at zenthcloud, what self-hosting changes, which dependencies the platform relies on, and the claims we deliberately do not make.",
+	alternates: { canonical: "https://zenthcloud.com/trust" },
 };
 
 const commitments = [
 	{
 		title: "European development",
-		body: "guilderia is developed by a European team. That describes where the work happens and who is accountable for it. It does not mean that every dependency, provider or deployment you configure stays in Europe — that depends on the infrastructure and services you choose.",
+		body: "zenthcloud is developed by a European team. That describes where the work happens and who is accountable for it. It does not mean that every dependency, provider or deployment you configure stays in Europe — that depends on the infrastructure and services you choose.",
 	},
 	{
 		title: "Self-hosting first",
-		body: "The default way to run guilderia is on infrastructure you control. guilderia Self does not require a guilderia-hosted service to operate, and the platform can run without outbound access to a vendor cloud.",
+		body: "The default way to run zenthcloud is on infrastructure you control. zenthcloud Self does not require a zenthcloud-hosted service to operate, and the platform can run without outbound access to a vendor cloud.",
 	},
 	{
 		title: "Open source",
@@ -29,7 +29,7 @@ const commitments = [
 	},
 	{
 		title: "Transparent dependencies",
-		body: "guilderia builds on Docker, Docker Compose, Docker Swarm and Traefik. Those are technologies you can inspect, replace or migrate away from, rather than a proprietary runtime only we understand.",
+		body: "zenthcloud builds on Docker, Docker Compose, Docker Swarm and Traefik. Those are technologies you can inspect, replace or migrate away from, rather than a proprietary runtime only we understand.",
 	},
 	{
 		title: "Your data stays yours",
@@ -43,7 +43,7 @@ const commitments = [
 
 const notClaimed = [
 	'We do not claim to be "fully sovereign": sovereignty depends on your hosting, providers and legal arrangements, not on a product label.',
-	'We do not claim blanket "GDPR compliance". guilderia Self gives you the deployment model and controls; your obligations remain yours.',
+	'We do not claim blanket "GDPR compliance". zenthcloud Self gives you the deployment model and controls; your obligations remain yours.',
 	'We do not claim "100% European infrastructure". The platform runs wherever you install it, and Cloud relies on infrastructure that the documentation describes.',
 	"We do not claim automatic high availability. Multi-node distributes workloads; redundancy is an architectural decision.",
 	"We do not claim that every workload, runtime or enterprise requirement is supported. The limitations page lists what is not.",
@@ -51,9 +51,9 @@ const notClaimed = [
 
 const faqs = [
 	{
-		question: "Is guilderia Cloud operated by a different company?",
+		question: "Is zenthcloud Cloud operated by a different company?",
 		answer:
-			"Cloud is operated by the same team that builds guilderia. The responsibility split between Cloud and Self is documented; where it matters for a purchase, ask us in writing.",
+			"Cloud is operated by the same team that builds zenthcloud. The responsibility split between Cloud and Self is documented; where it matters for a purchase, ask us in writing.",
 	},
 	{
 		question: "Where is the website's analytics?",
@@ -74,7 +74,7 @@ export default function TrustPage() {
 				eyebrow="Trust & principles"
 				title="What we stand for."
 				highlight="And what we do not claim."
-				description="guilderia is built around ownership, open technology and European development. This page states those commitments precisely, including their limits."
+				description="zenthcloud is built around ownership, open technology and European development. This page states those commitments precisely, including their limits."
 				links={[
 					{ href: links.docs.security, label: "Report a vulnerability", external: true },
 					{ href: "/privacy", label: "Privacy policy" },
@@ -87,7 +87,7 @@ export default function TrustPage() {
 					<SectionHeading
 						id="commitments"
 						title="Commitments"
-						description="Each statement describes what guilderia does, not what a deployment automatically guarantees."
+						description="Each statement describes what zenthcloud does, not what a deployment automatically guarantees."
 						align="left"
 					/>
 

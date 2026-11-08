@@ -1,7 +1,7 @@
 /**
  * Container Registry domain model.
  *
- * Guilderia integrates with the registry infrastructure the user already runs
+ * Zenthcloud integrates with the registry infrastructure the user already runs
  * instead of forcing a specific vendor. A registry is any endpoint capable of
  * serving OCI artifacts — Docker Hub is just one provider — so providers are
  * described by a common contract and a provider that only speaks the OCI
@@ -12,7 +12,7 @@
  */
 
 /**
- * Provider types Guilderia can describe.
+ * Provider types Zenthcloud can describe.
  *
  * `generic-oci` is the universal fallback: any OCI-compatible endpoint is
  * reachable through it, so the catalogue never becomes a hardcoded vendor list.
@@ -353,9 +353,9 @@ export const describeRegistryNetworkError = (
 	switch (code) {
 		case "ENOTFOUND":
 		case "EAI_AGAIN":
-			return `The Guilderia server could not resolve ${host}. Check the endpoint and the DNS configuration of the server running Guilderia.`;
+			return `The Zenthcloud server could not resolve ${host}. Check the endpoint and the DNS configuration of the server running Zenthcloud.`;
 		case "ECONNREFUSED":
-			return `${host} refused the connection. Check that the registry is running and that its port is reachable from the Guilderia server.`;
+			return `${host} refused the connection. Check that the registry is running and that its port is reachable from the Zenthcloud server.`;
 		case "ECONNRESET":
 			return `The connection to ${host} was reset before the registry answered.`;
 		case "ETIMEDOUT":
@@ -365,7 +365,7 @@ export const describeRegistryNetworkError = (
 		case "DEPTH_ZERO_SELF_SIGNED_CERT":
 		case "SELF_SIGNED_CERT_IN_CHAIN":
 		case "UNABLE_TO_VERIFY_LEAF_SIGNATURE":
-			return `The TLS certificate of ${host} could not be verified. Install its certificate authority on the Guilderia server, or serve a trusted certificate.`;
+			return `The TLS certificate of ${host} could not be verified. Install its certificate authority on the Zenthcloud server, or serve a trusted certificate.`;
 		default:
 			return `${host} could not be reached${
 				failure?.cause?.message ? `: ${failure.cause.message}` : "."

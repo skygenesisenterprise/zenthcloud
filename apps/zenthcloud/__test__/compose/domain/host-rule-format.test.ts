@@ -1,5 +1,5 @@
-import type { Domain } from "@guilderia/server";
-import { createDomainLabels } from "@guilderia/server";
+import type { Domain } from "@zenthcloud/server";
+import { createDomainLabels } from "@zenthcloud/server";
 import { describe, expect, it } from "vitest";
 import { parse, stringify } from "yaml";
 
@@ -10,7 +10,7 @@ import { parse, stringify } from "yaml";
  * - Host(`domain.com`) - with opening and closing parentheses
  * - Host(`domain.com`) && PathPrefix(`/path`) - for path-based routing
  *
- * Issue: https://github.com/skygenesisenterprise/guilderia/issues/3161
+ * Issue: https://github.com/skygenesisenterprise/zenthcloud/issues/3161
  * The bug caused Host rules to be malformed as Host`domain.com`)
  * (missing opening parenthesis) which broke all domain routing.
  */

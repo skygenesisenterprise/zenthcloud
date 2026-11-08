@@ -1,12 +1,12 @@
-import { redactBackupError } from "@guilderia/server/utils/backups/redact";
-import { ExecError } from "@guilderia/server/utils/process/ExecError";
+import { redactBackupError } from "@zenthcloud/server/utils/backups/redact";
+import { ExecError } from "@zenthcloud/server/utils/process/ExecError";
 import {
 	createRedactingLineBuffer,
 	redactObject,
 	redactSecrets,
 	redactSecretValues,
 	safeErrorMessage,
-} from "@guilderia/server/utils/security/redact";
+} from "@zenthcloud/server/utils/security/redact";
 import { describe, expect, it } from "vitest";
 
 const SENTINELS = {

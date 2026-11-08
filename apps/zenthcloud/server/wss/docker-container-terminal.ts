@@ -3,7 +3,7 @@ import {
 	findServerById,
 	isManagedCloud,
 	validateRequest,
-} from "@guilderia/server";
+} from "@zenthcloud/server";
 import { spawn } from "node-pty";
 import { Client } from "ssh2";
 import { WebSocketServer } from "ws";

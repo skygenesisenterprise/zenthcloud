@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Script to replace guilderia, discord, and guilderia references with guilderia
+# Script to replace zenthcloud, discord, and zenthcloud references with zenthcloud
 
 set -euo pipefail
 
-REPO_ROOT="/home/liam/Bureau/enterprise/guilderia"
+REPO_ROOT="/home/liam/Bureau/enterprise/zenthcloud"
 cd "$REPO_ROOT"
 
 # Files to exclude
@@ -53,40 +53,40 @@ replace_in_files() {
     done <<< "$files"
 }
 
-# Replace guilderia with guilderia
-replace_in_files "guilderia" "guilderia"
-replace_in_files "GUILDERIA" "GUILDERIA"
-replace_in_files "astronCollection" "guilderia"
+# Replace zenthcloud with zenthcloud
+replace_in_files "zenthcloud" "zenthcloud"
+replace_in_files "ZENTHCLOUD" "ZENTHCLOUD"
+replace_in_files "astronCollection" "zenthcloud"
 
-# Replace guilderia with guilderia
-replace_in_files "guilderia" "guilderia"
-replace_in_files "Notploy" "Guilderia"
-replace_in_files "NOTPLOY" "GUILDERIA"
+# Replace zenthcloud with zenthcloud
+replace_in_files "zenthcloud" "zenthcloud"
+replace_in_files "Notploy" "Zenthcloud"
+replace_in_files "NOTPLOY" "ZENTHCLOUD"
 
 # Replace discord references (but be careful with URLs)
 # We'll handle URLs separately
 
-# Replace discord webhook URLs with guilderia equivalents
-replace_in_files "discord.gg/GUkDugVh34" "guilderia.com/community"
-replace_in_files "discord.com/api/webhooks" "guilderia.com/api/webhooks"
+# Replace discord webhook URLs with zenthcloud equivalents
+replace_in_files "discord.gg/GUkDugVh34" "zenthcloud.com/community"
+replace_in_files "discord.com/api/webhooks" "zenthcloud.com/api/webhooks"
 
-# Replace discord notification type with guilderia
-replace_in_files 'notificationType: z.literal("discord")' 'notificationType: z.literal("guilderia")'
-replace_in_files 'type: z.literal("discord")' 'type: z.literal("guilderia")'
+# Replace discord notification type with zenthcloud
+replace_in_files 'notificationType: z.literal("discord")' 'notificationType: z.literal("zenthcloud")'
+replace_in_files 'type: z.literal("discord")' 'type: z.literal("zenthcloud")'
 
 # Replace discord table references
-replace_in_files 'discord: true,' 'guilderia: true,'
-replace_in_files 'discordId' 'guilderiaId'
+replace_in_files 'discord: true,' 'zenthcloud: true,'
+replace_in_files 'discordId' 'zenthcloudId'
 
 # Replace package names
-replace_in_files "@guilderia/server" "@guilderia/server"
-replace_in_files "@guilderia/status" "@guilderia/status"
+replace_in_files "@zenthcloud/server" "@zenthcloud/server"
+replace_in_files "@zenthcloud/status" "@zenthcloud/status"
 
 # Replace directory names in comments
-replace_in_files "apps/astron" "apps/guilderia"
+replace_in_files "apps/astron" "apps/zenthcloud"
 
 # Replace in Docker image names
-replace_in_files "skygenesisenterprise/guilderia" "skygenesisenterprise/guilderia"
+replace_in_files "skygenesisenterprise/zenthcloud" "skygenesisenterprise/zenthcloud"
 
 echo ""
 echo "Replacement complete!"
