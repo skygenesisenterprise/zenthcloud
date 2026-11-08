@@ -1,116 +1,76 @@
 {
-  "name": "zenthcloud",
-  "version": "1.0.0",
-  "description": "An open-source, sovereign and ethical cloud platform built for transparency, control, and modular infrastructure.",
-  "private": true,
-  "type": "module",
-  "workspaces": [
-    "apps",
-    "tools",
-    "tests",
-    "messages",
-    "server/prisma",
-    "package",
-    "package/cli"
-  ],
-  "scripts": {
-    "dev": "concurrently \"pnpm --filter apps dev\" \"pnpm --filter server dev\"",
-    "dev:frontend": "pnpm --filter apps dev",
-    "dev:backend": "pnpm --filter server dev",
-    "dev:cli": "pnpm --filter cli dev",
-    "build": "pnpm -r build",
-    "build:frontend": "pnpm --filter apps build",
-    "build:backend": "pnpm --filter server build",
-    "build:cli": "pnpm --filter cli build",
-    "start": "concurrently \"pnpm --filter apps start\" \"pnpm --filter server start\"",
-    "lint": "pnpm -r lint",
-    "lint:fix": "pnpm -r lint:fix",
-    "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
-    "clean": "pnpm -r clean && rm -rf node_modules",
-    "reset": "pnpm clean && pnpm install",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
-    "db:seed": "prisma db seed",
-    "cli": "pnpm --filter cli cli",
-    "docker:build": "docker build -t aether-mailer .",
-    "docker:run": "docker-compose up -d",
-    "docker:stop": "docker-compose down",
-    "prepare": "husky install",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "pnpm build && changeset publish",
-    "build:workspace": "tsc -b tsconfig.build.json",
-    "build:all": "tsc -b",
-    "clean:build": "pnpm -r exec rm -rf dist && rm -rf packages/*/dist",
-    "install:all": "pnpm install && pnpm -r install",
-    "update:all": "pnpm update && pnpm -r update",
-    "clean:deps": "pnpm -r exec rm -rf node_modules && rm -rf node_modules pnpm-lock.yaml"
-  },
-  "devDependencies": {
-    "@changesets/cli": "^2.30.0",
-    "@prisma/client": "7.9.1",
-    "@types/node": "^25.5.0",
-    "concurrently": "^10.0.5",
-    "eslint": "^10",
-    "husky": "^9.0.11",
-    "lint-staged": "^17.3.0",
-    "prettier": "^3.8.1",
-    "prisma": "7.9.1",
-    "typescript": "^5"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
-  },
-  "packageManager": "pnpm@8.15.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/skygenesisenterprise/zenthcloud.git"
-  },
-  "keywords": [
-    "news",
-    "website",
-    "react",
-    "nextjs",
-    "prisma",
-    "typescript"
-  ],
-  "author": {
-    "name": "ZenthCloud Enterprise",
-    "email": "developer@zenthcloud.com",
-    "url": "https://zenthcloud.com"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/skygenesisenterprise/zenthcloud/issues"
-  },
-  "homepage": "https://github.com/skygenesisenterprise/zenthcloud#readme",
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix --quiet",
-      "prettier --write"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
-    ]
-  },
-  "dependencies": {
-    "@capacitor/core": "^8.2.0",
-    "@fontsource-variable/mona-sans": "^5.2.8",
-    "@loglayer/transport-pino": "^3.0.2",
-    "@prisma/client": "^7.9.1",
-    "@radix-ui/react-slot": "^1.2.4",
-    "@vercel/analytics": "^2.0.1",
-    "class-variance-authority": "^0.7.1",
-    "dotenv": "^17.4.0",
-    "framer-motion": "^13.1.1",
-    "loglayer": "^9.1.0",
-    "next": "^16.2.2",
-    "next-intl": "^4.8.3",
-    "pino": "^10.3.1",
-    "stylelint": "^17.6.0",
-    "updates": "^17.13.5"
-  }
+	"name": "guilderia",
+	"private": true,
+	"scripts": {
+		"dev": "pnpm --filter=@guilderia/app run dev",
+		"start": "pnpm --filter=@guilderia/app run start",
+		"setup": "pnpm --filter=@guilderia/app run setup",
+		"build": "pnpm -r run build",
+		"build:app": "pnpm --filter=@guilderia/app run build",
+		"test": "pnpm --filter=@guilderia/app run test",
+		"test:bots": "node --test packages/guilderia-bot/test/*.test.js",
+		"check:bots": "node scripts/check-bots.mjs",
+		"start:main": "pnpm --filter=@guilderia/main run start",
+		"dev:main": "pnpm --filter=@guilderia/main run dev",
+		"deploy:main": "pnpm --filter=@guilderia/main run deploy:commands",
+		"typecheck": "pnpm -r run typecheck",
+		"server:script": "pnpm --filter=@guilderia/server run switch:dev",
+		"server:dev": "pnpm --filter=@guilderia/server run dev",
+		"server:build": "pnpm --filter=@guilderia/server run build",
+		"web:dev": "pnpm --filter=@guilderia/website run dev",
+		"web:build": "pnpm --filter=@guilderia/website run build",
+		"docs:dev": "pnpm --filter=@guilderia/docs run dev",
+		"docs:check": "node scripts/docs/cli.mjs check",
+		"docs:check:changed": "node scripts/docs/cli.mjs check --changed",
+		"docs:check:coverage": "node scripts/docs/cli.mjs coverage",
+		"docs:check:links": "node scripts/docs/cli.mjs check --only links",
+		"docs:generate": "node scripts/docs/cli.mjs generate",
+		"docs:test": "node --test scripts/docs/tests/*.test.mjs",
+		"docs:build": "node scripts/docs/cli.mjs check --only spec,regions,links && pnpm --filter=@guilderia/docs run build:docs && pnpm --filter=@guilderia/docs run build && pnpm --filter=@guilderia/docs run build:static-redirects",
+		"docker:build:canary": "./apps/guilderia/docker/build.sh canary",
+		"lint": "pnpm -r run lint",
+		"format-and-lint": "pnpm -r run lint",
+		"check": "pnpm -r run lint",
+		"format-and-lint:fix": "pnpm -r run lint:fix",
+		"generate:openapi": "pnpm --filter=@guilderia/app run generate:openapi",
+		"changeset": "changeset",
+		"changeset:add": "changeset add",
+		"changeset:status": "changeset status",
+		"changeset:version": "changeset version"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.15",
+		"@changesets/changelog-github": "^1.0.1",
+		"@changesets/cli": "^2.29.7",
+		"@commitlint/cli": "^19.3.0",
+		"@commitlint/config-conventional": "^19.2.2",
+		"@tryghost/content-api": "^1.12.12",
+		"@types/node": "^24.4.0",
+		"@types/tryghost__content-api": "^1.3.17",
+		"dotenv": "16.4.5",
+		"esbuild": "0.28.2",
+		"lint-staged": "^15.5.2",
+		"toml": "3.0.0",
+		"tsx": "4.22.4",
+		"yaml": "2.9.1"
+	},
+	"packageManager": "pnpm@12.18.0",
+	"engines": {
+		"node": "^24.4.0",
+		"pnpm": ">=10.22.0"
+	},
+	"lint-staged": {
+		"*": [
+			"biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
+		]
+	},
+	"resolutions": {
+		"@types/react": "18.3.5",
+		"@types/react-dom": "18.3.0"
+	},
+	"dependencies": {
+		"@skygenesisenterprise/react-sds": "^1.0.0",
+		"ldapts": "^9.2.0",
+		"node-forge": "^1.4.0"
+	}
 }

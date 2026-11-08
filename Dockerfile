@@ -1,163 +1,220 @@
-# ══════════════════════════════════════════════════════════════════════════════
-# ZenthCloud — unified image (dev + production)
-# A single image that supports every role. The entrypoint.sh switches behaviour
-# based on NODE_ENV (development: Next.js dev + Air hot-reload; production:
-# static frontend via http-server + compiled Go binary).
-# ══════════════════════════════════════════════════════════════════════════════
+# syntax=docker/dockerfile:1
+#
+# Guilderia — single canonical Dockerfile for the platform.
+#
+# Built from the repository root: the whole monorepo is one pnpm workspace with
+# a single `pnpm-lock.yaml`, so only the root context is ever used.
+#
+#   docker build -t guilderia .                    # the platform image (default target)
+#   docker build --target dev -t guilderia-dev .   # development image
+#   docker build --target status -t guilderia-status .
+#   docker buildx build --target platform .
+#
+# Stages / targets
+#   base        Node + pnpm toolchain
+#   dev         dependencies only, runs `next dev` or the backend dev server
+#   builder     installs + compiles the app, deploys a pruned /prod/guilderia
+#   status      standalone status page (separate product, not part of the stack)
+#   platform    client AND api in one artifact — LAST => default target
+#
+# One image per edition, never one per service: `self`, `cloud` and `console` each
+# publish a single image (.github/workflows/docker-publish.yml), and the role of a
+# container is chosen at runtime rather than at build time:
+#
+#   GUILDERIA_ROLE=client   `next start`                    (port 3000)
+#   GUILDERIA_ROLE=api      `node dist/server.mjs`          (port 4000)
+#   GUILDERIA_ROLE=migrate  one-shot migrations, then exit
+#
+# Client and API therefore always come from the same digest and can never drift
+# apart. The production images never run as root, never carry build tooling, and
+# never need the host Docker socket. All launch logic lives in entrypoint.sh.
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Stage 1 — Go builder (API/worker binary + Air for hot-reload)
-# ══════════════════════════════════════════════════════════════════════════════
-FROM golang:1.26-alpine AS go-builder
+# ---------------------------------------------------------------------------
+# Toolchain
+# ---------------------------------------------------------------------------
+FROM node:24.4.0-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+# Compile native addons (node-pty, bcrypt, ssh2, cpu-features) against the
+# headers already shipped in the Node image. Without this node-gyp downloads
+# node-v24.4.0-headers.tar.gz from nodejs.org during pnpm install, which fails
+# on networks that only allow the npm registry.
+ENV npm_config_nodedir=/usr/local
+# Matches the `packageManager` field of the root package.json and therefore the
+# lockfile that `--frozen-lockfile` validates against.
+ARG PNPM_VERSION=12.16.1
+RUN npm install -g pnpm@${PNPM_VERSION}
+# ca-certificates keeps outbound TLS verification working in the slim image.
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apk add --no-cache gcc musl-dev
+# ---------------------------------------------------------------------------
+# Development image (dependencies + sources, never a production build). The
+# `dev` Compose services synchronise apps/guilderia and packages over this stage's
+# sources, so the dev servers always run the code on the host and hot-reload it.
+# `GUILDERIA_ROLE` selects which one the entrypoint starts.
+# ---------------------------------------------------------------------------
+FROM base AS dev
+COPY . /usr/src/app
+WORKDIR /usr/src/app
 
+# Build toolchain for the native modules installed by pnpm.
+RUN apt-get update && apt-get install -y python3 make g++ git pkg-config libsecret-1-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# All launch logic (wait for DB, optional migrations, server) lives in entrypoint.sh.
+COPY --chmod=0755 entrypoint.sh /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# ---------------------------------------------------------------------------
+# Builder (production artifacts, shared by every runtime artifact below)
+# ---------------------------------------------------------------------------
+FROM base AS builder
+COPY . /usr/src/app
+WORKDIR /usr/src/app
+
+RUN apt-get update && apt-get install -y python3 make g++ git pkg-config libsecret-1-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+# Next.js otherwise phones home (telemetry) during the build; disabling it removes
+# a network round-trip from every build without changing the produced artifacts.
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Server bundle (esbuild: dist/server.mjs, dist/migration.mjs, …) and Next build.
+RUN pnpm --filter=./apps/guilderia run build
+
+# Pruned production deployment: package.json + the node_modules subset the runtime
+# needs, with the workspace packages resolved. Every runtime artifact copies from here.
+RUN pnpm --filter=./apps/guilderia --prod deploy --legacy /prod/guilderia
+
+# ---------------------------------------------------------------------------
+# Guilderia Status — the standalone status page (apps/status + the
+# packages/status engine). Deliberately independent from the platform: no
+# PostgreSQL, no Redis, no workers. The engine owns a dedicated SQLite file under
+# STATUS_DATA_DIR, so the whole product is one container and one volume.
+#
+#   docker build --target status -t guilderia-status .
+#
+# Kept before `platform` so `platform` stays the default target (the last stage).
+# ---------------------------------------------------------------------------
+FROM base AS status-builder
+COPY . /usr/src/app
+WORKDIR /usr/src/app
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+# Status engine bundle (seed CLI included) and the Next status app.
+RUN pnpm --filter=@guilderia/status run build
+RUN pnpm --filter=@guilderia/status-app run build
+# Pruned production deployment of the status app.
+RUN pnpm --filter=./apps/status --prod deploy --legacy /prod/status
+
+FROM base AS status
 WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=4200
+RUN apt-get update && apt-get install -y --no-install-recommends tini \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY go.mod go.sum ./
-RUN go mod download
+COPY --from=status-builder /prod/status/package.json ./package.json
+COPY --from=status-builder /prod/status/node_modules ./node_modules
+COPY --from=status-builder /usr/src/app/apps/status/.next ./.next
+COPY --from=status-builder /usr/src/app/apps/status/public ./public
+COPY --from=status-builder /usr/src/app/apps/status/next.config.mjs ./next.config.mjs
+# Seed CLI (bundled): resolves its dependencies from the node_modules above.
+COPY --from=status-builder /usr/src/app/packages/status/dist ./engine-dist
 
-RUN go install github.com/air-verse/air@latest
+ARG GUILDERIA_VERSION=dev
+LABEL org.opencontainers.image.title="guilderia-status" \
+      org.opencontainers.image.description="Guilderia Status — status page, incidents and uptime history" \
+      org.opencontainers.image.source="https://github.com/skygenesisenterprise/guilderia" \
+      org.opencontainers.image.version="${GUILDERIA_VERSION}" \
+      org.opencontainers.image.licenses="Apache-2.0"
 
-COPY server/ ./server/
+EXPOSE 4200
 
-RUN CGO_ENABLED=1 GOOS=linux \
-    go build -ldflags="-s -w" -o /app/tmp/aether-server ./server/
+# The probe is role-aware (entrypoint.sh healthcheck reads GUILDERIA_ROLE).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=5 \
+  CMD ["/usr/local/bin/entrypoint.sh", "healthcheck"]
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Stage 2 — Node / pnpm (frontend deps + optional static export)
-# ══════════════════════════════════════════════════════════════════════════════
-FROM node:25-alpine AS node-builder
+COPY --chmod=0755 entrypoint.sh /usr/local/bin/entrypoint.sh
+ENV GUILDERIA_ROLE=status
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 
-ARG NODE_ENV=production
-ARG BUILD_STATIC
-
+# ---------------------------------------------------------------------------
+# Platform — the single image of an edition (`self`, `cloud`, `console`).
+#
+# It carries both runtimes, and nothing else:
+#
+#   client role   `.next`, `public`, `next.config.mjs`. `next start` serves the UI
+#                 and rewrites `/api/*` to the API service (API_INTERNAL_URL).
+#                 No DATABASE_URL, no REDIS_URL: it cannot do backend work.
+#   api role      `dist/` (server + migration bundles) and `drizzle/`. tRPC and
+#                 OpenAPI routes, better-auth, WebSockets, BullMQ workers and cron
+#                 jobs. It is the only role that receives database and Redis
+#                 credentials, and the only one that applies migrations.
+#
+# The edition is baked in as a default (`GUILDERIA_FLAVOR` /
+# `GUILDERIA_PRODUCT`, the values docker-publish.yml passes) and can be
+# overridden at runtime, which is what `make docker-up self|cloud|console` does.
+# ---------------------------------------------------------------------------
+FROM base AS platform
 WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+# Default port of the api role; the client role runs with PORT=3000 (Compose sets it).
+ENV PORT=4000
 
-RUN npm install -g corepack --force \
-    && corepack enable \
-    && corepack prepare pnpm@9.15.4 --activate
+RUN apt-get update && apt-get install -y --no-install-recommends tini \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-COPY apps/package.json ./apps/
+# --- Backend artifacts ------------------------------------------------------
+COPY --from=builder /prod/guilderia/package.json ./package.json
+COPY --from=builder /prod/guilderia/node_modules ./node_modules
+COPY --from=builder /prod/guilderia/drizzle ./drizzle
+COPY --from=builder /usr/src/app/apps/guilderia/dist ./dist
 
-RUN mkdir -p apps/next/fond/google && \
-    printf 'module.exports = {};\n' > apps/next/fond/google/index.js && \
-    printf '{"name":"google","version":"0.0.0"}\n' > apps/next/fond/google/package.json && \
-    pnpm install --filter @zenthcloud/apps... --no-frozen-lockfile
+# --- Frontend artifacts -----------------------------------------------------
+COPY --from=builder /prod/guilderia/next.config.mjs ./next.config.mjs
+COPY --from=builder /prod/guilderia/public ./public
+COPY --from=builder /usr/src/app/apps/guilderia/.next ./.next
 
-COPY apps/ ./apps/
+# Unprivileged runtime: neither role writes outside its temp directory.
+RUN groupadd --system --gid 1001 guilderia \
+    && useradd --system --uid 1001 --gid guilderia --home-dir /app guilderia \
+    && chown -R guilderia:guilderia /app
 
-RUN     if [ "${BUILD_STATIC:-0}" = "1" ] || { [ -z "${BUILD_STATIC:-}" ] && [ "${NODE_ENV}" = "production" ]; }; then \
-        BUILD_WEB_STATIC=true pnpm --dir apps build:web; \
-    else \
-        echo "Skipping static web export (BUILD_STATIC != 1)"; \
-    fi
+ARG GUILDERIA_VERSION=dev
+ARG GUILDERIA_FLAVOR=selfhosted
+ARG GUILDERIA_PRODUCT=self
+ENV GUILDERIA_FLAVOR=${GUILDERIA_FLAVOR}
+ENV GUILDERIA_PRODUCT=${GUILDERIA_PRODUCT}
+LABEL org.opencontainers.image.title="guilderia" \
+      org.opencontainers.image.description="Guilderia platform — client and API in one image" \
+      org.opencontainers.image.source="https://github.com/skygenesisenterprise/guilderia" \
+      org.opencontainers.image.version="${GUILDERIA_VERSION}" \
+      org.opencontainers.image.licenses="Apache-2.0"
 
-# Ensure /app/apps/out always exists (dev builds skip the static export)
-RUN mkdir -p /app/apps/out
+# Both roles are served by this image; Compose publishes the one the service needs.
+EXPOSE 3000 4000
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Stage 3 — Prisma client generation
-# ══════════════════════════════════════════════════════════════════════════════
-FROM node:25-alpine AS prisma-builder
+# Role-aware probe: `client` checks `/`, `api` checks `/api/health`.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
+  CMD ["/usr/local/bin/entrypoint.sh", "healthcheck"]
 
-ARG DATABASE_URL
+COPY --chmod=0755 entrypoint.sh /usr/local/bin/entrypoint.sh
+# Default role; every Compose service states its own explicitly.
+ENV GUILDERIA_ROLE=api
 
-WORKDIR /tmp/prisma
-
-COPY server/prisma/package.json ./
-RUN npm install --no-audit --no-fund
-
-COPY server/prisma/schema.prisma server/prisma/prisma.config.ts ./
-
-RUN if [ -n "${DATABASE_URL:-}" ]; then \
-        DATABASE_URL="${DATABASE_URL}" npx prisma generate; \
-    else \
-        echo "DATABASE_URL not provided; skipping Prisma client generation"; \
-    fi
-
-# ══════════════════════════════════════════════════════════════════════════════
-# Stage final — unified runtime (development superset + production runtime)
-# ══════════════════════════════════════════════════════════════════════════════
-FROM node:25-alpine
-
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
-
-RUN apk add --no-cache \
-    ca-certificates \
-    tzdata \
-    curl \
-    bash \
-    git \
-    wget \
-    build-base \
-    libc6-compat \
-    postgresql \
-    postgresql-client \
-    openssl \
-    npm \
-    gosu \
-    coreutils \
-    inotify-tools \
-    netcat-openbsd
-
-ENV GOPATH="/go"
-ENV PATH="/usr/local/go/bin:/go/bin:/root/go/bin:/root/.local/share/corepack:/usr/local/bin:/usr/bin:/bin:${PATH}"
-ENV SCHEMA_PATH=/app/server/prisma/schema.prisma
-ENV PRISMA_DIR=/app/server/prisma
-ENV DEPLOY_SCRIPT=/usr/local/bin/deploy-schema.sh
-
-RUN npm install -g corepack --force && corepack enable && corepack prepare pnpm@9.15.4 --activate && \
-    ln -sf /root/.local/share/corepack/pnpm /usr/local/bin/pnpm
-
-RUN npm install -g http-server@14
-
-WORKDIR /app
-
-RUN mkdir -p /certs /templates
-
-# ── Go toolchain + Air (dev hot-reload) ─────────────────────────────────────
-COPY --from=go-builder /go/bin/air /go/bin/air
-COPY --from=go-builder /usr/local/go /usr/local/go
-COPY --from=go-builder /app/server/ ./server/
-COPY --from=go-builder /app/tmp/aether-server /app/tmp/aether-server
-COPY --from=go-builder /app/tmp/aether-server /app/server/aether-server
-
-# ── Frontend (node_modules for dev + static export for prod) ────────────────
-COPY --from=node-builder /app/node_modules ./node_modules/
-COPY --from=node-builder /app/apps/node_modules ./apps/node_modules/
-COPY --from=node-builder /app/apps/out ./out
-
-# ── Prisma ──────────────────────────────────────────────────────────────────
-COPY --from=prisma-builder /tmp/prisma/ ./prisma/
-COPY server/prisma/ ./server/prisma/
-RUN cd server/prisma && npm install --no-audit --no-fund
-
-# ── Frontend sources (écrasées par le volume mount en dev) ──────────────────
-COPY apps/package.json         ./apps/
-COPY apps/tsconfig.json        ./apps/
-COPY apps/next.config.ts       ./apps/
-COPY apps/postcss.config.mjs   ./apps/
-COPY apps/components.json      ./apps/
-COPY apps/eslint.config.mjs    ./apps/
-COPY apps/app/                 ./apps/app/
-COPY apps/components/          ./apps/components/
-COPY apps/context/             ./apps/context/
-COPY apps/hooks/               ./apps/hooks/
-COPY apps/lib/                 ./apps/lib/
-COPY apps/public/              ./apps/public/
-COPY apps/styles/              ./apps/styles/
-COPY middleware.ts             ./apps/middleware.ts
-
-# ── Config ──────────────────────────────────────────────────────────────────
-COPY .air.toml   ./
-COPY .env.example ./
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-EXPOSE 3000
-EXPOSE 8080
-
-ENTRYPOINT ["/entrypoint.sh"]
+USER guilderia
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
