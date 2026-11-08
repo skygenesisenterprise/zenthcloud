@@ -24,7 +24,7 @@ export interface DockerMetadataInput {
   running?: boolean;
 }
 
-function isAstronCollectionInfra(name: string): boolean {
+function isZenthcloudInfra(name: string): boolean {
   return name === "zenthcloud" || name.startsWith("zenthcloud-") || name.startsWith("zenthcloud.");
 }
 
@@ -56,7 +56,7 @@ export function buildInventoryFromDockerMetadata(args: {
   let stoppedIds: string[] = [];
 
   for (const c of args.containers) {
-    if (isAstronCollectionInfra(c.name)) continue;
+    if (isZenthcloudInfra(c.name)) continue;
     if (/traefik/i.test(c.name) && !/dokploy/i.test(c.name + (c.image ?? ""))) continue;
     const attributed = isDokployAttributed(c.networks, c.labels);
     const domains = collectDomains(c.labels);
@@ -162,7 +162,7 @@ export class DokploySourceAdapter implements MigrationSourceAdapter {
   }
 }
 
-export class AstronCollectionDestinationAdapter implements MigrationDestinationAdapter {
+export class ZenthcloudDestinationAdapter implements MigrationDestinationAdapter {
   readonly product = "zenthcloud" as const;
   readonly direction = "dokploy-to-zenthcloud" as const;
   capabilities(): CapabilityMatrix {
@@ -179,7 +179,7 @@ export class AstronCollectionDestinationAdapter implements MigrationDestinationA
   }
 }
 
-export class AstronCollectionSourceAdapter implements MigrationSourceAdapter {
+export class ZenthcloudSourceAdapter implements MigrationSourceAdapter {
   readonly product = "zenthcloud" as const;
   readonly direction = "zenthcloud-to-dokploy" as const;
   capabilities(): CapabilityMatrix {

@@ -1,7 +1,7 @@
 {
 	"name": "@zenthcloud/status",
 	"version": "0.1.0",
-	"description": "Zenthcloud Status — independent status page platform engine for the astron and SGE ecosystems: domain model, state computation, persistence, public/admin/integration HTTP API, notification outbox and integration client.",
+	"description": "Zenthcloud Status — independent status page platform engine for the zenthcloud and SGE ecosystems: domain model, state computation, persistence, public/admin/integration HTTP API, notification outbox and integration client.",
 	"type": "module",
 	"license": "Apache-2.0",
 	"private": false,

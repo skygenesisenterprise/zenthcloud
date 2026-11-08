@@ -47,7 +47,7 @@ describe("buildGatewayErrorsConfig", () => {
 			errors: {
 				status: ["500-599"],
 				service: "zenthcloud-gateway-errors",
-				query: "/__astron_collectionerror?status={status}",
+				query: "/__zenthclouderror?status={status}",
 			},
 		});
 		expect(http?.services?.["zenthcloud-gateway-errors"]).toEqual({

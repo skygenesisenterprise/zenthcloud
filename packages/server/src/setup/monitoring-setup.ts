@@ -1,7 +1,7 @@
 import { findServerById } from "@zenthcloud/server/services/server";
 import { getWebServerSettings } from "@zenthcloud/server/services/web-server-settings";
 import type { CreateServiceOptions } from "dockerode";
-import { getAstronCollectionImageTag } from "../services/settings";
+import { getZenthcloudImageTag } from "../services/settings";
 import { isManagedCloud } from "../services/instance-identity";
 import { pullImage, pullRemoteImage } from "../utils/docker/utils";
 import { execAsync, execAsyncRemote } from "../utils/process/execAsync";
@@ -11,7 +11,7 @@ const getMonitoringImage = () => {
 	let imageName = "zenthcloud/monitoring:latest";
 
 	if (
-		(getAstronCollectionImageTag() !== "latest" ||
+		(getZenthcloudImageTag() !== "latest" ||
 			process.env.NODE_ENV === "development") &&
 		!isManagedCloud()
 	) {

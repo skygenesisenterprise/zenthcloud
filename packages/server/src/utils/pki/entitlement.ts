@@ -3,9 +3,9 @@ import {
 	type EntitlementPayload,
 	type EntitlementVerification,
 	INSTANCE_IDENTITY_EXTENSION_VERSION,
-	isAstronCollectionCapability,
-	isAstronCollectionProduct,
-	type AstronCollectionCapability,
+	isZenthcloudCapability,
+	isZenthcloudProduct,
+	type ZenthcloudCapability,
 } from "./types";
 
 /**
@@ -87,7 +87,7 @@ export const parseEntitlementPayload = (
 			reason: "The entitlement payload has no instance id",
 		};
 	}
-	if (typeof raw.product !== "string" || !isAstronCollectionProduct(raw.product)) {
+	if (typeof raw.product !== "string" || !isZenthcloudProduct(raw.product)) {
 		return { valid: false, reason: `Unknown product: ${String(raw.product)}` };
 	}
 	if (!Array.isArray(raw.capabilities)) {
@@ -97,8 +97,8 @@ export const parseEntitlementPayload = (
 		};
 	}
 	const capabilities = raw.capabilities.filter(
-		(item): item is AstronCollectionCapability =>
-			typeof item === "string" && isAstronCollectionCapability(item),
+		(item): item is ZenthcloudCapability =>
+			typeof item === "string" && isZenthcloudCapability(item),
 	);
 	if (capabilities.length !== raw.capabilities.length) {
 		return {

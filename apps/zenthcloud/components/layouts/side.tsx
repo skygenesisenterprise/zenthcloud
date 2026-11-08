@@ -785,7 +785,7 @@ export default function Page({ children, pageTitle }: Props) {
 	const router = useRouter();
 	const { data: auth } = api.user.get.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
-	const { data: astronCollectionVersion } = api.settings.getAstronCollectionVersion.useQuery();
+	const { data: zenthcloudVersion } = api.settings.getZenthcloudVersion.useQuery();
 	const { data: whitelabeling } = api.whitelabeling.get.useQuery(undefined, {
 		staleTime: 5 * 60 * 1000,
 		refetchOnWindowFocus: false,
@@ -923,9 +923,9 @@ export default function Page({ children, pageTitle }: Props) {
 						{/* Cloud surfaces its own product version elsewhere. Self-hosted and
 						    the operator console both show the build version under the account
 						    block. */}
-						{environment !== "cloud" && astronCollectionVersion && (
+						{environment !== "cloud" && zenthcloudVersion && (
 							<div className="px-3 text-xs text-muted-foreground text-center group-data-[collapsible=icon]:hidden">
-								Version {astronCollectionVersion}
+								Version {zenthcloudVersion}
 							</div>
 						)}
 					</SidebarMenu>

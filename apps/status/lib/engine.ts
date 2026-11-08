@@ -11,17 +11,17 @@ import type { OutboxWorkerHandle } from "@zenthcloud/status";
 import { createStatusPlatform, type StatusPlatform } from "@zenthcloud/status";
 
 const globalForStatus = globalThis as unknown as {
-	astronCollectionStatus?: StatusPlatform;
-	astronCollectionStatusWorker?: OutboxWorkerHandle | null;
+	zenthcloudStatus?: StatusPlatform;
+	zenthcloudStatusWorker?: OutboxWorkerHandle | null;
 };
 
 export const getPlatform = (): StatusPlatform => {
-	if (!globalForStatus.astronCollectionStatus) {
+	if (!globalForStatus.zenthcloudStatus) {
 		const platform = createStatusPlatform();
-		globalForStatus.astronCollectionStatus = platform;
+		globalForStatus.zenthcloudStatus = platform;
 		if (platform.mode === "read-write") {
-			globalForStatus.astronCollectionStatusWorker = platform.startWorkers();
+			globalForStatus.zenthcloudStatusWorker = platform.startWorkers();
 		}
 	}
-	return globalForStatus.astronCollectionStatus;
+	return globalForStatus.zenthcloudStatus;
 };

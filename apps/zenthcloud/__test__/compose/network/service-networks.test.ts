@@ -63,7 +63,7 @@ services:
 			{
 				serviceName: "web",
 				networkIds: ["net-1"],
-				detachAstronCollectionNetwork: false,
+				detachZenthcloudNetwork: false,
 			},
 		]),
 	);
@@ -85,7 +85,7 @@ services:
 	const injected = await applyServiceNetworks(
 		result,
 		withServiceNetworks([
-			{ serviceName: "db", networkIds: [], detachAstronCollectionNetwork: true },
+			{ serviceName: "db", networkIds: [], detachZenthcloudNetwork: true },
 		]),
 	);
 
@@ -109,7 +109,7 @@ services:
 			{
 				serviceName: "web",
 				networkIds: ["missing"],
-				detachAstronCollectionNetwork: false,
+				detachZenthcloudNetwork: false,
 			},
 		]),
 	);
@@ -132,7 +132,7 @@ services:
 			{
 				serviceName: "ghost",
 				networkIds: ["net-1"],
-				detachAstronCollectionNetwork: false,
+				detachZenthcloudNetwork: false,
 			},
 		]),
 	);
@@ -185,7 +185,7 @@ test("resolveServiceNetworks: returns zenthcloud-network by default", async () =
 });
 
 test("resolveServiceNetworks: omits zenthcloud-network when detached", async () => {
-	const resolved = await resolveServiceNetworks({ detachAstronCollectionNetwork: true });
+	const resolved = await resolveServiceNetworks({ detachZenthcloudNetwork: true });
 	expect(resolved).toEqual([]);
 });
 

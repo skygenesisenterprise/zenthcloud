@@ -1,4 +1,4 @@
-import { ApiError } from "../adapters/astronCollectionApi.js";
+import { ApiError } from "../adapters/zenthcloudApi.js";
 import type { CapabilityExecutionContext } from "../contracts/capability.js";
 
 export type JsonRecord = Record<string, unknown>;

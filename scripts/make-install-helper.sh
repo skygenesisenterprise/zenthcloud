@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Astron Collection self-hosted installation helper
+# Zenthcloud self-hosted installation helper
 # Orchestrates the full setup for 'make install'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -146,7 +146,7 @@ setup_directories() {
 
 # Start the stack
 start_stack() {
-    log_info "Starting Astron Collection stack..."
+    log_info "Starting Zenthcloud stack..."
     docker compose up -d --build
     log_success "Stack started"
 }
@@ -180,7 +180,7 @@ check_status() {
 
 main() {
     echo -e "${GREEN}=====================================${NC}"
-    echo -e "${GREEN}   Astron Collection Installation Script       ${NC}"
+    echo -e "${GREEN}   Zenthcloud Installation Script       ${NC}"
     echo -e "${GREEN}=====================================${NC}"
     echo ""
     
@@ -194,7 +194,7 @@ main() {
     check_status
     
     echo ""
-    echo -e "${GREEN}✓ Astron Collection installation completed${NC}"
+    echo -e "${GREEN}✓ Zenthcloud installation completed${NC}"
     echo ""
     echo -e "${BLUE}Next steps:${NC}"
     echo -e "  1. Open http://localhost:3000 in your browser"

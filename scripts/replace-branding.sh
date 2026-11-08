@@ -56,7 +56,7 @@ replace_in_files() {
 # Replace zenthcloud with zenthcloud
 replace_in_files "zenthcloud" "zenthcloud"
 replace_in_files "ZENTHCLOUD" "ZENTHCLOUD"
-replace_in_files "astronCollection" "zenthcloud"
+replace_in_files "zenthcloud" "zenthcloud"
 
 # Replace zenthcloud with zenthcloud
 replace_in_files "zenthcloud" "zenthcloud"

@@ -22,10 +22,10 @@
  * contact with Zenthcloud services. `cloud` and `console` are protected products
  * that require a Zenthcloud-signed entitlement.
  */
-export const astronCollectionProducts = ["self", "cloud", "console"] as const;
-export type AstronCollectionProduct = (typeof astronCollectionProducts)[number];
+export const zenthcloudProducts = ["self", "cloud", "console"] as const;
+export type ZenthcloudProduct = (typeof zenthcloudProducts)[number];
 
-export const astronCollectionProductLabels: Record<AstronCollectionProduct, string> = {
+export const zenthcloudProductLabels: Record<ZenthcloudProduct, string> = {
 	self: "Self-hosted",
 	cloud: "Zenthcloud Cloud",
 	console: "Zenthcloud Console",
@@ -39,7 +39,7 @@ export const astronCollectionProductLabels: Record<AstronCollectionProduct, stri
  * naturally. The set is closed and validated: an unknown capability is never
  * trusted because it arrived in a token.
  */
-export const astronCollectionCapabilities = [
+export const zenthcloudCapabilities = [
 	"self.hosted",
 	"self.local-registry",
 	"self.offline",
@@ -50,12 +50,12 @@ export const astronCollectionCapabilities = [
 	"console.fleet",
 	"console.remote-management",
 ] as const;
-export type AstronCollectionCapability = (typeof astronCollectionCapabilities)[number];
+export type ZenthcloudCapability = (typeof zenthcloudCapabilities)[number];
 
 /** Capabilities granted by default to each product. */
 export const productCapabilities: Record<
-	AstronCollectionProduct,
-	readonly AstronCollectionCapability[]
+	ZenthcloudProduct,
+	readonly ZenthcloudCapability[]
 > = {
 	self: ["self.hosted", "self.local-registry", "self.offline"],
 	cloud: ["cloud.control-plane", "cloud.managed-services", "cloud.fleet"],
@@ -70,18 +70,18 @@ export const productCapabilities: Record<
  * Products that must present a Zenthcloud-signed entitlement. `self` is deliberately
  * absent: self-hosted must keep working with no online dependency.
  */
-export const protectedProducts: readonly AstronCollectionProduct[] = [
+export const protectedProducts: readonly ZenthcloudProduct[] = [
 	"cloud",
 	"console",
 ];
 
-export const isAstronCollectionProduct = (value: string): value is AstronCollectionProduct =>
-	(astronCollectionProducts as readonly string[]).includes(value);
+export const isZenthcloudProduct = (value: string): value is ZenthcloudProduct =>
+	(zenthcloudProducts as readonly string[]).includes(value);
 
-export const isAstronCollectionCapability = (
+export const isZenthcloudCapability = (
 	value: string,
-): value is AstronCollectionCapability =>
-	(astronCollectionCapabilities as readonly string[]).includes(value);
+): value is ZenthcloudCapability =>
+	(zenthcloudCapabilities as readonly string[]).includes(value);
 
 /**
  * Private-extension OID carrying the instance identity document in the X.509
@@ -110,9 +110,9 @@ export interface InstanceIdentityDocument {
 	/** Stable random identifier of this installation. */
 	instanceId: string;
 	/** Product the instance was bootstrapped as. */
-	product: AstronCollectionProduct;
+	product: ZenthcloudProduct;
 	/** Capabilities the instance believes it is entitled to. */
-	capabilities: AstronCollectionCapability[];
+	capabilities: ZenthcloudCapability[];
 	/** SHA-256 fingerprint (hex) of the instance public key. */
 	subjectKeyFingerprint: string;
 	/** ISO-8601 creation timestamp. */
@@ -122,8 +122,8 @@ export interface InstanceIdentityDocument {
 /** Public metadata extracted from an instance certificate. */
 export interface InstanceCertificateInfo {
 	instanceId: string;
-	product: AstronCollectionProduct;
-	capabilities: AstronCollectionCapability[];
+	product: ZenthcloudProduct;
+	capabilities: ZenthcloudCapability[];
 	subjectKeyFingerprint: string;
 	createdAt: string;
 	serialNumber: string;
@@ -181,8 +181,8 @@ export interface IdentityDiagnostic {
 /** Public, secret-free description of an installation identity. */
 export interface InstanceIdentity {
 	instanceId: string;
-	product: AstronCollectionProduct;
-	capabilities: AstronCollectionCapability[];
+	product: ZenthcloudProduct;
+	capabilities: ZenthcloudCapability[];
 	status: InstanceIdentityStatus;
 	trustAnchor: TrustAnchorKind;
 	createdAt: string;
@@ -202,8 +202,8 @@ export interface InstanceIdentity {
 export interface EntitlementPayload {
 	version: number;
 	instanceId: string;
-	product: AstronCollectionProduct;
-	capabilities: AstronCollectionCapability[];
+	product: ZenthcloudProduct;
+	capabilities: ZenthcloudCapability[];
 	/** SHA-256 fingerprint (hex) of the instance public key. */
 	subjectKeyFingerprint: string;
 	issuedAt: string;

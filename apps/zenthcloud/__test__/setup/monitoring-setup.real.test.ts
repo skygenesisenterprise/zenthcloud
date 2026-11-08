@@ -31,7 +31,7 @@ vi.mock("@zenthcloud/server/services/server", () => ({
 }));
 
 vi.mock("@zenthcloud/server/services/settings", () => ({
-	getAstronCollectionImageTag: vi.fn(() => "latest"),
+	getZenthcloudImageTag: vi.fn(() => "latest"),
 }));
 
 vi.mock("@zenthcloud/server/utils/docker/utils", () => ({

@@ -6,7 +6,7 @@ import { getRegisteredSecrets } from "../observability/secrets.js";
 import { createLogger } from "../utils/logger.js";
 import { redactKnownSecrets } from "../utils/redactSensitive.js";
 
-const logger = createLogger("AstronCollectionApi");
+const logger = createLogger("ZenthcloudApi");
 
 const PACKAGE_VERSION = "0.31.0";
 const MAX_RESPONSE_BYTES = 16 * 1024 * 1024;
@@ -131,7 +131,7 @@ function abortableDelay(ms: number, signal?: AbortSignal): Promise<void> {
   });
 }
 
-export class AstronCollectionApi implements ApiPort {
+export class ZenthcloudApi implements ApiPort {
   private readonly http: AxiosInstance;
   private readonly config: McpConfig;
 
@@ -140,7 +140,7 @@ export class AstronCollectionApi implements ApiPort {
     this.http =
       http ??
       axios.create({
-        baseURL: `${config.astronCollectionUrl}/api`,
+        baseURL: `${config.zenthcloudUrl}/api`,
         timeout: Math.min(config.timeoutMs, config.limits.toolTimeoutMs),
         maxContentLength: MAX_RESPONSE_BYTES,
         maxBodyLength: MAX_BODY_BYTES,

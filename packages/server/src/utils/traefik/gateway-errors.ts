@@ -4,7 +4,7 @@ import type { FileConfig } from "./file-types";
 export const GATEWAY_ERRORS_CONFIG_NAME = "gateway-errors";
 export const GATEWAY_ERRORS_MIDDLEWARE_NAME = "zenthcloud-gateway-errors";
 export const GATEWAY_ERRORS_SERVICE_NAME = "zenthcloud-gateway-errors";
-export const GATEWAY_ERRORS_ERROR_PATH = "/__astron_collectionerror";
+export const GATEWAY_ERRORS_ERROR_PATH = "/__zenthclouderror";
 
 const GATEWAY_ERRORS_PORT = 8080;
 

@@ -224,8 +224,8 @@ services:
       # production build.
       watch:
         - action: sync+restart
-          path: ./apps/astron
-          target: /usr/src/app/apps/astron
+          path: ./apps/zenthcloud
+          target: /usr/src/app/apps/zenthcloud
         - action: sync+restart
           path: ./packages
           target: /usr/src/app/packages
@@ -292,8 +292,8 @@ services:
       # Development only (see the client service above).
       watch:
         - action: sync+restart
-          path: ./apps/astron
-          target: /usr/src/app/apps/astron
+          path: ./apps/zenthcloud
+          target: /usr/src/app/apps/zenthcloud
         - action: sync+restart
           path: ./packages
           target: /usr/src/app/packages

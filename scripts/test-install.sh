@@ -447,28 +447,28 @@ assert_logged "docker service create" "creates services"
 assert_file_exists "$CASE_DIR/etc/zenthcloud/identity/instance.key" "bootstraps the identity"
 assert_contains "$OUT" "Running as root" "detects root without needing sudo"
 assert_not_logged "sudo docker" "does not invoke sudo when already root"
-assert_contains "$OUT" "Astron Collection CLI ready: 1.0.3" "installs the official Astron Collection CLI"
+assert_contains "$OUT" "Zenthcloud CLI ready: 1.0.3" "installs the official Zenthcloud CLI"
 assert_logged "pnpm i -g @zenthcloud/cli@latest" "installs @zenthcloud/cli through pnpm"
 assert_file_exists "$CASE_DIR/bin/zenthcloud" "exposes the CLI launcher"
 
 # ==========================================================================
-# 2. Astron Collection already installed
+# 2. Zenthcloud already installed
 # ==========================================================================
-echo "2. Astron Collection already installed"
+echo "2. Zenthcloud already installed"
 init_state
 printf 'zenthcloud\nzenthcloud-postgres\n' > "$STATE/services"
 run_install_capture
-assert_rc "$RC" 1 "refuses a fresh install over an existing Astron Collection"
-assert_contains "$OUT" "existing Astron Collection installation" "explains the existing install"
+assert_rc "$RC" 1 "refuses a fresh install over an existing Zenthcloud"
+assert_contains "$OUT" "existing Zenthcloud installation" "explains the existing install"
 assert_not_logged "docker swarm init" "does not re-initialize the Swarm"
 
 # ==========================================================================
-# 3. Existing Astron Collection network/secrets but no service (partial install)
+# 3. Existing Zenthcloud network/secrets but no service (partial install)
 # ==========================================================================
 echo "3. Existing network and secrets are reused"
 init_state
 printf 'zenthcloud-network|overlay\n' > "$STATE/networks"
-printf 'astron_collectionpostgres_password\nastron_collectionauth_secret\n' > "$STATE/secrets"
+printf 'zenthcloudpostgres_password\nzenthcloudauth_secret\n' > "$STATE/secrets"
 run_install_capture
 assert_rc "$RC" 0 "completes a partial install"
 assert_contains "$OUT" "Reusing the existing 'zenthcloud-network'" "reuses the overlay network"
@@ -476,7 +476,7 @@ assert_contains "$OUT" "already exists; reusing" "reuses existing secrets"
 assert_not_logged "docker network rm" "never removes an existing network"
 
 # ==========================================================================
-# 4. Active Swarm not owned by Astron Collection
+# 4. Active Swarm not owned by Zenthcloud
 # ==========================================================================
 echo "4. Active third-party Swarm is preserved"
 init_state
@@ -578,8 +578,8 @@ ZENTHCLOUD_VERSION=v2.0.0 run_install_capture update
 assert_rc "$RC" 0 "update succeeds when the service converges"
 assert_logged "docker service update" "updates the service"
 assert_contains "$OUT" "has been updated to version: v2.0.0" "reports the updated version"
-assert_logged "pnpm i -g @zenthcloud/cli@latest" "refreshes the Astron Collection CLI on update"
-assert_contains "$OUT" "Astron Collection CLI ready: 1.0.3" "reports the refreshed CLI"
+assert_logged "pnpm i -g @zenthcloud/cli@latest" "refreshes the Zenthcloud CLI on update"
+assert_contains "$OUT" "Zenthcloud CLI ready: 1.0.3" "reports the refreshed CLI"
 
 # ==========================================================================
 # 13. Existing coherent identity is preserved
@@ -658,7 +658,7 @@ assert_contains "$OUT" '"applications": 1' "counts only attributed applications"
 assert_contains "$OUT" '"unattributed": 1' "counts unattributed containers separately"
 
 # ==========================================================================
-# 19. --migrate performs the full Dokploy → Astron Collection migration
+# 19. --migrate performs the full Dokploy → Zenthcloud migration
 # ==========================================================================
 echo "19. --migrate performs the full migration"
 init_state
@@ -677,12 +677,12 @@ assert_contains "$OUT" "Database imported" "reports the DB dump/restore"
 assert_logged "docker exec c1 pg_dump" "dumps the Dokploy database"
 assert_logged "--no-owner" "drops ownership-dependent clauses from the dump"
 assert_logged "--no-acl" "drops GRANTs that would abort the import"
-assert_logged "docker service create --name zenthcloud-postgres" "creates the Astron Collection Postgres service"
+assert_logged "docker service create --name zenthcloud-postgres" "creates the Zenthcloud Postgres service"
 assert_logged "docker service rm dokploy" "stops Dokploy's management service"
 assert_logged "docker network connect dokploy-network zenthcloud-traefik" "joins the Dokploy network for routing"
-assert_logged "docker service update --network-add dokploy-network" "attaches the Astron Collection service to the Dokploy network"
+assert_logged "docker service update --network-add dokploy-network" "attaches the Zenthcloud service to the Dokploy network"
 assert_not_logged "docker swarm leave" "never leaves the Swarm during migration"
-assert_file_exists "$CASE_DIR/etc/zenthcloud/traefik/dynamic/example.yml" "adopts the Dokploy config into Astron Collection"
+assert_file_exists "$CASE_DIR/etc/zenthcloud/traefik/dynamic/example.yml" "adopts the Dokploy config into Zenthcloud"
 backup_dir="$(echo "$CASE_DIR"/etc/zenthcloud/backups/dokploy-* | awk '{print $1}')"
 if [ -f "$backup_dir/database.sql" ] && [ -f "$backup_dir/config.tar.gz" ]; then
     pass "creates DB and config backups"
@@ -731,7 +731,7 @@ printf 'dokploy-network|overlay\n' > "$STATE/networks"
 ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/none/dokploy" run_install_capture --migrate
 assert_rc "$RC" 1 "refuses to migrate an incomplete runtime"
 assert_contains "$OUT" "No change was made to this host" "explains the refusal"
-assert_not_logged "docker service create --name zenthcloud " "does not deploy Astron Collection services"
+assert_not_logged "docker service create --name zenthcloud " "does not deploy Zenthcloud services"
 assert_not_logged "docker service rm dokploy" "does not stop Dokploy services"
 
 # ==========================================================================
@@ -776,9 +776,9 @@ assert_contains "$OUT" "Migration complete" "completes the migration"
 assert_not_logged "docker swarm leave" "never leaves the Swarm"
 
 # ==========================================================================
-# 25. Migration rewrites Dokploy absolute paths to the Astron Collection layout
+# 25. Migration rewrites Dokploy absolute paths to the Zenthcloud layout
 # ==========================================================================
-echo "25. Migration rewrites Dokploy paths for Astron Collection"
+echo "25. Migration rewrites Dokploy paths for Zenthcloud"
 init_state
 printf 'active\n' > "$STATE/swarm_state"
 printf 'c1|dokploy-postgres|postgres:16||dokploy-network|\n' > "$STATE/containers"
@@ -868,10 +868,10 @@ ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_captu
 assert_rc "$RC" 0 "migration succeeds while reusing the secret"
 assert_logged "docker exec app1 cat /run/secrets/dokploy_auth_secret" "reads Dokploy's auth secret while it still runs"
 assert_contains "$OUT" "Reusing the Dokploy auth secret" "announces the reuse"
-if grep -q '^astron_collectionauth_secret|dokployauthsecretvalue$' "$STATE/secret_values" 2>/dev/null; then
-    pass "stores Dokploy's original auth secret for Astron Collection"
+if grep -q '^zenthcloudauth_secret|dokployauthsecretvalue$' "$STATE/secret_values" 2>/dev/null; then
+    pass "stores Dokploy's original auth secret for Zenthcloud"
 else
-    fail "stores Dokploy's original auth secret for Astron Collection"
+    fail "stores Dokploy's original auth secret for Zenthcloud"
 fi
 
 # ==========================================================================
@@ -911,10 +911,10 @@ ZENTHCLOUD_DOKPLOY_AUTH_SECRET=overridesecretvalue \
     ZENTHCLOUD_DOKPLOY_CONFIG_PATH="$CASE_DIR/dokploy/etc/dokploy" run_install_capture --migrate
 assert_rc "$RC" 0 "migrates with an explicitly provided secret"
 assert_contains "$OUT" "ZENTHCLOUD_DOKPLOY_AUTH_SECRET" "reports the override source"
-if grep -q '^astron_collectionauth_secret|overridesecretvalue$' "$STATE/secret_values" 2>/dev/null; then
-    pass "stores the provided auth secret for Astron Collection"
+if grep -q '^zenthcloudauth_secret|overridesecretvalue$' "$STATE/secret_values" 2>/dev/null; then
+    pass "stores the provided auth secret for Zenthcloud"
 else
-    fail "stores the provided auth secret for Astron Collection"
+    fail "stores the provided auth secret for Zenthcloud"
 fi
 
 # ==========================================================================
@@ -925,7 +925,7 @@ init_state
 printf '1\n' > "$STATE/fail_cli"
 run_install_capture
 assert_rc "$RC" 0 "install still succeeds when the CLI cannot be installed"
-assert_contains "$OUT" "Warning: the Astron Collection CLI could not be installed or updated" "warns about the CLI failure"
+assert_contains "$OUT" "Warning: the Zenthcloud CLI could not be installed or updated" "warns about the CLI failure"
 assert_contains "$OUT" "is installed and the service is running" "still reports the server as installed"
 assert_file_absent "$CASE_DIR/bin/zenthcloud" "does not leave a broken launcher"
 

@@ -78,15 +78,15 @@ describe("processLogs", () => {
 	});
 
 	it("should filter out Zenthcloud dashboard requests", () => {
-		const astronCollectionDashboardEntry = `{"ClientAddr":"172.71.187.131:9485","ClientHost":"172.71.187.131","ClientPort":"9485","ClientUsername":"-","DownstreamContentSize":14550,"DownstreamStatus":200,"Duration":57681682,"OriginContentSize":14550,"OriginDuration":57612242,"OriginStatus":200,"Overhead":69440,"RequestAddr":"hostinger.zenthcloud.com","RequestContentSize":0,"RequestCount":20142,"RequestHost":"hostinger.zenthcloud.com","RequestMethod":"GET","RequestPath":"/_next/data/cb_zzI4Rp9G7Q7djrFKh0/en/dashboard/traefik.json","RequestPort":"-","RequestProtocol":"HTTP/2.0","RequestScheme":"https","RetryAttempts":0,"RouterName":"zenthcloud-router-app-secure@file","ServiceAddr":"zenthcloud:3000","ServiceName":"zenthcloud-service-app@file","ServiceURL":"http://zenthcloud:3000","StartLocal":"2025-12-10T05:10:41.957755949Z","StartUTC":"2025-12-10T05:10:41.957755949Z","TLSCipher":"TLS_AES_128_GCM_SHA256","TLSVersion":"1.3","entryPointName":"websecure","level":"info","msg":"","time":"2025-12-10T05:10:42Z"}`;
+		const zenthcloudDashboardEntry = `{"ClientAddr":"172.71.187.131:9485","ClientHost":"172.71.187.131","ClientPort":"9485","ClientUsername":"-","DownstreamContentSize":14550,"DownstreamStatus":200,"Duration":57681682,"OriginContentSize":14550,"OriginDuration":57612242,"OriginStatus":200,"Overhead":69440,"RequestAddr":"hostinger.zenthcloud.com","RequestContentSize":0,"RequestCount":20142,"RequestHost":"hostinger.zenthcloud.com","RequestMethod":"GET","RequestPath":"/_next/data/cb_zzI4Rp9G7Q7djrFKh0/en/dashboard/traefik.json","RequestPort":"-","RequestProtocol":"HTTP/2.0","RequestScheme":"https","RetryAttempts":0,"RouterName":"zenthcloud-router-app-secure@file","ServiceAddr":"zenthcloud:3000","ServiceName":"zenthcloud-service-app@file","ServiceURL":"http://zenthcloud:3000","StartLocal":"2025-12-10T05:10:41.957755949Z","StartUTC":"2025-12-10T05:10:41.957755949Z","TLSCipher":"TLS_AES_128_GCM_SHA256","TLSVersion":"1.3","entryPointName":"websecure","level":"info","msg":"","time":"2025-12-10T05:10:42Z"}`;
 
 		// Test with only Zenthcloud dashboard entry - should be filtered out
-		const resultOnlyAstronCollection = parseRawConfig(astronCollectionDashboardEntry);
-		expect(resultOnlyAstronCollection.data).toHaveLength(0);
-		expect(resultOnlyAstronCollection.totalCount).toBe(0);
+		const resultOnlyZenthcloud = parseRawConfig(zenthcloudDashboardEntry);
+		expect(resultOnlyZenthcloud.data).toHaveLength(0);
+		expect(resultOnlyZenthcloud.totalCount).toBe(0);
 
 		// Test with mixed entries - Zenthcloud should be filtered, others should remain
-		const mixedEntries = `${astronCollectionDashboardEntry}\n${sampleLogEntry}`;
+		const mixedEntries = `${zenthcloudDashboardEntry}\n${sampleLogEntry}`;
 		const resultMixed = parseRawConfig(mixedEntries);
 		expect(resultMixed.data).toHaveLength(1);
 		expect(resultMixed.totalCount).toBe(1);

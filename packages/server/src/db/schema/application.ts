@@ -234,7 +234,7 @@ export const applications = pgTable("application", {
 		},
 	),
 	networkIds: text("networkIds").array().default([]),
-	detachAstronCollectionNetwork: boolean("detachAstronCollectionNetwork")
+	detachZenthcloudNetwork: boolean("detachZenthcloudNetwork")
 		.notNull()
 		.default(false),
 	// When true the service gets a dedicated overlay network so it is isolated
@@ -382,7 +382,7 @@ const createSchema = createInsertSchema(applications, {
 	watchPaths: z.array(z.string()).optional().optional(),
 	previewLabels: z.array(z.string()).optional(),
 	networkIds: z.array(z.string()).optional(),
-	detachAstronCollectionNetwork: z.boolean().optional(),
+	detachZenthcloudNetwork: z.boolean().optional(),
 	isolatedNetwork: z.boolean().optional(),
 	cleanCache: z.boolean().optional(),
 	stopGracePeriodSwarm: z.number().nullable(),

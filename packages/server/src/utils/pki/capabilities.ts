@@ -1,8 +1,8 @@
 import {
 	type EntitlementPayload,
-	isAstronCollectionCapability,
-	type AstronCollectionCapability,
-	type AstronCollectionProduct,
+	isZenthcloudCapability,
+	type ZenthcloudCapability,
+	type ZenthcloudProduct,
 	productCapabilities,
 	protectedProducts,
 } from "./types";
@@ -22,7 +22,7 @@ import {
  * environment.
  */
 
-export const capabilityLabels: Record<AstronCollectionCapability, string> = {
+export const capabilityLabels: Record<ZenthcloudCapability, string> = {
 	"self.hosted": "Self-hosted",
 	"self.local-registry": "Local registry",
 	"self.offline": "Offline operation",
@@ -34,7 +34,7 @@ export const capabilityLabels: Record<AstronCollectionCapability, string> = {
 	"console.remote-management": "Remote management",
 };
 
-export const capabilityDescriptions: Record<AstronCollectionCapability, string> = {
+export const capabilityDescriptions: Record<ZenthcloudCapability, string> = {
 	"self.hosted": "Run the full Zenthcloud control plane on your own host.",
 	"self.local-registry":
 		"Host and serve container images from a registry on the instance.",
@@ -51,11 +51,11 @@ export const capabilityDescriptions: Record<AstronCollectionCapability, string> 
 };
 
 export interface CapabilityEvaluation {
-	product: AstronCollectionProduct;
+	product: ZenthcloudProduct;
 	/** Effective capabilities the instance may use. */
-	capabilities: AstronCollectionCapability[];
+	capabilities: ZenthcloudCapability[];
 	/** Capabilities of the product that were not granted. */
-	missingCapabilities: AstronCollectionCapability[];
+	missingCapabilities: ZenthcloudCapability[];
 	/** Whether the product requires a signed entitlement to be usable. */
 	requiresEntitlement: boolean;
 	/** True when a protected product is missing its entitlement. */
@@ -70,7 +70,7 @@ export interface CapabilityEvaluation {
  * declared for the product are refused even when an entitlement claims them.
  */
 export const evaluateCapabilities = (options: {
-	product: AstronCollectionProduct;
+	product: ZenthcloudProduct;
 	entitlement?: EntitlementPayload | null;
 	/** Self-hosted keeps its built-in capabilities even without an entitlement. */
 	allowProductDefaults?: boolean;
@@ -81,8 +81,8 @@ export const evaluateCapabilities = (options: {
 	const declared = productCapabilities[options.product];
 	const grantedByEntitlement = options.entitlement?.capabilities ?? [];
 	const granted = allowDefaults
-		? new Set<AstronCollectionCapability>([...declared, ...grantedByEntitlement])
-		: new Set<AstronCollectionCapability>(grantedByEntitlement);
+		? new Set<ZenthcloudCapability>([...declared, ...grantedByEntitlement])
+		: new Set<ZenthcloudCapability>(grantedByEntitlement);
 
 	// Never hand out a capability that is not part of the product's declared set.
 	const capabilities = declared.filter((capability) => granted.has(capability));
@@ -106,10 +106,10 @@ export const evaluateCapabilities = (options: {
  * an unknown id is always false so a typo cannot grant access by accident.
  */
 export const hasCapability = (
-	capabilities: readonly AstronCollectionCapability[],
+	capabilities: readonly ZenthcloudCapability[],
 	capability: string,
 ): boolean =>
-	isAstronCollectionCapability(capability) && capabilities.includes(capability);
+	isZenthcloudCapability(capability) && capabilities.includes(capability);
 
 /**
  * Maps legacy flavour signals to a product. This is a *hint* only and must never
@@ -121,7 +121,7 @@ export const resolveProductHint = (options: {
 	product?: string | null;
 	flavor?: string | null;
 	isCloud?: boolean;
-}): AstronCollectionProduct => {
+}): ZenthcloudProduct => {
 	const explicit = (options.product ?? "").toLowerCase();
 	if (explicit === "cloud") return "cloud";
 	if (explicit === "console") return "console";

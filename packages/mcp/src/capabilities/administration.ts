@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ApiError } from "../adapters/astronCollectionApi.js";
+import { ApiError } from "../adapters/zenthcloudApi.js";
 import { defineCapability } from "../contracts/capability.js";
 import { toolResultEnvelopeShape } from "../contracts/result.js";
 import { fetchApplication } from "./helpers.js";

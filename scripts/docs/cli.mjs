@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Documentation synchronization for Astron Collection.
+ * Documentation synchronization for Zenthcloud.
  *
  *   node scripts/docs/cli.mjs check [--only <groups>] [--changed] [--base <ref>] [--json]
  *   node scripts/docs/cli.mjs generate [--only <groups>] [--json]
@@ -1086,7 +1086,7 @@ async function runCoverage({ options, config, namespaces, groups, templates, dia
 }
 
 function printHelp() {
-	console.log(`Astron Collection documentation sync
+	console.log(`Zenthcloud documentation sync
 
 Usage:
   node scripts/docs/cli.mjs check [options]

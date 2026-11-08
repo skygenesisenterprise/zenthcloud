@@ -17,8 +17,8 @@ import {
 	type IdentityDiagnostic,
 	type InstanceIdentity,
 	type InstanceIdentityDocument,
-	type AstronCollectionCapability,
-	type AstronCollectionProduct,
+	type ZenthcloudCapability,
+	type ZenthcloudProduct,
 	productCapabilities,
 } from "./types";
 import {
@@ -94,7 +94,7 @@ const writePublic = (filePath: string, contents: string) => {
 
 export interface GenerateIdentityOptions {
 	identityDir: string;
-	product?: AstronCollectionProduct;
+	product?: ZenthcloudProduct;
 	instanceId?: string;
 	keySize?: number;
 	validityDays?: number;
@@ -129,7 +129,7 @@ export const generateLocalInstanceIdentity = (
 	}
 
 	const product = options.product ?? "self";
-	const capabilities: AstronCollectionCapability[] = [...productCapabilities[product]];
+	const capabilities: ZenthcloudCapability[] = [...productCapabilities[product]];
 	const instanceId = options.instanceId ?? randomUUID();
 	const now = options.now ?? new Date();
 

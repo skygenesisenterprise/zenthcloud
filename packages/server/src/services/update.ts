@@ -100,7 +100,7 @@ export interface IUpdateStatusData extends IUpdateData {
 }
 
 /** Returns current Zenthcloud docker image tag or `latest` by default. */
-export const getAstronCollectionImageTag = () => {
+export const getZenthcloudImageTag = () => {
 	return process.env.RELEASE_TAG || "latest";
 };
 
@@ -351,7 +351,7 @@ export const invalidateUpdateCache = () => {
  */
 export const getUpdateStatus = async (
 	currentVersion: string,
-	channel: string = getAstronCollectionImageTag(),
+	channel: string = getZenthcloudImageTag(),
 ): Promise<IUpdateStatusData> => {
 	const checkedAt = new Date().toISOString();
 	const normalizedCurrent = normalizeVersion(currentVersion) ?? currentVersion;
@@ -413,7 +413,7 @@ export const getUpdateStatus = async (
  */
 export const getUpdateData = async (
 	currentVersion: string,
-	channel: string = getAstronCollectionImageTag(),
+	channel: string = getZenthcloudImageTag(),
 ): Promise<IUpdateData> => {
 	const status = await getUpdateStatus(currentVersion, channel);
 	return {

@@ -53,7 +53,7 @@ export interface AdvancedSelection {
 }
 
 export interface McpConfig {
-  astronCollectionUrl: string;
+  zenthcloudUrl: string;
   apiKey: string;
   customHeaders: Record<string, string>;
   timeoutMs: number;
@@ -132,7 +132,7 @@ function parseChoice<T extends string>(
  * would leak into logs or change which endpoint is targeted without being
  * visible in the configuration. Only http(s) is accepted.
  */
-export function validateAstronCollectionUrl(raw: string): string {
+export function validateZenthcloudUrl(raw: string): string {
   let url: URL;
   try {
     url = new URL(raw);
@@ -379,7 +379,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): McpConfig {
   const auditLogPath = env.ZENTHCLOUD_MCP_AUDIT_LOG?.trim();
 
   const config: McpConfig = {
-    astronCollectionUrl: validateAstronCollectionUrl(rawUrl),
+    zenthcloudUrl: validateZenthcloudUrl(rawUrl),
     apiKey: validateApiKey(env.ZENTHCLOUD_API_KEY),
     customHeaders: parseCustomHeaders(env.ZENTHCLOUD_CUSTOM_HEADERS),
     timeoutMs: parseInteger(

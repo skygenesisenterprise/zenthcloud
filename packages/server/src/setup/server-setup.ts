@@ -1,6 +1,6 @@
 import path from "node:path";
 import { IS_CLOUD, paths } from "@zenthcloud/server/constants";
-import { getAstronCollectionUrl } from "@zenthcloud/server/services/admin";
+import { getZenthcloudUrl } from "@zenthcloud/server/services/admin";
 import {
 	createServerDeployment,
 	updateDeploymentStatus,
@@ -75,7 +75,7 @@ export const serverSetup = async (
 		if (IS_CLOUD) {
 			onData?.("\nConfiguring Monitoring: 🔄\n");
 
-			const baseUrl = await getAstronCollectionUrl();
+			const baseUrl = await getZenthcloudUrl();
 			const token = generateToken();
 			const urlCallback = `${baseUrl}/api/trpc/notification.receiveNotification`;
 

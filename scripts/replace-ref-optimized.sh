@@ -23,10 +23,10 @@ done
 echo "Step 1 completed"
 echo ""
 
-# Step 2: Replace Astron Collection (with space) with Zenthcloud
-echo "=== Step 2: Replacing Astron Collection ==="
-find . -type f \( $FILE_PATTERN \) $EXCLUDE_PATTERN -exec grep -l "Astron Collection" {} + | while read -r file; do
-    sed -i 's/Astron Collection/Zenthcloud/g' "$file"
+# Step 2: Replace Zenthcloud (with space) with Zenthcloud
+echo "=== Step 2: Replacing Zenthcloud ==="
+find . -type f \( $FILE_PATTERN \) $EXCLUDE_PATTERN -exec grep -l "Zenthcloud" {} + | while read -r file; do
+    sed -i 's/Zenthcloud/Zenthcloud/g' "$file"
 done
 echo "Step 2 completed"
 echo ""

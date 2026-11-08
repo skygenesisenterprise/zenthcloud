@@ -3,7 +3,7 @@ package containers
 import (
 	"strings"
 
-	"github.com/skygenesisenterprise/astron-collection/apps/monitoring/config"
+	"github.com/skygenesisenterprise/zenthcloud/apps/monitoring/config"
 )
 
 var monitorConfig *MonitoringConfig

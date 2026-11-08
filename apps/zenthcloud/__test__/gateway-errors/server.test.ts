@@ -56,7 +56,7 @@ describe("gateway error server", () => {
 
 	test("renders the status provided by the Traefik errors middleware", async () => {
 		const response = await fetch(
-			`${baseUrl}/__astron_collectionerror?status=502`,
+			`${baseUrl}/__zenthclouderror?status=502`,
 		);
 		const body = await response.text();
 
@@ -69,7 +69,7 @@ describe("gateway error server", () => {
 
 	test("honours an explicit code when it matches the status", async () => {
 		const response = await fetch(
-			`${baseUrl}/__astron_collectionerror?status=503&code=NP-1503`,
+			`${baseUrl}/__zenthclouderror?status=503&code=NP-1503`,
 		);
 		const body = await response.text();
 
@@ -80,7 +80,7 @@ describe("gateway error server", () => {
 
 	test("ignores a code that does not match the status", async () => {
 		const response = await fetch(
-			`${baseUrl}/__astron_collectionerror?status=502&code=NP-1503`,
+			`${baseUrl}/__zenthclouderror?status=502&code=NP-1503`,
 		);
 
 		expect(response.headers.get("x-zenthcloud-error-code")).toBe("NP-1003");
@@ -89,7 +89,7 @@ describe("gateway error server", () => {
 	test("maps malformed and non-error statuses to 404", async () => {
 		for (const status of ["200", "abc", "999"]) {
 			const response = await fetch(
-				`${baseUrl}/__astron_collectionerror?status=${status}`,
+				`${baseUrl}/__zenthclouderror?status=${status}`,
 			);
 			expect(response.status).toBe(404);
 			expect(response.headers.get("x-zenthcloud-error-code")).toBe("NP-1001");
@@ -120,7 +120,7 @@ describe("gateway error server", () => {
 
 	test("logs structured records without the query string", async () => {
 		logs.length = 0;
-		await fetch(`${baseUrl}/__astron_collectionerror?status=504&secret=value`);
+		await fetch(`${baseUrl}/__zenthclouderror?status=504&secret=value`);
 
 		expect(logs).toHaveLength(1);
 		const record = logs[0];
@@ -129,7 +129,7 @@ describe("gateway error server", () => {
 		expect(record.status).toBe(504);
 		expect(record.requestId).toMatch(/^np_[0-9a-f]{32}$/);
 		expect(record.timestamp).toBe("2026-10-29T12:34:56.789Z");
-		expect(record.path).toBe("/__astron_collectionerror");
+		expect(record.path).toBe("/__zenthclouderror");
 		expect(JSON.stringify(record)).not.toContain("secret");
 	});
 });

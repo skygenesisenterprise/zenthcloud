@@ -13,7 +13,7 @@ import {
 	initializeTraefikService,
 	type TraefikOptions,
 } from "../setup/traefik-setup";
-import { getAstronCollectionImageTag, ZENTHCLOUD_IMAGE, toReleaseTag } from "./update";
+import { getZenthcloudImageTag, ZENTHCLOUD_IMAGE, toReleaseTag } from "./update";
 
 // The update detection/status model lives in `./update`; re-exported here so the
 // historical import path keeps working for the API, SDK and desktop clients.
@@ -21,7 +21,7 @@ export {
 	checkReleaseAssets,
 	computeUpdateStatus,
 	DEFAULT_UPDATE_DATA,
-	getAstronCollectionImageTag,
+	getZenthcloudImageTag,
 	getUpdateData,
 	getUpdateStatus,
 	type IUpdateData,
@@ -191,7 +191,7 @@ export const reloadDockerResource = async (
 	let command = "";
 	if (resourceType === "service") {
 		if (resourceName === "zenthcloud") {
-			const currentImageTag = getAstronCollectionImageTag();
+			const currentImageTag = getZenthcloudImageTag();
 			// `canary` and `feature` installations stay on their channel, every
 			// other one moves to the released version when one is given.
 			const imageTag =

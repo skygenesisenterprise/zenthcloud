@@ -25,8 +25,8 @@ import {
 	type EntitlementPayload,
 	type IdentityDiagnostic,
 	type InstanceIdentity,
-	type AstronCollectionCapability,
-	type AstronCollectionProduct,
+	type ZenthcloudCapability,
+	type ZenthcloudProduct,
 	protectedProducts,
 } from "../utils/pki/types";
 
@@ -41,13 +41,13 @@ import {
 
 export interface Installation {
 	/** Effective product, derived from the identity and entitlement. */
-	product: AstronCollectionProduct;
+	product: ZenthcloudProduct;
 	/** Legacy flavour hint (ZENTHCLOUD_FLAVOR / IS_CLOUD), never authoritative. */
-	productHint: AstronCollectionProduct;
+	productHint: ZenthcloudProduct;
 	/** Effective capabilities after evaluation. */
-	capabilities: AstronCollectionCapability[];
+	capabilities: ZenthcloudCapability[];
 	/** Product capabilities that were not authorized. */
-	missingCapabilities: AstronCollectionCapability[];
+	missingCapabilities: ZenthcloudCapability[];
 	identity: InstanceIdentity | null;
 	/** Verified entitlement, if one was present and valid. */
 	entitlement: EntitlementPayload | null;
@@ -80,7 +80,7 @@ export interface GetInstallationOptions {
 	allowUnlicensed?: boolean;
 }
 
-const isProtected = (product: AstronCollectionProduct) =>
+const isProtected = (product: ZenthcloudProduct) =>
 	protectedProducts.includes(product);
 
 const defaultIdentityDir = () => paths().IDENTITY_PATH;
@@ -95,7 +95,7 @@ const defaultIdentityDir = () => paths().IDENTITY_PATH;
  * instance identity is reused while coherent, even when the instance is started
  * under another product.
  */
-export const getConfiguredProduct = (): AstronCollectionProduct =>
+export const getConfiguredProduct = (): ZenthcloudProduct =>
 	resolveProductHint({
 		product: ZENTHCLOUD_PRODUCT,
 		flavor: ZENTHCLOUD_FLAVOR,
@@ -264,7 +264,7 @@ export const getInstallation = (
 export interface InstallationValidation {
 	/** False when any diagnostic is an error. */
 	healthy: boolean;
-	product: AstronCollectionProduct;
+	product: ZenthcloudProduct;
 	diagnostics: IdentityDiagnostic[];
 }
 
@@ -289,7 +289,7 @@ export const validateInstallation = (
 
 export interface InitializeInstallationOptions {
 	identityDir?: string;
-	product?: AstronCollectionProduct;
+	product?: ZenthcloudProduct;
 	instanceId?: string;
 	subjectAltNames?: string[];
 	/** Zenthcloud-signed entitlement required for cloud/console. */

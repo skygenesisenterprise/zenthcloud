@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loadConfig, validateAstronCollectionUrl } from "./config.js";
+import { loadConfig, validateZenthcloudUrl } from "./config.js";
 
 const BASE_ENV = {
   ZENTHCLOUD_URL: "https://zenthcloud.example.com",
@@ -10,32 +10,32 @@ function env(overrides: Record<string, string | undefined> = {}): NodeJS.Process
   return { ...BASE_ENV, ...overrides } as NodeJS.ProcessEnv;
 }
 
-describe("validateAstronCollectionUrl", () => {
+describe("validateZenthcloudUrl", () => {
   it("accepts http(s) origins and removes trailing slashes", () => {
-    expect(validateAstronCollectionUrl("https://zenthcloud.example.com/")).toBe("https://zenthcloud.example.com");
-    expect(validateAstronCollectionUrl("http://localhost:3000/zenthcloud/")).toBe(
+    expect(validateZenthcloudUrl("https://zenthcloud.example.com/")).toBe("https://zenthcloud.example.com");
+    expect(validateZenthcloudUrl("http://localhost:3000/zenthcloud/")).toBe(
       "http://localhost:3000/zenthcloud",
     );
   });
 
   it("rejects non-http protocols", () => {
-    expect(() => validateAstronCollectionUrl("ftp://zenthcloud.example.com")).toThrow(/http/);
-    expect(() => validateAstronCollectionUrl("file:///etc/passwd")).toThrow(/http/);
+    expect(() => validateZenthcloudUrl("ftp://zenthcloud.example.com")).toThrow(/http/);
+    expect(() => validateZenthcloudUrl("file:///etc/passwd")).toThrow(/http/);
   });
 
   it("rejects embedded credentials", () => {
-    expect(() => validateAstronCollectionUrl("https://user:pass@zenthcloud.example.com")).toThrow(
+    expect(() => validateZenthcloudUrl("https://user:pass@zenthcloud.example.com")).toThrow(
       /credentials/,
     );
   });
 
   it("rejects query strings and fragments", () => {
-    expect(() => validateAstronCollectionUrl("https://zenthcloud.example.com?x=1")).toThrow(/query/);
-    expect(() => validateAstronCollectionUrl("https://zenthcloud.example.com#frag")).toThrow(/fragment/);
+    expect(() => validateZenthcloudUrl("https://zenthcloud.example.com?x=1")).toThrow(/query/);
+    expect(() => validateZenthcloudUrl("https://zenthcloud.example.com#frag")).toThrow(/fragment/);
   });
 
   it("rejects relative and malformed URLs", () => {
-    expect(() => validateAstronCollectionUrl("zenthcloud.example.com")).toThrow(/absolute URL/);
+    expect(() => validateZenthcloudUrl("zenthcloud.example.com")).toThrow(/absolute URL/);
   });
 });
 

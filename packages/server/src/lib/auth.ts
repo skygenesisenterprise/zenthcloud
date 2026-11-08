@@ -253,12 +253,12 @@ const createBetterAuth = () =>
 							return { data: { emailVerified: true } };
 						}
 						if (!IS_CLOUD) {
-							const xAstronCollectionToken =
+							const xZenthcloudToken =
 								context?.request?.headers?.get("x-zenthcloud-token");
-							if (xAstronCollectionToken) {
+							if (xZenthcloudToken) {
 								let invitation: Awaited<ReturnType<typeof getUserByToken>>;
 								try {
-									invitation = await getUserByToken(xAstronCollectionToken);
+									invitation = await getUserByToken(xZenthcloudToken);
 								} catch {
 									throw new APIError("BAD_REQUEST", {
 										message: "Invalid invitation token",

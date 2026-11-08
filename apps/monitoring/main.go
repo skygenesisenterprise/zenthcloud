@@ -9,11 +9,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
-	"github.com/skygenesisenterprise/astron-collection/apps/monitoring/config"
-	"github.com/skygenesisenterprise/astron-collection/apps/monitoring/containers"
-	"github.com/skygenesisenterprise/astron-collection/apps/monitoring/database"
-	"github.com/skygenesisenterprise/astron-collection/apps/monitoring/middleware"
-	"github.com/skygenesisenterprise/astron-collection/apps/monitoring/monitoring"
+	"github.com/skygenesisenterprise/zenthcloud/apps/monitoring/config"
+	"github.com/skygenesisenterprise/zenthcloud/apps/monitoring/containers"
+	"github.com/skygenesisenterprise/zenthcloud/apps/monitoring/database"
+	"github.com/skygenesisenterprise/zenthcloud/apps/monitoring/middleware"
+	"github.com/skygenesisenterprise/zenthcloud/apps/monitoring/monitoring"
 )
 
 func main() {

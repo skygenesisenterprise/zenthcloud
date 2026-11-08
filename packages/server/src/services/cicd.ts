@@ -12,7 +12,7 @@ import type { CicdProvider } from "@zenthcloud/server/lib/cicd-scope";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, or, sql } from "drizzle-orm";
 import type { z } from "zod";
-import { getAstronCollectionUrl } from "./admin";
+import { getZenthcloudUrl } from "./admin";
 
 /**
  * CI/CD API services.
@@ -96,7 +96,7 @@ export const buildApplicationDashboardUrl = async (input: {
 	environmentId: string;
 	applicationId: string;
 }) => {
-	const base = await getAstronCollectionUrl();
+	const base = await getZenthcloudUrl();
 	return `${base}/dashboard/project/${input.projectId}/environment/${input.environmentId}/services/application/${input.applicationId}`;
 };
 

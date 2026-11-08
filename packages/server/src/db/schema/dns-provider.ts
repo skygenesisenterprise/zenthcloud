@@ -253,7 +253,7 @@ export const customDnsConfigSchema = z.object({
 // First-party provider
 // ---------------------------------------------------------------------------
 
-export const astronCollectionInternalDnsConfigSchema = z.object({
+export const zenthcloudInternalDnsConfigSchema = z.object({
 	providerType: z.literal("zenthcloud-internal"),
 	defaultTtl: z.number().int().positive().default(300),
 });
@@ -281,7 +281,7 @@ export const dnsProviderConfigSchema = z.discriminatedUnion("providerType", [
 	corednsDnsConfigSchema,
 	unboundDnsConfigSchema,
 	customDnsConfigSchema,
-	astronCollectionInternalDnsConfigSchema,
+	zenthcloudInternalDnsConfigSchema,
 ]);
 
 export type DnsProviderConfig = z.infer<typeof dnsProviderConfigSchema>;

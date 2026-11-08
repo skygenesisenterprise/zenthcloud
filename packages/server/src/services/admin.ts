@@ -104,7 +104,7 @@ export const removeUserById = async (userId: string) => {
 		.then((res) => res[0]);
 };
 
-export const getAstronCollectionUrl = async () => {
+export const getZenthcloudUrl = async () => {
 	if (IS_CLOUD) {
 		return "https://app.zenthcloud.com";
 	}

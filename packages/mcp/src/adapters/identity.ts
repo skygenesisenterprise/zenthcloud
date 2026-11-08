@@ -1,7 +1,7 @@
 import type { ApiPort } from "../contracts/api.js";
 import type { AuthenticatedIdentity } from "../contracts/context.js";
 import type { ResolvedPermissions } from "../contracts/core.js";
-import { ApiError } from "./astronCollectionApi.js";
+import { ApiError } from "./zenthcloudApi.js";
 
 const DEFAULT_TTL_MS = 30_000;
 

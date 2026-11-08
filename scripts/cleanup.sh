@@ -2,7 +2,7 @@
 set -e
 
 # Uninstall helper
-echo "This will remove Astron Collection containers and networks."
+echo "This will remove Zenthcloud containers and networks."
 echo "Persistent volumes (postgres data, config) will NOT be removed unless specified."
 echo ""
 read -p "Continue? [y/N]: " -n 1 -r

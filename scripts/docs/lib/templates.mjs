@@ -204,7 +204,7 @@ function validateCompose(dir, issues) {
 			file: "docker-compose.yml",
 			code: "templates.compose-networks",
 			message:
-				"docker-compose.yml must not declare networks; Astron Collection creates the network",
+				"docker-compose.yml must not declare networks; Zenthcloud creates the network",
 		});
 	}
 	for (const name of serviceNames) {
@@ -214,7 +214,7 @@ function validateCompose(dir, issues) {
 				severity: "error",
 				file: "docker-compose.yml",
 				code: "templates.compose-container-name",
-				message: `service "${name}" sets container_name; Astron Collection names containers per deployment`,
+				message: `service "${name}" sets container_name; Zenthcloud names containers per deployment`,
 			});
 		}
 		for (const port of service.ports ?? []) {

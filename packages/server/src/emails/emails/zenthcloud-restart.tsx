@@ -16,7 +16,7 @@ export type TemplateProps = {
 	date: string;
 };
 
-export const AstronCollectionRestartEmail = ({
+export const ZenthcloudRestartEmail = ({
 	date = "2023-05-01T00:00:00.000Z",
 }: TemplateProps) => {
 	const previewText = "Your zenthcloud server was restarted";
@@ -62,4 +62,4 @@ export const AstronCollectionRestartEmail = ({
 	);
 };
 
-export default AstronCollectionRestartEmail;
+export default ZenthcloudRestartEmail;

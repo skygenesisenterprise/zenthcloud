@@ -199,7 +199,7 @@ export const CustomDnsIcon = ({ className }: Props) => (
  * First-party Zenthcloud Internal DNS. Uses the Zenthcloud brand mark published in
  * `public/zenthcloud.png`.
  */
-export const AstronCollectionInternalIcon = ({ className }: Props) => (
+export const ZenthcloudInternalIcon = ({ className }: Props) => (
 	<Image
 		src="/zenthcloud.png"
 		alt=""
@@ -233,7 +233,7 @@ export const dnsProviderIcons = {
 	coredns: CorednsIcon,
 	unbound: UnboundIcon,
 	custom: CustomDnsIcon,
-	"zenthcloud-internal": AstronCollectionInternalIcon,
+	"zenthcloud-internal": ZenthcloudInternalIcon,
 } as const;
 
 export type DnsProviderIconKey = keyof typeof dnsProviderIcons;

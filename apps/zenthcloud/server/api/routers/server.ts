@@ -691,7 +691,7 @@ export const serverRouter = createTRPCRouter({
 						enabled: boolean;
 						version: string;
 					};
-					isAstronCollectionNetworkInstalled: boolean;
+					isZenthcloudNetworkInstalled: boolean;
 					isSwarmInstalled: boolean;
 					isMainDirectoryInstalled: boolean;
 					privilegeMode: string;

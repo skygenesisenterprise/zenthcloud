@@ -56,7 +56,7 @@ vi.mock("@zenthcloud/server/services/application", async () => {
 });
 
 vi.mock("@zenthcloud/server/services/admin", () => ({
-	getAstronCollectionUrl: vi.fn(),
+	getZenthcloudUrl: vi.fn(),
 }));
 
 vi.mock("@zenthcloud/server/services/deployment", () => ({
@@ -149,7 +149,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		vi.mocked(applicationService.findApplicationById).mockResolvedValue(
 			createMockApplication() as any,
 		);
-		vi.mocked(adminService.getAstronCollectionUrl).mockResolvedValue(
+		vi.mocked(adminService.getZenthcloudUrl).mockResolvedValue(
 			"http://localhost:3000",
 		);
 		vi.mocked(deploymentService.createDeployment).mockResolvedValue(

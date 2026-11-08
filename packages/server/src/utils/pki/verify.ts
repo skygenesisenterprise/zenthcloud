@@ -7,10 +7,10 @@ import {
 	type InstanceCertificateInfo,
 	type InstanceIdentityDocument,
 	type InstanceIdentityStatus,
-	isAstronCollectionCapability,
-	isAstronCollectionProduct,
+	isZenthcloudCapability,
+	isZenthcloudProduct,
 	ZENTHCLOUD_IDENTITY_EXTENSION_OID,
-	type AstronCollectionCapability,
+	type ZenthcloudCapability,
 } from "./types";
 
 /**
@@ -40,7 +40,7 @@ const validateIdentityDocument = (
 		typeof document.instanceId !== "string" ||
 		!document.instanceId ||
 		typeof document.product !== "string" ||
-		!isAstronCollectionProduct(document.product) ||
+		!isZenthcloudProduct(document.product) ||
 		!Array.isArray(document.capabilities) ||
 		typeof document.subjectKeyFingerprint !== "string" ||
 		typeof document.createdAt !== "string"
@@ -49,8 +49,8 @@ const validateIdentityDocument = (
 	}
 
 	const capabilities = document.capabilities.filter(
-		(value): value is AstronCollectionCapability =>
-			typeof value === "string" && isAstronCollectionCapability(value),
+		(value): value is ZenthcloudCapability =>
+			typeof value === "string" && isZenthcloudCapability(value),
 	);
 
 	return {

@@ -3406,7 +3406,7 @@
                       }
                     ]
                   },
-                  "detachAstronCollectionNetwork": {
+                  "detachZenthcloudNetwork": {
                     "type": "boolean"
                   },
                   "isolatedNetwork": {
@@ -12737,14 +12737,14 @@
                                 "type": "string"
                               }
                             },
-                            "detachAstronCollectionNetwork": {
+                            "detachZenthcloudNetwork": {
                               "type": "boolean"
                             }
                           },
                           "required": [
                             "serviceName",
                             "networkIds",
-                            "detachAstronCollectionNetwork"
+                            "detachZenthcloudNetwork"
                           ]
                         }
                       },
@@ -28609,7 +28609,7 @@
                       }
                     ]
                   },
-                  "detachAstronCollectionNetwork": {
+                  "detachZenthcloudNetwork": {
                     "type": "boolean"
                   },
                   "createdAt": {
@@ -30489,7 +30489,7 @@
                       }
                     ]
                   },
-                  "detachAstronCollectionNetwork": {
+                  "detachZenthcloudNetwork": {
                     "type": "boolean"
                   }
                 },
@@ -32601,7 +32601,7 @@
                       }
                     ]
                   },
-                  "detachAstronCollectionNetwork": {
+                  "detachZenthcloudNetwork": {
                     "type": "boolean"
                   }
                 },
@@ -35389,7 +35389,7 @@
                       }
                     ]
                   },
-                  "detachAstronCollectionNetwork": {
+                  "detachZenthcloudNetwork": {
                     "type": "boolean"
                   }
                 },
@@ -36013,13 +36013,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -36045,9 +36045,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "astronCollectionBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "astronCollectionRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -36140,13 +36140,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -36359,13 +36359,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -36395,9 +36395,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "astronCollectionBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "astronCollectionRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -36491,13 +36491,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -36720,13 +36720,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -36752,9 +36752,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "astronCollectionBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "astronCollectionRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -36847,13 +36847,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -37066,13 +37066,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -37118,9 +37118,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "astronCollectionBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "astronCollectionRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -37217,13 +37217,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -37481,13 +37481,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -37521,9 +37521,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "astronCollectionBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "astronCollectionRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -37617,13 +37617,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -38224,13 +38224,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -38264,9 +38264,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "astronCollectionBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "astronCollectionRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -38361,13 +38361,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -38598,13 +38598,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -38638,9 +38638,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "astronCollectionBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "astronCollectionRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -38735,13 +38735,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -38973,13 +38973,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -39008,9 +39008,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "astronCollectionBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "astronCollectionRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -39102,13 +39102,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -39327,13 +39327,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -39451,13 +39451,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -39682,13 +39682,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -39711,9 +39711,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "astronCollectionBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "astronCollectionRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -39805,13 +39805,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -40018,13 +40018,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -40047,9 +40047,9 @@
                 "required": [
                   "appBuildError",
                   "databaseBackup",
-                  "astronCollectionBackup",
+                  "zenthcloudBackup",
                   "volumeBackup",
-                  "astronCollectionRestart",
+                  "zenthcloudRestart",
                   "name",
                   "appDeploy",
                   "dockerCleanup",
@@ -40141,13 +40141,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -40354,13 +40354,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -40550,13 +40550,13 @@
                   "databaseBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionBackup": {
+                  "zenthcloudBackup": {
                     "type": "boolean"
                   },
                   "volumeBackup": {
                     "type": "boolean"
                   },
-                  "astronCollectionRestart": {
+                  "zenthcloudRestart": {
                     "type": "boolean"
                   },
                   "name": {
@@ -45344,7 +45344,7 @@
                       }
                     ]
                   },
-                  "detachAstronCollectionNetwork": {
+                  "detachZenthcloudNetwork": {
                     "type": "boolean"
                   }
                 },
@@ -49152,7 +49152,7 @@
                       }
                     ]
                   },
-                  "detachAstronCollectionNetwork": {
+                  "detachZenthcloudNetwork": {
                     "type": "boolean"
                   }
                 },
@@ -56491,9 +56491,9 @@
         }
       }
     },
-    "/settings.getAstronCollectionVersion": {
+    "/settings.getZenthcloudVersion": {
       "get": {
-        "operationId": "settings-getAstronCollectionVersion",
+        "operationId": "settings-getZenthcloudVersion",
         "tags": [
           "settings"
         ],
@@ -58590,9 +58590,9 @@
         }
       }
     },
-    "/settings.getAstronCollectionCloudIps": {
+    "/settings.getZenthcloudCloudIps": {
       "get": {
-        "operationId": "settings-getAstronCollectionCloudIps",
+        "operationId": "settings-getZenthcloudCloudIps",
         "tags": [
           "settings"
         ],

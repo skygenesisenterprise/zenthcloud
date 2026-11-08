@@ -427,7 +427,7 @@ export const resolveServiceNetworks = async (
 		return application.networkSwarm;
 	}
 
-	const { networkIds, detachAstronCollectionNetwork } = application;
+	const { networkIds, detachZenthcloudNetwork } = application;
 	const rows =
 		networkIds && networkIds.length > 0
 			? await db.query.network.findMany({
@@ -439,7 +439,7 @@ export const resolveServiceNetworks = async (
 				})
 			: [];
 
-	const networks = detachAstronCollectionNetwork ? [] : ["zenthcloud-network"];
+	const networks = detachZenthcloudNetwork ? [] : ["zenthcloud-network"];
 	for (const row of rows) {
 		networks.push(row.name);
 	}

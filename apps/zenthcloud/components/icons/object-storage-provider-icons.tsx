@@ -165,7 +165,7 @@ export const S3CompatibleIcon = ({ className }: Props) => (
  * First-party Zenthcloud Internal Storage. Uses the Zenthcloud brand mark published
  * in `public/zenthcloud.png`.
  */
-export const AstronCollectionInternalIcon = ({ className }: Props) => (
+export const ZenthcloudInternalIcon = ({ className }: Props) => (
 	<Image
 		src="/zenthcloud.png"
 		alt=""
@@ -193,7 +193,7 @@ export const objectStorageProviderIcons = {
 	seaweedfs: SeaweedfsIcon,
 	garage: GarageIcon,
 	"s3-compatible": S3CompatibleIcon,
-	"zenthcloud-internal": AstronCollectionInternalIcon,
+	"zenthcloud-internal": ZenthcloudInternalIcon,
 } as const;
 
 export type ObjectStorageProviderIconKey =

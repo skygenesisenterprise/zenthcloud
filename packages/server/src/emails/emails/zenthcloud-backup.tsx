@@ -19,7 +19,7 @@ export type TemplateProps = {
 	backupSize?: string;
 };
 
-export const AstronCollectionBackupEmail = ({
+export const ZenthcloudBackupEmail = ({
 	type = "success",
 	errorMessage,
 	date = "2023-05-01T00:00:00.000Z",
@@ -94,4 +94,4 @@ export const AstronCollectionBackupEmail = ({
 	);
 };
 
-export default AstronCollectionBackupEmail;
+export default ZenthcloudBackupEmail;

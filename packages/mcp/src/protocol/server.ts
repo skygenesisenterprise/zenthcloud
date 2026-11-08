@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { type CallToolResult, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { IdentityResolver } from "../adapters/identity.js";
-import { AstronCollectionApi } from "../adapters/astronCollectionApi.js";
+import { ZenthcloudApi } from "../adapters/zenthcloudApi.js";
 import { buildCatalog, CapabilityRegistry, type Catalog } from "../catalog/registry.js";
 import { getConfig, type McpConfig } from "../config.js";
 import type { ApiPort } from "../contracts/api.js";
@@ -73,7 +73,7 @@ export async function createServerParts(options: CreateRuntimeOptions = {}): Pro
   const config = options.config ?? getConfig();
   setLogLevel(config.logLevel as LogLevel);
 
-  const api = options.api ?? new AstronCollectionApi(config);
+  const api = options.api ?? new ZenthcloudApi(config);
   const operations =
     options.operations ??
     new OperationStore({

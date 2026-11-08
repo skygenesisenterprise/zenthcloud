@@ -4,7 +4,7 @@ import { createCommand } from "@zenthcloud/server/utils/builders/compose";
 import { parse, quote } from "shell-quote";
 import { describe, expect, it } from "vitest";
 
-const MARK = `/tmp/astron_collectioncompose_pwned_${process.pid}`;
+const MARK = `/tmp/zenthcloudcompose_pwned_${process.pid}`;
 
 const base = {
 	composeType: "docker-compose" as const,

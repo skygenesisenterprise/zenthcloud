@@ -52,7 +52,7 @@ if (!IS_CLOUD) {
  * this from the bootstrap block below; development needs it too because the
  * Compose dev stack starts the app without running `pnpm setup`.
  */
-const ensureAstronCollectionNetwork = async () => {
+const ensureZenthcloudNetwork = async () => {
 	try {
 		await initializeSwarm();
 		await initializeNetwork();
@@ -97,7 +97,7 @@ const app = next({ dev, turbopack: process.env.TURBOPACK === "1" });
 const handle = app.getRequestHandler();
 void app.prepare().then(async () => {
 	try {
-		console.log("Running AstronCollectionVersion: ", packageInfo.version);
+		console.log("Running ZenthcloudVersion: ", packageInfo.version);
 		const server = http.createServer((req, res) => {
 			if (dev && req.url?.includes("_clientMiddlewareManifest.js")) {
 				const originalSetHeader = res.setHeader.bind(res);
@@ -156,7 +156,7 @@ void app.prepare().then(async () => {
 		// source is configured.
 		await startCommunitySync();
 		if (!IS_CLOUD) {
-			await ensureAstronCollectionNetwork();
+			await ensureZenthcloudNetwork();
 			await setupGatewayErrors();
 			await writeGatewayErrorsConfig();
 		}

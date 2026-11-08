@@ -17,7 +17,7 @@ import {
 	getConfiguredProduct,
 	getDockerDiskUsage,
 	getLogCleanupStatus,
-	getAstronCollectionImageTag,
+	getZenthcloudImageTag,
 	getRemoteDocker,
 	getServerIpCandidates,
 	getUpdateData,
@@ -701,12 +701,12 @@ export const settingsRouter = createTRPCRouter({
 		return true;
 	}),
 
-	getAstronCollectionVersion: protectedProcedure.query(() => {
+	getZenthcloudVersion: protectedProcedure.query(() => {
 		// The UI shows a clean version (`1.0.1`), not the raw package/tag value.
 		return normalizeVersion(packageInfo.version) ?? packageInfo.version;
 	}),
 	getReleaseTag: protectedProcedure.query(() => {
-		return getAstronCollectionImageTag();
+		return getZenthcloudImageTag();
 	}),
 	readDirectories: protectedProcedure
 		.input(apiServerSchema)
@@ -1478,7 +1478,7 @@ export const settingsRouter = createTRPCRouter({
 		return getLogCleanupStatus();
 	}),
 
-	getAstronCollectionCloudIps: adminProcedure.query(async () => {
+	getZenthcloudCloudIps: adminProcedure.query(async () => {
 		if (!IS_CLOUD) {
 			return [];
 		}

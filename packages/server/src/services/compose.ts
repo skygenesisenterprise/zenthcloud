@@ -37,7 +37,7 @@ import { eq } from "drizzle-orm";
 import { quote } from "shell-quote";
 import type { z } from "zod";
 import { encodeBase64 } from "../utils/docker/utils";
-import { getAstronCollectionUrl } from "./admin";
+import { getZenthcloudUrl } from "./admin";
 import {
 	createDeploymentCompose,
 	updateDeployment,
@@ -239,7 +239,7 @@ export const deployCompose = async ({
 }) => {
 	const compose = await findComposeById(composeId);
 
-	const buildLink = `${await getAstronCollectionUrl()}/dashboard/project/${
+	const buildLink = `${await getZenthcloudUrl()}/dashboard/project/${
 		compose.environment.projectId
 	}/environment/${compose.environmentId}/services/compose/${compose.composeId}?tab=deployments`;
 	const deployment = await createDeploymentCompose({

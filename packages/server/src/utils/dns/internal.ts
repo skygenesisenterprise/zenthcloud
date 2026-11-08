@@ -1,7 +1,7 @@
 import { db } from "@zenthcloud/server/db";
 import {
 	type DnsRecordType,
-	type astronCollectionInternalDnsConfigSchema,
+	type zenthcloudInternalDnsConfigSchema,
 	dnsRecord,
 	dnsZone,
 } from "@zenthcloud/server/db/schema";
@@ -10,7 +10,7 @@ import { and, eq } from "drizzle-orm";
 import type { z } from "zod";
 import type { DnsClient, DnsRecord, DnsZone } from "./types";
 
-type InternalConfig = z.infer<typeof astronCollectionInternalDnsConfigSchema>;
+type InternalConfig = z.infer<typeof zenthcloudInternalDnsConfigSchema>;
 
 /**
  * The first-party adapter is scoped to a single provider row: zones and records

@@ -20,15 +20,15 @@ done
 echo "Step 1 completed"
 echo ""
 
-# Step 2: Replace Astron Collection (with space) with Zenthcloud
-echo "=== Step 2: Replacing Astron Collection ==="
+# Step 2: Replace Zenthcloud (with space) with Zenthcloud
+echo "=== Step 2: Replacing Zenthcloud ==="
 find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.json" -o -name "*.md" -o -name "*.yaml" -o -name "*.yml" -o -name "*.txt" -o -name "*.html" -o -name "*.css" \) \
     ! -path "./node_modules/*" \
     ! -path "./.git/*" \
     ! -path "./.pnpm-store/*" \
-    -exec grep -l "Astron Collection" {} + | while read -r file; do
+    -exec grep -l "Zenthcloud" {} + | while read -r file; do
     echo "  Replacing in: $file"
-    sed -i 's/Astron Collection/Zenthcloud/g' "$file"
+    sed -i 's/Zenthcloud/Zenthcloud/g' "$file"
 done
 echo "Step 2 completed"
 echo ""

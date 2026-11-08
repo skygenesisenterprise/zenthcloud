@@ -19,15 +19,15 @@ describe("observability labels", () => {
 				serviceType: "application",
 			}),
 		).toEqual({
-			astron_collectionorg_id: "org_1",
-			astron_collectionserver_id: "srv_1",
-			astron_collectionservice_id: "svc_1",
-			astron_collectionservice_type: "application",
+			zenthcloudorg_id: "org_1",
+			zenthcloudserver_id: "srv_1",
+			zenthcloudservice_id: "svc_1",
+			zenthcloudservice_type: "application",
 		});
 	});
 
 	it("rejects secret and unbounded label keys", () => {
-		expect(isAllowedObservabilityLabelKey("astron_collectionserver_id")).toBe(true);
+		expect(isAllowedObservabilityLabelKey("zenthcloudserver_id")).toBe(true);
 		expect(isAllowedObservabilityLabelKey("token")).toBe(false);
 		expect(isAllowedObservabilityLabelKey("password")).toBe(false);
 		expect(isAllowedObservabilityLabelKey("user_agent")).toBe(false);

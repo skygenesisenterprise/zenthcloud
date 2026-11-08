@@ -406,7 +406,7 @@ export const addDomainToCompose = async (
 
 		if (!compose.isolatedDeployment) {
 			// Add the zenthcloud-network to the service
-			result.services[serviceName].networks = addAstronCollectionNetworkToService(
+			result.services[serviceName].networks = addZenthcloudNetworkToService(
 				result.services[serviceName].networks,
 			);
 		}
@@ -446,17 +446,17 @@ export const applyServiceNetworks = async (
 		for (const networkId of config.networkIds) {
 			const match = networks.find((n) => n.networkId === networkId);
 			if (!match) continue;
-			service.networks = addAstronCollectionNetworkToService(
+			service.networks = addZenthcloudNetworkToService(
 				service.networks,
 				match.name,
 			);
 			injectedNetworkNames.add(match.name);
 		}
 
-		if (config.detachAstronCollectionNetwork) {
+		if (config.detachZenthcloudNetwork) {
 			removeNetworkFromService(service, "zenthcloud-network");
 			removeNetworkFromService(service, "default");
-			removeAstronCollectionNetworkLabel(service);
+			removeZenthcloudNetworkLabel(service);
 		}
 	}
 
@@ -476,11 +476,11 @@ export const declareUsedNetworksInRoot = (
 		});
 
 	if (isUsed("zenthcloud-network")) {
-		result.networks = addAstronCollectionNetworkToRoot(result.networks);
+		result.networks = addZenthcloudNetworkToRoot(result.networks);
 	}
 	for (const name of injectedNetworkNames) {
 		if (isUsed(name)) {
-			result.networks = addAstronCollectionNetworkToRoot(result.networks, name);
+			result.networks = addZenthcloudNetworkToRoot(result.networks, name);
 		}
 	}
 };
@@ -606,7 +606,7 @@ export const createDomainLabels = (
 	return labels;
 };
 
-export const addAstronCollectionNetworkToService = (
+export const addZenthcloudNetworkToService = (
 	networkService: DefinitionsService["networks"],
 	networkName = "zenthcloud-network",
 ) => {
@@ -648,7 +648,7 @@ export const removeNetworkFromService = (
 	}
 };
 
-const removeAstronCollectionNetworkLabel = (service: DefinitionsService) => {
+const removeZenthcloudNetworkLabel = (service: DefinitionsService) => {
 	const stripped = (labels: DefinitionsService["labels"]) => {
 		if (Array.isArray(labels)) {
 			return labels.filter(
@@ -664,7 +664,7 @@ const removeAstronCollectionNetworkLabel = (service: DefinitionsService) => {
 		service.deploy.labels = stripped(service.deploy.labels);
 };
 
-export const addAstronCollectionNetworkToRoot = (
+export const addZenthcloudNetworkToRoot = (
 	networkRoot: PropertiesNetworks | undefined,
 	networkName = "zenthcloud-network",
 ) => {

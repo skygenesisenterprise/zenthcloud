@@ -8,7 +8,7 @@ const baseApp: ApplicationNested = {
 	applicationId: "",
 	previewLabels: [],
 	networkIds: [],
-	detachAstronCollectionNetwork: false,
+	detachZenthcloudNetwork: false,
 	isolatedNetwork: false,
 	createEnvFile: true,
 	bitbucketRepositorySlug: "",

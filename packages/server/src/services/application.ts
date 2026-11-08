@@ -32,7 +32,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { encodeBase64 } from "../utils/docker/utils";
-import { getAstronCollectionUrl } from "./admin";
+import { getZenthcloudUrl } from "./admin";
 import {
 	createDeployment,
 	createDeploymentPreview,
@@ -239,7 +239,7 @@ export const deployApplication = async ({
 		serverId: serverId,
 	};
 
-	const buildLink = `${await getAstronCollectionUrl()}/dashboard/project/${application.environment.projectId}/environment/${application.environmentId}/services/application/${application.applicationId}?tab=deployments`;
+	const buildLink = `${await getZenthcloudUrl()}/dashboard/project/${application.environment.projectId}/environment/${application.environmentId}/services/application/${application.applicationId}?tab=deployments`;
 	const deployment = deploymentId
 		? await findDeploymentById(deploymentId)
 		: await createDeployment({
@@ -358,7 +358,7 @@ export const rebuildApplication = async ({
 }) => {
 	const application = await findApplicationById(applicationId);
 	const serverId = application.buildServerId || application.serverId;
-	const buildLink = `${await getAstronCollectionUrl()}/dashboard/project/${application.environment.projectId}/environment/${application.environmentId}/services/application/${application.applicationId}?tab=deployments`;
+	const buildLink = `${await getZenthcloudUrl()}/dashboard/project/${application.environment.projectId}/environment/${application.environmentId}/services/application/${application.applicationId}?tab=deployments`;
 
 	const deployment = await createDeployment({
 		applicationId: applicationId,

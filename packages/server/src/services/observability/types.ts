@@ -36,26 +36,26 @@ export interface ObservableResourceRef {
  * Keep cardinality bounded: no secrets, no unbounded/free-form values.
  */
 export type ObservabilityLabelKey =
-	| "astron_collectionorg_id"
-	| "astron_collectionserver_id"
-	| "astron_collectionproject_id"
-	| "astron_collectionenvironment_id"
-	| "astron_collectionservice_id"
-	| "astron_collectionservice_type"
-	| "astron_collectioncontainer_name";
+	| "zenthcloudorg_id"
+	| "zenthcloudserver_id"
+	| "zenthcloudproject_id"
+	| "zenthcloudenvironment_id"
+	| "zenthcloudservice_id"
+	| "zenthcloudservice_type"
+	| "zenthcloudcontainer_name";
 
 export type ObservabilityLabels = Partial<
 	Record<ObservabilityLabelKey, string>
 >;
 
 const OBSERVABILITY_LABEL_KEYS: ReadonlySet<string> = new Set([
-	"astron_collectionorg_id",
-	"astron_collectionserver_id",
-	"astron_collectionproject_id",
-	"astron_collectionenvironment_id",
-	"astron_collectionservice_id",
-	"astron_collectionservice_type",
-	"astron_collectioncontainer_name",
+	"zenthcloudorg_id",
+	"zenthcloudserver_id",
+	"zenthcloudproject_id",
+	"zenthcloudenvironment_id",
+	"zenthcloudservice_id",
+	"zenthcloudservice_type",
+	"zenthcloudcontainer_name",
 ]);
 
 /** Guard against secret, high-cardinality, or unbounded label keys. */
@@ -66,13 +66,13 @@ export const toObservabilityLabels = (
 	ref: ObservableResourceRef,
 ): ObservabilityLabels => {
 	const labels: ObservabilityLabels = {};
-	if (ref.organizationId) labels.astron_collectionorg_id = ref.organizationId;
-	if (ref.serverId) labels.astron_collectionserver_id = ref.serverId;
-	if (ref.projectId) labels.astron_collectionproject_id = ref.projectId;
-	if (ref.environmentId) labels.astron_collectionenvironment_id = ref.environmentId;
-	if (ref.serviceId) labels.astron_collectionservice_id = ref.serviceId;
-	if (ref.serviceType) labels.astron_collectionservice_type = ref.serviceType;
-	if (ref.containerName) labels.astron_collectioncontainer_name = ref.containerName;
+	if (ref.organizationId) labels.zenthcloudorg_id = ref.organizationId;
+	if (ref.serverId) labels.zenthcloudserver_id = ref.serverId;
+	if (ref.projectId) labels.zenthcloudproject_id = ref.projectId;
+	if (ref.environmentId) labels.zenthcloudenvironment_id = ref.environmentId;
+	if (ref.serviceId) labels.zenthcloudservice_id = ref.serviceId;
+	if (ref.serviceType) labels.zenthcloudservice_type = ref.serviceType;
+	if (ref.containerName) labels.zenthcloudcontainer_name = ref.containerName;
 	return labels;
 };
 

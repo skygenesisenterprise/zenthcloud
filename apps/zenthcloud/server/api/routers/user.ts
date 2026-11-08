@@ -4,7 +4,7 @@ import {
 	findNotificationById,
 	findOrganizationById,
 	findUserById,
-	getAstronCollectionUrl,
+	getZenthcloudUrl,
 	getUserByToken,
 	getWebServerSettings,
 	IS_CLOUD,
@@ -813,7 +813,7 @@ export const userRouter = createTRPCRouter({
 			const host =
 				process.env.NODE_ENV === "development"
 					? "http://localhost:3000"
-					: await getAstronCollectionUrl();
+					: await getZenthcloudUrl();
 			const inviteLink = `${host}/invitation?token=${input.invitationId}`;
 
 			const organization = await findOrganizationById(

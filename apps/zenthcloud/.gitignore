@@ -22,7 +22,7 @@ traefik.yml
 /.next/
 /out/
 next-env.d.ts
-/astron-collection
+/zenthcloud
 /config
 
 # production

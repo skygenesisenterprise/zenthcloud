@@ -4,8 +4,8 @@ import {
 	INSTANCE_IDENTITY_EXTENSION_VERSION,
 	type InstanceIdentityDocument,
 	ZENTHCLOUD_IDENTITY_EXTENSION_OID,
-	type AstronCollectionCapability,
-	type AstronCollectionProduct,
+	type ZenthcloudCapability,
+	type ZenthcloudProduct,
 } from "./types";
 
 /**
@@ -324,8 +324,8 @@ export const issueInstanceCertificate = (options: {
 	issuer: CertificateAuthority;
 	publicKey: forge.pki.PublicKey;
 	instanceId: string;
-	product: AstronCollectionProduct;
-	capabilities: AstronCollectionCapability[];
+	product: ZenthcloudProduct;
+	capabilities: ZenthcloudCapability[];
 	subjectKeyFingerprint: string;
 	createdAt?: Date;
 	validityDays?: number;
