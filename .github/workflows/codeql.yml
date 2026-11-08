@@ -35,26 +35,26 @@ jobs:
           # GitHub Actions workflows.
           - language: actions
             build-mode: none
-          # TypeScript/JS: the workspace is compiled ahead of the analysis and
-          # the sources are handed to CodeQL directly. `none` build mode is
-          # correct here — there is no single build command for the monorepo and
-          # an autobuild attempt is slow and unreliable. Scoped to the packages
-          # that contain TypeScript.
+          # TypeScript/JS: CodeQL extracts the sources directly, so `none` build
+          # mode is correct. The workspace dependencies (pnpm) are not needed,
+          # which keeps the analysis independent of the lockfile.
           - language: javascript-typescript
             build-mode: none
-          # Go: a single module, so autobuild works.
+          # Go: the only module lives in apps/monitoring, so autobuild from the
+          # repository root cannot find it. Build it explicitly below.
           - language: go
-            build-mode: autobuild
+            build-mode: manual
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
-      - name: Install dependencies
-        if: matrix.language == 'javascript-typescript'
-        run: |
-          npm install -g pnpm@10.22.0
-          pnpm install --frozen-lockfile
+      - name: Set up Go
+        if: matrix.language == 'go'
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: apps/monitoring/go.mod
+          cache-dependency-path: apps/monitoring/go.sum
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
@@ -64,6 +64,11 @@ jobs:
           # Dependency vendoring is not used: the TypeScript analysis reads
           # sources directly and the Go module downloads its own dependencies.
           queries: security-extended,security-and-quality
+
+      - name: Build Go module
+        if: matrix.language == 'go'
+        working-directory: apps/monitoring
+        run: go build ./...
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v4
