@@ -1,0 +1,247 @@
+load("//:build/kj_test.bzl", "kj_test")
+load("//:build/wd_cc_benchmark.bzl", "wd_cc_benchmark")
+load("//:build/wd_cc_library.bzl", "wd_cc_library")
+load("//:build/wd_test.bzl", "wd_test")
+
+wd_cc_library(
+    name = "bench-tools",
+    hdrs = ["bench-tools.h"],
+    defines = select({
+        "//src/workerd/server:really_use_tcmalloc": ["WD_USE_TCMALLOC"],
+        "//conditions:default": [],
+    }),
+    tags = ["workerd-benchmark"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@capnp-cpp//src/kj:kj-test",
+        "@google_benchmark//:benchmark",
+    ] + select({
+        # tcmalloc is only available on Linux and when use_tcmalloc is enabled.
+        # We use the malloc_extension API to configure tcmalloc for deterministic benchmarks.
+        "//src/workerd/server:really_use_tcmalloc": ["@tcmalloc//tcmalloc:malloc_extension"],
+        "//conditions:default": [],
+    }),
+)
+
+kj_test(
+    src = "bench-tools-test.c++",
+    malloc = "//src/workerd/server:malloc",
+    target_compatible_with = select({
+        "//src/workerd/server:really_use_tcmalloc": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    deps = [":bench-tools"],
+)
+
+# Calls kj::setupAsyncIo(). The I/O backend is meant to be the BINARY's choice (kj_test and
+# wd_cc_benchmark link //src/workerd/util:setup-async-io into every test binary; libraries do not
+# carry it), but this one still does, so that binaries outside this repo which link the fixture
+# without naming a backend keep linking.
+# TODO(cleanup): drop the :setup-async-io dep here once every downstream binary that links
+# :test-fixture depends on //src/workerd/util:setup-async-io (or @capnp-cpp//src/kj:kj-async)
+# itself. Until then a downstream binary that also links kj-async-os gets two definitions of
+# kj::setupAsyncIo / kj::UnixEventPort and the linker keeps whichever archive it meets first.
+wd_cc_library(
+    name = "test-fixture",
+    srcs = ["test-fixture.c++"],
+    hdrs = ["test-fixture.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/workerd/io",
+        "//src/workerd/io:worker-entrypoint",
+        "//src/workerd/jsg",
+        "//src/workerd/server:workerd-api",
+        "//src/workerd/util:autogate",
+        "//src/workerd/util:setup-async-io",
+        "@capnp-cpp//src/kj:kj-async-core",
+        "@capnp-cpp//src/kj:kj-async-io",
+    ],
+)
+
+kj_test(
+    src = "test-fixture-test.c++",
+    deps = [":test-fixture"],
+)
+
+# Use `bazel run //src/workerd/tests:bench-json` to benchmark
+wd_cc_benchmark(
+    name = "bench-json",
+    srcs = ["bench-json.c++"],
+    deps = [
+        "//src/workerd/api:r2-api_capnp",
+        "@capnp-cpp//src/kj",
+    ],
+)
+
+wd_cc_benchmark(
+    name = "bench-mimetype",
+    srcs = ["bench-mimetype.c++"],
+    deps = [
+        "//src/workerd/util:mimetype",
+    ],
+)
+
+wd_cc_benchmark(
+    name = "bench-kj-headers",
+    srcs = ["bench-kj-headers.c++"],
+    deps = [
+        "@capnp-cpp//src/kj/compat:kj-http",
+    ],
+)
+
+wd_cc_benchmark(
+    name = "bench-try-sync",
+    srcs = ["bench-try-sync.c++"],
+    deps = [
+        "@capnp-cpp//src/kj:kj-async-core",
+        "@capnp-cpp//src/kj:kj-async-io",
+        "@capnp-cpp//src/kj/compat:kj-gzip",
+    ],
+)
+
+wd_cc_benchmark(
+    name = "bench-api-headers",
+    srcs = ["bench-api-headers.c++"],
+    deps = [
+        ":test-fixture",
+    ],
+)
+
+wd_cc_benchmark(
+    name = "bench-global-scope",
+    srcs = ["bench-global-scope.c++"],
+    deps = [":test-fixture"],
+)
+
+wd_cc_benchmark(
+    name = "bench-trace-scopes",
+    srcs = ["bench-trace-scopes.c++"],
+    deps = [":test-fixture"],
+)
+
+wd_cc_benchmark(
+    name = "bench-regex",
+    srcs = ["bench-regex.c++"],
+    deps = [
+        ":test-fixture",
+        "//src/workerd/util",
+    ],
+)
+
+wd_cc_benchmark(
+    name = "bench-zlib",
+    srcs = [
+        "bench-zlib.c++",
+        "zlib-rs-shim.c++",
+        "zlib-rs-shim.h",
+    ],
+    deps = [
+        "//src/rust/zlib-rs",
+        "@zlib",
+    ],
+)
+
+wd_cc_benchmark(
+    name = "bench-util",
+    srcs = ["bench-util.c++"],
+    deps = [
+        ":test-fixture",
+        "//src/workerd/jsg",
+    ],
+)
+
+wd_cc_benchmark(
+    name = "bench-text-encoder",
+    srcs = ["bench-text-encoder.c++"],
+    deps = [":test-fixture"],
+)
+
+wd_cc_benchmark(
+    name = "bench-response",
+    srcs = ["bench-response.c++"],
+    deps = [":test-fixture"],
+)
+
+wd_cc_benchmark(
+    name = "bench-jsstring",
+    srcs = ["bench-jsstring.c++"],
+    deps = [
+        ":test-fixture",
+        "//src/workerd/jsg",
+    ],
+)
+
+# Benchmark for comparing stream piping implementations
+# Tagged manual because it takes too long for CI - run explicitly with:
+#   bazel run //src/workerd/tests:bench-stream-piping
+wd_cc_benchmark(
+    name = "bench-stream-piping",
+    srcs = ["bench-stream-piping.c++"],
+    tags = ["manual"],
+    deps = [
+        ":test-fixture",
+        "//src/workerd/io",
+        "//src/workerd/jsg",
+    ],
+)
+
+# Benchmark for ReadableStream::pumpTo path in standard.c++.
+#   bazel run --config=opt //src/workerd/tests:bench-pumpto
+wd_cc_benchmark(
+    name = "bench-pumpto",
+    srcs = ["bench-pumpto.c++"],
+    tags = ["manual"],
+    deps = [
+        ":test-fixture",
+        "//src/workerd/io",
+        "//src/workerd/jsg",
+    ],
+)
+
+wd_test(
+    src = "unknown-import-assertions-test.wd-test",
+    args = ["--experimental"],
+    data = ["unknown-import-assertions-test.js"],
+)
+
+wd_test(
+    src = "module-imports-test.wd-test",
+    args = ["--experimental"],
+    data = [
+        "module-imports-test.js",
+        "test.wasm",
+    ],
+    lint = False,
+)
+
+wd_test(
+    src = "performance-test.wd-test",
+    data = ["performance-test.js"],
+)
+
+# REPRL tests using KJ test framework
+wd_cc_library(
+    name = "libreprl",
+    srcs = ["libreprl/libreprl.c"],
+    hdrs = ["libreprl/libreprl.h"],
+    copts = [
+        "-std=c23",
+    ],
+    features = [
+        "parse_headers_as_c",
+    ],
+)
+
+kj_test(
+    src = "test-reprl.c++",
+    data = [
+        "//fuzzilli:config.capnp",
+        "//fuzzilli:worker.js",
+        "//src/workerd/server:workerd",
+    ],
+    tags = ["requires-fuzzilli"],
+    deps = [
+        ":libreprl",
+        "@bazel_tools//tools/cpp/runfiles",
+    ],
+)

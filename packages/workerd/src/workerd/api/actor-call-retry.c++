@@ -1,0 +1,179 @@
+// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+#include "actor-call-retry.h"
+
+#include <workerd/jsg/util.h>
+#include <workerd/util/entropy.h>
+
+#include <random>
+
+namespace workerd::api {
+
+namespace {
+
+struct RetryBackoff {
+  kj::Duration min;
+  kj::Duration max;
+};
+
+// Each retry waits a uniformly random delay from its range, and retries beyond the last range
+// reuse it. Early retries stay quick so brief faults recover fast, and the floors on later retries
+// spread a call's attempts across more of its retry timeout.
+constexpr RetryBackoff RETRY_BACKOFFS[] = {
+  {0 * kj::SECONDS, 500 * kj::MILLISECONDS},
+  {0 * kj::SECONDS, 1 * kj::SECONDS},
+  {1 * kj::SECONDS, 3 * kj::SECONDS},
+  {2 * kj::SECONDS, 4 * kj::SECONDS},
+};
+
+}  // namespace
+
+ActorCallRetryState::ActorCallRetryState(TimerChannel& timer,
+    RequestObserver& observer,
+    Config config,
+    ActorRetryPolicy policy,
+    kj::TimePoint callStart)
+    : timer(timer),
+      observer(kj::addRef(observer)),
+      config(config),
+      policy(policy),
+      callStart(callStart),
+      retriesEnabled(config.payloadReplayable.toBool() && config.enforcementEnabled.toBool() &&
+          policy.allowsRetries()) {
+  if (config.payloadReplayable.toBool()) {
+    metadata = freshMetadata();
+  }
+}
+
+ActorCallRetryState::~ActorCallRetryState() noexcept(false) {
+  if (retryStartTime != kj::none && !recordedOutcome) {
+    recordOutcome(ActorRetryOutcome::OTHER);
+  }
+}
+
+IoChannelFactory::ActorRetryRequestMetadata ActorCallRetryState::freshMetadata() const {
+  return generateActorRetryRequestMetadata(
+      kj::systemCoarseCalendarClock().now(), config.enforcementEnabled);
+}
+
+kj::OneOf<ActorCallRetryState::Attempt, kj::Exception> ActorCallRetryState::startAttempt() {
+  auto isFirstAttempt = IsFirstActorCallAttempt(attemptCount == 1);
+  if (!isFirstAttempt.toBool()) {
+    if (timer.nowForLimitTimeout() >= retryCutoff()) {
+      return retryTimeoutExpired();
+    }
+    ++retryAttemptsStarted;
+    observer->recordActorRetry(config.callType);
+  }
+  return Attempt(metadata, isFirstAttempt);
+}
+
+kj::Exception ActorCallRetryState::retryTimeoutExpired() {
+  recordOutcome(ActorRetryOutcome::RETRY_BUDGET_EXHAUSTED);
+  return KJ_ASSERT_NONNULL(originalFailure).clone();
+}
+
+kj::OneOf<kj::Duration, kj::Exception> ActorCallRetryState::handleAttemptFailure(
+    kj::Exception exception) {
+  KJ_REQUIRE(retriesEnabled);
+
+  maybeStartRetryLatencyTimer(exception);
+  KJ_IF_SOME(claimRejection, handleClaimRejection(exception)) {
+    return kj::mv(claimRejection);
+  }
+  return checkCanRetry(kj::mv(exception));
+}
+
+kj::Exception ActorCallRetryState::handleCommittedAttemptFailure(kj::Exception exception) {
+  KJ_REQUIRE(retriesEnabled);
+
+  maybeStartRetryLatencyTimer(exception);
+  KJ_IF_SOME(claimRejection, handleClaimRejection(exception)) {
+    return kj::mv(claimRejection);
+  }
+  recordOutcome(ActorRetryOutcome::UNABLE_TO_RETRY);
+  return kj::mv(exception);
+}
+
+void ActorCallRetryState::maybeStartRetryLatencyTimer(const kj::Exception& exception) {
+  if (jsg::isRetryable(exception) && retryStartTime == kj::none) {
+    retryStartTime = kj::systemPreciseMonotonicClock().now();
+  }
+}
+
+kj::Maybe<kj::Exception> ActorCallRetryState::handleClaimRejection(const kj::Exception& exception) {
+  if (exception.getDetail(jsg::ACTOR_RETRY_CLAIM_REJECTED_DETAIL_ID) == kj::none) {
+    return kj::none;
+  }
+
+  recordOutcome(ActorRetryOutcome::CLAIM_REJECTED);
+  return KJ_ASSERT_NONNULL(
+      originalFailure, "actor retry claim rejected before a retry was attempted")
+      .clone();
+}
+
+kj::OneOf<kj::Duration, kj::Exception> ActorCallRetryState::checkCanRetry(kj::Exception exception) {
+  if (!jsg::isRetryable(exception)) {
+    recordOutcome(ActorRetryOutcome::UNABLE_TO_RETRY);
+    return kj::mv(exception);
+  }
+  if (exception.getDetail(jsg::REQUEST_DELIVERED_TO_ACTOR_DETAIL_ID) != kj::none) {
+    recordOutcome(ActorRetryOutcome::UNABLE_TO_RETRY);
+    return kj::mv(exception);
+  }
+  if (originalFailure == kj::none) {
+    originalFailure = exception.clone();
+  }
+  if (attemptCount >= policy.maxAttempts()) {
+    recordOutcome(ActorRetryOutcome::ATTEMPTS_EXHAUSTED);
+    return KJ_ASSERT_NONNULL(originalFailure).clone();
+  }
+
+  auto delay = retryDelay();
+  if (timer.nowForLimitTimeout() + delay >= retryCutoff()) {
+    return retryTimeoutExpired();
+  }
+  if (exception.getDetail(jsg::REQUEST_NOT_DELIVERED_TO_ACTOR_DETAIL_ID) == kj::none) {
+    KJ_ASSERT_NONNULL(metadata).isRetry = IsActorRetry::YES;
+  } else if (KJ_ASSERT_NONNULL(metadata).isRetry == IsActorRetry::NO) {
+    metadata = freshMetadata();
+  }
+
+  ++attemptCount;
+  return delay;
+}
+
+void ActorCallRetryState::recordRecovered() {
+  if (originalFailure != kj::none) {
+    recordOutcome(ActorRetryOutcome::RECOVERED);
+  }
+}
+
+void ActorCallRetryState::recordCanceled() {
+  recordOutcome(ActorRetryOutcome::CANCELED);
+}
+
+kj::Duration ActorCallRetryState::retryDelay() {
+  static thread_local auto generator = [] {
+    uint64_t seed;
+    getEntropy(kj::asBytes(seed));
+    return std::mt19937_64(seed);
+  }();
+  auto& backoff = RETRY_BACKOFFS[kj::min(attemptCount, kj::size(RETRY_BACKOFFS)) - 1];
+  std::uniform_int_distribution<uint64_t> distribution(
+      backoff.min / kj::NANOSECONDS, backoff.max / kj::NANOSECONDS);
+  return distribution(generator) * kj::NANOSECONDS;
+}
+
+void ActorCallRetryState::recordOutcome(ActorRetryOutcome outcome) {
+  if (recordedOutcome) return;
+  recordedOutcome = true;
+  if (retryAttemptsStarted == 0) return;
+  auto startTime = KJ_ASSERT_NONNULL(retryStartTime);
+  observer->recordActorRetryOutcome(
+      config.callType, outcome, kj::systemPreciseMonotonicClock().now() - startTime);
+}
+
+}  // namespace workerd::api

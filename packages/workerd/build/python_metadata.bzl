@@ -1,0 +1,268 @@
+# After updating this file, make sure to run "bazel mod tidy"
+load("@bazel_lib//lib:base64.bzl", "base64")
+load("@bazel_lib//lib:strings.bzl", "chr")
+
+def _chunk(data, length):
+    return [data[i:i + length] for i in range(0, len(data), length)]
+
+def hex_to_b64(hex):
+    s = ""
+    for chunk in _chunk(hex, 2):
+        s += chr(int(chunk, 16))
+    return "sha256-" + base64.encode(s)
+
+PYODIDE_VERSIONS = [
+    {
+        "version": "0.26.0a2",
+        "sha256": "fbda450a64093a8d246c872bb901ee172a57fe594c9f35bba61f36807c73300d",
+    },
+    {
+        "version": "0.28.2",
+        "sha256": "c9f6dd067d119e50850849f7428e3c636ecbc2684a0d2ff992f3bd48a1062b6c",
+    },
+    {
+        "version": "314.0.4",
+        "sha256": "e775e35fe447beeceaf6f33ab2d2242454a8b6e5401d9769d118eca164d234db",
+    },
+    {
+        "version": "314.0.6",
+        "sha256": "1016c31e39ce3764d9a418cbb491a392c802c1b86ccc1367f009f5c59bf8f5fd",
+    },
+]
+
+# The below is a list of package tags for the old builtin packages support.
+#
+# Now that built-in package support is gone, the only packages we load are the CPython stdlib
+# modules and the shared libraries they depend on. Newer Pyodide versions bundle all of these
+# builtin modules directly into the core distribution, so future package bundle versions won't
+# need a lock file (or per-package wheel downloads) here at all.
+PYTHON_LOCKFILES = [
+    {
+        "tag": "20240829.4",
+    },
+    {
+        "tag": "20250808",
+    },
+]
+
+def _bundle_id(*, pyodide_version, pyodide_date, backport, **_kwds):
+    return "%s_%s_%s" % (pyodide_version, pyodide_date, backport)
+
+def _add_integrity(entry):
+    for key, value in entry.items():
+        if not key.endswith("_hash"):
+            continue
+        newkey = key.removesuffix("_hash") + "_integrity"
+        entry[newkey] = hex_to_b64(value)
+
+def _make_vendored_packages(entry):
+    if entry["name"] == "development":
+        return
+    vendor_tests = {}
+    for e in entry["vendored_packages_for_tests"]:
+        vendor_tests[e["name"]] = e
+    entry["vendored_packages_for_tests"] = vendor_tests
+
+def _check_pyodide_versions(version_info):
+    pyodide_versions = {ver["version"]: 1 for ver in PYODIDE_VERSIONS}
+    pyodide_versions["dev"] = 1
+    for entry in version_info.values():
+        if entry["pyodide_version"] not in pyodide_versions:
+            fail("Version %s of Pyodide not in PYODIDE_VERSIONS" % entry["pyodide_version"])
+
+def _make_bundle_version_info(versions):
+    result = {}
+    for entry in versions:
+        name = entry["name"]
+        if name != "development":
+            entry["id"] = _bundle_id(**entry)
+            entry["real_pyodide_version"] = entry["pyodide_version"]
+        entry["feature_flags"] = [entry["flag"]]
+        entry["feature_string_flags"] = [entry["enable_flag_name"]]
+        _add_integrity(entry)
+        result[name] = entry
+        _make_vendored_packages(entry)
+
+    dev = result["development"]
+
+    # Uncomment to test with development = 0.26.0a2
+    # dev["real_pyodide_version"] = "0.26.0a2"
+    result["development"] = result[dev["real_pyodide_version"]] | dev
+    _check_pyodide_versions(result)
+    return result
+
+VENDORED_VERSION_INDEPENDENT = [
+    {
+        # Downloaded from https://pub-25a5b2f2f1b84655b185a505c7a3ad23.r2.dev/beautifulsoup4-vendored-for-ew-testing.zip
+        "name": "beautifulsoup4",
+        "abi": None,
+        "sha256": "5aa09c5f549443969dda260a70e58e3ac8537bd3d29155b307a3d98b36eb70fd",
+    },
+    {
+        "name": "pytest-asyncio",
+        "abi": None,
+        "sha256": "be25b788392d124cbdfbb9b3d13541da69a7b6b977bc9474dddaddeaab6421b4",
+    },
+    {
+        "name": "python-workers-runtime-sdk",
+        "abi": None,
+        "sha256": "fc4fb50f73973c257277155b3cb113aa2cf68e9da8ef424ecb049b41bc463183",
+    },
+]
+
+BUNDLE_VERSION_INFO = _make_bundle_version_info([
+    {
+        "name": "0.26.0a2",
+        "released": True,
+        "pyodide_version": "0.26.0a2",
+        "pyodide_date": "2024-03-01",
+        "packages": "20240829.4",
+        "backport": "89",
+        "integrity": "sha256-c4pm9KBbdeAdfW2UkdU24aE3MadpzGHgbyNG+tEoorM=",
+        "flag": "pythonWorkers",
+        "enable_flag_name": "python_workers",
+        "emscripten_version": "3.1.52",
+        "python_version": "3.12.1",
+        "baseline_snapshot": "baseline-7177ed710.bin",
+        "baseline_snapshot_hash": "7177ed7108677065ae4cbec8f004f6cffbcda5b792d922ad876471caa5584439",
+        "vendored_packages_for_tests": VENDORED_VERSION_INDEPENDENT + [
+            {
+                # Downloaded from https://pub-25a5b2f2f1b84655b185a505c7a3ad23.r2.dev/fastapi-312-vendored-for-ew-testing.zip
+                "name": "fastapi",
+                "abi": "3.12",
+                "sha256": "5e6e21dbeda7c1eaadb99e6e52aa2ce45325b51e9a417198701e68e0cfd12a4c",
+            },
+            {
+                "name": "scipy",
+                "abi": "3.12",
+                "sha256": "787e45be6969a5609093b3df9cc2dba2afec9e10bace977f5045697cc329aa7c",
+            },
+        ],
+    },
+    {
+        "name": "0.28.2",
+        "released": True,
+        "pyodide_version": "0.28.2",
+        "pyodide_date": "2025-01-16",
+        "packages": "20250808",
+        "backport": "20",
+        "integrity": "sha256-Mw1A5bs3Ys1UiQ0JEi4XP8ponsQgqYod1HUhVyTj330=",
+        "flag": "pythonWorkers20250116",
+        "enable_flag_name": "python_workers_20250116",
+        "emscripten_version": "4.0.9",
+        "python_version": "3.13.2",
+        "baseline_snapshot": "baseline-f0dd788d0.bin",
+        "baseline_snapshot_hash": "f0dd788d04e96463bccedcf001a1e4372fc093f6f869fda5de257a00ac010cff",
+        "dedicated_fastapi_snapshot": "snapshot_a6b652a95810783f5078b9a5dbd4a07c30718acb4ff724e82c25db7353dd7f2d.bin",
+        "dedicated_fastapi_snapshot_hash": "4af6f012a5fb32f31a426e6f109e88ae85b18ee3dd131e1caaaad989cd962bbe",
+        "dedicated_numpy_vendor_snapshot": "dedicated-numpy-vendor-e521bab42.bin",
+        "dedicated_numpy_vendor_snapshot_hash": "e521bab420915e868aa2ff5eaad4bd313be34a3b8bf7f324fe514afce2b43dc4",
+        "vendored_packages_for_tests": VENDORED_VERSION_INDEPENDENT + [
+            {
+                "name": "fastapi",
+                "abi": "3.13",
+                "sha256": "955091f1bd2eb33255ff2633df990bedc96e2f6294e78f2b416078777394f942",
+            },
+            {
+                "name": "numpy",
+                "abi": "3.13",
+                "sha256": "dc77accd1313a87dadd2ed31bffad3b698dcb9829804e84fc857a9a669a94d3f",
+            },
+            {
+                "name": "shapely",
+                "abi": "3.13",
+                "sha256": "2e5c462cb32ee8697b3647dfc9d5c88dcdfd0702da34a2d7dc6b07b8090dd321",
+            },
+            {
+                "name": "Pillow",
+                "abi": "3.13",
+                "sha256": "0fcbba0fd1af97d41103bef1fc887a4c0db871af73a4c57112a1c0ddc9af99e0",
+            },
+            {
+                "name": "pywavelets",
+                "abi": "3.13",
+                "sha256": "96ac5c0993549217de48ea762e2fd0cb5847987ee2e043fda58baada5caf258d",
+            },
+        ],
+    },
+    {
+        "name": "314.0.4",
+        "released": True,
+        "test_by_default": False,
+        "pyodide_version": "314.0.4",
+        "pyodide_date": "2026-06-10",
+        "backport": "20",
+        "integrity": "sha256-IOPP3ValHq+VYLu0HNODqmB+YXN4lTp25LPXOLmCaGs=",
+        "flag": "pythonWorkers20260610",
+        "enable_flag_name": "python_workers_20260610",
+        "emscripten_version": "5.0.3",
+        "python_version": "3.14.2",
+        "baseline_snapshot": "baseline-f5209494f.bin",
+        "baseline_snapshot_hash": "f5209494fd73c564f1beb1825f81ab08b604d4149b98a3a2fa31db73737319c0",
+        "dedicated_numpy_vendor_snapshot": "dedicated-numpy-vendor-dcc394669.bin",
+        "dedicated_numpy_vendor_snapshot_hash": "dcc3946696a0d90884d8364aab53a1af4c1c75cf31d03fe67993f876e661c01b",
+        "vendored_packages_for_tests": VENDORED_VERSION_INDEPENDENT + [
+            {
+                "name": "numpy",
+                "abi": "3.14",
+                "sha256": "28bea03aa0a18bbc1884ea4cebe8d93a9004455c497417e172c221f0a245b439",
+            },
+        ],
+    },
+    {
+        "name": "314.0.6",
+        "pyodide_version": "314.0.6",
+        "pyodide_date": "2026-08-17",
+        "backport": "8",
+        "integrity": "sha256-E80D9pADATNzTefFRcyJYbgn5knXbyccy+cKbkdpz0A=",
+        "flag": "pythonWorkers314",
+        "enable_flag_name": "python_workers_314",
+        "emscripten_version": "5.0.3",
+        "python_version": "3.14.2",
+        "baseline_snapshot": "baseline-3881c1fb0.bin",
+        "baseline_snapshot_hash": "3881c1fb0fc8008cc48d47dc13d8c2ae851d504b9d809b8aae9a4029d0babcc5",
+        "dedicated_numpy_vendor_snapshot": "dedicated-numpy-vendor-e428da5d1.bin",
+        "dedicated_numpy_vendor_snapshot_hash": "e428da5d1cf3c636db18ed972ef1b35acbc588d7709a37b7cea76b761e2f1d50",
+        "vendored_packages_for_tests": VENDORED_VERSION_INDEPENDENT + [
+            {
+                "name": "numpy",
+                "abi": "3.14",
+                "sha256": "28bea03aa0a18bbc1884ea4cebe8d93a9004455c497417e172c221f0a245b439",
+            },
+            {
+                "name": "shapely",
+                "abi": "3.14",
+                "sha256": "d2106a18c04be9da7bce46488f12b6ee42717eaa99e08904b2419e2f99e0248e",
+            },
+            {
+                "name": "Pillow",
+                "abi": "3.14",
+                "sha256": "c8c11eecbf65007c30342bff5e1e5bb40458f1480e23338ac41a8d3144a7e834",
+            },
+            {
+                "name": "pywavelets",
+                "abi": "3.14",
+                "sha256": "919033aa22e5200a5b3f29f08a0525b465d6d9a6ab15a65012de7c38ef16f93a",
+            },
+        ],
+    },
+    {
+        "real_pyodide_version": "314.0.6",
+        "name": "development",
+        "test_by_default": True,
+        "pyodide_version": "dev",
+        "pyodide_date": "dev",
+        "id": "dev",
+        "flag": "pythonWorkersDevPyodide",
+        "enable_flag_name": "python_workers_development",
+    },
+])
+
+# Version names from BUNDLE_VERSION_INFO that the test macros expand `python_flags = "all"` into.
+# An entry opts out with `"test_by_default": False`, which keeps it selectable by an explicit
+# `python_flags` list while removing it from default expansion.
+DEFAULT_PYTHON_TEST_FLAGS = [
+    name
+    for name, entry in BUNDLE_VERSION_INFO.items()
+    if entry.get("test_by_default") != False
+]

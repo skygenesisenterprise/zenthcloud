@@ -1,0 +1,172 @@
+# JSG (JavaScript Glue)
+
+See `README.md` for terse reference (type mappings, macro catalog, error catalog).
+See `docs/jsg.md` for narrative tutorial.
+
+## OVERVIEW
+
+Macro-driven C++/V8 binding layer: declares C++ types as JS-visible resources/structs with automatic type conversion.
+
+## KEY FILES
+
+| File              | Purpose                                                                                                                                                                                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jsg.h`           | Core header (3115 lines): all macros (`JSG_RESOURCE_TYPE`, `JSG_METHOD`, etc.), type mappings, `Lock`, `V8Ref`, `GcVisitor`                                                                                                                                               |
+| `resource.h`      | Template metaprogramming: V8 callback generation, `FunctionCallbackInfo` dispatch, prototype/constructor wiring                                                                                                                                                           |
+| `struct.h`        | `JSG_STRUCT` value-type mapping: deep-copies C++ structs to/from JS objects                                                                                                                                                                                               |
+| `wrappable.h`     | GC integration: `Wrappable` base class, CppGC visitor hooks, ref marking, weak pointers                                                                                                                                                                                   |
+| `promise.h`       | `jsg::Promise<T>` wrapping KJ promises ↔ JS promises; resolver pairs, coroutine integration                                                                                                                                                                               |
+| `modules.h`       | Legacy `ModuleRegistry`: ESM/CJS module resolution, evaluation, top-level await handling                                                                                                                                                                                  |
+| `modules-new.h`   | New module registry (`jsg::modules::ModuleRegistry`): URL-based specifiers, shareable across isolate replicas, gated by the `new_module_registry` compat flag via `workerd::isNewModuleRegistryEnabled()`. Full reference: `docs/reference/detail/new-module-registry.md` |
+| `setup.h`         | `V8System`, `IsolateBase`, `JsgConfig`; process-level V8 init; `JSG_DECLARE_ISOLATE_TYPE`                                                                                                                                                                                 |
+| `sandbox.{h,c++}` | Cage-relative byte views for ArrayBuffer-backed native objects                                                                                                                                                                                                            |
+| `function.h`      | `jsg::Function<Sig>` wrapping C++ callables ↔ JS functions                                                                                                                                                                                                                |
+| `memory.h`        | `MemoryTracker`, `JSG_MEMORY_INFO` macro; heap snapshot support; `pushRetainer`/`pushContainer`/`popNode`/`depth` for non-C++ objects (Rust JSG)                                                                                                                                |
+| `rtti.capnp`      | Cap'n Proto schema for type introspection; consumed by `types/` for TS generation                                                                                                                                                                                         |
+| `rtti.h`          | C++ RTTI builder: walks JSG type graph → `rtti.capnp` structures                                                                                                                                                                                                          |
+| `jsvalue.h`       | `JsValue`, `JsObject`, `JsString`, etc. — typed wrappers over `v8::Value`                                                                                                                                                                                                 |
+| `type-wrapper.h`  | `TypeWrapper` template: compile-time dispatch for C++ ↔ V8 conversions; `SelfConvertible` concept for self-converting types; `JSG_DECLARE_SPLIT_ISOLATE_TYPE` (see `docs/jsg.md`)                                                                                         |
+| `meta.h`          | Argument unwrapping, `ArgumentContext`, parameter pack metaprogramming                                                                                                                                                                                                    |
+| `unwrap-args.h`   | `UnwrappedArgs` helper: deterministic left-to-right argument unwrapping in V8 callbacks                                                                                                                                                                                   |
+| `fast-api.h`      | V8 Fast API call optimizations                                                                                                                                                                                                                                            |
+| `ser.h`           | Structured clone: `Serializer`/`Deserializer`                                                                                                                                                                                                                             |
+| `web-idl.h`       | Web IDL types: `NonCoercible<T>`, `Sequence`, etc.                                                                                                                                                                                                                        |
+| `observer.h`      | `IsolateObserver`, `CompilationObserver` — hooks for metrics/tracing                                                                                                                                                                                                      |
+| `compilation.h`   | Common JS compilation boundary: cache selection, isolate-local compile hint sessions, module-definition fallback slots, and V8 operations for ESM, scripts and CommonJS                                                                                                                         |
+| `code-cache.h`    | `CodeCacheStore` (process-wide JS bytecode keyed by source and shape) and `IsolateCodeCache` (callback-based compilation, prepared lookups and startup production; pending V8 globals require the isolate lock)                                                           |
+
+## BINDING PATTERN
+
+```cpp
+class MyType: public jsg::Object {
+  static jsg::Ref<MyType> constructor(kj::String s);
+  int getValue();
+  void doThing(jsg::Lock& js, int n);
+
+  JSG_RESOURCE_TYPE(MyType) {        // or (MyType, CompatibilityFlags::Reader flags)
+    JSG_METHOD(doThing);
+    JSG_PROTOTYPE_PROPERTY(value, getValue, setvalue);
+    JSG_NESTED_TYPE(SubType);
+    JSG_STATIC_METHOD(create);
+  }
+
+  void visitForGc(jsg::GcVisitor& visitor) {
+    visitor.visit(ref, v8ref);       // MUST trace all Ref<T>/V8Ref<T>/JsRef<T>
+  }
+
+  jsg::Ref<Other> ref;
+  jsg::V8Ref<v8::Object> v8ref;
+};
+```
+
+- Allocate resource objects: `js.alloc<MyType>(args...)`
+- Value types: `JSG_STRUCT(field1, field2)` — auto-converted by value
+- `jsg::Lock&` is the JS execution context; thread via method params
+- `TypeHandler<T>&` as trailing param gives manual conversion access
+- Compat flags param on `JSG_RESOURCE_TYPE` gates members conditionally
+
+## Errors
+
+Use `JSG_TRY(js) { ... } JSG_CATCH(exception) { ... }` to catch JS exceptions in
+C++ code. The `js` is a `jsg::Lock&` parameter. The `exception` is a `jsg::Value`
+containing the JS exception that was thrown.
+
+The legacy `js.tryCatch(fn)` is deprecated and will be eventually removed.
+
+## ANTI-PATTERNS
+
+- **NEVER** opaque-wrap `V8Ref<T>` — use handle directly
+- **NEVER** use v8::Context embedder data slot 0 (`ContextPointerSlot::RESERVED`)
+- **NEVER** move a container of visited handles (`auto list = kj::mv(pending)`) without moving
+  each element — the elements stay traced but are no longer visited, causing use-after-free.
+  Use `KJ_MAP(item, pending) { return kj::mv(item); }` or similar (see `visitForGc()` docs in
+  `jsg.h`)
+- **NEVER** silence `jsg-visit-for-gc` by blindly adding a visit — visiting is only safe when
+  the holder is traversed on every GC cycle; deliberate strong roots get a `NOLINT` (invariant 11)
+- **NEVER** use `FastOneByteString` in a Fast API method unless the whole signature satisfies
+  `FastApiNoScopeMethod` (fast-api.h) — its `data` pointer dies at the next GC, and unwrapping
+  any other argument can trigger one (#4625). `FastApiArgType` enforces this; don't bypass it
+- **NEVER** unwrap `Ref<Object>` — use `V8Ref<v8::Object>` instead
+- `JSG_CATCH` is NOT a true catch — cannot rethrow with `throw`
+- `NonCoercible<T>` runs counter to Web IDL best practices; avoid in new APIs
+- Rust JSG bindings: see `src/rust/jsg/` and `src/rust/jsg-macros/`; full macro reference in `src/rust/AGENTS.md`; GC tracing (`Traced` + `GarbageCollected`) documented in `src/rust/jsg-macros/README.md`. The Rust `Realm` sets `IsolateBase::setDeferredActionHook()`, which `applyDeferredActions()` calls whenever an `IsolateBase::Lock` is taken, to release the handles of Rust `Global`s dropped without the lock, and, when it is dropped, `setDisposeHook()`, which `~IsolateBase()` calls after `Dispose()` to free the handle slots of Rust `Global`s dropped after the Realm, which V8 may write into until then
+
+## INVARIANTS
+
+These rules MUST be followed when writing or modifying JSG code:
+
+1. **MUST implement `visitForGc()`** on any Resource Type holding `Ref<T>`, `V8Ref<T>`,
+   `JsRef<T>`, `Function<T>`, `Promise<T>`, or `Promise<T>::Resolver` — see
+   `README.md` §GC-Visitable Types for the complete list
+2. **MUST visit ALL GC-visitable fields** reachable from the wrapper — an unvisited handle
+   is a strong root, so missing one causes a leak (not use-after-free) when it forms a cycle
+3. **MUST NOT store `v8::Local<T>` or `JsValue` types as class members** — use `V8Ref<T>`
+   or `JsRef<T>` for persistence
+4. **MUST NOT put `v8::Global<T>` or `v8::Local<T>` in `JSG_STRUCT` fields** — use
+   `jsg::V8Ref<T>` or `jsg::JsRef<T>`
+5. **MUST NOT put `v8::Global<T>` or `v8::Local<T>` in `kj::Promise`** — compile-time deleted
+6. **MUST NOT pass `jsg::Lock` into KJ promise coroutines**
+7. **`JSG_SERIALIZABLE` MUST appear AFTER `JSG_RESOURCE_TYPE` block**, not inside it
+8. **Serialization tag enum values MUST NOT change** once data has been serialized
+9. **`Ref<T>` ownership MUST flow owner→owned**; backwards refs use raw `T&` or
+   `kj::Maybe<T&>`
+10. **Prefer `JSG_PROTOTYPE_PROPERTY`** over `JSG_INSTANCE_PROPERTY` unless there's a
+    specific reason — instance properties break GC optimization
+11. **Use `// NOLINT(jsg-visit-for-gc)` to document intentional non-visits.** When a
+    GC-visitable field intentionally is not visited (e.g., a `kj::Rc`-owned object
+    unreachable from JS, or a type visited via a different mechanism), suppress the
+    `jsg-visit-for-gc` clang-tidy diagnostic with a `// NOLINT(jsg-visit-for-gc)`
+    comment and a brief explanation of _why_ it's safe to skip.
+
+12. **Module evaluation MUST NOT drain the microtask queue while nested.** Draining
+    while an ancestor module is still `kEvaluating` can run an async module's
+    fulfillment callback early and trip a fatal V8 CHECK
+    (`status() >= kEvaluatingAsync`). Evaluation depth is tracked by the RAII
+    `Lock::ModuleEvaluationScope`, queried via `js.isEvaluatingModule()`; both module
+    registries check it before settling a pending top-level await. Any code path that
+    calls `v8::Module::Evaluate()` MUST hold a `ModuleEvaluationScope`, including
+    embedder-supplied evaluation callbacks (`ModuleRegistry::Builder::setEvalCallback`),
+    or the guard is silently bypassed. Callers that can return a promise to their own
+    caller may pass `InstantiateModuleOptions::ALLOW_PENDING_EVALUATION` to receive the
+    pending evaluation promise instead of an error.
+
+13. **Compiled Wasm reuse MUST preserve compilation settings.** Compatibility flags
+    that change Wasm compilation options or compile-time imports must be included
+    in the slot key used by `CompiledWasmModuleHolder::getOrCompile()` in
+    `modules.c++`. Keep its slot selection and `compiled` storage in `modules.h`
+    consistent with `compileWasmModule()`. The current key is
+    `Lock::isWasmEsmIntegrationBuiltinsEnabled()`. The source URL that
+    `Lock::isWasmSourceUrlSupportEnabled()` controls is not part of the key: it
+    changes no generated code, and the holder compiles without one. Extend the
+    reuse tests in `modules-new-test.c++` and `api/pyodide/wasm-module-test.c++`
+    when adding a setting, including isolate destruction and a distinct
+    compilation per setting. Modules passed to the Worker Loader already compiled
+    are reused by `sharedCompiledWasmModule()` in `io/worker-modules.h`, which
+    must check the same settings. It never reuses a module when either isolate
+    has `wasm_source_url_support`, because the URL is the module's name in the
+    loaded Worker's bundle.
+
+14. **Don't visit through a shared owner.** A `kj::Rc`, `kj::Arc`, or `kj::Own` of a
+    refcounted type can have other owners that visit the same object, and a handle
+    visited from two owners is strong or traced depending on which visited last (a
+    `jsg::Ref` asserts instead). The `jsg-shared-visit` clang-tidy check flags such
+    visits; a deliberate one carries `// NOLINT(jsg-shared-visit)` with the reason.
+
+The `jsg-visit-for-gc` clang-tidy check (`//tools/clang-tidy:workerd-lint`)
+automatically detects missing `visitForGc` implementations and unvisited fields
+across the codebase, enforcing invariants 1 and 2 at build time.
+
+## CODE REVIEW RULE
+
+When reviewing changes to JSG code, check whether the change requires updates to
+any of these documentation files:
+
+- **`README.md`** — if the change adds/modifies type mappings, macros, error types,
+  serialization patterns, or reference tables
+- **`docs/jsg.md`** — if the change affects tutorial content, adds new patterns,
+  or changes API usage examples
+- **This file (`AGENTS.md`)** — if the change adds/removes files, changes the
+  architecture summary, or introduces new invariants
+
+Flag any needed doc updates in the review. Do not let behavioral or architectural
+changes land without corresponding documentation updates.

@@ -1,0 +1,271 @@
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import SpeedTest, { type AimLogResponse } from '../../src/index.ts';
+
+const VALID_CLASSIFICATIONS = ['bad', 'poor', 'average', 'good', 'great'];
+
+// AIM logging endpoint used by this test. The request is intercepted (see the
+// fetch stub below) so the assertion does not depend on a live endpoint.
+const AIM_LOG_URL = 'https://speed.cloudflare.com/__results';
+const STUB_REQUEST_ID = '11111111-2222-3333-4444-555555555555';
+
+// Marks failures caused by library bugs, which retries would hide.
+const LIBRARY_ERROR = 'Library bug, not retried';
+
+describe('SpeedTest E2E', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it(
+    'runs a realistic speed test and produces valid results',
+    {
+      timeout: 120_000,
+      // Retry network flakiness, but not bugs that only show up sometimes
+      retry: {
+        count: 2,
+        condition: error => !error.message?.includes(LIBRARY_ERROR)
+      }
+    },
+    async () => {
+      const engine = new SpeedTest({
+        autoStart: false,
+        logAimApiUrl: AIM_LOG_URL,
+        logMeasurementApiUrl: null,
+        measurements: [
+          // Phase 1: Initial estimation
+          { type: 'latency', numPackets: 1 },
+          { type: 'download', bytes: 1e5, count: 1, bypassMinDuration: true },
+          // Phase 2: Latency measurement
+          { type: 'latency', numPackets: 10 },
+          // Phase 3: Progressive downloads
+          { type: 'download', bytes: 1e5, count: 4 },
+          { type: 'download', bytes: 1e6, count: 3 },
+          { type: 'download', bytes: 1e7, count: 2 },
+          // Phase 4: Progressive uploads
+          { type: 'upload', bytes: 1e5, count: 4 },
+          { type: 'upload', bytes: 1e6, count: 3 },
+          { type: 'upload', bytes: 1e7, count: 2 }
+        ],
+        measureDownloadLoadedLatency: true,
+        measureUploadLoadedLatency: true,
+        // Lower the min duration threshold so fast CI connections still
+        // produce loaded latency data (default 250ms filters out fast downloads)
+        loadedRequestMinDuration: 10
+      });
+
+      // Intercept only the AIM log POST so we can deterministically assert that
+      // onResultsLogged fires with the endpoint's parsed response. All other
+      // requests (download/upload/latency) hit the real network as usual.
+      const originalFetch = window.fetch;
+      const restoreFetch = () => {
+        window.fetch = originalFetch;
+      };
+
+      // An `Error fetching` warning that isn't a failed request, an HTTP error or
+      // a failed body read means the library threw. Against the live endpoint,
+      // a sample without a resource timing entry is a bug too.
+      const networkErrors = new Set<string>();
+      const recordNetworkError = (error: unknown): never => {
+        networkErrors.add(String(error));
+        throw error;
+      };
+      const libraryErrors: string[] = [];
+      const originalWarn = console.warn;
+      vi.spyOn(console, 'warn').mockImplementation((...args) => {
+        const message = String(args[0]);
+        const match = /^Error fetching \S+: ([\s\S]*)$/.exec(message);
+        if (match && !networkErrors.has(match[1])) libraryErrors.push(match[1]);
+        if (message.endsWith('without a resource timing entry')) {
+          libraryErrors.push(message);
+        }
+        originalWarn(...args);
+      });
+      // A library bug can surface as a timeout or error, so report it first
+      const libraryError = () =>
+        libraryErrors.length
+          ? new Error(`${LIBRARY_ERROR}: ${libraryErrors.join('; ')}`)
+          : undefined;
+      window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+        const url =
+          typeof input === 'string'
+            ? input
+            : input instanceof Request
+              ? input.url
+              : input.toString();
+        if (url === AIM_LOG_URL) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ requestId: STUB_REQUEST_ID }), {
+              status: 200,
+              headers: { 'content-type': 'application/json' }
+            })
+          );
+        }
+        return originalFetch(input, init).then(r => {
+          if (!r.ok) networkErrors.add(String(new Error(r.statusText)));
+          const text = r.text.bind(r);
+          r.text = () => text().catch(recordNetworkError);
+          return r;
+        }, recordNetworkError);
+      };
+
+      // onResultsLogged fires shortly after onFinish (once the log request
+      // resolves).
+      const aimResponsePromise = new Promise<AimLogResponse>(resolve => {
+        engine.onResultsLogged = resolve;
+      });
+
+      // Run the speed test and wait for completion
+      const resultsObj = await new Promise<typeof engine.results>(
+        (resolve, reject) => {
+          // Stop the engine so its requests can't leak into a retry
+          const fail = (message: string) => {
+            clearTimeout(timeout);
+            engine.pause();
+            restoreFetch();
+            reject(libraryError() ?? new Error(message));
+          };
+          const timeout = setTimeout(
+            () => fail('Speed test timed out after 90 seconds'),
+            90_000
+          );
+
+          engine.onFinish = results => {
+            clearTimeout(timeout);
+            resolve(results);
+          };
+
+          engine.onError = error => fail(`Speed test error: ${error}`);
+
+          engine.play();
+        }
+      );
+
+      // The log request resolves shortly after onFinish; bound the wait so a
+      // regression that stops onResultsLogged firing fails fast with a clear
+      // message instead of hanging until the test timeout. Restore fetch before
+      // assertions so a failure never leaves the global patched.
+      let aimLogTimer: ReturnType<typeof setTimeout> | undefined;
+      const aimLogTimeout = new Promise<never>((_, reject) => {
+        aimLogTimer = setTimeout(
+          () =>
+            reject(
+              new Error('onResultsLogged did not fire within 15s of finish')
+            ),
+          15_000
+        );
+      });
+      let aimResponse: AimLogResponse;
+      try {
+        aimResponse = await Promise.race([aimResponsePromise, aimLogTimeout]);
+      } catch (error) {
+        throw libraryError() ?? error;
+      } finally {
+        clearTimeout(aimLogTimer);
+        restoreFetch();
+      }
+
+      const bug = libraryError();
+      if (bug) throw bug;
+
+      // ── Engine state ──────────────────────────────────────────────
+      expect(resultsObj.isFinished).toBe(true);
+
+      // ── Summary values with reasonable ranges ─────────────────────
+      const summary = resultsObj.getSummary();
+
+      // Latency: should be between 0 and 1000ms from any CI runner
+      expect(summary.latency).toBeGreaterThan(0);
+      expect(summary.latency).toBeLessThan(1000);
+
+      // Jitter: should be between 0 and 500ms
+      expect(summary.jitter).toBeGreaterThanOrEqual(0);
+      expect(summary.jitter).toBeLessThan(500);
+
+      // Download bandwidth: at least 1 Kbps (any CI runner can do this)
+      expect(summary.download).toBeGreaterThan(1000);
+
+      // Upload bandwidth: at least 1 Kbps
+      expect(summary.upload).toBeGreaterThan(1000);
+
+      // Loaded latency (download): may be absent on very fast connections
+      // where the parallel latency engine doesn't collect data before
+      // downloads finish. Jitter is additionally `null` with fewer than 2
+      // samples, so these check for a number rather than for `undefined`.
+      if (typeof summary.downLoadedLatency === 'number') {
+        expect(summary.downLoadedLatency).toBeGreaterThanOrEqual(0);
+        expect(summary.downLoadedLatency).toBeLessThan(5000);
+      }
+      if (typeof summary.downLoadedJitter === 'number') {
+        expect(summary.downLoadedJitter).toBeGreaterThanOrEqual(0);
+        expect(summary.downLoadedJitter).toBeLessThan(2000);
+      }
+
+      // Loaded latency (upload): same caveat as download
+      if (typeof summary.upLoadedLatency === 'number') {
+        expect(summary.upLoadedLatency).toBeGreaterThanOrEqual(0);
+        expect(summary.upLoadedLatency).toBeLessThan(5000);
+      }
+      if (typeof summary.upLoadedJitter === 'number') {
+        expect(summary.upLoadedJitter).toBeGreaterThanOrEqual(0);
+        expect(summary.upLoadedJitter).toBeLessThan(2000);
+      }
+
+      // Total duration: between 1 second and 2 minutes
+      expect(summary.totalDurationMs).toBeGreaterThan(1000);
+      expect(summary.totalDurationMs).toBeLessThan(120_000);
+
+      // ── Raw data points ───────────────────────────────────────────
+
+      // Download bandwidth points
+      const dlPoints = resultsObj.getDownloadBandwidthPoints();
+      expect(dlPoints.length).toBeGreaterThan(0);
+      for (const p of dlPoints) {
+        expect(p.bytes).toBeGreaterThan(0);
+        expect(p.bps).toBeGreaterThan(0);
+        expect(p.duration).toBeGreaterThan(0);
+      }
+
+      // Upload bandwidth points
+      const ulPoints = resultsObj.getUploadBandwidthPoints();
+      expect(ulPoints.length).toBeGreaterThan(0);
+      for (const p of ulPoints) {
+        expect(p.bytes).toBeGreaterThan(0);
+        expect(p.bps).toBeGreaterThan(0);
+        expect(p.duration).toBeGreaterThan(0);
+      }
+
+      // Unloaded latency points
+      const latencyPoints = resultsObj.getUnloadedLatencyPoints();
+      expect(latencyPoints.length).toBeGreaterThan(0);
+      for (const p of latencyPoints) {
+        expect(p).toBeGreaterThan(0);
+        expect(p).toBeLessThan(1000);
+      }
+
+      // Loaded latency points (download) — may be empty on fast connections
+      const dlLoadedPoints = resultsObj.getDownLoadedLatencyPoints();
+      for (const p of dlLoadedPoints) {
+        expect(p).toBeGreaterThan(0);
+        expect(p).toBeLessThan(5000);
+      }
+
+      // ── AIM Scores ────────────────────────────────────────────────
+      const scores = resultsObj.getScores();
+
+      for (const experience of ['streaming', 'gaming', 'rtc']) {
+        expect(scores[experience]).toBeDefined();
+        expect(scores[experience].points).toBeGreaterThanOrEqual(0);
+        expect(scores[experience].classificationIdx).toBeGreaterThanOrEqual(0);
+        expect(scores[experience].classificationIdx).toBeLessThanOrEqual(4);
+        expect(VALID_CLASSIFICATIONS).toContain(
+          scores[experience].classificationName
+        );
+      }
+
+      // ── onResultsLogged ───────────────────────────────────────────
+      // The engine logged the results to the AIM endpoint and surfaced the
+      // parsed response (the assigned requestId) via onResultsLogged.
+      expect(aimResponse).toEqual({ requestId: STUB_REQUEST_ID });
+    }
+  );
+});

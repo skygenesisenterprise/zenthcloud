@@ -1,0 +1,30 @@
+// Copyright (c) 2026 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+// Entry point for the sockets streams suite. Explicit named re-exports
+// only.
+
+export {
+  echoRoundTrip,
+  degenerateViewsWithHighWaterMark,
+  stringSizesWithHighWaterMark,
+  greetReadsToEof,
+  echoByobReads,
+  echoReadAtLeast,
+  pipeSocketReadableToJsSink,
+  pipeJsSourceToSocketWritable,
+  pipeSocketThroughJsTransform,
+  pipeSocketToSocket,
+  pipeSocketToSocketClosesSource,
+  pipeBehindUnawaitedWrite,
+  pipeBehindWriteBeforeStart,
+  nativePipeReleasesEndpoints,
+  pipeOptionGetterLocksNativeEndpoint,
+  cancelReadableSettlesSocket,
+  detachRejectsPendingWrites,
+  detachClosesIdleWritable,
+  largeEchoVolume,
+  closeWithPipeCloseInFlight,
+} from 'socket-streams';
+export { default } from 'socket-streams';

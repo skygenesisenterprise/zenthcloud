@@ -1,0 +1,773 @@
+// Copyright (c) 2026 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+use jsg::ExceptionType;
+use jsg::FromJS;
+use jsg::ToJS;
+use jsg::v8::Local;
+use jsg::v8::String as JsString;
+use jsg::v8::Utf8Value;
+use jsg::v8::Value;
+use jsg::v8::WriteFlags;
+use jsg_macros::jsg_method;
+use jsg_macros::jsg_resource;
+
+// Convenience: create a Local<String> from a UTF-8 str literal.
+fn from_utf8<'a>(lock: &mut jsg::Lock<'a>, s: &str) -> Local<'a, JsString> {
+    JsString::new_from_utf8(lock, s.as_bytes()).unwrap()
+}
+
+// =============================================================================
+// Local<String> — static constructors
+// =============================================================================
+
+#[test]
+fn string_empty_has_zero_length() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = JsString::empty(lock);
+        assert_eq!(s.length(), 0);
+        assert!(s.is_one_byte());
+        Ok(())
+    });
+}
+
+#[test]
+fn string_new_from_utf8_roundtrips_ascii() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let maybe = JsString::new_from_utf8(lock, b"hello");
+        assert!(maybe.is_some());
+        let s = maybe.unwrap();
+        assert_eq!(s.length(), 5);
+        assert_eq!(s.to_string(lock), "hello");
+        Ok(())
+    });
+}
+
+#[test]
+fn string_new_from_utf8_roundtrips_unicode() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let input = "こんにちは";
+        let s = from_utf8(lock, input);
+        assert_eq!(s.to_string(lock), input);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_new_from_utf8_empty_slice() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let maybe = JsString::new_from_utf8(lock, b"");
+        assert!(maybe.is_some());
+        let s = maybe.unwrap();
+        assert_eq!(s.length(), 0);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_new_from_one_byte_roundtrips() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let maybe = JsString::new_from_one_byte(lock, b"latin1");
+        assert!(maybe.is_some());
+        let s = maybe.unwrap();
+        assert_eq!(s.length(), 6);
+        assert!(s.is_one_byte());
+        assert_eq!(s.to_string(lock), "latin1");
+        Ok(())
+    });
+}
+
+#[test]
+fn string_new_from_two_byte_roundtrips() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let utf16: Vec<u16> = "hello".encode_utf16().collect();
+        let maybe = JsString::new_from_two_byte(lock, &utf16);
+        assert!(maybe.is_some());
+        let s = maybe.unwrap();
+        assert_eq!(s.length(), 5);
+        assert_eq!(s.to_string(lock), "hello");
+        Ok(())
+    });
+}
+
+#[test]
+fn string_new_from_two_byte_unicode() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let input = "日本語";
+        let utf16: Vec<u16> = input.encode_utf16().collect();
+        let s = JsString::new_from_two_byte(lock, &utf16).unwrap();
+        assert_eq!(s.to_string(lock), input);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_new_from_utf8_internalized_roundtrips() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s1 = JsString::new_internalized_from_utf8(lock, b"intern_me").unwrap();
+        let s2 = JsString::new_internalized_from_utf8(lock, b"intern_me").unwrap();
+        // Both strings should have the same content.
+        assert_eq!(s1.to_string(lock), "intern_me");
+        assert_eq!(s2.to_string(lock), "intern_me");
+        // Internalized strings with equal content compare equal.
+        assert_eq!(s1, s2);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_new_from_one_byte_internalized_roundtrips() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = JsString::new_internalized_from_one_byte(lock, b"latin1_intern").unwrap();
+        assert_eq!(s.to_string(lock), "latin1_intern");
+        assert!(s.is_one_byte());
+        Ok(())
+    });
+}
+
+#[test]
+fn string_new_from_two_byte_internalized_roundtrips() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let utf16: Vec<u16> = "two_byte_intern".encode_utf16().collect();
+        let s = JsString::new_internalized_from_two_byte(lock, &utf16).unwrap();
+        assert_eq!(s.to_string(lock), "two_byte_intern");
+        Ok(())
+    });
+}
+
+// =============================================================================
+// Local<String> — instance methods
+// =============================================================================
+
+#[test]
+fn string_length_matches_utf16_code_units() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        // ASCII: 1 byte per char = 1 UTF-16 code unit
+        assert_eq!(from_utf8(lock, "hello").length(), 5);
+        // Each BMP kanji = 1 UTF-16 code unit
+        assert_eq!(from_utf8(lock, "日本語").length(), 3);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_is_one_byte_for_ascii() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = from_utf8(lock, "ascii only");
+        assert!(s.is_one_byte());
+        assert!(s.contains_only_one_byte());
+        Ok(())
+    });
+}
+
+#[test]
+fn string_is_not_one_byte_for_multibyte() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = from_utf8(lock, "こんにちは");
+        assert!(!s.is_one_byte());
+        assert!(!s.contains_only_one_byte());
+        Ok(())
+    });
+}
+
+#[test]
+fn string_utf8_length_matches_byte_count() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let ascii = "hello";
+        assert_eq!(from_utf8(lock, ascii).utf8_length(lock), ascii.len());
+
+        let unicode = "こんにちは";
+        assert_eq!(from_utf8(lock, unicode).utf8_length(lock), unicode.len());
+        Ok(())
+    });
+}
+
+// =============================================================================
+// write / write_one_byte / write_utf8
+// =============================================================================
+
+#[test]
+fn string_write_utf16_into_buffer() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = from_utf8(lock, "hi");
+        let mut buf = vec![0u16; 2];
+        s.write(lock, 0, 2, &mut buf, WriteFlags::None);
+        assert_eq!(buf, vec!['h' as u16, 'i' as u16]);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_write_utf16_with_offset() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = from_utf8(lock, "hello");
+        let mut buf = vec![0u16; 3];
+        s.write(lock, 2, 3, &mut buf, WriteFlags::None);
+        assert_eq!(buf, vec!['l' as u16, 'l' as u16, 'o' as u16]);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_write_one_byte_into_buffer() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = from_utf8(lock, "abc");
+        let mut buf = vec![0u8; 3];
+        s.write_one_byte(lock, 0, 3, &mut buf, WriteFlags::None);
+        assert_eq!(buf, b"abc");
+        Ok(())
+    });
+}
+
+#[test]
+fn string_write_utf8_into_buffer() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let input = "hello";
+        let s = from_utf8(lock, input);
+        let mut buf = vec![0u8; input.len()];
+        let written = s.write_utf8(lock, &mut buf, WriteFlags::None);
+        assert_eq!(written, input.len());
+        assert_eq!(&buf, input.as_bytes());
+        Ok(())
+    });
+}
+
+#[test]
+fn string_write_utf8_null_terminate() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let input = "hi";
+        let s = from_utf8(lock, input);
+        let mut buf = vec![0u8; input.len() + 1];
+        let written = s.write_utf8(lock, &mut buf, WriteFlags::NullTerminate);
+        assert_eq!(written, input.len() + 1);
+        assert_eq!(buf[input.len()], 0);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_to_string_roundtrips_ascii() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let input = "Hello, world!";
+        assert_eq!(from_utf8(lock, input).to_string(lock), input);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_to_string_roundtrips_unicode() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let input = "🦀 Rust";
+        assert_eq!(from_utf8(lock, input).to_string(lock), input);
+        Ok(())
+    });
+}
+
+// =============================================================================
+// PartialEq / Eq
+// =============================================================================
+
+#[test]
+fn string_eq_same_content() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let a = from_utf8(lock, "equal");
+        let b = from_utf8(lock, "equal");
+        assert_eq!(a, b);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_ne_different_content() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let a = from_utf8(lock, "foo");
+        let b = from_utf8(lock, "bar");
+        assert_ne!(a, b);
+        Ok(())
+    });
+}
+
+#[test]
+fn string_empty_eq_empty() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let a = JsString::empty(lock);
+        let b = JsString::empty(lock);
+        assert_eq!(a, b);
+        Ok(())
+    });
+}
+
+// =============================================================================
+// WriteFlags
+// =============================================================================
+
+#[test]
+fn write_flags_none_is_zero() {
+    assert_eq!(WriteFlags::None.bits(), 0);
+}
+
+#[test]
+fn write_flags_null_terminate_is_one() {
+    assert_eq!(WriteFlags::NullTerminate.bits(), 1);
+}
+
+#[test]
+fn write_flags_replace_invalid_utf8_is_two() {
+    assert_eq!(WriteFlags::ReplaceInvalidUtf8.bits(), 2);
+}
+
+#[test]
+fn write_flags_bitor_combines_values() {
+    let combined = WriteFlags::NullTerminate | WriteFlags::ReplaceInvalidUtf8;
+    assert_eq!(combined.bits(), 3);
+    assert_eq!(combined, WriteFlags::NullTerminateAndReplaceInvalidUtf8);
+}
+
+#[test]
+fn write_flags_combined_variant_equals_bitor() {
+    assert_eq!(
+        WriteFlags::NullTerminateAndReplaceInvalidUtf8.bits(),
+        WriteFlags::NullTerminate.bits() | WriteFlags::ReplaceInvalidUtf8.bits()
+    );
+}
+
+// =============================================================================
+// Utf8Value
+// =============================================================================
+
+#[test]
+fn utf8_value_length_matches_byte_count() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let val: Local<'_, Value> = "hello".to_js(lock)?;
+        let utf8 = Utf8Value::new(lock, &val)?;
+        assert_eq!(utf8.length(), 5);
+        Ok(())
+    });
+}
+
+#[test]
+fn utf8_value_as_str_returns_correct_content() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let val: Local<'_, Value> = "hello world".to_js(lock)?;
+        let utf8 = Utf8Value::new(lock, &val)?;
+        assert_eq!(utf8.as_str(), Some("hello world"));
+        Ok(())
+    });
+}
+
+#[test]
+fn utf8_value_as_bytes_matches_utf8_encoding() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let input = "Rust 🦀";
+        let val: Local<'_, Value> = input.to_js(lock)?;
+        let utf8 = Utf8Value::new(lock, &val)?;
+        assert_eq!(utf8.as_bytes(), input.as_bytes());
+        Ok(())
+    });
+}
+
+#[test]
+fn utf8_value_from_unicode_string() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let input = "こんにちは";
+        let val: Local<'_, Value> = input.to_js(lock)?;
+        let utf8 = Utf8Value::new(lock, &val)?;
+        assert_eq!(utf8.length(), input.len());
+        assert_eq!(utf8.as_str(), Some(input));
+        Ok(())
+    });
+}
+
+#[test]
+fn utf8_value_from_empty_string() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let val: Local<'_, Value> = "".to_js(lock)?;
+        let utf8 = Utf8Value::new(lock, &val)?;
+        assert_eq!(utf8.length(), 0);
+        assert_eq!(utf8.as_str(), Some(""));
+        Ok(())
+    });
+}
+
+#[test]
+fn utf8_value_as_ptr_is_non_null() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let val: Local<'_, Value> = "test".to_js(lock)?;
+        let utf8 = Utf8Value::new(lock, &val)?;
+        assert!(!utf8.as_ptr().is_null());
+        Ok(())
+    });
+}
+
+#[test]
+fn utf8_value_coerces_number_to_string() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let val = ctx
+            .eval_raw(lock, "42")
+            .map_err(|e| e.unwrap_jsg_err(lock))?;
+        let utf8 = Utf8Value::new(lock, &val)?;
+        assert_eq!(utf8.as_str(), Some("42"));
+        Ok(())
+    });
+}
+
+/// Converts the value of `expression` with `Utf8Value`, and returns what the conversion threw.
+fn utf8_value_throws(expression: &str) -> std::string::String {
+    let harness = crate::Harness::new();
+    let mut thrown = None;
+    harness.run_in_context(|lock, ctx| {
+        let val = ctx
+            .eval_raw(lock, expression)
+            .map_err(|e| e.unwrap_jsg_err(lock))?;
+        let exception = lock
+            .try_catch(|lock| {
+                let result = Utf8Value::new(lock, &val);
+                assert!(result.as_ref().is_err_and(jsg::Error::is_pending));
+                result.map(drop)
+            })?
+            .unwrap_err();
+        let exception = jsg::v8::Local::<jsg::v8::Object>::try_from(exception).unwrap();
+        let message = exception.get(lock, "message")?;
+        thrown = Some(<std::string::String as jsg::FromJS>::from_js(
+            lock, message,
+        )?);
+        Ok(())
+    });
+    thrown.unwrap()
+}
+
+/// A `Symbol` doesn't convert: V8's `ToString` throws a `TypeError`, which stays pending.
+#[test]
+fn utf8_value_of_symbol_throws() {
+    assert_eq!(
+        utf8_value_throws("Symbol('s')"),
+        "Cannot convert a Symbol value to a string"
+    );
+}
+
+/// What a `toString` throws stays pending, rather than being discarded.
+#[test]
+fn utf8_value_passes_on_what_to_string_throws() {
+    assert_eq!(
+        utf8_value_throws("({ toString() { throw new RangeError('from toString'); } })"),
+        "from toString"
+    );
+}
+
+// =============================================================================
+// Local<String> cast from/to Local<Value>
+// =============================================================================
+
+#[test]
+fn string_try_from_from_value() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let val: Local<'_, Value> = "cast me".to_js(lock)?;
+        let s = Local::<JsString>::try_from(val).expect("should cast to String");
+        assert_eq!(s.to_string(lock), "cast me");
+        Ok(())
+    });
+}
+
+#[test]
+fn string_try_from_fails_for_non_string() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let val: Local<'_, Value> = 42_u32.to_js(lock)?;
+        assert!(Local::<JsString>::try_from(val).is_err());
+        Ok(())
+    });
+}
+
+#[test]
+fn string_upcast_to_value() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = from_utf8(lock, "upcast");
+        let val: Local<'_, Value> = s.into();
+        assert!(val.is_string());
+        Ok(())
+    });
+}
+
+// =============================================================================
+// Local<Value>::to_js_string
+// =============================================================================
+
+#[jsg_resource]
+struct Strings;
+
+#[jsg_resource]
+impl Strings {
+    #[jsg_method]
+    pub fn coerce<'s>(
+        &self,
+        lock: &mut jsg::Lock<'s>,
+        value: Local<'s, Value>,
+    ) -> Result<Local<'s, JsString>, jsg::Error> {
+        value.to_js_string(lock)
+    }
+}
+
+/// `to_js_string` converts any value as JavaScript's `ToString` does, running `toString` where
+/// there is one, like C++ JSG's `jsg::JsString` parameter.
+#[test]
+fn value_to_js_string_coerces() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        for (expr, expected) in [
+            ("'s'", "s"),
+            ("42", "42"),
+            ("-0", "0"),
+            ("1n", "1"),
+            ("null", "null"),
+            ("undefined", "undefined"),
+            ("[1, 2]", "1,2"),
+            ("new String('boxed')", "boxed"),
+            ("({ toString() { return 'obj'; } })", "obj"),
+        ] {
+            let value = ctx.eval_raw(lock, expr).unwrap();
+            let string = value.to_js_string(lock).unwrap();
+            assert_eq!(string.to_string(lock), expected, "{expr}");
+        }
+
+        // A string converts to itself.
+        let value = ctx.eval_raw(lock, "'x'.repeat(3)").unwrap();
+        let string: Local<'_, Value> = value.to_js_string(lock).unwrap().into();
+        assert_eq!(string, value);
+        Ok(())
+    });
+}
+
+/// What `toString` throws, or `ToString` throws for a `Symbol`, stays pending, so that a method
+/// passing the error on throws it to its caller.
+#[test]
+fn value_to_js_string_passes_on_what_to_string_throws() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let thrower = "({ toString() { throw new RangeError('boom'); } })";
+        for (expr, name, message) in [
+            (thrower, ExceptionType::RangeError, "boom"),
+            (
+                "Symbol()",
+                ExceptionType::TypeError,
+                "Cannot convert a Symbol value to a string",
+            ),
+        ] {
+            let value = ctx.eval_raw(lock, expr).unwrap();
+            let caught = lock
+                .try_catch(|lock| {
+                    let err = value.to_js_string(lock).map(drop).unwrap_err();
+                    assert!(err.is_pending(), "{expr}");
+                    Err::<(), _>(err)
+                })
+                .expect("execution should not be terminating");
+            let Err(exception) = caught else {
+                panic!("{expr} should not convert");
+            };
+            let err = jsg::Error::from_js(lock, exception).unwrap();
+            assert_eq!(err.name, name, "{expr}");
+            assert_eq!(err.message, message, "{expr}");
+        }
+
+        let resource = jsg::Rc::new(lock, Strings).to_js(lock)?;
+        ctx.set_global(lock, "r", resource);
+        assert_eq!(ctx.eval::<String>(lock, "r.coerce(7)").unwrap(), "7");
+        let err = ctx
+            .eval::<String>(lock, &format!("r.coerce({thrower})"))
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert_eq!(err.name, ExceptionType::RangeError);
+        assert_eq!(err.message, "boom");
+        Ok(())
+    });
+}
+
+// =============================================================================
+// String::concat, internalize, get_identity_hash, is_flat, K_MAX_LENGTH
+// =============================================================================
+
+#[test]
+fn string_concat_produces_concatenated_string() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let left = from_utf8(lock, "hello, ");
+        let right = from_utf8(lock, "world");
+        let result = JsString::concat(lock, left, right).unwrap();
+        assert_eq!(result.to_string(lock), "hello, world");
+        Ok(())
+    });
+}
+
+#[test]
+fn string_concat_with_empty_string() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = from_utf8(lock, "abc");
+        let empty = JsString::empty(lock);
+        let result = JsString::concat(lock, s, empty).unwrap();
+        assert_eq!(result.to_string(lock), "abc");
+        Ok(())
+    });
+}
+
+#[test]
+fn string_concat_over_max_length_is_none() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        // `repeat` builds a cons string, so this allocates little.
+        let value = ctx.eval_raw(lock, "'x'.repeat(2 ** 28 + 1)").unwrap();
+        let half = Local::<JsString>::try_from(value).unwrap();
+        assert!(i64::from(half.length()) * 2 > i64::from(JsString::MAX_LENGTH));
+        assert!(JsString::concat(lock, half, half).is_none());
+        Ok(())
+    });
+}
+
+#[test]
+fn string_internalize_returns_equal_string() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = from_utf8(lock, "intern-me");
+        let interned = s.internalize(lock);
+        assert_eq!(interned.to_string(lock), "intern-me");
+        Ok(())
+    });
+}
+
+#[test]
+fn string_internalize_twice_returns_equal_content() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = from_utf8(lock, "dedup");
+        let a = s.internalize(lock);
+        let b = s.internalize(lock);
+        assert_eq!(a.to_string(lock), b.to_string(lock));
+        Ok(())
+    });
+}
+
+#[test]
+fn string_is_flat_for_simple_string() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, _ctx| {
+        let s = from_utf8(lock, "flat");
+        assert!(s.is_flat());
+        Ok(())
+    });
+}
+
+#[test]
+fn string_max_length_matches_v8() {
+    // V8's kMaxLength is (1<<28)-16 on 32-bit and (1<<29)-24 on 64-bit.
+    #[cfg(target_pointer_width = "32")]
+    assert_eq!(JsString::MAX_LENGTH, (1 << 28) - 16);
+    #[cfg(target_pointer_width = "64")]
+    assert_eq!(JsString::MAX_LENGTH, (1 << 29) - 24);
+}
+
+// =============================================================================
+// Strings longer than V8 allows
+// =============================================================================
+
+/// A string one byte longer than V8 accepts. Its bytes are zero, so that the allocation costs
+/// no physical memory until something reads it, which refusing it by its length never does.
+fn overlong_string() -> String {
+    let bytes = vec![0u8; usize::try_from(JsString::MAX_LENGTH).unwrap() + 1];
+    // SAFETY: zero bytes are ASCII, so valid UTF-8.
+    unsafe { String::from_utf8_unchecked(bytes) }
+}
+
+#[jsg_resource]
+struct Overlong;
+
+#[jsg_resource]
+impl Overlong {
+    #[jsg_method]
+    fn string(&self) -> String {
+        overlong_string()
+    }
+}
+
+#[test]
+fn string_constructors_refuse_an_overlong_string() {
+    crate::Harness::new().run_in_context(|lock, ctx| {
+        let s = overlong_string();
+        assert!(JsString::new_from_str(lock, &s).is_none());
+        assert!(JsString::new_from_utf8(lock, s.as_bytes()).is_none());
+        assert!(JsString::new_internalized_from_str(lock, &s).is_none());
+        assert!(JsString::new_from_one_byte(lock, s.as_bytes()).is_none());
+        // V8 refused with nothing pending, so JavaScript still runs.
+        assert!(ctx.eval::<bool>(lock, "1 + 1 === 2").unwrap());
+        Ok(())
+    });
+}
+
+#[test]
+fn to_js_of_an_overlong_string_is_a_range_error() {
+    crate::Harness::new().run_in_context(|lock, ctx| {
+        let s = overlong_string();
+        for err in [
+            s.as_str().to_js(lock).unwrap_err(),
+            s.to_js(lock).unwrap_err(),
+        ] {
+            assert_eq!(err.name, jsg::ExceptionType::RangeError);
+            assert_eq!(err.message, "Invalid string length");
+            assert!(!err.is_pending(), "the error is not a pending exception");
+        }
+        // Nothing is pending, so JavaScript still runs.
+        assert!(ctx.eval::<bool>(lock, "1 + 1 === 2").unwrap());
+        Ok(())
+    });
+}
+
+/// JavaScript catches the `RangeError` that V8 itself throws for such a string.
+#[test]
+fn method_returning_an_overlong_string_throws_a_range_error() {
+    crate::Harness::new().run_in_context(|lock, ctx| {
+        let overlong = jsg::Rc::new(lock, Overlong);
+        ctx.set_global(lock, "overlong", overlong);
+        assert!(
+            ctx.eval::<bool>(
+                lock,
+                "let caught;
+                 try { overlong.string(); } catch (e) { caught = e; }
+                 caught instanceof RangeError && caught.message === 'Invalid string length'"
+            )
+            .unwrap()
+        );
+        Ok(())
+    });
+}

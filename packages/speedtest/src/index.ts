@@ -1,0 +1,979 @@
+import {
+  defaultConfig,
+  internalConfig,
+  type Config,
+  type ConfigOptions,
+  type InternalConfig,
+  type MeasurementConfig
+} from './config';
+import { type Engine } from './engines/Engine';
+import BandwidthEngine from './engines/BandwidthEngine/LoggingBandwidthEngine';
+import { getParallelism } from './engines/BandwidthEngine/BandwidthEngine';
+import PacketLossEngine from './engines/PacketLossEngine';
+import ReachabilityEngine from './engines/ReachabilityEngine';
+
+import Results, { type MeasurementType } from './Results';
+import logFinalResults, {
+  type AimLogResponse
+} from './logging/logFinalResults';
+import type { AuthorizationOptions } from './utils/authorization';
+import { resolveApiUrls } from './utils/measurementTargets';
+
+const DEFAULT_OPTIMAL_DOWNLOAD_SIZE = 1e6;
+const DEFAULT_OPTIMAL_UPLOAD_SIZE = 1e6;
+const OPTIMAL_SIZE_RATIO = 0.5; // of largest size reached in measurement
+
+/**
+ * A single measurement step configuration. The exact properties depend on
+ * `type`, but in the switch statement we destructure dynamically so we use a
+ * loose shape that captures every property any branch may need.
+ */
+interface MeasurementStep {
+  /** Measurement type to execute (e.g., 'latency', 'download', 'packetLoss'). */
+  type: MeasurementType;
+  /** Number of latency pings to send (latency/latencyUnderLoad types). */
+  numPackets?: number;
+  /** Payload size per request in bytes (download/upload types). */
+  bytes?: number;
+  /** Number of requests to issue at this payload size (download/upload types). */
+  count?: number;
+  /** Skip the minimum-duration filter for this round (download/upload types). */
+  bypassMinDuration?: boolean;
+  /** Concurrent requests per sample (download/upload types). */
+  parallel?: number;
+  /** Number of packets sent per batch (packetLoss types). */
+  batchSize?: number;
+  /** Delay between batches in ms (packetLoss types). */
+  batchWaitTime?: number;
+  /** Time to wait for outstanding responses after the last batch in ms (packetLoss types). */
+  responsesWaitTime?: number;
+  /** WebRTC connection setup timeout in ms (packetLoss types). */
+  connectionTimeout?: number;
+  /** Whether to generate download load during the measurement. */
+  loadDown?: boolean;
+  /** Whether to generate upload load during the measurement. */
+  loadUp?: boolean;
+  /** Target hostname for reachability probes. */
+  host?: string;
+  /** Target hostname for NXDOMAIN checks. */
+  nxhost?: string;
+  [key: string]: unknown;
+}
+
+/** The merged config object (defaultConfig + userConfig + internalConfig). */
+type SpeedTestConfig = Config &
+  InternalConfig & { measurements: MeasurementStep[] } & {
+    [key: string]: unknown;
+  };
+
+/** Per-type measurement result bucket stored in Results.raw. */
+interface MeasurementResult {
+  started: boolean;
+  finished: boolean;
+  finishedCurrentRound?: boolean;
+  error?: unknown;
+  results: Record<string, unknown>;
+  parallelResults?: Record<string, Record<string, unknown>>;
+  [key: string]: unknown;
+}
+
+/** Results of one download/upload step, as stored in its bucket. */
+interface BandwidthStepBucket {
+  timings: unknown[];
+  numMeasurements: number;
+  sideLatency?: unknown[];
+}
+
+/** Payload emitted when the engine advances to a new measurement phase. */
+interface PhaseChangePayload {
+  /** Index of the current measurement step within the configured measurements array. */
+  measurementId: number;
+  /** Configuration of the measurement phase that is starting. */
+  measurement: MeasurementConfig;
+}
+
+/**
+ * Measurement types whose engines support pause/resume via `pause()` and `play()`.
+ * Other types (packetLoss, reachability) run to completion once started.
+ */
+const pausableTypes: MeasurementType[] = [
+  'latency',
+  'latencyUnderLoad',
+  'download',
+  'upload'
+];
+
+/** Generate a random numeric string used to correlate log entries for a measurement run. */
+// TODO: consider replacing with crypto.randomUUID() for better uniqueness
+const genMeasId = (): string => `${Math.round(Math.random() * 1e16)}`;
+
+/**
+ * Core speed test engine that orchestrates measurement phases (latency,
+ * download, upload, packet loss, reachability) and exposes results via
+ * callbacks and the {@link results} property.
+ *
+ * @example
+ * ```ts
+ * const engine = new MeasurementEngine({ autoStart: false });
+ * engine.onResultsChange = () => console.log(engine.results.getSummary());
+ * engine.onFinish = results => console.log('Done!', results.getScores());
+ * engine.play();
+ * ```
+ */
+class MeasurementEngine {
+  constructor(userConfig: ConfigOptions = {}) {
+    // The deprecated alias is resolved here and kept out of the merged config
+    const { bandwidthAbortRequestDuration, ...options } = userConfig;
+    this.#config = Object.assign(
+      {},
+      defaultConfig,
+      options,
+      internalConfig
+    ) as SpeedTestConfig;
+    this.#config.abortRequestDuration =
+      options.abortRequestDuration ??
+      bandwidthAbortRequestDuration ??
+      defaultConfig.abortRequestDuration;
+    // An explicit `undefined` would otherwise replace the default
+    this.#config.measurementTargets ??= defaultConfig.measurementTargets;
+    this.#config.measurementDownloadPath ??=
+      defaultConfig.measurementDownloadPath;
+    this.#config.measurementUploadPath ??= defaultConfig.measurementUploadPath;
+    // Built once: the insecure-transport warning is latched per object, so a
+    // fresh one per access would warn on every request.
+    this.#authorization = {
+      token: this.#config.authorizationToken,
+      enabled: this.#config.authorizationEnabled,
+      allowInsecure: this.#config.allowInsecureAuthorizationToken
+    };
+    // Resolved upfront, so an invalid target fails here rather than mid-test
+    this.#downloadApiUrls = resolveApiUrls(
+      this.#config.measurementTargets,
+      {
+        path: this.#config.measurementDownloadPath,
+        option: 'measurementDownloadPath'
+      },
+      this.#config.downloadApiUrl
+    );
+    this.#uploadApiUrls = resolveApiUrls(
+      this.#config.measurementTargets,
+      {
+        path: this.#config.measurementUploadPath,
+        option: 'measurementUploadPath'
+      },
+      this.#config.uploadApiUrl
+    );
+    this.#results = new Results(this.#config);
+    this.#config.autoStart && this.play();
+  }
+
+  get results(): Results {
+    return this.#results;
+  }
+
+  /** The merged config, so subclasses need not rebuild it. */
+  protected get config(): SpeedTestConfig {
+    return this.#config;
+  }
+
+  /** The token and its transport policy, as one unit for the sub-engines. */
+  protected get authorization(): AuthorizationOptions {
+    return this.#authorization;
+  }
+
+  /** Not paused and not finished. */
+  get isRunning(): boolean {
+    return this.#running;
+  }
+
+  get isFinished(): boolean {
+    return this.#finished;
+  }
+
+  onRunningChange: (running: boolean) => void = () => {};
+
+  onResultsChange: (payload: { type: MeasurementType }) => void = () => {};
+
+  onPhaseChange: (payload: PhaseChangePayload) => void = () => {};
+
+  // skipLog is internal: SpeedTestEngine reads it to skip the AIM log
+  #onFinish: (results: Results, end?: { skipLog: boolean }) => void = () => {};
+
+  set onFinish(f: (results: Results) => void) {
+    this.#onFinish = f;
+  }
+
+  #onError: (message: string, status?: number) => void = () => {};
+
+  /**
+   * Called when an error occurs, with the HTTP status when available. Most
+   * errors don't stop the test; call {@link pause} from this callback to stop
+   * it.
+   */
+  set onError(f: (message: string, status?: number) => void) {
+    this.#onError = f;
+  }
+
+  // Public methods
+
+  /**
+   * Pauses the test. The current measurement phase is suspended (if pausable)
+   * and can be resumed with {@link play}. Accumulated runtime is preserved.
+   */
+  pause(): void {
+    const curType = this.#curType();
+    curType && pausableTypes.includes(curType) && this.#curEngine?.pause?.();
+    this.#setRunning(false);
+  }
+
+  /**
+   * Starts or resumes the test.
+   *
+   * Clears the browser's resource timing buffer on every start and resume,
+   * then begins the measurement sequence or, after {@link pause}, resumes the
+   * current phase.
+   */
+  play(): void {
+    if (!this.#running) {
+      // Clear timings before running the engine
+      performance.clearResourceTimings();
+
+      // Default is 250. This can mean the buffer is filled between measurements if many requests are being done
+      // in the same page the engine is running.
+      performance.setResourceTimingBufferSize(10000);
+      this.#setRunning(true);
+      this.#next();
+    }
+  }
+
+  restart(): void {
+    this.#clear();
+    this.play();
+  }
+
+  // Internal state
+  readonly #config: SpeedTestConfig;
+  readonly #authorization: AuthorizationOptions;
+  readonly #results: Results;
+
+  #measurementId: string = genMeasId();
+  #serverTimeDelta: number = 0;
+  #curMsmIdx: number = -1;
+  #curEngine: Engine | undefined;
+  #optimalDownloadChunkSize: number = DEFAULT_OPTIMAL_DOWNLOAD_SIZE;
+  #optimalUploadChunkSize: number = DEFAULT_OPTIMAL_UPLOAD_SIZE;
+  #downloadApiUrls: string[];
+  #uploadApiUrls: string[];
+
+  /**
+   * High-resolution timestamp (from performance.now()) of the test start or
+   * last unpause. Used to calculate totalDurationMs in the final results.
+   */
+  #startTime: number | undefined;
+
+  /**
+   * Accumulated time running the test (unpaused), in milliseconds.
+   * Used to calculate totalDurationMs in the final results.
+   */
+  #accumulatedRuntimeMs: number = 0;
+
+  #abortTestTimeout: ReturnType<typeof setTimeout> | undefined;
+
+  #running: boolean = false;
+  #finished: boolean = false;
+  #skipLog: boolean = false;
+
+  // Internal methods
+  #setRunning(running: boolean): void {
+    if (running !== this.#running) {
+      this.#running = running;
+      this.onRunningChange(this.#running);
+    }
+
+    if (running) {
+      this.#startTime = performance.now();
+    } else {
+      if (typeof this.#startTime !== 'undefined') {
+        this.#accumulatedRuntimeMs += performance.now() - this.#startTime;
+        this.#startTime = undefined;
+      }
+    }
+    this.#scheduleAbortTest();
+  }
+
+  // Paused time doesn't count, so the timer only runs while the test does
+  #scheduleAbortTest(): void {
+    clearTimeout(this.#abortTestTimeout);
+    this.#abortTestTimeout = undefined;
+
+    const limit = this.#config.abortTestDuration;
+    if (!(limit > 0) || !this.#running || this.#finished) return;
+
+    this.#abortTestTimeout = setTimeout(
+      () =>
+        this.#endTest(
+          `Test aborted. Test exceeded abortTestDuration (${this.#config.abortTestDuration}ms)`
+        ),
+      Math.max(0, limit - this.#accumulatedRuntimeMs)
+    );
+  }
+
+  #reportErrorAndContinue(...error: [message: string, status?: number]): void {
+    const measurementId = this.#measurementId;
+    this.#onError(...error);
+    if (measurementId !== this.#measurementId) return; // restarted from onError
+    this.#running && this.#next();
+  }
+
+  // Ends the test early, keeping the results collected so far
+  #endTest(message: string, { skipLog = false } = {}): void {
+    const type = this.#curType();
+    const msmResults = this.#curTypeResults();
+
+    this.#destroyCurEngine();
+    this.#curMsmIdx = this.#config.measurements.length;
+
+    this.#results.raw.error = message;
+    if (type && msmResults) {
+      msmResults.error = message;
+      this.onResultsChange({ type });
+    }
+
+    // Set before onError, which can finish the test itself via pause() + play()
+    this.#skipLog = skipLog;
+    const measurementId = this.#measurementId;
+    this.#onError(message);
+    if (measurementId !== this.#measurementId) return; // restarted from onError
+
+    this.#setRunning(false);
+    this.#setFinished(true);
+  }
+
+  #setFinished(finished: boolean): void {
+    if (finished !== this.#finished) {
+      this.#finished = finished;
+      if (finished) {
+        this.#results.raw.totalDurationMs = this.#accumulatedRuntimeMs;
+        const skipLog = this.#skipLog;
+        setTimeout(() => this.#onFinish(this.results, { skipLog }));
+      }
+    }
+  }
+
+  #curType(): MeasurementType | null {
+    return this.#curMsmIdx < 0 ||
+      this.#curMsmIdx >= this.#config.measurements.length
+      ? null
+      : this.#config.measurements[this.#curMsmIdx].type;
+  }
+
+  #curTypeResults(): MeasurementResult | undefined {
+    const type = this.#curType();
+    if (!type) return undefined;
+    return (
+      (this.#results.raw[type] as MeasurementResult | undefined) || undefined
+    );
+  }
+
+  #clear(): void {
+    this.#destroyCurEngine();
+
+    this.#measurementId = genMeasId();
+    this.#curMsmIdx = -1;
+    this.#curEngine = undefined;
+
+    this.#setRunning(false);
+    this.#setFinished(false);
+    this.#skipLog = false;
+
+    this.#results.clear();
+    this.#accumulatedRuntimeMs = 0;
+  }
+
+  #destroyCurEngine(): void {
+    const engine = this.#curEngine;
+    if (!engine) return;
+
+    engine.onFinished =
+      engine.onConnectionError =
+      engine.onMsgReceived =
+      engine.onCredentialsFailure =
+      engine.onMeasurementResult =
+      engine.onNewMeasurementStarted =
+      engine.onParallelLatencyResult =
+      engine.onParallelLatencyError =
+      engine.onFatalError =
+        () => {};
+
+    const curType = this.#curType();
+    curType && pausableTypes.includes(curType) && engine.pause?.();
+  }
+
+  #next(): void {
+    const resumeType = this.#curType();
+    const resumeResults = this.#curTypeResults();
+    if (
+      resumeType &&
+      pausableTypes.includes(resumeType) &&
+      resumeResults &&
+      resumeResults.started &&
+      !resumeResults.finished &&
+      !resumeResults.finishedCurrentRound
+    ) {
+      this.#curEngine?.play?.();
+      return;
+    }
+
+    // advance to next msm
+    this.#curMsmIdx++;
+    if (this.#curMsmIdx >= this.#config.measurements.length) {
+      // done with measurements
+      this.#setRunning(false);
+      this.#setFinished(true);
+      return;
+    }
+
+    const { type, ...msmConfig } = this.#config.measurements[
+      this.#curMsmIdx
+    ] as MeasurementStep;
+    const msmResults = this.#curTypeResults() as MeasurementResult;
+
+    this.onPhaseChange({
+      measurementId: this.#curMsmIdx,
+      // Only the user-configurable subset reaches here: `Config.measurements` is
+      // typed `MeasurementConfig[]`, so the extra runtime types in the switch
+      // below (latencyUnderLoad/packetLossUnderLoad/reachability/rpki/nxdomain)
+      // are never present in the public config and the cast is sound.
+      measurement: { type, ...msmConfig } as MeasurementConfig
+    });
+
+    const { estimatedServerTime } = this.#config;
+    const downloadApiUrl = this.#downloadApiUrls;
+    const uploadApiUrl = this.#uploadApiUrls;
+
+    let engine: Engine | undefined;
+    switch (type) {
+      case 'v4Reachability':
+      case 'v6Reachability':
+        engine = new ReachabilityEngine(`https://${msmConfig.host}`, {
+          fetchOptions: {
+            method: 'GET',
+            mode: 'no-cors'
+          }
+        }) as Engine;
+        engine.onFinished = (result: unknown) => {
+          const r = result as Record<string, unknown>;
+          msmResults.finished = true;
+          msmResults.results = {
+            host: msmConfig.host,
+            ...r
+          };
+          this.onResultsChange({ type });
+          this.#next();
+        };
+        break;
+      case 'rpki':
+        engine = new ReachabilityEngine(
+          `https://${this.#config.rpkiInvalidHost}`,
+          {
+            timeout: 5000
+          }
+        ) as Engine;
+        engine.onFinished = (result: unknown) => {
+          const r = result as Record<string, unknown>;
+          (r.response
+            ? (r.response as Response).json()
+            : Promise.resolve()
+          ).then((response: Record<string, unknown> | undefined) => {
+            msmResults.finished = true;
+            msmResults.results = {
+              host: this.#config.rpkiInvalidHost,
+              filteringInvalids: !r.reachable,
+              ...(response
+                ? {
+                    asn: response.asn,
+                    name: response.name
+                  }
+                : {})
+            };
+            this.onResultsChange({ type });
+            this.#next();
+          });
+        };
+        break;
+      case 'nxdomain':
+        engine = new ReachabilityEngine(`https://${msmConfig.nxhost}`, {
+          fetchOptions: { mode: 'no-cors' }
+        }) as Engine;
+        engine.onFinished = (result: unknown) => {
+          const r = result as Record<string, unknown>;
+          msmResults.finished = true;
+          msmResults.results = {
+            host: msmConfig.nxhost,
+            reachable: r.reachable
+          };
+          this.onResultsChange({ type });
+          this.#next();
+        };
+        break;
+      case 'packetLoss':
+      case 'packetLossUnderLoad':
+        {
+          msmResults.finished = false;
+
+          const { numPackets: numMsgs, ...ptCfg } = msmConfig;
+          const {
+            turnServerUri,
+            turnServerCredsApiUrl: turnServerCredsApi,
+            turnServerUser,
+            turnServerPass,
+            includeCredentials
+          } = this.#config;
+
+          try {
+            engine = new PacketLossEngine({
+              turnServerUri: turnServerUri ?? undefined,
+              turnServerCredsApi: turnServerCredsApi ?? undefined,
+              turnServerCredsApiIncludeCredentials: includeCredentials,
+              turnServerUser: turnServerUser ?? undefined,
+              turnServerPass: turnServerPass ?? undefined,
+              authorization: this.authorization,
+              numMsgs,
+
+              // if under load
+              downloadChunkSize: msmConfig.loadDown
+                ? this.#optimalDownloadChunkSize
+                : undefined,
+              uploadChunkSize: msmConfig.loadUp
+                ? this.#optimalUploadChunkSize
+                : undefined,
+              // The load generator takes a single URL
+              downloadApiUrl: downloadApiUrl[0],
+              uploadApiUrl: uploadApiUrl[0],
+
+              ...ptCfg
+            }) as Engine;
+          } catch (e) {
+            const message = e instanceof Error ? e.message : String(e);
+            const measurementId = this.#measurementId;
+            // Deferred so that, with autoStart, the caller can set onError first
+            queueMicrotask(() => {
+              if (measurementId !== this.#measurementId) return; // restarted since
+              msmResults.started = true;
+              msmResults.finished = true;
+              msmResults.error = message;
+              this.onResultsChange({ type });
+              this.#reportErrorAndContinue(
+                `Error while measuring packet loss: ${message}`
+              );
+            });
+            return;
+          }
+        }
+
+        engine!.onMsgReceived = () => {
+          msmResults.results = Object.assign(
+            {},
+            (engine as Engine).results as Record<string, unknown>
+          );
+          this.onResultsChange({ type });
+        };
+
+        engine!.onFinished = () => {
+          msmResults.finished = true;
+          this.onResultsChange({ type });
+          this.#running && this.#next();
+        };
+
+        engine!.onConnectionError = (e: unknown) => {
+          msmResults.finished = true;
+          msmResults.error = e;
+          this.onResultsChange({ type });
+          this.#reportErrorAndContinue(
+            `Connection error while measuring packet loss: ${e}`
+          );
+        };
+
+        engine!.onCredentialsFailure = () => {
+          msmResults.finished = true;
+          msmResults.error = 'unable to get turn server credentials';
+          this.onResultsChange({ type });
+          this.#reportErrorAndContinue(
+            'Error while measuring packet loss: unable to get turn server credentials.'
+          );
+        };
+
+        break;
+      case 'latency':
+      case 'latencyUnderLoad': {
+        msmResults.finished = false;
+
+        engine = new BandwidthEngine(
+          [
+            {
+              dir: 'down',
+              bytes: 0,
+              count: msmConfig.numPackets!,
+              bypassMinDuration: true
+            }
+          ],
+          {
+            downloadApiUrl,
+            uploadApiUrl,
+            estimatedServerTime,
+            serverTimeDelta: this.#serverTimeDelta,
+            logApiUrl: this.#config.logMeasurementApiUrl ?? undefined,
+            measurementId: this.#measurementId,
+            sessionId: this.#config.sessionId,
+            authorization: this.authorization,
+
+            // if under load
+            downloadChunkSize: msmConfig.loadDown
+              ? this.#optimalDownloadChunkSize
+              : undefined,
+            uploadChunkSize: msmConfig.loadUp
+              ? this.#optimalUploadChunkSize
+              : undefined
+          } as Record<string, unknown>
+        ) as Engine;
+        (
+          engine as Engine & { fetchOptions: Record<string, unknown> }
+        ).fetchOptions = this.#config.includeCredentials
+          ? { credentials: 'include' }
+          : {};
+        (
+          engine as Engine & { abortRequestDuration: number }
+        ).abortRequestDuration = this.#config.abortRequestDuration;
+
+        if (!msmConfig.loadDown && !msmConfig.loadUp) {
+          const eng = engine as Engine & { qsParams: Record<string, string> };
+          eng.qsParams = { ...eng.qsParams, during: 'idle' };
+        }
+
+        // Accumulate timings across latency phases
+        const priorTimings = (
+          (msmResults.results as { timings?: unknown[] })?.timings || []
+        ).slice();
+
+        engine.onMeasurementResult = engine.onNewMeasurementStarted = (
+          _meas: unknown,
+          results: unknown
+        ) => {
+          const res = results as Record<string, Record<number, unknown>>;
+          msmResults.results = Object.assign({}, res.down[0]);
+          (msmResults.results as { timings: unknown[] }).timings =
+            priorTimings.concat(
+              (msmResults.results as { timings: unknown[] }).timings
+            );
+          this.onResultsChange({ type });
+        };
+
+        engine.onFinished = () => {
+          this.#serverTimeDelta = (engine as BandwidthEngine).serverTimeDelta;
+          msmResults.finished = true;
+          this.onResultsChange({ type });
+          this.#running && this.#next();
+        };
+
+        // The engine skips the failed request and carries on with the step
+        engine.onConnectionError = (e: unknown, status?: number) =>
+          this.#onError(
+            `Connection error while measuring latency: ${e}`,
+            status
+          );
+        engine.onFatalError = (e: unknown) =>
+          this.#endTest(`Connection error while measuring latency: ${e}`, {
+            skipLog: true
+          });
+
+        (engine as Engine & { play: () => void }).play!();
+        break;
+      }
+      case 'download':
+      case 'upload':
+        if (msmResults.finished) {
+          // Skip: this direction already concluded. Return so the nested
+          // #next() keeps ownership of #curEngine.
+          this.#next();
+          return;
+        } else {
+          delete msmResults.finishedCurrentRound;
+
+          const measureParallelLatency = this.#config[
+            `measure${type === 'download' ? 'Down' : 'Up'}loadLoadedLatency`
+          ] as boolean;
+
+          engine = new BandwidthEngine(
+            [
+              {
+                dir: type === 'download' ? ('down' as const) : ('up' as const),
+                ...msmConfig
+              }
+            ] as never[],
+            {
+              downloadApiUrl,
+              uploadApiUrl,
+              estimatedServerTime,
+              serverTimeDelta: this.#serverTimeDelta,
+              logApiUrl: this.#config.logMeasurementApiUrl ?? undefined,
+              measurementId: this.#measurementId,
+              measureParallelLatency,
+              parallelLatencyThrottleMs: this.#config.loadedLatencyThrottle,
+              sessionId: this.#config.sessionId,
+              authorization: this.authorization
+            }
+          ) as Engine;
+          (
+            engine as Engine & { fetchOptions: Record<string, unknown> }
+          ).fetchOptions = this.#config.includeCredentials
+            ? { credentials: 'include' }
+            : {};
+          (
+            engine as Engine & { finishRequestDuration: number }
+          ).finishRequestDuration = this.#config.bandwidthFinishRequestDuration;
+          (
+            engine as Engine & { abortRequestDuration: number }
+          ).abortRequestDuration = this.#config.abortRequestDuration;
+
+          const requestBytes = msmConfig.bytes!;
+          const parallel = getParallelism({ parallel: msmConfig.parallel });
+          /**
+           * The step's bucket, created on first use. Parallel steps get their
+           * own map so they stay apart from sequential steps. Containers are
+           * copied so consumers can detect changes.
+           */
+          const getBucket = (): BandwidthStepBucket => {
+            const newBucket = {
+              timings: [],
+              numMeasurements: 0,
+              sideLatency: measureParallelLatency ? [] : undefined
+            };
+            if (parallel === 1) {
+              const res = (msmResults.results = { ...msmResults.results });
+              return (res[requestBytes] ??= newBucket) as BandwidthStepBucket;
+            }
+            const all = (msmResults.parallelResults = {
+              ...msmResults.parallelResults
+            });
+            const byBytes = (all[parallel] = { ...all[parallel] });
+            return (byBytes[requestBytes] ??= {
+              bytes: requestBytes * parallel,
+              parallel,
+              ...newBucket
+            }) as BandwidthStepBucket;
+          };
+
+          engine.onNewMeasurementStarted = (...args: unknown[]) => {
+            const { count } = args[0] as { count: number };
+            const bucket = getBucket();
+            // check if count hasn't already been added
+            if (bucket.numMeasurements - bucket.timings.length !== count) {
+              bucket.numMeasurements += count;
+              this.onResultsChange({ type });
+            }
+          };
+
+          engine.onMeasurementResult = (...args: unknown[]) => {
+            // The bucket already says which bytes the sample covers
+            const timing: Record<string, unknown> = {
+              ...(args[0] as Record<string, unknown>)
+            };
+            delete timing.bytes;
+            getBucket().timings.push(timing);
+            this.onResultsChange({ type });
+          };
+
+          engine.onParallelLatencyResult = (res: unknown) => {
+            getBucket().sideLatency!.push(res);
+            this.onResultsChange({ type });
+          };
+
+          engine.onFinished = (results: unknown) => {
+            this.#serverTimeDelta = (engine as BandwidthEngine).serverTimeDelta;
+            const bwResults = results as Record<
+              string,
+              Record<
+                string,
+                {
+                  timings: { duration: number }[];
+                }
+              >
+            >;
+            const isLastMsmOfType = !this.#config.measurements
+              .slice(this.#curMsmIdx + 1)
+              .map(d => d.type)
+              .includes(type);
+
+            const durations = Object.values(
+              type === 'download' ? bwResults.down : bwResults.up
+            )
+              .slice(-1)[0]
+              .timings.map(d => d.duration);
+
+            // A round whose samples were all discarded has no duration to
+            // judge by, so it must not end the direction.
+            const reachedEndOfMsmType =
+              isLastMsmOfType ||
+              (!msmConfig.bypassMinDuration &&
+                durations.length > 0 &&
+                Math.min(...durations) >
+                  this.#config.bandwidthFinishRequestDuration);
+
+            if (!reachedEndOfMsmType) {
+              msmResults.finishedCurrentRound = true;
+            } else {
+              msmResults.finished = true;
+              this.onResultsChange({ type });
+
+              // Record optimal load size from the largest request sent by a
+              // step that ran, as load is sent one request at a time
+              const ran = ({ bytes, parallel }: MeasurementStep): boolean => {
+                const n = getParallelism({ parallel });
+                return Object.hasOwn(
+                  (n === 1
+                    ? msmResults.results
+                    : msmResults.parallelResults?.[n]) ?? {},
+                  bytes!
+                );
+              };
+              const largestSize = Math.max(
+                ...(this.#config.measurements as MeasurementStep[])
+                  .slice(0, this.#curMsmIdx + 1)
+                  .filter(m => m.type === type && ran(m))
+                  .map(m => m.bytes!)
+              );
+              const optimalSize = largestSize * OPTIMAL_SIZE_RATIO;
+
+              type === 'download' &&
+                (this.#optimalDownloadChunkSize = optimalSize);
+              type === 'upload' && (this.#optimalUploadChunkSize = optimalSize);
+            }
+
+            this.#running && this.#next();
+          };
+
+          // The engine skips the failed request and carries on with the step
+          engine.onConnectionError = (e: unknown, status?: number) =>
+            this.#onError(
+              `Connection error while measuring ${type}: ${e}`,
+              status
+            );
+          engine.onFatalError = (e: unknown) =>
+            this.#endTest(`Connection error while measuring ${type}: ${e}`, {
+              skipLog: true
+            });
+
+          const measurementId = this.#measurementId;
+          const msmIdx = this.#curMsmIdx;
+          engine.onParallelLatencyError = (e: unknown, status?: number) => {
+            // Ignore late errors once this step is over or the test restarted
+            if (
+              measurementId !== this.#measurementId ||
+              msmIdx !== this.#curMsmIdx
+            )
+              return;
+            this.#onError(
+              `Connection error while measuring loaded latency: ${e}`,
+              status
+            );
+          };
+
+          (engine as Engine & { play: () => void }).play!();
+        }
+        break;
+      default:
+    }
+
+    this.#curEngine = engine;
+
+    msmResults.started = true;
+    this.onResultsChange({ type });
+  }
+}
+
+/**
+ * Extended {@link MeasurementEngine} that automatically logs final AIM scores
+ * to the configured `logAimApiUrl` when the test completes.
+ *
+ * This is the default export of the library and the recommended entry point
+ * for most consumers.
+ *
+ * @example
+ * ```ts
+ * import SpeedTest from '@cloudflare/speedtest';
+ *
+ * const engine = new SpeedTest();
+ * engine.onFinish = results => console.log(results.getScores());
+ * engine.onResultsLogged = ({ requestId }) => console.log('Logged as', requestId);
+ * ```
+ */
+class SpeedTestEngine extends MeasurementEngine {
+  constructor(userConfig: ConfigOptions = {}) {
+    super(userConfig);
+    super.onFinish = this.#logFinalResults;
+  }
+
+  // Public attributes
+
+  /**
+   * Called when all measurement phases have completed.
+   *
+   * The user-supplied callback runs first, then final results are logged
+   * to the AIM API automatically.
+   */
+  set onFinish(onFinish: (results: Results) => void) {
+    super.onFinish = (results: Results, end?: { skipLog: boolean }) => {
+      onFinish(results);
+      this.#logFinalResults(results, end);
+    };
+  }
+
+  /**
+   * Called after the final results have been logged to the AIM API, with the
+   * endpoint's parsed response (e.g. the assigned `requestId`).
+   *
+   * Fires whenever logging is attempted (`logAimApiUrl` is set), after the log
+   * request completes — on success or failure. On failure, `requestId` is
+   * `undefined`. Because the log request completes after {@link onFinish}, this
+   * callback runs slightly later.
+   */
+  onResultsLogged: (response: AimLogResponse) => void = () => {};
+
+  // Internal methods
+  #logFinalResults = (results: Results, end?: { skipLog: boolean }): void => {
+    const apiUrl = this.config.logAimApiUrl;
+    if (!apiUrl || end?.skipLog) {
+      return;
+    }
+    logFinalResults(results, {
+      apiUrl,
+      includeCredentials: this.config.includeCredentials,
+      sessionId: this.config.sessionId,
+      authorization: this.authorization
+    }).then(response => {
+      this.onResultsLogged(response);
+    });
+  };
+}
+
+export default SpeedTestEngine;
+
+export type { MeasurementType, PhaseChangePayload };
+export type { AimLogResponse };
+export { type default as Results } from './Results';
+export type {
+  BandwidthPoint,
+  BandwidthTiming,
+  ParallelBandwidthBucket,
+  ParallelBandwidthResults,
+  PacketLossResults,
+  ReachabilityResults,
+  LatencyTiming
+} from './types';
+export type { ConfigOptions, MeasurementConfig } from './config/defaultConfig';
+export type {
+  ExperienceScore,
+  ClassificationName,
+  Scores,
+  MeasurementSummary
+} from './Results/ScoresCalculations';

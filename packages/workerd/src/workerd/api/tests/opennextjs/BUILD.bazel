@@ -1,0 +1,24 @@
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("//:build/wd_test.bzl", "wd_test")
+
+copy_file(
+    name = "opennext-ssr-worker",
+    src = "//src/workerd/api/tests/opennextjs/src:dist/worker.js",
+    out = "opennext-ssr-worker.js",
+    tags = ["no-downstream"],
+    target_compatible_with = ["@platforms//os:linux"],
+)
+
+# Server-side renders a Next.js app, which under a sanitizer can outlast a medium test's timeout on
+# one vCPU.
+wd_test(
+    size = "large",
+    src = "opennext-ssr-test.wd-test",
+    args = ["--experimental"],
+    data = [
+        "opennext-ssr-test.js",
+        ":opennext-ssr-worker",
+    ],
+    tags = ["no-downstream"],
+    target_compatible_with = ["@platforms//os:linux"],
+)

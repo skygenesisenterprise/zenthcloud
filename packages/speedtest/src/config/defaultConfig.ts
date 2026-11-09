@@ -1,0 +1,276 @@
+export interface LatencyMeasurementConfig {
+  type: 'latency';
+  /** Number of latency pings to send in this phase. */
+  numPackets: number;
+}
+
+export interface BandwidthMeasurementConfig {
+  type: 'download' | 'upload';
+  /** Payload size per HTTP request in bytes (e.g., 1e5 = 100KB, 1e7 = 10MB). */
+  bytes: number;
+  /** Number of requests to issue at this payload size. */
+  count: number;
+  /** If `true`, skip the minimum-duration filter for this round. */
+  bypassMinDuration?: boolean;
+  /**
+   * Concurrent requests per data point. Default: `1`.
+   *
+   * @experimental Unstable — may change or be removed in any release.
+   */
+  parallel?: number;
+}
+
+/** WebRTC TURN-based packet loss measurement phase. */
+export interface PacketLossMeasurementConfig {
+  type: 'packetLoss';
+  /** Total number of UDP messages to send through the TURN relay. */
+  numPackets: number;
+  /** Number of messages sent in each batch. */
+  batchSize: number;
+  /** Delay between consecutive batches (ms). */
+  batchWaitTime: number;
+  /** Time to wait for outstanding responses after the last batch (ms). */
+  responsesWaitTime: number;
+  /** Timeout for the WebRTC connection setup (ms). */
+  connectionTimeout?: number;
+}
+
+export type MeasurementConfig =
+  | LatencyMeasurementConfig
+  | BandwidthMeasurementConfig
+  | PacketLossMeasurementConfig;
+
+/**
+ * Fully-specified speed test configuration — every option present.
+ *
+ * This is the shape of {@link defaultConfig}. Consumers don't construct this
+ * directly; they pass a {@link ConfigOptions} (a partial) to the engine, which
+ * merges it over the defaults.
+ */
+export interface Config {
+  /** Whether to start the test immediately on construction. Default: `true`. */
+  autoStart: boolean;
+
+  /**
+   * URL for download requests, used when {@link measurementTargets} is empty.
+   * Default: `https://speed.cloudflare.com/__down`.
+   *
+   * @deprecated Use {@link measurementTargets}.
+   */
+  downloadApiUrl: string;
+  /**
+   * URL for upload requests, used when {@link measurementTargets} is empty.
+   * Default: `https://speed.cloudflare.com/__up`.
+   *
+   * @deprecated Use {@link measurementTargets}.
+   */
+  uploadApiUrl: string;
+  /**
+   * Origins for latency, download and upload requests, which go to
+   * {@link measurementDownloadPath} and {@link measurementUploadPath}. The
+   * test iterates over the targets. An entry that isn't a bare http(s) origin
+   * throws a `TypeError` on construction. Targets on another origin must send
+   * `Timing-Allow-Origin`, or their requests are reported as errors and
+   * skipped. Default: `[]`.
+   */
+  measurementTargets: string[];
+  /**
+   * Path for latency and download requests on each of the
+   * {@link measurementTargets}. May include a query string. A path not starting
+   * with `/` throws a `TypeError` on construction. Default: `/__down`.
+   */
+  measurementDownloadPath: string;
+  /**
+   * Path for upload requests on each of the {@link measurementTargets}. May
+   * include a query string. A path not starting with `/` throws a `TypeError`
+   * on construction. Default: `/__up`.
+   */
+  measurementUploadPath: string;
+  /** URL for per-measurement logging. Set to `null` to disable. Default: `null`. */
+  logMeasurementApiUrl: string | null;
+  /** URL for logging test results. Set to `null` to disable. Default: `https://speed.cloudflare.com/__results`. */
+  logAimApiUrl: string | null;
+  /**
+   * TURN server URI for packet loss measurement, e.g. `turn.cloudflare.com:3478`.
+   * Default: `null`, so a `packetLoss` measurement needs your own TURN setup.
+   */
+  turnServerUri: string | null;
+  /** URL for fetching TURN server credentials. Default: `null`. */
+  turnServerCredsApiUrl: string | null;
+  /** Static TURN username override. Set to `null` to fetch credentials dynamically. */
+  turnServerUser: string | null;
+  /** Static TURN password override. Set to `null` to fetch credentials dynamically. */
+  turnServerPass: string | null;
+  /** Hostname used to test RPKI invalid-route filtering. */
+  rpkiInvalidHost: string;
+  /** Whether to include credentials (cookies) in fetch requests. Default: `false`. */
+  includeCredentials: boolean;
+  /** Optional session ID attached to measurement logs. */
+  sessionId: string | undefined;
+  /**
+   * Opaque token attributing this test to a registered customer, sent as an
+   * `Authorization: Bearer` header on the measurement, TURN credential and
+   * results-logging requests. Requires {@link authorizationEnabled}; on its own
+   * it is never sent. Not sent over plain HTTP. Default: `null`.
+   *
+   * @experimental Unstable — may change or be removed in any release.
+   */
+  authorizationToken: string | null;
+  /**
+   * Opts in to sending {@link authorizationToken}, which is otherwise withheld
+   * even when set.
+   *
+   * `'header'` and `true` both send it as `Authorization: Bearer`; `true` is a
+   * permanent alias for `'header'`, so a future transport can be added without
+   * changing what an existing config does. `false` and `undefined` send
+   * nothing. Default: `undefined`.
+   *
+   * @experimental Unstable — may change or be removed in any release.
+   */
+  authorizationEnabled: 'header' | boolean | undefined;
+  /**
+   * Sends {@link authorizationToken} even when the endpoint is not HTTPS, for
+   * local development against an `http://` server.
+   *
+   * Never enable this in production: the server treats a token seen over
+   * plaintext as compromised and revokes it. Default: `false`.
+   *
+   * @experimental Unstable — may change or be removed in any release.
+   */
+  allowInsecureAuthorizationToken: boolean;
+
+  /**
+   * Ordered list of measurement phases to execute.
+   *
+   * Each entry describes a latency, bandwidth, or packet loss step.
+   * The engine executes them sequentially, skipping further rounds of a
+   * bandwidth type once its finish threshold is reached.
+   *
+   * Multiple `latency`, `download`, and `upload` steps accumulate their
+   * results. Other measurement types (e.g. `packetLoss`) replace prior
+   * results if multiple steps of the same type are configured.
+   */
+  measurements: MeasurementConfig[];
+  measureDownloadLoadedLatency: boolean;
+  measureUploadLoadedLatency: boolean;
+  /** Minimum interval between loaded-latency pings (ms). Default: `400`. */
+  loadedLatencyThrottle: number;
+  /**
+   * Per-request duration threshold (ms) that, once reached, stops further
+   * measurement rounds of that bandwidth type. Default: `1000`.
+   */
+  bandwidthFinishRequestDuration: number;
+  /**
+   * Estimated server processing time (ms) subtracted from raw latency when
+   * the server doesn't report its own processing time in headers. Default: `0`.
+   */
+  estimatedServerTime: number;
+
+  /**
+   * Maximum duration (ms) of a single request. Longer requests are aborted and
+   * skipped. `0` disables it. Default: `0`.
+   */
+  abortRequestDuration: number;
+
+  /**
+   * Maximum running time (ms, excluding paused time) of the whole test. When
+   * reached, the test ends with the results collected so far. `0` or less
+   * disables it. Default: `0`.
+   */
+  abortTestDuration: number;
+
+  /** Percentile used to compute latency from the sample set (0–1). Default: `0.5` (median). */
+  latencyPercentile: number;
+  /** Percentile used to compute bandwidth from the sample set (0–1). Default: `0.9`. */
+  bandwidthPercentile: number;
+  /** Minimum request duration (ms) for a sample to be included in bandwidth calculation. Default: `10`. */
+  bandwidthMinRequestDuration: number;
+  /** Minimum request duration (ms) for a download/upload round to be considered "loading" the connection. Default: `250`. */
+  loadedRequestMinDuration: number;
+  /** Maximum number of loaded-latency data points to retain (most recent kept). Default: `20`. */
+  loadedLatencyMaxPoints: number;
+}
+
+/**
+ * User-facing configuration for the speed test engine.
+ *
+ * A partial of {@link Config}: pass any subset to the engine constructor to
+ * override individual options; omitted properties fall back to their defaults
+ * in {@link defaultConfig}.
+ */
+export type ConfigOptions = Partial<Config> & {
+  /** @deprecated Use `abortRequestDuration`, which wins if both are set. */
+  bandwidthAbortRequestDuration?: number;
+};
+
+const REL_API_URL = 'https://speed.cloudflare.com';
+
+const defaultConfig: Config = {
+  // Engine
+  autoStart: true,
+
+  // APIs
+  downloadApiUrl: `${REL_API_URL}/__down`,
+  uploadApiUrl: `${REL_API_URL}/__up`,
+  measurementTargets: [],
+  measurementDownloadPath: '/__down',
+  measurementUploadPath: '/__up',
+  logMeasurementApiUrl: null,
+  logAimApiUrl: `${REL_API_URL}/__results`,
+  turnServerUri: null,
+  turnServerCredsApiUrl: null,
+  turnServerUser: null,
+  turnServerPass: null,
+  rpkiInvalidHost: 'invalid.rpki.cloudflare.com',
+  includeCredentials: false,
+  sessionId: undefined,
+  authorizationToken: null,
+  authorizationEnabled: undefined,
+  allowInsecureAuthorizationToken: false,
+
+  // Measurements
+  measurements: [
+    { type: 'latency', numPackets: 2 }, // initial ttfb estimation
+    { type: 'download', bytes: 1e5, count: 1, bypassMinDuration: true }, // initial download estimation
+    { type: 'latency', numPackets: 20 },
+    { type: 'download', bytes: 1e5, count: 9 },
+    { type: 'latency', numPackets: 2 },
+    { type: 'download', bytes: 1e6, count: 8 },
+    { type: 'latency', numPackets: 2 },
+    { type: 'upload', bytes: 1e5, count: 8 },
+    { type: 'latency', numPackets: 2 },
+    { type: 'upload', bytes: 1e6, count: 6 },
+    { type: 'latency', numPackets: 2 },
+    { type: 'download', bytes: 1e7, count: 6 },
+    { type: 'latency', numPackets: 2 },
+    { type: 'upload', bytes: 1e7, count: 4 },
+    { type: 'latency', numPackets: 2 },
+    { type: 'download', bytes: 2.5e7, count: 4 },
+    { type: 'latency', numPackets: 2 },
+    { type: 'upload', bytes: 2.5e7, count: 4 },
+    { type: 'latency', numPackets: 2 },
+    { type: 'download', bytes: 1e8, count: 3 },
+    { type: 'latency', numPackets: 2 },
+    { type: 'upload', bytes: 5e7, count: 3 },
+    { type: 'latency', numPackets: 2 },
+    { type: 'download', bytes: 2.5e8, count: 2 }
+  ],
+  measureDownloadLoadedLatency: true,
+  measureUploadLoadedLatency: true,
+  loadedLatencyThrottle: 400, // ms in between loaded latency requests
+  bandwidthFinishRequestDuration: 1000, // download/upload duration (ms) to reach for stopping further measurements of that type
+  estimatedServerTime: 0, // ms to discount from latency calculation (if not present in response headers)
+
+  // Test abort
+  abortRequestDuration: 0, // request duration (ms) after which a request is aborted and skipped
+  abortTestDuration: 0, // total running time (ms) to abort the whole test, keeping the results so far
+
+  // Result interpretation
+  latencyPercentile: 0.5, // Percentile used to calculate latency from a set of measurements
+  bandwidthPercentile: 0.9, // Percentile used to calculate bandwidth from a set of measurements
+  bandwidthMinRequestDuration: 10, // minimum duration (ms) to consider a measurement good enough to use in bandwidth calculation
+  loadedRequestMinDuration: 250, // minimum duration (ms) of a request to consider it to be loading the connection
+  loadedLatencyMaxPoints: 20 // number of data points to keep for loaded latency
+};
+
+export default defaultConfig;

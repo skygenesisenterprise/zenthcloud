@@ -1,0 +1,268 @@
+# src/per_isolate/
+
+Per-isolate JavaScript/TypeScript bootstrap: scripts that run synchronously
+at context creation, before any user code. C++ entry point:
+`src/workerd/api/per-isolate-bootstrap.c++`.
+
+## EXECUTION MODEL
+
+- Scripts are compiled as functions whose parameters are the
+  pseudo-globals `require`, `module`, `exports`, `compatFlags`,
+  `autogates`, `primordials`, `utils` are in scope but NOT on
+  `globalThis` (see `per_isolate-env.d.ts`).
+- Module system is bootstrap CommonJS: `require('webstreams/queue')` +
+  `module.exports = {...}`. The `src/node/` ESM-only rule does NOT apply
+  here. Circular requires are a FATAL startup error — keep modules
+  acyclic (e.g., `webstreams/ring-buffer` is a leaf, and
+  `webstreams/native` requires only `common`, `ring-buffer`, `queue` and
+  `view-extent`).
+- TypeScript `import type` / `export type` are used freely for type
+  plumbing (fully erased; the loader only sees `module.exports`).
+- `main.ts` installs the real stream globals (ReadableStream et al.) when
+  the `typescript_implemented_streams` compat flag is enabled, plus the
+  internal-testing `ReadableStreamDrainingReader` under
+  `expose_draining_reader`.
+- EventTarget subclasses reach the (still C++) EventTarget they extend only
+  through `events/event-target-internals`; see `events/AGENTS.md`.
+- Files are auto-discovered (`BUILD.bazel` and `tsconfig.json` both glob
+  `**/*.ts`). No registration needed for new files.
+- Local convention: no copyright headers in this directory's bootstrap
+  scripts (deviation from the repo-wide new-file rule; keep consistent).
+
+## EMBEDDER SCRIPTS
+
+An embedder can contribute scripts to the same bootstrap. It builds them with
+`wd_ts_script_bundle(embedder_prefix = "<prefix>/", ...)`, wraps the bundle
+in an `EmbedderBootstrap` (`src/workerd/api/per-isolate-bootstrap.h`), and
+returns it from `Worker::Api::getEmbedderBootstrap()`.
+
+- Order: `primordials`, workerd's `main`, then `<prefix>main`, all before
+  the WeakRef globals are removed. A failure is fatal, as for workerd's.
+- Every embedder script is named under the prefix; `require()` takes the
+  full specifier (`require('embedder/foo')`, not `require('./foo')`).
+- Embedder scripts share the require() cache and pseudo-globals and can
+  `require()` workerd's scripts. workerd's scripts cannot `require()` the
+  embedder's: nothing here may depend on what an embedder provides.
+- `EmbedderBootstrap`'s constructor rejects a prefix that overlaps a
+  workerd script name, so a new top-level directory here must not match
+  an embedder's prefix.
+- Test: `src/workerd/api/per-isolate-embedder-bootstrap-test.c++`, with
+  its stand-in bundle in `src/workerd/api/tests/embedder-bootstrap/`.
+
+## CONVENTIONS
+
+- **Primordials discipline**: no bare prototype lookups on builtins after
+  bootstrap captures; no `for...of` over patchable iterables. Capture
+  methods/getters at module scope via `uncurryThis`. See the
+  **PRIMORDIALS USAGE** section below for the full guide.
+- **JSG property capture trap**: readonly JSG properties live on the
+  PROTOTYPE only under modern compat
+  (`workers_api_getters_setters_on_prototype`, default-on 2022-01-31).
+  Under older dates JSG uses `SetNativeDataProperty` on the INSTANCE
+  template — an own native DATA property per instance; **no getter
+  function exists anywhere to capture**. Use `captureJsgGetter` in
+  the `primordials.ts` : prototype-accessor capture with a plain-read fallback
+  (an own data property read never consults the patchable prototype chain).
+  The bootstrap runs for every worker regardless of compat date — both layouts
+  must work. JSG *methods* are always on the prototype.
+- Internal cross-module surfaces are exported as a single namespace
+  object (`internalsForPipe`, `nativeStreamInternals`), never
+  re-exported to users.
+- Internal class dispatch uses private-brand `in` checks, NEVER
+  `instanceof` (classes reachable from the global have user-reachable
+  `Symbol.hasInstance`).
+- C++/bootstrap-only markers and extraction hooks are V8-private
+  properties, keyed by `utils.getPrivateSymbol(name)` (`v8::Private::ForApi`)
+  and read and written as `object[key]`; C++ reaches them by the same name.
+  The properties are neither reflected nor inherited, and the keys must stay
+  in module scope. Ordinary symbols, including `getApiSymbol` results, are
+  reflection-visible and are not secrets.
+- **ASCII runtime text**: the loader (`per-isolate-bootstrap.c++`) hands V8
+  each script's bytes as a one-byte (Latin-1) string, without transcoding,
+  so a non-ASCII character in a string or template literal reaches users as
+  its UTF-8 bytes, mangled. Error messages use plain ASCII punctuation (no
+  em dashes or other typographic characters); comments are exempt.
+
+## PRIMORDIALS USAGE
+
+Bootstrap code shares an isolate with user code. After bootstrap runs,
+user code can replace or patch any global constructor, prototype method,
+or well-known symbol accessor. Primordials are pre-user-code captures of
+built-in functions and constructors that remain trustworthy regardless of
+subsequent mutation. The captures are in `primordials.ts`; the `primordials`
+pseudo-global is injected into every bootstrap script's scope.
+
+**What primordials guarantee — and what they do not.** Primordials are
+an **internal correctness** mechanism, not a security sandbox. The hard
+security boundary is the V8 isolate: separate address spaces, no shared
+mutable state between tenants. Within a single isolate, primordials
+ensure that the runtime's own implementation (bootstrap code, built-in
+API polyfills, internal bookkeeping) continues to function correctly even
+when user code mutates built-in prototypes — whether by accident (sloppy
+polyfills, test mocks) or by design (legitimate metaprogramming).
+Without primordials, a user doing `Array.prototype.push = () => {}` or
+`Promise.prototype.then = badFn` could break internal runtime code that
+calls those methods, leading to silent data corruption, spec-violating
+behaviour, or crashes. Primordials prevent that class of failure.
+
+### When primordials ARE required
+
+Use captured references whenever bootstrap code operates on **built-in
+objects whose prototypes are reachable by user code**:
+
+- **Method calls on built-in types.** `array.push(v)` dispatches through
+  `Array.prototype.push` — use `ArrayPrototypePush(array, v)`.
+  This applies to Map, Set, Promise, ArrayBuffer, TypedArray, DataView,
+  String, and every other built-in with a mutable prototype.
+- **Constructor calls.** `new Map()` uses the global `Map` — use
+  `new primordials.Map()` (or `new SafeMap()` when you also need safe
+  method dispatch — see below).
+- **Static methods.** `Promise.resolve(v)` uses the global `Promise` —
+  use `PromiseResolve(v)`.
+- **Iteration of internal collections.** `for...of` calls
+  `[Symbol.iterator]()` on the target, which is patchable on built-in
+  prototypes. For arrays, use `SafeArrayIterator` or index-based loops.
+  For Map/Set, use `SafeMap`/`SafeSet` (whose `[Symbol.iterator]` is
+  overridden) or iterate with captured methods and
+  `SafeMapIterator`/`SafeSetIterator`.
+- **Metadata reads on views at trust boundaries.** `view.buffer`,
+  `view.byteOffset`, `view.byteLength`, `view.length` are prototype
+  accessors that user code can shadow or redefine. Use the captured
+  getters: `TypedArrayPrototypeGetBuffer(view)`,
+  `TypedArrayPrototypeGetByteLength(view)`, etc. Same for DataView
+  equivalents.
+- **Type identification.** Never use `instanceof` or `.constructor` for
+  type checks — both are user-controllable. Use
+  `TypedArrayPrototypeGetSymbolToStringTag(value)` for typed arrays
+  (returns the internal `[[TypedArrayName]]` or `undefined`) and
+  private-brand `#field in obj` checks for internal classes.
+
+### When primordials are NOT required
+
+Primordials protect bootstrap code from mutations to **built-in
+prototypes**. They are **not needed — and actively wrong — when the goal
+is to invoke user-defined behaviour**:
+
+- **User-provided iterables / async iterables.** When an API accepts an
+  `Iterable` or `AsyncIterable` from user code (e.g.,
+  `ReadableStream.from(userIterable)`), you MUST call the user's
+  `[Symbol.iterator]()` / `[Symbol.asyncIterator]()` — that is the API
+  contract. Using `SafeArrayIterator` would bypass the user's iterator
+  and break semantics. Standard `for...of` / `for await...of` is
+  correct here.
+- **User-provided callbacks.** Callbacks passed by user code (e.g.,
+  `underlyingSource.pull`, `transformer.transform`, strategy `size()`)
+  are user-defined functions — call them normally.
+- **User-provided objects generally.** When reading properties from
+  user-provided objects (e.g., the `init` bag in `new Request(url,
+  init)`), normal property access is correct — you are consuming the
+  user's API surface, not a built-in prototype.
+- **Spread / `Array.from` on user iterables.** `[...userIterable]` and
+  `ArrayFrom(userIterable)` both invoke the user's iteration protocol,
+  which is correct when the spec requires consuming a user iterable.
+
+The bright line: **primordials protect built-in prototype chains from
+third-party mutation**. If the object is user-provided and you are
+intentionally invoking user-defined protocols, use normal JS operations.
+
+### Captured constructors vs Safe wrappers
+
+The exports include both raw captured constructors and Safe wrappers.
+These are NOT interchangeable:
+
+- `primordials.Map` (= `MapCtor`): the original `Map` constructor,
+  captured before user code runs. `new primordials.Map()` creates a
+  real Map, but **method calls on it** (`.get()`, `.set()`, etc.) still
+  dispatch through `Map.prototype` — which user code can patch.
+- `SafeMap`: extends `MapCtor` with every method overridden to dispatch
+  through captured primordials. `new SafeMap()` is safe for both
+  construction and subsequent method calls. Same for `SafeSet`,
+  `SafeWeakMap`, `SafeWeakSet`.
+
+Use captured constructors (`primordials.Map`) only when you need `new`
+but will access the instance exclusively through captured uncurried
+methods (e.g., `MapPrototypeGet(map, key)`). Use Safe wrappers when you
+want normal `map.get(key)` call syntax with pollution resistance.
+
+### Promise patterns
+
+- **`SafePromise`**: species-protected for the promises it creates;
+  `.then()` / `.catch()` / `.finally()` use captured methods and
+  `Symbol.species` is pinned. Static helpers (`SafePromise.resolve`,
+  `.reject`, `.all`, etc.) are bound to `SafePromise`. Use for
+  **internal-only** promise chains where species hijacking would be a
+  concern. Converting an ordinary promise into one adds a microtask.
+- **`PromiseResolve` / `PromiseReject` / `PromiseWithResolvers`**:
+  captured statics bound to the original `Promise` constructor. Use for
+  **user-facing** promises — the returned promise is a regular
+  `Promise`, which is what spec algorithms and user code expect.
+- **`PromisePrototypeThen` / `PromisePrototypeCatch` /
+  `PromisePrototypeFinally`**: captured prototype methods. Use when
+  chaining on an existing promise (internal or external) without
+  relying on the prototype chain. They are the real
+  `Promise.prototype.then` and friends, so on an ordinary promise they
+  still run the species lookup (`promise.constructor`, then
+  `Promise[Symbol.species]`); only the `then` property lookup itself is
+  bypassed. JS has no species-free `then` (V8's C++ `Promise::Then`
+  has one), so this exposure is accepted rather than worked around with
+  extra promise hops.
+
+### Accepted exposures
+
+Two prototype-pollution classes are deliberately not defended against,
+because every defense costs microtasks or a C++ call on the per-chunk
+path, and the same pollution breaks the user's own code in every engine:
+
+- `Promise[Symbol.species]` / `Promise.prototype.constructor` reaching
+  `PromisePrototypeThen` on ordinary promises (above).
+- `Object.prototype.then` intercepting a promise resolved with a plain
+  object, notably the user's read promise, which the spec resolves with a
+  `{ value, done }` result. Internal reads are not exposed: the backends
+  settle them with results whose prototype chain has no `Object.prototype`
+  (`createReadResult` in `webstreams/queue.ts`). Nor is body consumption
+  through the C++ bridge, which resolves a null-prototype record (see
+  KEY RULES in `webstreams/AGENTS.md`).
+
+Internal-only records should still be null-prototype wherever nothing
+requires the `Object.prototype` chain. How depends on how often the record
+is made:
+
+- Made once (module scope, a frozen constant): an object literal,
+  `{ __proto__: kNullProtoObject, ... }`. Avoid `{ __proto__: null, ... }`,
+  which creates a dictionary-mode object with slow properties.
+- Made per chunk, per operation or per stream, and never reachable by user
+  code: an instance of a class passed through `nullPrototypeRecord`
+  (`webstreams/common.ts`), whose constructor sets every member. Any
+  object literal with a `__proto__` member sets its prototype with a
+  runtime call each time it is evaluated, about 20 times the cost of a
+  plain literal or a class instance.
+- With constant contents, however often it is used: hoist one frozen
+  module-level constant instead of making it each time.
+
+### Never expose primordials to user code
+
+Primordial captures, Safe\* classes, and captured constructors are
+**strictly internal**. Never assign them as properties on any object
+reachable by user code. If user code can reach a Safe\* class instance,
+it can traverse `Object.getPrototypeOf()` to reach the Safe class and
+then the original captured constructor — potentially mutating it and
+affecting all code that references it.
+
+Consequences:
+- Never return a `SafePromise` to user code — wrap with
+  `PromiseResolve()` to return a regular `Promise`.
+- Never store a Safe\* wrapper on a user-visible object property.
+- Never expose captured constructors (e.g., `primordials.Map`) as API
+  return values or properties.
+
+The `module.exports` object from `primordials.ts` is `ObjectFreeze`-d
+to prevent accidental mutation by downstream bootstrap scripts.
+
+## ANTI-PATTERNS
+
+- **NEVER** assume a JSG readonly property has a capturable getter (see
+  the capture trap above).
+- **NEVER** add a runtime require cycle between bootstrap scripts.
+
+See also `webstreams/AGENTS.md` for streams-specific architecture and
+anti-patterns.

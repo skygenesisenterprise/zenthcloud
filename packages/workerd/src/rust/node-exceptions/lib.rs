@@ -1,0 +1,355 @@
+// Copyright (c) 2026 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+//! Utilities for creating Node.js-style exceptions.
+//!
+//! This implements the C++ `workerd::api::node` exception helpers
+//! (`src/workerd/api/node/exceptions.{h,c++}`), which delegate to it.
+
+use jsg::Lock;
+use jsg::v8;
+use kj_rs::KjMaybe;
+
+#[cxx::bridge(namespace = "workerd::rust::node_exceptions")]
+#[expect(unsafe_code, reason = "the cxx bridge expands to unsafe FFI glue")]
+mod ffi {
+    /// Most Node.js exceptions are represented as either Error, TypeError, or
+    /// RangeError. This is a cxx *extern* enum: the C++ `api::node::JsErrorType`
+    /// is the single source of truth, and cxx generates static-asserts that the
+    /// variants below match it. `#[repr(u8)]` matches the C++ enum's `uint8_t`
+    /// underlying type.
+    ///
+    /// The paired `type JsErrorType;` declaration below marks this as an extern
+    /// enum. cxx references the C++ type by this bridge's namespace, so the
+    /// `js-error-type.h` shim aliases `api::node::JsErrorType` into
+    /// `workerd::rust::node_exceptions`.
+    #[repr(u8)]
+    enum JsErrorType {
+        Error,
+        TypeError,
+        RangeError,
+    }
+
+    unsafe extern "C++" {
+        include!("workerd/rust/node-exceptions/js-error-type.h");
+
+        type JsErrorType;
+    }
+
+    /// Node.js Exception Codes. Mirrors the C++ `NodeExceptionCode` enum
+    /// (generated from `NODE_EXCEPTION_CODE_LIST`); the variant order must stay
+    /// in sync with `api::node::NodeExceptionCode`.
+    enum NodeExceptionCode {
+        ErrFsCpEexist,
+        ErrFsCpDirToNonDir,
+        ErrFsCpEinval,
+        ErrFsCpNonDirToDir,
+        ErrFsEisdir,
+    }
+
+    extern "Rust" {
+        /// Creates a Node.js-style exception: a JS error with a string "code"
+        /// property. Returns a `v8::MaybeLocal` handle (the reused
+        /// `jsg::v8::ffi::MaybeLocal` shared struct), which the C++ caller
+        /// reconstitutes via `maybe_local_from_ffi`. It is empty if the Rust code
+        /// panicked or a setter that a script put on the error's prototype chain
+        /// threw; either leaves an exception pending.
+        ///
+        /// An absent `message` (`kj::none`) means the default message for the
+        /// given `code` is used. `message` is passed as raw bytes because
+        /// exception messages may hold arbitrary, potentially non-UTF-8 byte
+        /// strings; V8 renders invalid UTF-8 lossily rather than rejecting it.
+        unsafe fn create_node_exception(
+            isolate: *mut Isolate,
+            code: NodeExceptionCode,
+            error_type: JsErrorType,
+            message: KjMaybe<&[u8]>,
+        ) -> MaybeLocal;
+
+        /// Creates a Node.js-style "UVException": an ordinary Error object with
+        /// additional `code`, `syscall`, `path`, and `dest` properties. Returns
+        /// a `v8::MaybeLocal` handle, as for `create_node_exception`.
+        ///
+        /// The `message`, `path`, and `dest` values map to nullable
+        /// `kj::StringPtr` arguments on the C++ side; an absent value is
+        /// `kj::none`. They are passed as raw bytes (not `&str`) because paths
+        /// may be arbitrary, potentially non-UTF-8 byte strings; V8 renders
+        /// invalid UTF-8 lossily rather than rejecting it. `syscall` is always a
+        /// fixed ASCII string, so it stays a `&str`.
+        unsafe fn create_uv_exception(
+            isolate: *mut Isolate,
+            errorno: i32,
+            syscall: &str,
+            message: KjMaybe<&[u8]>,
+            path: KjMaybe<&[u8]>,
+            dest: KjMaybe<&[u8]>,
+        ) -> MaybeLocal;
+    }
+
+    #[namespace = "workerd::rust::jsg"]
+    unsafe extern "C++" {
+        include!("workerd/rust/jsg/ffi.h");
+        include!("workerd/rust/jsg/v8.rs.h");
+
+        type Isolate = jsg::v8::ffi::Isolate;
+
+        // Reuse the `MaybeLocal` shared struct defined by the jsg crate's `v8.rs`
+        // bridge instead of round-tripping the handle through a bare `usize`.
+        // The alias makes this the same Rust/C++ type as `jsg::v8::ffi::MaybeLocal`,
+        // so the handle can be returned by value across the bridge.
+        type MaybeLocal = jsg::v8::ffi::MaybeLocal;
+    }
+}
+
+// ======================================================================================
+// Node.js exceptions
+
+/// Creates a JS error object of the given type.
+///
+/// `message` is raw UTF-8 bytes: exception messages may embed arbitrary,
+/// potentially non-UTF-8 byte strings (e.g. filesystem paths), which V8
+/// renders lossily (U+FFFD) rather than rejecting.
+fn create_js_error<'s>(
+    lock: &mut Lock<'s>,
+    error_type: ffi::JsErrorType,
+    message: &[u8],
+) -> v8::Local<'s, v8::Object> {
+    match error_type {
+        ffi::JsErrorType::TypeError => lock.type_error_from_bytes(message),
+        ffi::JsErrorType::RangeError => lock.range_error_from_bytes(message),
+        // JsErrorType::Error, plus any unknown value, fall back to Error.
+        _ => lock.error_from_bytes(message),
+    }
+}
+
+/// Creates a V8 string value from raw UTF-8 bytes, used for the exception
+/// properties: `path` and `dest` may hold arbitrary, potentially non-UTF-8
+/// byte strings, and the others are fixed ASCII names. Invalid sequences
+/// are replaced with U+FFFD by V8.
+#[expect(
+    clippy::expect_used,
+    reason = "V8 fails only for strings longer than its maximum string length"
+)]
+fn bytes_to_value<'s>(lock: &mut Lock<'s>, data: &[u8]) -> v8::Local<'s, v8::Value> {
+    v8::String::new_from_utf8(lock, data)
+        .expect("exception property is too long for a V8 string")
+        .into()
+}
+
+/// Returns the default message for a Node.js exception code.
+fn node_default_message(code: ffi::NodeExceptionCode) -> &'static str {
+    match code {
+        ffi::NodeExceptionCode::ErrFsCpEexist => "File already exists",
+        ffi::NodeExceptionCode::ErrFsCpDirToNonDir => "Cannot copy directory to non-directory",
+        ffi::NodeExceptionCode::ErrFsCpEinval => "Invalid cp operation",
+        ffi::NodeExceptionCode::ErrFsCpNonDirToDir => "Cannot copy non-directory to directory",
+        ffi::NodeExceptionCode::ErrFsEisdir => "Expected a file but found a directory",
+        _ => "Unknown Node.js exception",
+    }
+}
+
+/// Returns the string "code" value for a Node.js exception code: the
+/// stringified C++ `NodeExceptionCode` enumerator name.
+fn node_code_name(code: ffi::NodeExceptionCode) -> &'static str {
+    match code {
+        ffi::NodeExceptionCode::ErrFsCpEexist => "ERR_FS_CP_EEXIST",
+        ffi::NodeExceptionCode::ErrFsCpDirToNonDir => "ERR_FS_CP_DIR_TO_NON_DIR",
+        ffi::NodeExceptionCode::ErrFsCpEinval => "ERR_FS_CP_EINVAL",
+        ffi::NodeExceptionCode::ErrFsCpNonDirToDir => "ERR_FS_CP_NON_DIR_TO_DIR",
+        ffi::NodeExceptionCode::ErrFsEisdir => "ERR_FS_EISDIR",
+        _ => "UNKNOWN",
+    }
+}
+
+/// Implements C++ `createNodeException`.
+fn create_node_exception_impl<'s>(
+    lock: &mut Lock<'s>,
+    code: ffi::NodeExceptionCode,
+    error_type: ffi::JsErrorType,
+    message: Option<&[u8]>,
+) -> jsg::Result<v8::Local<'s, v8::Object>> {
+    let message = message.unwrap_or_else(|| node_default_message(code).as_bytes());
+    let err = create_js_error(lock, error_type, message);
+    let code_value = bytes_to_value(lock, node_code_name(code).as_bytes());
+    err.set(lock, "code", code_value)?;
+    Ok(err)
+}
+
+// ======================================================================================
+// UV exceptions
+
+/// This is an intentionally truncated list of the error codes that Node.js/libuv
+/// uses. We won't need all of the error codes that libuv uses.
+///
+/// Mirrors the C++ `UV_ERRNO_MAP` X-macro list. Each entry is
+/// `(errorno, name, default message)`, where `errorno` mirrors the C++
+/// `UV_##code = -code` constant. Using `libc` errno constants keeps the numeric
+/// values in sync with the C++ side across platforms.
+macro_rules! uv_errno_map {
+    ($($name:ident => $message:literal),* $(,)?) => {
+        const UV_ERRNO_MAP: &[(i32, &str, &str)] = &[
+            $((-libc::$name, stringify!($name), $message)),*
+        ];
+    };
+}
+
+uv_errno_map! {
+    EACCES => "permission denied",
+    EBADF => "bad file descriptor",
+    EEXIST => "file already exists",
+    EFBIG => "file too large",
+    EINVAL => "invalid argument",
+    EISDIR => "illegal operation on a directory",
+    ELOOP => "too many symbolic links encountered",
+    EMFILE => "too many open files",
+    ENAMETOOLONG => "name too long",
+    ENFILE => "file table overflow",
+    ENOBUFS => "no buffer space available",
+    ENODEV => "no such device",
+    ENOENT => "no such file or directory",
+    ENOMEM => "not enough memory",
+    ENOSPC => "no space left on device",
+    ENOSYS => "function not implemented",
+    ENOTDIR => "not a directory",
+    ENOTEMPTY => "directory not empty",
+    EPERM => "operation not permitted",
+    EMLINK => "too many links",
+    EIO => "input/output error",
+}
+
+/// Returns the error name for an errno value.
+fn uv_err_name(errorno: i32) -> &'static str {
+    for &(code, name, _) in UV_ERRNO_MAP {
+        if code == errorno {
+            return name;
+        }
+    }
+    "UNKNOWN"
+}
+
+/// Returns the default message for an errno value.
+fn uv_default_message(errorno: i32) -> String {
+    for &(code, _, message) in UV_ERRNO_MAP {
+        if code == errorno {
+            return message.to_owned();
+        }
+    }
+    format!("unknown error: {errorno}")
+}
+
+/// Implements C++ `createUVException`.
+fn create_uv_exception_impl<'s>(
+    lock: &mut Lock<'s>,
+    errorno: i32,
+    syscall: &str,
+    message: Option<&[u8]>,
+    path: Option<&[u8]>,
+    dest: Option<&[u8]>,
+) -> jsg::Result<v8::Local<'s, v8::Object>> {
+    debug_assert!(!syscall.is_empty(), "syscall must not be null");
+
+    // Format the message to match Node.js format:
+    // "ENOENT: no such file or directory, open 'path'"
+    //
+    // `path` may be arbitrary bytes, so the message is assembled as bytes and
+    // handed to V8 (which renders invalid UTF-8 lossily) rather than forced
+    // through a Rust `&str`.
+    let formatted_message: Vec<u8> = if let Some(message) = message {
+        message.to_vec()
+    } else {
+        let mut msg = uv_default_message(errorno).into_bytes();
+        if let Some(path) = path {
+            msg.extend_from_slice(b", ");
+            msg.extend_from_slice(syscall.as_bytes());
+            msg.extend_from_slice(b" '");
+            msg.extend_from_slice(path);
+            msg.push(b'\'');
+        }
+        msg
+    };
+
+    let obj = lock.error_from_bytes(&formatted_message);
+
+    let syscall_value = bytes_to_value(lock, syscall.as_bytes());
+    obj.set(lock, "syscall", syscall_value)?;
+    let code_value = bytes_to_value(lock, uv_err_name(errorno).as_bytes());
+    obj.set(lock, "code", code_value)?;
+
+    if let Some(path) = path {
+        let path_value = bytes_to_value(lock, path);
+        obj.set(lock, "path", path_value)?;
+    }
+    if let Some(dest) = dest {
+        let dest_value = bytes_to_value(lock, dest);
+        obj.set(lock, "dest", dest_value)?;
+    }
+
+    Ok(obj)
+}
+
+// ======================================================================================
+// FFI wrappers
+//
+// These are thin adapters over the `*_impl` functions: they convert the nullable
+// `KjMaybe` arguments to `Option` and run the function through
+// `v8::run_ffi_callback`, which enters the caller's current scope and returns the
+// handle for the C++ caller, or an empty one, with an exception pending, if it failed or
+// panicked.
+
+/// # Safety
+/// `isolate` must be a valid pointer to a locked `v8::Isolate` with an entered context,
+/// and the caller must have a `v8::HandleScope` open.
+#[expect(
+    unsafe_code,
+    reason = "enters the current scope of the isolate pointer C++ passes in"
+)]
+unsafe fn create_node_exception(
+    isolate: *mut ffi::Isolate,
+    code: ffi::NodeExceptionCode,
+    error_type: ffi::JsErrorType,
+    message: KjMaybe<&[u8]>,
+) -> ffi::MaybeLocal {
+    // SAFETY: forwarded from the caller (C++ exception helpers).
+    unsafe {
+        v8::run_ffi_callback(isolate, |lock| {
+            create_node_exception_impl(lock, code, error_type, message.into())
+                .map(v8::Local::<v8::Value>::from)
+        })
+    }
+}
+
+/// # Safety
+/// `isolate` must be a valid pointer to a locked `v8::Isolate` with an entered context,
+/// and the caller must have a `v8::HandleScope` open.
+#[expect(
+    unsafe_code,
+    reason = "enters the current scope of the isolate pointer C++ passes in"
+)]
+unsafe fn create_uv_exception(
+    isolate: *mut ffi::Isolate,
+    errorno: i32,
+    syscall: &str,
+    message: KjMaybe<&[u8]>,
+    path: KjMaybe<&[u8]>,
+    dest: KjMaybe<&[u8]>,
+) -> ffi::MaybeLocal {
+    // SAFETY: forwarded from the caller (C++ exception helpers).
+    unsafe {
+        v8::run_ffi_callback(isolate, |lock| {
+            create_uv_exception_impl(
+                lock,
+                errorno,
+                syscall,
+                message.into(),
+                path.into(),
+                dest.into(),
+            )
+            .map(v8::Local::<v8::Value>::from)
+        })
+    }
+}
+
+#[cfg(test)]
+#[path = "lib-test.rs"]
+mod tests;

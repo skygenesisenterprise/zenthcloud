@@ -1,0 +1,172 @@
+// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+#pragma once
+
+#include <workerd/api/blob.h>
+#include <workerd/api/js-readable-stream.h>
+#include <workerd/api/worker-rpc.h>
+#include <workerd/jsg/jsg.h>
+
+namespace kj {
+class HttpClient;
+}
+
+namespace workerd::api {
+
+class ReadableStreamSource;
+
+// JsRpcPromise is a custom thenable. Resolving a fresh promise with it makes V8 adopt it even when
+// the unwrap_custom_thenables compatibility flag is disabled.
+jsg::Promise<jsg::Value> normalizeR2RpcPromise(jsg::Lock& js, jsg::Value rpcPromise);
+
+void requireR2RpcSerializer(jsg::Serializer& serializer);
+void requireR2RpcDeserializer(jsg::Deserializer& deserializer);
+
+template <typename... Args>
+jsg::Value callR2RpcMethod(jsg::Lock& js,
+    jsg::Ref<JsRpcProperty> rpcProp,
+    const jsg::TypeHandler<jsg::Ref<JsRpcProperty>>& rpcPropHandler,
+    const jsg::TypeHandler<jsg::Function<jsg::Value(Args...)>>& fnHandler,
+    Args... args) {
+  auto wrappedProp = rpcPropHandler.wrap(js, kj::mv(rpcProp));
+  auto fn = KJ_ASSERT_NONNULL(fnHandler.tryUnwrap(js, wrappedProp));
+  return fn(js, kj::mv(args)...);
+}
+
+template <typename Result>
+jsg::Promise<Result> unwrapR2RpcPromise(jsg::Lock& js,
+    jsg::Value rpcPromise,
+    const jsg::TypeHandler<jsg::Promise<Result>>& resultPromiseHandler) {
+  auto normalizedPromise = normalizeR2RpcPromise(js, kj::mv(rpcPromise));
+  if constexpr (kj::isSameType<Result, void>()) {
+    return KJ_ASSERT_NONNULL(
+        resultPromiseHandler.tryUnwrap(js, normalizedPromise.consumeHandle(js)));
+  } else {
+    // Decode only fulfilled responses so backing-entrypoint rejections retain their public API
+    // errors. Failures converting a response into the internal wire types are contract violations.
+    return normalizedPromise.then(js, [&resultPromiseHandler](jsg::Lock& js, jsg::Value value) {
+      auto fulfilled = js.resolvedPromise(kj::mv(value));
+      auto parsed =
+          KJ_ASSERT_NONNULL(resultPromiseHandler.tryUnwrap(js, fulfilled.consumeHandle(js)));
+      return parsed.catch_(js, [](jsg::Lock& js, jsg::Value error) -> Result {
+        auto exception = js.exceptionToKj(kj::mv(error));
+        KJ_FAIL_ASSERT("Malformed R2 RPC result.", exception);
+      });
+    });
+  }
+}
+
+template <typename Result, typename... Args>
+jsg::Promise<Result> callR2RpcMethod(jsg::Lock& js,
+    jsg::Ref<JsRpcProperty> rpcProp,
+    const jsg::TypeHandler<jsg::Ref<JsRpcProperty>>& rpcPropHandler,
+    const jsg::TypeHandler<jsg::Function<jsg::Value(Args...)>>& fnHandler,
+    const jsg::TypeHandler<jsg::Promise<Result>>& resultPromiseHandler,
+    Args... args) {
+  auto rpcPromise =
+      callR2RpcMethod(js, kj::mv(rpcProp), rpcPropHandler, fnHandler, kj::mv(args)...);
+  return unwrapR2RpcPromise<Result>(js, kj::mv(rpcPromise), resultPromiseHandler);
+}
+
+// NOTE: We don't currently actually use this as a structured object (hence the `kj::Own<R2Error>`
+// that we see pop up).
+// TODO(soon): Switch to structured objects and use jsg::Ref<R2Error> instead of kj::Own<R2Error>
+//   to maintain ownership.
+class R2Error: public jsg::Object {
+ public:
+  R2Error(uint v4Code, kj::String message): v4Code(v4Code), message(kj::mv(message)) {}
+
+  constexpr kj::StringPtr getName() const {
+    return "R2Error"_kj;
+  }
+  uint getV4Code() const {
+    return v4Code;
+  }
+  kj::StringPtr getMessage() const {
+    return message;
+  }
+  kj::StringPtr getAction() const {
+    return KJ_ASSERT_NONNULL(action);
+  }
+  jsg::JsValue getStack(jsg::Lock& js);
+
+  JSG_RESOURCE_TYPE(R2Error) {
+    JSG_INHERIT_INTRINSIC(v8::kErrorPrototype);
+
+    JSG_READONLY_INSTANCE_PROPERTY(name, getName);
+    JSG_READONLY_INSTANCE_PROPERTY(code, getV4Code);
+    JSG_READONLY_INSTANCE_PROPERTY(message, getMessage);
+    JSG_READONLY_INSTANCE_PROPERTY(action, getAction);
+
+    JSG_READONLY_INSTANCE_PROPERTY(stack, getStack);
+    // See getStack in dom-exception.h
+
+    JSG_TS_ROOT();
+  }
+
+ private:
+  uint v4Code;
+  kj::String message;
+  kj::Maybe<kj::String> action;
+  // Initialized when thrown.
+
+  kj::Maybe<v8::Global<v8::Object>> errorForStack;
+  // See dom-exception.h.
+
+  friend struct R2Result;
+};
+
+using R2PutValue =
+    kj::OneOf<JsReadableStream, kj::Array<kj::byte>, jsg::NonCoercible<kj::String>, jsg::Ref<Blob>>;
+
+// Converts bodies that are too large for an inline JSRPC message into streams. Known stream lengths
+// are preserved by the JSRPC stream transport.
+R2PutValue prepareR2RpcBody(jsg::Lock& js, R2PutValue& value);
+
+struct R2Result {
+  uint httpStatus;
+
+  // Non-null if httpStatus >= 400.
+  kj::Maybe<kj::Own<R2Error>> toThrow;
+
+  kj::Maybe<kj::Array<char>> metadataPayload;
+
+  kj::Maybe<kj::Own<workerd::api::ReadableStreamSource>> stream;
+
+  bool objectNotFound() {
+    return httpStatus == 404 && v4ErrorCode() == 10007;
+  }
+
+  bool preconditionFailed() {
+    return httpStatus == 412 && (v4ErrorCode() == 10031 || v4ErrorCode() == 10032);
+  }
+
+  bool success() {
+    return httpStatus >= 200 && httpStatus < 400;
+  }
+
+  kj::Maybe<uint> v4ErrorCode();
+  kj::Maybe<kj::String> getR2ErrorMessage();
+  void throwIfError(kj::StringPtr action, const jsg::TypeHandler<jsg::Ref<R2Error>>& errorType);
+};
+
+kj::Promise<R2Result> doR2HTTPGetRequest(kj::Own<kj::HttpClient> client,
+    kj::String metadataPayload,
+    kj::ArrayPtr<kj::StringPtr> path,
+    kj::Maybe<kj::StringPtr> jwt,
+    CompatibilityFlags::Reader flags);
+
+// Note: takes a jsg::Lock because computing the expected body size of a JsReadableStream value
+// requires it. The lock is used synchronously (before any I/O) and is not retained.
+kj::Promise<R2Result> doR2HTTPPutRequest(jsg::Lock& js,
+    kj::Own<kj::HttpClient> client,
+    kj::Maybe<R2PutValue> value,
+    kj::Maybe<uint64_t> streamSize,
+    // Deprecated. For internal beta API only.
+    kj::String metadataPayload,
+    kj::ArrayPtr<kj::StringPtr> path,
+    kj::Maybe<kj::StringPtr> jwt);
+
+}  // namespace workerd::api

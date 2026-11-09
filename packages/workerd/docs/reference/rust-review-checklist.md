@@ -1,0 +1,220 @@
+This document provides a checklist for reviewing Rust code in the workerd project. It covers style guidelines, common pitfalls, and critical patterns to watch for when ensuring code quality.
+
+See `../../src/rust/jsg/README.md` for additional context.
+
+### CXX Bridge Safety
+
+All Rust/C++ interop uses the `cxx` crate. Each crate with a bridge declares
+`#[cxx::bridge(namespace = "workerd::rust::<crate>")]` and has companion `ffi.c++`/`ffi.h` files.
+
+- **Always** ensure that **shared structs** passed across the boundary are trivially safe to copy
+  between languages.
+- **Always** verify that shared types do not contain owning pointers, non-trivial destructors, or
+  types whose layout differs between Rust and C++.
+- **Always** verify that opaque types (`type Foo;` in CXX bridge) are passed by reference or
+  `Box`/`UniquePtr`.
+- **Always** verify that lifetimes are respected — an opaque C++ type behind `&T` must outlive the
+  Rust reference.
+- **Always** verify that bridges must use the `workerd::rust::<crate_name>` naming convention. The
+  only exception is `python-parser` which uses `edgeworker::rust::python_parser`.
+- **Always** verify companion files. Every CXX bridge should have hand-written `ffi.c++` and `ffi.h`
+  implementing the C++ side. Generated headers (`<file>.rs.h`) are produced by the build system.
+
+### Unsafe Code
+
+Unsafe code is concentrated at FFI boundaries. Review every `unsafe` block and `unsafe fn`:
+
+- **Always** verify that every `unsafe` block has a `// SAFETY:` comment explaining which invariants
+  the caller is responsible for and why they hold at this call site.
+- **Always** verify that functions receiving raw pointers from C++ are declared `unsafe fn`**.
+- **Always** verify that `unsafe impl Send` / `unsafe impl Sync` are justified with a comment
+  explaining why the type is safe to share across threads. `jsg::Ref<T>` is explicitly not `Send`
+  (uses `Rc` + `UnsafeCell` internally) — flag any attempt to send it across threads.
+- **Always** verify that an `allow` or `expect` of `unsafe_code` covers no more than it needs. The
+  build denies `unsafe_code` in first-party crates (`//build/rust:lints`); the crates derived from
+  upstream cxx in `src/rust/cxx` keep upstream's lint levels. The exception belongs at the top of
+  the module file that needs it, or on the item when that file is the crate root. One at the top of
+  a crate root opts the whole crate out: flag it. Prefer a single `ffi.rs` per crate holding the
+  bridge and every hand-written `unsafe`.
+
+#### Common unsafe patterns in this codebase:
+
+- **V8 handle operations**: `Local::from_ffi()`/`into_ffi()`, isolate pointer dereference. These are
+  safe only when the isolate is locked and the handle scope is active. Dropping a `jsg::v8::Global`
+  or `jsg::v8::TracedGlobal` is the exception: it defers the reset to the next lock when the
+  isolate is not locked, and does nothing once the `Realm` is gone
+  (`src/rust/jsg/isolate_state.rs`). That makes a `Global`, which GC never visits, `Send` and
+  `Sync`. It also makes a `TracedGlobal` `Send` (it is not `Sync`), together with visits outside a
+  GC leaving a `TracedGlobal` alone on a thread without the lock
+  (`GcVisitor::visit_traced_global`). A shim that resets a handle itself must only run under the
+  lock.
+- **Resource wrap/unwrap**: `Ref::into_raw()` leaks a ref-counted pointer as `usize`;
+  `Ref::from_raw()` reconstructs it. These must be balanced — every `into_raw` needs exactly one
+  `from_raw` to avoid leaks or double-frees.
+- **Trampoline closures**: A closure is cast to `usize` via raw pointer, passed through CXX, and
+  reconstructed on the other side. The closure must be consumed exactly once.
+
+### Error Handling
+
+- **Always** ensure that library crates (e.g., `dns`, `net`, `transpiler`) use `thiserror` for
+  domain-specific error types. These should implement `Display` and have descriptive error messages.
+- **Always** ensure that JSG-facing crates (e.g., `api`, `jsg`) use `jsg::Error` with an
+  `ExceptionType` variant (e.g., `TypeError`, `RangeError`). Domain errors should implement
+  `From<DomainError> for jsg::Error` for ergonomic `?` usage.
+- **Never** use `panic!` for expected errors. Panics across FFI are undefined behavior. Use
+  `Result` and propagate errors through the CXX bridge. The build denies `unwrap()`, `expect()`,
+  `panic!`, `todo!` and `unimplemented!` in production code. `unreachable!` is allowed: a panic is
+  for what cannot happen. Verify that an `#[expect]` of one of these lints guards a real invariant
+  and not an error a caller could meet. Test code is exempt from these lints.
+- **Error type changes are generally not breaking** — same policy as the C++ side. Changing the
+  JS exception type (e.g., from generic error to `TypeError`) is not normally a breaking change
+  unless it removes properties that user code could depend on (e.g., `DOMException` has `code`
+  that `TypeError` does not).
+
+### JSG Resource Conventions
+
+Rust types exposed to JavaScript via the JSG bindings follow these patterns:
+
+- **`_state: jsg::ResourceState`** is a required field on all resource types. It holds the opaque
+  pointers used by the C++ JSG layer to wrap/unwrap the Rust object.
+- **`#[jsg_resource]`** on the impl block registers the type as a JS-visible resource.
+- **`#[jsg_method]`** auto-converts Rust `snake_case` method names to JavaScript `camelCase`.
+  Methods with a `&self` receiver are registered as instance methods on the prototype; methods
+  without a receiver are registered as static methods on the constructor. Any other receiver is a
+  compile error, since JavaScript can call back into the resource while a method runs; state that
+  methods change belongs in `Cell` or `RefCell` fields or, when it holds a `jsg::Rc` or a
+  `TracedGlobal`, in `jsg::Cell` or `jsg::RefCell` fields (`src/rust/jsg/README.md` §Cells). A
+  method or accessor can take `this: jsg::Rc<Self>` instead of `&self` to get a `jsg::Rc` of its
+  resource, for example to hand to a callback. Flag state that a method shares with a callback through an `std::rc::Rc`;
+  the callback should hold `this` (or `this.downgrade()`) instead. Flag a
+  `RefCell` borrow held across a call that can run JavaScript: a re-entrant call then panics.
+  Verify the converted name is correct and matches the intended API surface.
+- **`#[jsg_static_constant]`** on a `const` item inside a `#[jsg_resource]` impl block exposes it
+  as a read-only numeric constant on both the constructor and prototype (Rust equivalent of
+  `JSG_STATIC_CONSTANT`). The name is used as-is (no camelCase conversion).
+- **`#[jsg_struct]`** is for value types (passed by value across the JS boundary).
+- **`#[jsg_oneof]`** is for union/variant types (mapped from JS values by trying each variant).
+- **Type mappings**: a JS number is an `f64`, converted with `ToNumber` like C++ JSG's `double`; a
+  handle to one is `jsg::v8::Local<jsg::v8::Number>`. `Vec<T>` converts to a JS `Array`, numbers
+  included. A typed array comes from `to_js_typed_array` on a slice, and an `ArrayBuffer` from
+  `to_js_array_buffer` on a byte slice (what C++ JSG returns for `kj::Array<kj::byte>`). From
+  JS, `Vec<T>` reads an `Array`, and a typed array or `ArrayBuffer` is a handle such as
+  `v8::Local<v8::Uint8Array>`.
+  `Option<T>` maps to `T | undefined`; like `jsg::Optional<T>`, `null` converts as `T`.
+  `Nullable<T>` maps to `T | null` and, like `kj::Maybe<T>`, coerces `undefined` to `null` on
+  input, but a method argument is still required. Prefer `NullOrUndefined<T>` to
+  `Option<Nullable<T>>` for an optional `T | null | undefined`, with distinct `Some(T)`,
+  `Null`, and `Undefined` states. Omitted method arguments become `Undefined`. Use
+  `Lenient<T>` only when shallow type mismatches should also be accepted; converting it to
+  `NullOrUndefined<T>` maps `Unconvertable` to `Undefined`, while nested conversion errors
+  still propagate.
+  `String`/`&str` map to JS strings. Integers and `#[jsg_struct]`s convert like C++ JSG's
+  integers and dictionaries: out-of-range integers throw, and an absent struct field reads as
+  `undefined`.
+- **Numeric `Vec`s**: a `Vec<u8>`, or a `Vec` of another Rust numeric type, converted through
+  `ToJS` (a `.to_js(lock)` call, a `#[jsg_method]` return value, or a `#[jsg_struct]` field)
+  becomes a JS `Array` of numbers. Check that an `Array` is intended: a port of C++ that returned
+  `kj::Array<kj::byte>` (an `ArrayBuffer`) or a typed array should use `to_js_array_buffer` or
+  `to_js_typed_array` instead. Ask the author; don't block on it.
+- **Persistent handles**: a handle that Rust code owns outside resources is a `jsg::v8::Global`,
+  which GC never visits and which keeps its handle inline. A handle that a resource owns is a
+  `jsg::v8::TracedGlobal`, which GC traces so that a cycle through it can be collected, and which
+  keeps its handles in a box. `Global` has no `Traced` impl, so it cannot be a resource field.
+- **GC tracing**: `jsg::Rc<T>` fields on `#[jsg_resource]` structs are automatically traced
+  during GC, including through `Option`, `Nullable`, and `NullOrUndefined` wrappers when
+  `Some`. `Lenient` traces both `Some` and `Unconvertable`. `jsg::Weak<T>` fields are not
+  traced (no-op). Verify that every resource reference is properly traced — missing traces
+  cause use-after-free when the child is collected prematurely. `Traced::trace` has no
+  default; a type with nothing to trace uses `jsg::jsg_traced!` rather than an empty `trace`
+  next to a hand-written `HoldsNoGcReferences`.
+
+### Rust JSG Safety Rules
+
+The rules, with reasons and examples, are in `src/rust/jsg/README.md` §Safety rules. Tests catch
+some violations, and the README says which. Reviewers flag these:
+
+- A C++ shim that passes a context to V8 without first checking
+  `if (exceptionPending(isolate)) return ...;`, and without a comment saying why it needn't.
+  Such an API takes a `v8::Local<v8::Context>` or uses the current one: a call, a property read
+  or write, a coercion, `Array::Iterate`, `ObjectTemplate::NewInstance`, `Function::New`,
+  `FunctionTemplate::GetFunction`, `Date::New`, `ArrayBuffer::Detach`, the promise APIs. While an
+  exception or a termination is pending, V8 either clears it on entry, so it is lost and
+  JavaScript runs on, or fails a debug check and in a release build runs on with it pending. Creating strings, numbers, objects, arrays, error objects and
+  templates takes no context and needs no check, also while execution is terminating.
+- A shim, other than the `isolate_throw_*` shims, that calls `isolate->ThrowException` with no
+  `IsExecutionTerminating()` check first. `isolate_throw_*` already check, and so do
+  `Lock::throw_*` and `fast_api_throw_*`, which call them.
+- A `jsg::Error` from a call that ran JavaScript (`Function::call`, `Object::get`/`has`/`set`,
+  `Array::set`/`iterate`, a coercion) that is discarded with `.ok()`, `.is_ok()` or `unwrap_or*`,
+  or replaced with `map_err` or a custom `Into<jsg::Error>`. It may be the termination or a pending exception;
+  it should be passed on with `?`, or caught with `Lock::try_catch`.
+- An empty result from an FFI shim that is treated as "terminating" without checking.
+- An `std::rc::Rc` around a `TracedGlobal`, a `jsg::Rc`, or a type holding them, even if it is
+  not shared yet. The fix is a `jsg::Rc` or `jsg::Weak` to the resource that owns the state,
+  such as a method's `this`.
+- A `jsg::Rc` or `TracedGlobal` reached through interior mutability other than a `jsg::Cell` or
+  `jsg::RefCell`: `UnsafeCell`, `OnceCell`, a hand-written cell, or a std `Cell` or `RefCell`
+  that a hand-written `impl Traced` visits through `borrow()`. A `jsg::Rc` or `TracedGlobal` in
+  a std cell field of a `#[jsg_resource]` or `#[jsg_struct]` does not compile; these are the
+  paths the compiler cannot see ([#7976](https://github.com/cloudflare/workerd/issues/7976)).
+- A hand-written `impl HoldsNoGcReferences` on a type whose `trace` visits something.
+- A `jsg::v8::Global` inside a type with a hand-written `impl Traced`.
+- New C++ JSG (`jsg::Lock`, `JSG_TRY`/`JSG_CATCH`, `jsg::check`, `JsExceptionThrown`,
+  `createTunneledException`, `makeInternalError`, `jsg::Data`/`jsg::Value`) in a `.c++` or `.h`
+  file under `src/rust` that `//src/rust/jsg:cpp-jsg-allowlist-test` doesn't check. The test
+  only checks the files in `CPP_SHIMS` in `src/rust/jsg/BUILD.bazel`.
+- A `Lock<'s>` or `Local<'s>` that is stored or passed into a nested callback, or a future passed
+  to async I/O that isn't `'static`.
+
+### Linting & Style
+
+- **Clippy** runs with **pedantic + nursery** lint groups. Run `just clippy <crate>` on all
+  Rust changes.
+- **`#[expect(clippy::...)]` over `#[allow(clippy::...)]`** — `expect` is stricter: it warns if
+  the suppressed lint no longer fires, preventing stale suppressions from accumulating.
+- **Every `allow` and `expect` states a `reason`** in production code (the build denies
+  `clippy::allow_attributes_without_reason`). Verify that the reason is true and specific to the
+  code it sits on.
+- **Import formatting**: one `use` per import line, grouped as std / external / crate (enforced
+  by `rustfmt.toml`). Run `just format` to auto-fix.
+
+### Testing
+
+- **JSG test harness** (`jsg_test::Harness`): creates a V8 isolate, runs Rust code in a real V8
+  context via `run_in_context(|lock, ctx| { ... })`. Used for testing JSG resources.
+- **C++ KJ tests for Rust crates**: some crates have companion `.c++` test files using `kj_test()`.
+  These test the C++ side of the FFI bridge.
+- **Inline `#[cfg(test)]` modules**: standard Rust unit tests for pure-Rust logic.
+- All test targets run with `RUST_BACKTRACE=1` and `RUST_TEST_THREADS=1` (serial execution).
+
+### Review Checklist
+
+When reviewing Rust code in workerd, check for each of these items.
+
+- **Never** use **magic numbers** (Numeric literals) without explanation or named constants.
+- **Always** use `#[must_use]`. Functions returning `Result`, `Option`, or expensive-to-compute values
+   that callers should not silently discard.
+- **Never** use `bool` function parameters. Prefer an enum or options struct for clarity at call
+  sites. E.g., `fn connect(secure: bool)` should be `fn connect(mode: SecureMode)` or take an
+  options struct.
+- **Always** use `const fn` / `const` for compile-time evaluable functions or constants where
+  appropriate.
+- **Always** avoid reinvented utility. Avoid custom code duplicating functionality already in the
+  `jsg` or `kj` Rust crates, or in well-known ecosystem crates already vendored by the project.
+- **Always** avoid using `static mut`. Use `OnceLock`, `LazyLock`, or other safe synchronization
+  primitives where global state is genuinely needed.
+- **Always** flag missing `// SAFETY:` comments on `unsafe`.
+- **Always** flag unjustified `unsafe impl Send/Sync` uses.
+- **Always** flag unnecessary `.clone()`/copies where borrowing or moving would suffice.
+- **Always** flag unnecessary use of `String` where `&str` works, or `Vec<T>` where a slice would do.
+- **Always** flag locations where **`#[allow(...)]` is used where `#[expect(...)]` would work**.
+  Prefer `expect` to prevent stale suppressions.
+- **Always** ensure copyright header on new files, Every new `.rs` file must begin with the project
+  copyright/license header using the current year. Expected format:
+    ```
+    // Copyright (c) <current-year> Cloudflare, Inc.
+    // Licensed under the Apache 2.0 license found in the LICENSE file or at:
+    //     https://opensource.org/licenses/Apache-2.0
+    ```
+    Flag any new file that uses a stale year (e.g., `2017-2022` in a file created in 2026) or omits
+    the header entirely.

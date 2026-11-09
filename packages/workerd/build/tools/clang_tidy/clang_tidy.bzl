@@ -1,0 +1,256 @@
+"""Clang tidy aspect.
+
+The aspect, when enabled runs clang_tidy on every compiled c++ file.
+"""
+
+load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
+load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("//build/tools/clang_tidy:check_path_filters.bzl", "CHECK_PATH_FILTERS")
+
+# Canonical name of the capnp-cpp repository (e.g. "+http+capnp-cpp"), as it appears in include
+# paths: `external/<repo>/...` and `bazel-out/<config>/bin/external/<repo>/...`.
+_CAPNP_REPO_DIR = "external/" + Label("@capnp-cpp//:BUILD.bazel").repo_name
+
+def _is_capnp_include(path):
+    return (path == _CAPNP_REPO_DIR or path.startswith(_CAPNP_REPO_DIR + "/") or
+            path.endswith("/" + _CAPNP_REPO_DIR) or ("/" + _CAPNP_REPO_DIR + "/") in path)
+
+def _system_include_flag(path):
+    """Maps a system include dir to compiler flags, demoting capnp-cpp's dirs to regular ones.
+
+    Clang treats every header found through -isystem as a system header and suppresses diagnostics
+    in it and in expansions of macros defined in it (KJ_ASSERT, KJ_IF_SOME, KJ_DEFER, ...), no
+    matter whether KJ_HEADER_WARNINGS is defined. Bazel passes the include dirs of external
+    repositories with -isystem, so KJ and Cap'n Proto dirs must use -I for clang-tidy to report
+    issues in our code that come from KJ macro expansions.
+    """
+    if _is_capnp_include(path):
+        return ["-I", path]
+    return ["-isystem", path]
+
+def _get_disabled_checks_for_file(file_path):
+    """Returns checks that should be disabled for this file.
+
+    Checks listed in CHECK_PATH_FILTERS are only enabled for files under their
+    allowed paths. For files not under any allowed path, the check is disabled.
+    """
+    disabled = []
+    for check, allowed_paths in CHECK_PATH_FILTERS.items():
+        enabled = False
+        for allowed in allowed_paths:
+            # Normalize: remove leading "//" or "src/" for comparison
+            allowed_path = allowed
+            if allowed_path.startswith("//"):
+                allowed_path = allowed_path[2:]
+
+            # Prefix match: "src/foo" matches "src/foo/bar.c++" and "src/foo/baz/qux.c++"
+            if file_path.startswith(allowed_path + "/") or file_path.startswith(allowed_path):
+                enabled = True
+                break
+        if not enabled:
+            disabled.append(check)
+    return disabled
+
+def _clang_tidy_aspect_impl(target, ctx):
+    # not a c++ target
+    if not CcInfo in target:
+        return []
+
+    # disable clang tidy if no-clang-tidy tag is defined.
+    # todo: figure out a better way to control clang tidy on a per-target basis.
+    if "no-clang-tidy" in ctx.rule.attr.tags:
+        return []
+
+    cc_toolchain = find_cc_toolchain(ctx)
+    feature_configuration = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+    )
+    compile_variables = cc_common.create_compile_variables(
+        feature_configuration = feature_configuration,
+        cc_toolchain = cc_toolchain,
+        user_compile_flags = ctx.fragments.cpp.cxxopts + ctx.fragments.cpp.copts,
+    )
+    toolchain_flags = cc_common.get_memory_inefficient_command_line(
+        feature_configuration = feature_configuration,
+        action_name = ACTION_NAMES.cpp_compile,
+        variables = compile_variables,
+    )
+
+    compilation_context = target[CcInfo].compilation_context
+
+    rule_copts = getattr(ctx.rule.attr, "copts", [])
+
+    # we use $location in our copts, expand it
+    rule_copts = [ctx.expand_location(opt) for opt in rule_copts]
+
+    srcs = [
+        src
+        for src in getattr(ctx.rule.files, "srcs", []) + getattr(ctx.rule.files, "hdrs", [])
+        if src.is_source and src.short_path.endswith((".c++", ".c", ".h"))
+    ]
+
+    # bazel doesn't expose implementation deps through compilation context
+    # https://github.com/bazelbuild/bazel/issues/19663
+    contexts = [compilation_context] + [
+        dep[CcInfo].compilation_context
+        for dep in getattr(ctx.rule.attr, "implementation_deps", [])
+        if CcInfo in dep
+    ]
+
+    # Kept as depsets rather than flattened: args.add_all() expands them lazily at execution time.
+    defines = depset(transitive = [c.defines for c in contexts])
+    local_defines = compilation_context.local_defines
+    includes = depset(transitive = [c.includes for c in contexts])
+    quote_includes = depset(transitive = [c.quote_includes for c in contexts])
+    system_includes = depset(transitive = [c.system_includes for c in contexts])
+    external_includes = depset(transitive = [c.external_includes for c in contexts])
+    headers = depset(transitive = [c.headers for c in contexts])
+
+    tools = [
+        ctx.attr._clang_tidy_executable.files,
+        ctx.attr._clang_tidy_wrapper.files,
+        ctx.attr._clang_tidy_config.files,
+        ctx.attr._clang_tidy_plugin.files,
+    ]
+
+    clang_tidy_config = ctx.file._clang_tidy_config
+    plugin_path = ctx.file._clang_tidy_plugin.path
+
+    outs = []
+    for src in srcs:
+        # run actions need to produce something, declare a dummy file
+        # multiple labels can use the same path, so disambiguate.
+        out = ctx.actions.declare_file(src.path + "." + ctx.label.name + ".clang_tidy")
+        outs.append(out)
+
+        args = ctx.actions.args()
+
+        # these are consumed by clang_tidy_wrapper,sh
+        args.add(ctx.attr._clang_tidy_executable.files_to_run.executable)
+        args.add(out)
+        args.add(plugin_path)
+
+        # clang-tidy arguments
+        # do not print statistics
+        args.add("--quiet")
+        args.add("--experimental-custom-checks")
+        args.add("--config-file=" + clang_tidy_config.path)
+
+        # Disable checks that are path-filtered and not enabled for this file
+        real_path = src.path.removeprefix(src.owner.repo_root + "/")
+        disabled_checks = _get_disabled_checks_for_file(real_path)
+
+        # Parse clang_tidy_args to separate --checks from other args.
+        # We must combine all --checks into a single argument because multiple
+        # --checks flags don't accumulate - each one replaces the previous filter,
+        # which would undo the path-based disabling.
+        extra_checks = []
+        other_args = []
+        if ctx.attr.clang_tidy_args:
+            for arg in ctx.attr.clang_tidy_args.split(" "):
+                if arg.startswith("--checks="):
+                    # Extract the checks value (after --checks=)
+                    extra_checks.append(arg[len("--checks="):])
+                elif arg:  # skip empty strings
+                    other_args.append(arg)
+
+        # Build a single combined --checks argument
+        checks_parts = []
+        if disabled_checks:
+            checks_parts.append("-" + ",-".join(disabled_checks))
+        checks_parts.extend(extra_checks)
+        if checks_parts:
+            args.add("--checks=" + ",".join(checks_parts))
+
+        # Add any non-checks arguments
+        args.add_all(other_args)
+
+        args.add(src.path)
+
+        # compiler arguments
+        args.add("--")
+
+        args.add("-xc++")
+
+        args.add_all(ctx.attr._clang_tidy_compiler_flags)
+        args.add_all(rule_copts)
+        args.add_all(defines, before_each = "-D")
+        args.add_all(local_defines, before_each = "-D")
+        args.add_all(includes, before_each = "-I")
+        args.add_all(quote_includes, before_each = "-iquote")
+        args.add_all(system_includes, map_each = _system_include_flag)
+        args.add_all(external_includes, map_each = _system_include_flag)
+
+        args.add_all(toolchain_flags)
+
+        # KJ and Cap'n Proto headers (including generated .capnp.h files) mark themselves as system
+        # headers unless these are defined. Clang suppresses diagnostics in system headers and in
+        # expansions of macros defined there (KJ_IF_SOME, KJ_DEFER, ...), which would hide issues in
+        # our code from clang-tidy. See also _system_include_flag().
+        args.add("-DKJ_HEADER_WARNINGS")
+        args.add("-DCAPNP_HEADER_WARNINGS")
+
+        # Silence warnings about unused functions or #pragma once being present in header files. For
+        # source files, we already cover these warnings in regular compilation
+        args.add("-Wno-pragma-once-outside-header")
+        args.add("-Wno-unused")
+
+        # On Linux, the toolchain's flags locate its standard library, resource and sysroot
+        # headers, which the action takes as inputs. On macOS they come from Xcode, at these paths.
+        # TODO(cleanup): The macOS toolchain's flags should locate them too.
+        args.add("-isystem/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1")
+
+        # Xcode 26.4 bumps the Apple Clang version from 17 to 21, support both for now
+        args.add("-isystem/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/21/include")
+        args.add("-isystem/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include")
+        args.add("-isystem/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include")
+
+        inputs = depset(
+            direct = [src],
+            transitive = [headers, cc_toolchain.all_files],
+        )
+
+        ctx.actions.run(
+            outputs = [out],
+            arguments = [args],
+            executable = ctx.attr._clang_tidy_wrapper.files_to_run.executable,
+            progress_message = "Run clang-tidy on {}".format(src.short_path),
+            tools = tools,
+            mnemonic = "ClangTidy",
+            inputs = inputs,
+        )
+
+    return [
+        OutputGroupInfo(clang_tidy_checks = depset(direct = outs)),
+    ]
+
+clang_tidy_aspect = aspect(
+    implementation = _clang_tidy_aspect_impl,
+    fragments = ["cpp"],
+    attrs = {
+        "_clang_tidy_wrapper": attr.label(
+            default = Label("@//build/tools/clang_tidy:clang_tidy_wrapper.sh"),
+            allow_single_file = True,
+        ),
+        "_clang_tidy_executable": attr.label(
+            default = Label("//tools:clang-tidy"),
+            allow_single_file = True,
+        ),
+        "_clang_tidy_config": attr.label(
+            default = Label("//:clang_tidy_config"),
+            allow_single_file = True,
+        ),
+        "_clang_tidy_plugin": attr.label(
+            default = Label("//tools/clang-tidy:workerd-lint"),
+            allow_single_file = True,
+        ),
+        "_clang_tidy_compiler_flags": attr.string_list(
+            default = [],
+        ),
+        "clang_tidy_args": attr.string(default = ""),
+    },
+    toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+)

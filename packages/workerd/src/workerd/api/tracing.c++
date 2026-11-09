@@ -1,0 +1,815 @@
+// Copyright (c) 2017-2025 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+#include "tracing.h"
+
+#include <workerd/io/trace.h>
+#include <workerd/io/tracer.h>
+#include <workerd/util/thread-scopes.h>
+
+namespace workerd::api::user_tracing {
+
+namespace {
+
+// Approximately how much data we allow to be added to a user span before we start ignoring
+// modification requests. This is a soft cap to prevent accidental misuse from unbounded
+// memory growth; downstream tail-stream submission may apply additional limits.
+constexpr size_t MAX_SPAN_BYTES = 64 * 1024;
+
+size_t estimateTagValueSize(TagValue& value) {
+  // Approximate size; different encodings will produce different sizes. The goal is to bound
+  // accidental overuse, not to be byte-accurate.
+  KJ_SWITCH_ONEOF(value) {
+    KJ_CASE_ONEOF(b, bool) {
+      return 8;
+    }
+    KJ_CASE_ONEOF(d, double) {
+      return 8;
+    }
+    KJ_CASE_ONEOF(s, kj::String) {
+      return s.size();
+    }
+  }
+  KJ_UNREACHABLE;
+}
+
+// This is a CF semantic for warning conditions surfaced on spans, modeled on OpenTelemetry's exception
+// semantic conventions (`exception.type` / `exception.message`).
+enum class SpanWarningType {
+  SPAN_DATA_LIMIT_EXCEEDED,
+};
+
+kj::LiteralStringConst spanWarningTypeName(SpanWarningType type) {
+  switch (type) {
+    case SpanWarningType::SPAN_DATA_LIMIT_EXCEEDED:
+      return "span_data_limit_exceeded"_kjc;
+  }
+  KJ_UNREACHABLE;
+}
+
+TracingSpanContext toTracingSpanContext(kj::Maybe<tracing::SpanContext> context) {
+  KJ_IF_SOME(value, context) {
+    KJ_IF_SOME(spanId, value.getSpanId()) {
+      uint8_t traceFlags = 0;
+      KJ_IF_SOME(flags, value.getTraceFlags()) {
+        traceFlags = flags;
+      }
+      return TracingSpanContext{
+        .traceId = value.getTraceId().toW3C(),
+        .spanId = spanId.toGoString(),
+        .traceFlags = traceFlags,
+      };
+    }
+  }
+
+  return TracingSpanContext{
+    .traceId = tracing::TraceId::nullId.toW3C(),
+    .spanId = tracing::SpanId::nullId.toGoString(),
+    .traceFlags = 0,
+  };
+}
+
+}  // namespace
+
+// ======================================================================================
+// SpanState
+
+void SpanState::setAttribute(kj::String key, kj::Maybe<TagValue> maybeValue) {
+  if (!canRecordAttributes()) {
+    return;
+  }
+  KJ_IF_SOME(value, maybeValue) {
+    if (bytesUsed > MAX_SPAN_BYTES) {
+      return;
+    }
+    size_t valueSize = estimateTagValueSize(value);
+    bytesUsed += key.size() + valueSize;
+    if (bytesUsed > MAX_SPAN_BYTES) {
+      recordSpanDataLimitError("attribute", key, valueSize);
+      return;
+    }
+    recordAttribute(kj::mv(key), kj::mv(value));
+  }
+  // If value is kj::none the attribute is left unset (undefined on the JS side).
+}
+
+void SpanState::recordException(kj::Maybe<tracing::Exception::Code> code,
+    kj::String name,
+    kj::String message,
+    kj::Maybe<kj::String> stack) {
+  if (!canRecordAttributes()) {
+    return;
+  }
+
+  size_t valueSize = name.size() + message.size();
+  KJ_IF_SOME(c, code) {
+    KJ_SWITCH_ONEOF(c) {
+      KJ_CASE_ONEOF(text, kj::String) {
+        valueSize += text.size();
+      }
+      KJ_CASE_ONEOF(_, double) {
+        valueSize += sizeof(double);
+      }
+    }
+  }
+  KJ_IF_SOME(s, stack) {
+    valueSize += s.size();
+  }
+  bytesUsed += valueSize;
+  if (bytesUsed > MAX_SPAN_BYTES) {
+    recordSpanDataLimitError("exception", name, valueSize);
+    return;
+  }
+  recordExceptionImpl(kj::mv(code), kj::mv(name), kj::mv(message), kj::mv(stack));
+}
+
+class UserSpanState final: public SpanState {
+ public:
+  UserSpanState(kj::Rc<workerd::SpanObserver> observer, kj::ConstString operationName)
+      : spanContext(observer->toSpanContext()),
+        childParent(observer.addRef()),
+        builder(kj::mv(observer), kj::mv(operationName)) {}
+
+  ~UserSpanState() noexcept(false) override {
+    end();
+  }
+
+  void end() override {
+    // Move-assigning a null builder ends the old one (submitting via onClose) and drops the
+    // observer reference so subsequent setTag/isObserved calls no-op.
+    builder = workerd::SpanBuilder(nullptr);
+  }
+
+  bool getIsTraced() override {
+    return builder.isObserved();
+  }
+
+  kj::Maybe<tracing::SpanContext> getSpanContext() override {
+    KJ_IF_SOME(value, spanContext) {
+      return tracing::SpanContext::clone(value);
+    }
+    return kj::none;
+  }
+
+  workerd::SpanParent makeSpanParent() override {
+    return childParent.addRef();
+  }
+
+  void updateName(kj::ConstString operationName) override {
+    builder.setOperationName(kj::mv(operationName));
+  }
+
+  void setStatus(tracing::SpanStatus status) override {
+    builder.setStatus(kj::mv(status));
+  }
+
+ protected:
+  bool canRecordAttributes() override {
+    return builder.isObserved();
+  }
+
+  void recordAttribute(kj::String key, TagValue value) override {
+    KJ_SWITCH_ONEOF(value) {
+      KJ_CASE_ONEOF(b, bool) {
+        builder.setTag(kj::ConstString(kj::mv(key)), b, IsCustomTag::YES);
+      }
+      KJ_CASE_ONEOF(d, double) {
+        builder.setTag(kj::ConstString(kj::mv(key)), d, IsCustomTag::YES);
+      }
+      KJ_CASE_ONEOF(s, kj::String) {
+        builder.setTag(kj::ConstString(kj::mv(key)), kj::mv(s), IsCustomTag::YES);
+      }
+    }
+  }
+
+  void recordExceptionImpl(kj::Maybe<tracing::Exception::Code> code,
+      kj::String name,
+      kj::String message,
+      kj::Maybe<kj::String> stack) override {
+    builder.recordException(kj::mv(code), kj::mv(name), kj::mv(message), kj::mv(stack));
+  }
+
+  void recordSpanDataLimitError(
+      kj::StringPtr itemKind, kj::StringPtr name, size_t valueSize) override {
+    if (!builder.isObserved()) {
+      return;
+    }
+    kj::String shortName;
+    if (name.size() > 64) {
+      shortName = kj::str("\"", name.slice(0, 64), "...\" (key length ", name.size(), ")");
+    } else {
+      shortName = kj::str("\"", name, "\"");
+    }
+    auto message = kj::ConstString(kj::str("exceeded span data limit while trying to record ",
+        itemKind, " ", shortName, " of size ", valueSize));
+    builder.setTag("cloudflare.warning.type"_kjc,
+        spanWarningTypeName(SpanWarningType::SPAN_DATA_LIMIT_EXCEEDED));
+    builder.setTag("cloudflare.warning.message"_kjc, kj::mv(message));
+  }
+
+ private:
+  kj::Maybe<tracing::SpanContext> spanContext;
+  // Unlike `builder`, this keeps the observer after end() so the span can still parent spans that
+  // are created later, as OpenTelemetry allows.
+  workerd::SpanParent childParent;
+  workerd::SpanBuilder builder;
+};
+
+class InvocationSpanState final: public SpanState {
+ public:
+  InvocationSpanState(workerd::SpanParent parent,
+      kj::Maybe<kj::Own<BaseTracer::WeakRef>> tracer,
+      kj::Maybe<tracing::InvocationSpanContext> context)
+      : parent(kj::mv(parent)),
+        tracer(kj::mv(tracer)),
+        context(kj::mv(context)) {}
+
+  // We should treat span.end() as a no-op for the invocation span because
+  // this lifecycle is controlled by the runtime.
+  void end() override {}
+
+  bool getIsTraced() override {
+    if (context != kj::none && parent.isObserved()) {
+      KJ_IF_SOME(value, tracer) {
+        return value->runIfAlive([](BaseTracer&) {});
+      }
+    }
+    return false;
+  }
+
+  kj::Maybe<tracing::SpanContext> getSpanContext() override {
+    KJ_IF_SOME(value, context) {
+      return tracing::SpanContext(value.getTraceId(), value.getSpanId(), value.getTraceFlags());
+    }
+    return kj::none;
+  }
+
+  workerd::SpanParent makeSpanParent() override {
+    return parent.addRef();
+  }
+
+  void updateName(kj::ConstString operationName) override {
+    KJ_IF_SOME(valueContext, context) {
+      KJ_IF_SOME(valueTracer, tracer) {
+        valueTracer->runIfAlive([&](BaseTracer& tracer) {
+          tracer.addSpanUpdate(
+              valueContext.getSpanId(), tracing::SpanUpdate(kj::mv(operationName)));
+        });
+      }
+    }
+  }
+
+  void setStatus(tracing::SpanStatus status) override {
+    KJ_IF_SOME(valueContext, context) {
+      KJ_IF_SOME(valueTracer, tracer) {
+        valueTracer->runIfAlive([&](BaseTracer& tracer) {
+          tracer.addSpanUpdate(valueContext.getSpanId(), tracing::SpanUpdate(kj::mv(status)));
+        });
+      }
+    }
+  }
+
+ protected:
+  bool canRecordAttributes() override {
+    return getIsTraced();
+  }
+
+  void recordAttribute(kj::String key, TagValue value) override {
+    KJ_IF_SOME(valueContext, context) {
+      KJ_IF_SOME(valueTracer, tracer) {
+        valueTracer->runIfAlive([&](BaseTracer& tracer) {
+          KJ_SWITCH_ONEOF(value) {
+            KJ_CASE_ONEOF(b, bool) {
+              tracer.addSpanAttribute(valueContext, kj::ConstString(kj::mv(key)), b);
+            }
+            KJ_CASE_ONEOF(d, double) {
+              tracer.addSpanAttribute(valueContext, kj::ConstString(kj::mv(key)), d);
+            }
+            KJ_CASE_ONEOF(s, kj::String) {
+              tracer.addSpanAttribute(
+                  valueContext, kj::ConstString(kj::mv(key)), kj::ConstString(kj::mv(s)));
+            }
+          }
+        });
+      }
+    }
+  }
+
+  void recordExceptionImpl(kj::Maybe<tracing::Exception::Code> code,
+      kj::String name,
+      kj::String message,
+      kj::Maybe<kj::String> stack) override {
+    KJ_IF_SOME(valueContext, context) {
+      KJ_IF_SOME(observer, parent.getObserver()) {
+        auto timestamp = observer.getTime();
+        KJ_IF_SOME(valueTracer, tracer) {
+          valueTracer->runIfAlive([&](BaseTracer& tracer) {
+            tracer.addSpanException(valueContext.getSpanId(), timestamp, kj::mv(code), kj::mv(name),
+                kj::mv(message), kj::mv(stack));
+          });
+        }
+      }
+    }
+  }
+
+ private:
+  workerd::SpanParent parent;
+  kj::Maybe<kj::Own<BaseTracer::WeakRef>> tracer;
+  kj::Maybe<tracing::InvocationSpanContext> context;
+};
+
+class NoopSpanState final: public SpanState {
+ public:
+  void end() override {}
+
+  bool getIsTraced() override {
+    return false;
+  }
+
+  kj::Maybe<tracing::SpanContext> getSpanContext() override {
+    return kj::none;
+  }
+
+  workerd::SpanParent makeSpanParent() override {
+    return workerd::SpanParent(nullptr);
+  }
+
+  void updateName(kj::ConstString) override {}
+
+  void setStatus(tracing::SpanStatus) override {}
+
+ protected:
+  bool canRecordAttributes() override {
+    return false;
+  }
+
+  void recordAttribute(kj::String, TagValue) override {}
+
+  void recordExceptionImpl(
+      kj::Maybe<tracing::Exception::Code>, kj::String, kj::String, kj::Maybe<kj::String>) override {
+  }
+};
+
+// ======================================================================================
+// Span
+
+Span::Span(kj::OneOf<kj::Own<SpanState>, IoOwn<SpanState>> state): state(kj::mv(state)) {}
+
+bool Span::getIsTraced() {
+  KJ_SWITCH_ONEOF(state) {
+    KJ_CASE_ONEOF(s, kj::Own<SpanState>) {
+      return s->getIsTraced();
+    }
+    KJ_CASE_ONEOF(s, IoOwn<SpanState>) {
+      return s->getIsTraced();
+    }
+  }
+  KJ_UNREACHABLE;
+}
+
+TracingSpanContext Span::spanContext() {
+  KJ_SWITCH_ONEOF(state) {
+    KJ_CASE_ONEOF(s, kj::Own<SpanState>) {
+      return toTracingSpanContext(s->getSpanContext());
+    }
+    KJ_CASE_ONEOF(s, IoOwn<SpanState>) {
+      return toTracingSpanContext(s->getSpanContext());
+    }
+  }
+  KJ_UNREACHABLE;
+}
+
+jsg::Ref<Span> Span::setAttribute(jsg::Lock& js, kj::String key, jsg::Optional<TagValue> value) {
+  kj::Maybe<TagValue> maybeValue;
+  KJ_IF_SOME(v, value) {
+    maybeValue = kj::mv(v);
+  }
+  KJ_SWITCH_ONEOF(state) {
+    KJ_CASE_ONEOF(s, kj::Own<SpanState>) {
+      s->setAttribute(kj::mv(key), kj::mv(maybeValue));
+    }
+    KJ_CASE_ONEOF(s, IoOwn<SpanState>) {
+      s->setAttribute(kj::mv(key), kj::mv(maybeValue));
+    }
+  }
+  return JSG_THIS;
+}
+
+jsg::Ref<Span> Span::setAttributes(jsg::Lock& js, jsg::Dict<jsg::Optional<TagValue>> attributes) {
+  for (auto& field: attributes.fields) {
+    setAttribute(js, kj::mv(field.name), kj::mv(field.value));
+  }
+  return JSG_THIS;
+}
+
+void Span::recordException(
+    jsg::Lock& js, jsg::Value exception, const jsg::TypeHandler<ExceptionData>& exceptionHandler) {
+  if (!getIsTraced()) {
+    return;
+  }
+
+  kj::String name;
+  kj::String message;
+  kj::Maybe<kj::String> stack;
+  kj::Maybe<tracing::Exception::Code> code;
+  auto handle = exception.getHandle(js);
+  if (handle->IsString()) {
+    message = jsg::JsValue(handle).toString(js);
+  } else if (handle->IsObject()) {
+    auto data = KJ_REQUIRE_NONNULL(exceptionHandler.tryUnwrap(js, handle));
+    bool hasRequiredField =
+        data.code != kj::none || data.name != kj::none || data.message != kj::none;
+    if (!hasRequiredField) {
+      return;
+    }
+    KJ_IF_SOME(c, data.code) {
+      KJ_SWITCH_ONEOF(c) {
+        KJ_CASE_ONEOF(s, kj::String) {
+          code = kj::mv(s);
+        }
+        KJ_CASE_ONEOF(n, double) {
+          code = n;
+        }
+      }
+    }
+    KJ_IF_SOME(n, data.name) {
+      name = kj::mv(n);
+    }
+    KJ_IF_SOME(m, data.message) {
+      message = kj::mv(m);
+    }
+    KJ_IF_SOME(s, data.stack) {
+      stack = kj::mv(s);
+    }
+  } else {
+    return;
+  }
+
+  KJ_SWITCH_ONEOF(state) {
+    KJ_CASE_ONEOF(s, kj::Own<SpanState>) {
+      s->recordException(kj::mv(code), kj::mv(name), kj::mv(message), kj::mv(stack));
+    }
+    KJ_CASE_ONEOF(s, IoOwn<SpanState>) {
+      s->recordException(kj::mv(code), kj::mv(name), kj::mv(message), kj::mv(stack));
+    }
+  }
+}
+
+jsg::Ref<Span> Span::updateName(jsg::Lock& js, kj::String operationName) {
+  if (operationName.size() > MAX_USER_OPERATION_NAME_BYTES) {
+    operationName = kj::str(operationName.first(MAX_USER_OPERATION_NAME_BYTES));
+  }
+  auto name = kj::ConstString(kj::mv(operationName));
+  KJ_SWITCH_ONEOF(state) {
+    KJ_CASE_ONEOF(s, kj::Own<SpanState>) {
+      s->updateName(kj::mv(name));
+    }
+    KJ_CASE_ONEOF(s, IoOwn<SpanState>) {
+      s->updateName(kj::mv(name));
+    }
+  }
+  return JSG_THIS;
+}
+
+jsg::Ref<Span> Span::setStatus(jsg::Lock& js, TracingSpanStatus status) {
+  tracing::SpanStatusCode code;
+  if (status.code == "unset") {
+    code = tracing::SpanStatusCode::UNSET;
+  } else if (status.code == "ok") {
+    code = tracing::SpanStatusCode::OK;
+  } else if (status.code == "error") {
+    code = tracing::SpanStatusCode::ERROR;
+  } else {
+    JSG_FAIL_REQUIRE(TypeError, "Span status code must be 'unset', 'ok', or 'error'.");
+  }
+
+  kj::Maybe<kj::ConstString> message;
+  if (code == tracing::SpanStatusCode::ERROR) {
+    KJ_IF_SOME(value, status.message) {
+      if (value.size() > MAX_SPAN_BYTES) {
+        value = kj::str(value.first(MAX_SPAN_BYTES));
+      }
+      message = kj::ConstString(kj::mv(value));
+    }
+  }
+  tracing::SpanStatus internalStatus(code, kj::mv(message));
+  KJ_SWITCH_ONEOF(state) {
+    KJ_CASE_ONEOF(s, kj::Own<SpanState>) {
+      s->setStatus(kj::mv(internalStatus));
+    }
+    KJ_CASE_ONEOF(s, IoOwn<SpanState>) {
+      s->setStatus(kj::mv(internalStatus));
+    }
+  }
+  return JSG_THIS;
+}
+
+void Span::end() {
+  KJ_SWITCH_ONEOF(state) {
+    KJ_CASE_ONEOF(s, kj::Own<SpanState>) {
+      s->end();
+    }
+    KJ_CASE_ONEOF(s, IoOwn<SpanState>) {
+      s->end();
+    }
+  }
+}
+
+workerd::SpanParent Span::makeSpanParent() {
+  KJ_SWITCH_ONEOF(state) {
+    KJ_CASE_ONEOF(s, kj::Own<SpanState>) {
+      return s->makeSpanParent();
+    }
+    KJ_CASE_ONEOF(s, IoOwn<SpanState>) {
+      return s->makeSpanParent();
+    }
+  }
+  KJ_UNREACHABLE;
+}
+
+}  // namespace workerd::api::user_tracing
+
+// ======================================================================================
+// Tracing
+
+namespace workerd::api {
+
+namespace {
+
+enum class SpanEndMode { AUTO_END, MANUAL_END };
+
+struct CreatedSpan {
+  jsg::Ref<user_tracing::Span> span;
+  kj::Maybe<SpanParent> childSpanForAsyncContext;
+};
+
+CreatedSpan createSpan(jsg::Lock& js, kj::String operationName) {
+  // We use qualified `user_tracing::Span` / `user_tracing::SpanState` throughout because an
+  // unqualified `Span` in this namespace resolves to workerd::Span (the runtime span struct),
+  // which is a different type.
+
+  // Cap operation name length at the API boundary so every downstream submitter sees the
+  // truncated value.
+  if (operationName.size() > user_tracing::MAX_USER_OPERATION_NAME_BYTES) {
+    operationName = kj::str(operationName.first(user_tracing::MAX_USER_OPERATION_NAME_BYTES));
+  }
+
+  kj::Own<user_tracing::SpanState> state;
+  kj::Maybe<SpanParent> childSpanForAsyncContext;
+  bool hasIoContext = IoContext::hasCurrent();
+
+  if (hasIoContext) {
+    auto& context = IoContext::current();
+    SpanParent parent = context.getCurrentUserTraceSpan();
+
+    if (parent.isObserved()) {
+      KJ_IF_SOME(observer, parent.getObserver()) {
+        // newChildFromUserCode (vs newChild) signals user-origin to the submitter so it can
+        // skip the operation-name allowlist that gates runtime spans.
+        auto childObserver = observer.newChildFromUserCode();
+        state = kj::refcounted<user_tracing::UserSpanState>(
+            kj::mv(childObserver), kj::ConstString(kj::heapString(operationName)));
+        // Capture a SpanParent for the child so startActiveSpan() / enterSpan() can push it onto
+        // the AsyncContextFrame. Safe to carry across the request boundary thanks to
+        // BaseTracer::WeakRef in the submitter - stale parents cannot pin the tracer.
+        childSpanForAsyncContext = state->makeSpanParent();
+      } else {
+        state = kj::refcounted<user_tracing::NoopSpanState>();
+      }
+    } else {
+      state = kj::refcounted<user_tracing::NoopSpanState>();
+    }
+  } else {
+    // No IoContext: create a no-op span.
+    state = kj::refcounted<user_tracing::NoopSpanState>();
+  }
+
+  // Wrap state in IoOwn (when inside an IoContext) so destruction funnels through the
+  // IoContext's delete queue and cannot cross threads. Outside an IoContext, fall back to
+  // kj::Own; tracing without an IoContext is a no-op tracing-wise.
+  auto span = [&]() -> jsg::Ref<user_tracing::Span> {
+    if (hasIoContext) {
+      auto ownedState = IoContext::current().addObject(kj::mv(state));
+      return js.alloc<user_tracing::Span>(kj::mv(ownedState));
+    }
+    return js.alloc<user_tracing::Span>(kj::mv(state));
+  }();
+
+  return CreatedSpan{
+    .span = kj::mv(span), .childSpanForAsyncContext = kj::mv(childSpanForAsyncContext)};
+}
+
+// Runs `func` with `span` as the active span. The JS span object is stored for getActiveSpan(), and
+// `parent`, if any, becomes the current user trace span that built-in instrumentation and new user
+// spans attach to (via IoContext::getCurrentUserTraceSpan()). The StorageScope RAII objects restore
+// the prior async-context storage on scope exit; any async continuations captured during `func`
+// will already have snapshotted the new frame and will see `span` as "current".
+template <typename Func>
+v8::Local<v8::Value> runWithActiveSpan(jsg::Lock& js,
+    jsg::Ref<user_tracing::Span>& span,
+    kj::Maybe<SpanParent> parent,
+    const jsg::TypeHandler<jsg::Ref<user_tracing::Span>>& spanHandler,
+    Func&& func) {
+  auto runWithJsSpan = [&]() -> v8::Local<v8::Value> {
+    auto activeSpan = spanHandler.wrap(js, span.addRef());
+    jsg::AsyncContextFrame::StorageScope activeSpanScope(js,
+        jsg::IsolateBase::from(js.v8Isolate).getActiveSpanAsyncContextKey(), js.v8Ref(activeSpan));
+    return func();
+  };
+
+  KJ_IF_SOME(p, kj::mv(parent)) {
+    auto& context = IoContext::current();
+    jsg::AsyncContextFrame::StorageScope traceScope =
+        context.makeUserAsyncTraceScope(context.getCurrentLock(), kj::mv(p));
+    return runWithJsSpan();
+  } else {
+    return runWithJsSpan();
+  }
+}
+
+// Calls callback(...args) with the global object as `this`.
+v8::Local<v8::Value> invokeCallback(
+    jsg::Lock& js, v8::Local<v8::Function> callback, jsg::Arguments<jsg::Value>& args) {
+  v8::LocalVector<v8::Value> argv(js.v8Isolate);
+  for (auto& arg: args) {
+    argv.push_back(arg.getHandle(js));
+  }
+  auto v8Context = js.v8Context();
+  return jsg::check(callback->Call(v8Context, v8Context->Global(), argv.size(), argv.data()));
+}
+
+v8::Local<v8::Value> runSpan(jsg::Lock& js,
+    kj::String operationName,
+    v8::Local<v8::Function> callback,
+    jsg::Arguments<jsg::Value> args,
+    const jsg::TypeHandler<jsg::Ref<user_tracing::Span>>& spanHandler,
+    const jsg::TypeHandler<jsg::Promise<jsg::Value>>* valuePromiseHandler,
+    SpanEndMode endMode) {
+  auto createdSpan = createSpan(js, kj::mv(operationName));
+  auto jsSpan = kj::mv(createdSpan.span);
+
+  // Build argv for the callback: (span, ...args).
+  v8::LocalVector<v8::Value> argv(js.v8Isolate);
+  argv.push_back(spanHandler.wrap(js, jsSpan.addRef()));
+  for (auto& arg: args) {
+    argv.push_back(arg.getHandle(js));
+  }
+
+  auto executeCallback = [&]() -> v8::Local<v8::Value> {
+    auto v8Context = js.v8Context();
+    return js.tryCatch([&]() -> v8::Local<v8::Value> {
+      auto result =
+          jsg::check(callback->Call(v8Context, v8Context->Global(), argv.size(), argv.data()));
+
+      if (endMode == SpanEndMode::MANUAL_END) {
+        return result;
+      }
+
+      // If the callback returned a promise, defer end() until settlement.
+      if (result->IsPromise()) {
+        KJ_ASSERT(valuePromiseHandler != nullptr);
+        auto promise = KJ_ASSERT_NONNULL(valuePromiseHandler->tryUnwrap(js, result))
+                           .then(js,
+                               [jsSpan = jsSpan.addRef()](
+                                   jsg::Lock& js, jsg::Value value) mutable -> jsg::Value {
+          jsSpan->end();
+          return kj::mv(value);
+        },
+                               [jsSpan = jsSpan.addRef()](
+                                   jsg::Lock& js, jsg::Value exception) mutable -> jsg::Value {
+          jsSpan->end();
+          js.throwException(kj::mv(exception));
+        });
+        // If the promise never settles, the span will still be submitted when the IoOwn is
+        // destroyed (via ~SpanState calling end()), though this is a corner case and should
+        // generally be avoided by users.
+        return valuePromiseHandler->wrap(js, kj::mv(promise));
+      } else {
+        // Synchronous success: end immediately.
+        jsSpan->end();
+        return result;
+      }
+    }, [&](jsg::Value exception) -> v8::Local<v8::Value> {
+      if (endMode == SpanEndMode::AUTO_END) {
+        // Synchronous exception: end then rethrow.
+        jsSpan->end();
+      }
+      js.throwException(kj::mv(exception));
+    });
+  };
+
+  // childSpanForAsyncContext is only set when we have an IoContext and an observed child span.
+  return runWithActiveSpan(
+      js, jsSpan, kj::mv(createdSpan.childSpanForAsyncContext), spanHandler, executeCallback);
+}
+
+}  // namespace
+
+v8::Local<v8::Value> Tracing::enterSpan(jsg::Lock& js,
+    kj::String operationName,
+    v8::Local<v8::Function> callback,
+    jsg::Arguments<jsg::Value> args,
+    const jsg::TypeHandler<jsg::Ref<user_tracing::Span>>& spanHandler,
+    const jsg::TypeHandler<jsg::Promise<jsg::Value>>& valuePromiseHandler) {
+  return runSpan(js, kj::mv(operationName), callback, kj::mv(args), spanHandler,
+      &valuePromiseHandler, SpanEndMode::AUTO_END);
+}
+
+v8::Local<v8::Value> Tracing::startActiveSpan(jsg::Lock& js,
+    kj::String operationName,
+    v8::Local<v8::Function> callback,
+    jsg::Arguments<jsg::Value> args,
+    const jsg::TypeHandler<jsg::Ref<user_tracing::Span>>& spanHandler) {
+  return runSpan(js, kj::mv(operationName), callback, kj::mv(args), spanHandler, nullptr,
+      SpanEndMode::MANUAL_END);
+}
+
+jsg::Ref<user_tracing::Span> Tracing::startSpan(jsg::Lock& js, kj::String operationName) {
+  return createSpan(js, kj::mv(operationName)).span;
+}
+
+v8::Local<v8::Value> Tracing::withActiveSpan(jsg::Lock& js,
+    jsg::Ref<user_tracing::Span> span,
+    v8::Local<v8::Function> callback,
+    jsg::Arguments<jsg::Value> args,
+    const jsg::TypeHandler<jsg::Ref<user_tracing::Span>>& spanHandler) {
+  // An unobserved parent would suppress built-in instrumentation inside the callback, so only an
+  // observed parent replaces the current one.
+  kj::Maybe<SpanParent> parent;
+  if (IoContext::hasCurrent()) {
+    auto spanParent = span->makeSpanParent();
+    if (spanParent.isObserved()) {
+      parent = kj::mv(spanParent);
+    }
+  }
+
+  return runWithActiveSpan(js, span, kj::mv(parent), spanHandler,
+      [&]() -> v8::Local<v8::Value> { return invokeCallback(js, callback, args); });
+}
+
+jsg::Optional<jsg::Ref<user_tracing::Span>> Tracing::getActiveSpan(
+    jsg::Lock& js, const jsg::TypeHandler<jsg::Ref<user_tracing::Span>>& spanHandler) {
+  // case: a user has an active span
+  //
+  // tracing.startActiveSpan('operation', async (span) => {
+  //   tracing.getActiveSpan() === span;
+  // });
+  KJ_IF_SOME(frame, jsg::AsyncContextFrame::current(js)) {
+    auto key = jsg::IsolateBase::from(js.v8Isolate).getActiveSpanAsyncContextKey();
+    KJ_IF_SOME(value, frame.get(*key)) {
+      KJ_IF_SOME(span, spanHandler.tryUnwrap(js, value.getHandle(js))) {
+        return kj::mv(span);
+      }
+    }
+  }
+
+  // case: outside an invocation
+  if (!IoContext::hasCurrent()) {
+    return kj::none;
+  }
+
+  // case: inside an invocation with no explicit child span set
+  // this is cached so that repeated calls return the same reference
+  auto& ioContext = IoContext::current();
+  KJ_IF_SOME(frame, jsg::AsyncContextFrame::current(js)) {
+    auto key = ioContext.getCurrentLock().getUserTraceAsyncContextKey();
+    KJ_IF_SOME(value, frame.get(*key)) {
+      auto holder = value.getHandle(js).As<v8::Object>();
+      auto& scopeState = jsg::unwrapOpaqueRef<IoContext::UserTraceScopeState>(js.v8Isolate, holder);
+      auto cacheKey = v8::Private::ForApi(js.v8Isolate, js.strIntern("workerd.activeSpan"_kjc));
+      if (jsg::check(holder->HasPrivate(js.v8Context(), cacheKey))) {
+        auto cached = jsg::check(holder->GetPrivate(js.v8Context(), cacheKey));
+        KJ_IF_SOME(span, spanHandler.tryUnwrap(js, cached)) {
+          return kj::mv(span);
+        }
+      }
+
+      kj::Own<user_tracing::SpanState> state;
+      KJ_SWITCH_ONEOF(scopeState) {
+        KJ_CASE_ONEOF(id, IoContext::Id) {
+          if (!id.isCurrent()) IoContext::throwNotCurrentJsError(typeid(UserTraceAsyncContext));
+          state = kj::refcounted<user_tracing::NoopSpanState>();
+        }
+        KJ_CASE_ONEOF(asyncContext, IoOwn<UserTraceAsyncContext>) {
+          kj::Maybe<kj::Own<BaseTracer::WeakRef>> tracer;
+          KJ_IF_SOME(value, asyncContext->getTracer()) {
+            tracer = value.addRef();
+          }
+          state = kj::refcounted<user_tracing::InvocationSpanState>(asyncContext->getSpan(),
+              kj::mv(tracer), asyncContext->getInvocationSpanContext().map([](auto& context) {
+            return context.clone();
+          }));
+        }
+      }
+      auto span = js.alloc<user_tracing::Span>(ioContext.addObject(kj::mv(state)));
+      auto wrapped = spanHandler.wrap(js, span.addRef());
+      jsg::check(holder->SetPrivate(js.v8Context(), cacheKey, wrapped));
+      return span;
+    }
+  }
+
+  return kj::none;
+}
+
+}  // namespace workerd::api

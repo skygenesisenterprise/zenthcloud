@@ -1,0 +1,47 @@
+[
+  {
+    "directory": "src",
+    "globs": ["*.c++", "*.h"],
+    "formatter": "clang-format"
+  },
+  {
+    "directory": "tools",
+    "globs": ["*.c++", "*.h"],
+    "formatter": "clang-format"
+  },
+  {
+    "directory": "src",
+    "globs": ["*.js", "*.ts", "*.cjs", "*.ejs", "*.mjs"],
+    "formatter": "prettier"
+  },
+  {
+    "directory": "fuzzilli",
+    "globs": ["*.js"],
+    "formatter": "prettier"
+  },
+  {
+    "directory": "src",
+    "globs": ["*.json", "*.jsonc"],
+    "formatter": "prettier"
+  },
+  {
+    "directory": ".",
+    "globs": ["*.py"],
+    "formatter": "ruff"
+  },
+  {
+    "directory": ".",
+    "globs": ["*.bzl", "BUILD", "BUILD.*", "*.bazel"],
+    "formatter": "buildifier"
+  },
+  {
+    "directory": "src",
+    "globs": ["*.rs"],
+    "formatter": "rustfmt"
+  },
+  {
+    "directory": "types",
+    "globs": ["*.rs"],
+    "formatter": "rustfmt"
+  }
+]

@@ -1,0 +1,23 @@
+# src/workerd/api/node/
+
+C++ implementations of Node.js built-in modules. Each module = JSG-bound class registered via `NODEJS_MODULES(V)` macro in `node.h`. TypeScript counterpart lives in `src/node/`. Exception: `diagnostics-channel` only forwards messages to tail workers (`publishToTracer`); the module itself is in `src/node/diagnostics_channel.ts`.
+
+Some `node-internal:` modules (`dns`, `inspector`, `url`) are implemented in Rust instead, in `src/rust/api/`, and registered by `register_nodejs_modules()` in `src/rust/api/lib.rs`, not in `NODEJS_MODULES`. See `src/rust/AGENTS.md`.
+
+## BUILD TARGETS
+
+- **`node-core`**: buffer, i18n. **No `//src/workerd/io` dep** — do not add one. Depends on the `i18n` Rust crate, `nbytes`, `simdutf`.
+- **`node`**: async-hooks, crypto, diagnostics-channel, module, process, timers, util, zlib-util. Depends on `io`, `ncrypto`, `zstd`, `kj-brotli`. Depends on `node-core`.
+- **`exceptions`**: Standalone Node.js exception types; dep of `node-core`.
+
+## MODULE REGISTRATION
+
+1. Add `JSG_RESOURCE_TYPE` class in `<module>.h` + `<module>.c++`
+2. Define `EW_NODE_<MODULE>_ISOLATE_TYPES` macro in header
+3. Add `V(ClassName, "node-internal:<name>")` to `NODEJS_MODULES(V)` in `node.h` (or `NODEJS_MODULES_EXPERIMENTAL(V)` for staging)
+4. Append to `EW_NODE_ISOLATE_TYPES` at bottom of `node.h`
+5. Per-module compat flags are gated in **two places that must stay in sync**: `registerNodeJsCompatModules()` (legacy registry) and `getExternalNodeJsCompatModuleBundle()` (new module registry), both in `node.h` — add the `isNode*Module()` + `featureFlags.getEnable*()` check to **both** filter lists or the two registries will expose different module sets for the same flags
+
+## TESTING
+
+Tests in `tests/`. Naming: `<module>-test.js` + `<module>-test.wd-test`; `-nodejs-` infix when needing compat flags. All tests set `compatibilityFlags = ["nodejs_compat", "nodejs_compat_v2", "experimental"]`. Network tests (net, tls, http) use sidecar `js_binary` targets. `fixtures/` has 46 PEM files for crypto. `process-stdio` tests use `sh_test` with `.expected_stdout`/`.expected_stderr`. C++ unit test: `buffer-test.c++` via `kj_test`.

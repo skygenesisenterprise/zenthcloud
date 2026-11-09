@@ -1,0 +1,41 @@
+# Cross-implementation stream transfer with a legacy runner and TypeScript peer. This reverses
+# js-rpc-streams-crossflag-test.wd-test so streams originating on either implementation are tested.
+# See the header comment in the JS file.
+using Workerd = import "/workerd/workerd.capnp";
+
+const unitTests :Workerd.Config = (
+  services = [
+    ( name = "runner",
+      worker = (
+        modules = [
+          (name = "worker", esModule = embed "js-rpc-streams-crossflag-test.js")
+        ],
+        compatibilityFlags = [
+          "nodejs_compat",
+          "experimental",
+          "streams_enable_constructors",
+          "transformstream_enable_standard_constructor",
+        ],
+        bindings = [
+          (name = "PEER", service = (name = "peer", entrypoint = "Peer")),
+          (name = "HTTP", service = "runner"),
+        ],
+      )
+    ),
+    ( name = "peer",
+      worker = (
+        bindings = [(name = "HTTP", service = "runner")],
+        modules = [
+          (name = "worker", esModule = embed "js-rpc-streams-crossflag-test.js")
+        ],
+        compatibilityFlags = [
+          "nodejs_compat",
+          "experimental",
+          "streams_enable_constructors",
+          "transformstream_enable_standard_constructor",
+          "typescript_implemented_streams",
+        ],
+      )
+    ),
+  ],
+);

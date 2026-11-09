@@ -1,0 +1,539 @@
+// Copyright (c) 2026 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+// Prototype pollution the byte-stream machinery must not observe: a
+// patched byte controller error(), a patched BYOB reader read(), an
+// ArrayBuffer species constructor, Object.prototype members on a native
+// body's C++ source, and an Object.prototype.then getter beyond the one
+// lookup the user's read promise makes. The C++ implementation reads none
+// of these; the TypeScript one must not either. Every mutation is undone
+// before any assertion runs. What that getter does to the stream must not
+// reach the other reads a cancel() or close() answered, nor change the
+// order in which reads resolve.
+
+import { strictEqual, deepStrictEqual, rejects } from 'node:assert';
+import { usingTsImpl } from 'which-impl';
+
+// A patched controller error() must not stop a pull rejection from
+// erroring the stream.
+export const patchedByteControllerErrorStillErrors = {
+  async test() {
+    const proto = ReadableByteStreamController.prototype;
+    const saved = proto.error;
+    let calls = 0;
+    proto.error = function () {
+      calls++;
+    };
+    let outcome;
+    try {
+      const rs = new ReadableStream({
+        type: 'bytes',
+        pull() {
+          return Promise.reject(new Error('boom'));
+        },
+      });
+      const reader = rs.getReader();
+      // Bounded: a read that pends would otherwise leave the patch in place
+      // for the tests that follow.
+      outcome = await Promise.race([
+        rejects(reader.read(), { message: 'boom' }).then(() =>
+          rejects(reader.closed, { message: 'boom' })
+        ),
+        scheduler.wait(500).then(() => 'read pended'),
+      ]);
+    } finally {
+      proto.error = saved;
+    }
+    strictEqual(outcome, undefined);
+    strictEqual(calls, 0);
+  },
+};
+
+// readAtLeast() does not dispatch through the reader's read().
+export const readAtLeastIgnoresPatchedRead = {
+  async test() {
+    const proto = ReadableStreamBYOBReader.prototype;
+    const saved = proto.read;
+    proto.read = function () {
+      throw new Error('patched');
+    };
+    let result;
+    try {
+      const rs = new ReadableStream({
+        type: 'bytes',
+        start(c) {
+          c.enqueue(new Uint8Array([1, 2, 3, 4]));
+          c.close();
+        },
+      });
+      result = await rs
+        .getReader({ mode: 'byob' })
+        .readAtLeast(4, new Uint8Array(4));
+    } finally {
+      proto.read = saved;
+    }
+    strictEqual(result.done, false);
+    deepStrictEqual([...result.value], [1, 2, 3, 4]);
+  },
+};
+
+// Internal byte copies (a tee branch's copy of a shared chunk, the
+// unaligned remainder of a BYOB respond()) never consult the ArrayBuffer or
+// %TypedArray% species constructors.
+export const speciesNotConsultedByInternalCopies = {
+  async test() {
+    const TypedArray = Object.getPrototypeOf(Uint8Array);
+    const saved = [
+      [
+        ArrayBuffer,
+        Object.getOwnPropertyDescriptor(ArrayBuffer, Symbol.species),
+      ],
+      [TypedArray, Object.getOwnPropertyDescriptor(TypedArray, Symbol.species)],
+    ];
+    let calls = 0;
+    for (const [ctor] of saved) {
+      Object.defineProperty(ctor, Symbol.species, {
+        get() {
+          calls++;
+          return ctor;
+        },
+        configurable: true,
+      });
+    }
+    let teed;
+    let aligned;
+    let remainder;
+    try {
+      // Tee: the first branch reads while the second still needs the
+      // chunk, so it receives a copy.
+      const [a, b] = new ReadableStream({
+        type: 'bytes',
+        start(c) {
+          c.enqueue(new Uint8Array([1, 2, 3, 4]));
+          c.close();
+        },
+      }).tee();
+      const fromA = await a.getReader().read();
+      const fromB = await b.getReader().read();
+      teed = [Array.from(fromA.value), Array.from(fromB.value)];
+
+      // respond(3) into a Uint16Array view: one element is delivered and
+      // the odd byte is copied back into the queue.
+      let controller;
+      const rs = new ReadableStream({
+        type: 'bytes',
+        start(c) {
+          controller = c;
+        },
+      });
+      const reader = rs.getReader({ mode: 'byob' });
+      const pending = reader.read(new Uint16Array(2));
+      new Uint8Array(controller.byobRequest.view.buffer).set([5, 6, 7], 0);
+      controller.byobRequest.respond(3);
+      const first = (await pending).value;
+      aligned = Array.from(
+        new Uint8Array(first.buffer, first.byteOffset, first.byteLength)
+      );
+      remainder = Array.from((await reader.read(new Uint8Array(1))).value);
+    } finally {
+      for (const [ctor, desc] of saved) {
+        Object.defineProperty(ctor, Symbol.species, desc);
+      }
+    }
+    strictEqual(calls, 0);
+    deepStrictEqual(teed, [
+      [1, 2, 3, 4],
+      [1, 2, 3, 4],
+    ]);
+    deepStrictEqual(aligned, [5, 6]);
+    deepStrictEqual(remainder, [7]);
+  },
+};
+
+// A native body's C++ source declares neither type nor
+// autoAllocateChunkSize; Object.prototype must not supply them.
+export const nativeSourceIgnoresPollutedMembers = {
+  async test() {
+    Object.defineProperty(Object.prototype, 'type', {
+      value: 'bytes',
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(Object.prototype, 'autoAllocateChunkSize', {
+      value: 16,
+      configurable: true,
+      writable: true,
+    });
+    let body;
+    let result;
+    try {
+      body = new Response('hello').body;
+      result = await body.getReader().read();
+    } finally {
+      delete Object.prototype.type;
+      delete Object.prototype.autoAllocateChunkSize;
+    }
+    strictEqual('type' in {}, false, 'pollution must be removed');
+    strictEqual(result.done, false);
+    strictEqual(new TextDecoder().decode(result.value), 'hello');
+  },
+};
+
+// Resolving the promise a byte stream's read returns looks `then` up on its
+// result once: default reads (waiting, or through autoAllocateChunkSize),
+// BYOB reads answered from the queue or waiting (readAtLeast too, and at
+// close), and reads of a native body. Every result is an ordinary object.
+export const thenGetterFiresOncePerByteRead = {
+  async test() {
+    const byteSource = (extra = {}) => {
+      let controller;
+      const rs = new ReadableStream({
+        type: 'bytes',
+        ...extra,
+        start(c) {
+          controller = c;
+        },
+      });
+      return { rs, controller };
+    };
+    const cases = {
+      defaultWaitsForEnqueue() {
+        const { rs, controller } = byteSource();
+        const reader = rs.getReader();
+        return async () => {
+          const read = reader.read();
+          controller.enqueue(new Uint8Array([1]));
+          return [await read];
+        };
+      },
+      defaultAutoAllocate() {
+        const { rs, controller } = byteSource({ autoAllocateChunkSize: 8 });
+        const reader = rs.getReader();
+        return async () => {
+          const read = reader.read();
+          controller.byobRequest.view[0] = 1;
+          controller.byobRequest.respond(1);
+          return [await read];
+        };
+      },
+      byobQueued() {
+        const { rs, controller } = byteSource();
+        controller.enqueue(new Uint8Array([1]));
+        const reader = rs.getReader({ mode: 'byob' });
+        return async () => [await reader.read(new Uint8Array(4))];
+      },
+      byobWaitsForEnqueue() {
+        const { rs, controller } = byteSource();
+        const reader = rs.getReader({ mode: 'byob' });
+        return async () => {
+          const read = reader.read(new Uint8Array(4));
+          controller.enqueue(new Uint8Array([1]));
+          return [await read];
+        };
+      },
+      readAtLeastAcrossEnqueues() {
+        const { rs, controller } = byteSource();
+        const reader = rs.getReader({ mode: 'byob' });
+        return async () => {
+          const read = reader.readAtLeast(2, new Uint8Array(4));
+          controller.enqueue(new Uint8Array([1]));
+          controller.enqueue(new Uint8Array([2]));
+          return [await read];
+        };
+      },
+      byobWaitsForClose() {
+        const { rs, controller } = byteSource();
+        const reader = rs.getReader({ mode: 'byob' });
+        return async () => {
+          const read = reader.read(new Uint8Array(4));
+          controller.close();
+          controller.byobRequest?.respond(0);
+          return [await read];
+        };
+      },
+      nativeBody() {
+        const reader = new Response('abc').body.getReader();
+        return async () => [await reader.read(), await reader.read()];
+      },
+      nativeBodyByob() {
+        const reader = new Response('abc').body.getReader({ mode: 'byob' });
+        return async () => [await reader.read(new Uint8Array(8))];
+      },
+    };
+    const perRead = { nativeBody: 2 };
+    for (const [name, setup] of Object.entries(cases)) {
+      const op = setup();
+      let fired = 0;
+      let results;
+      Object.defineProperty(Object.prototype, 'then', {
+        get() {
+          if (Object.hasOwn(this, 'done')) {
+            fired++;
+          }
+          return undefined;
+        },
+        configurable: true,
+      });
+      try {
+        results = await op();
+      } finally {
+        delete Object.prototype.then;
+      }
+      strictEqual('then' in {}, false, 'interceptor must be removed');
+      strictEqual(fired, perRead[name] ?? 1, `${name}: ${fired}`);
+      for (const result of results) {
+        strictEqual(Object.getPrototypeOf(result), Object.prototype, name);
+      }
+    }
+  },
+};
+
+// A then getter that releases the reader from the first read's result,
+// while cancel() or close() settles the reader's pending reads: either call
+// answers every read at once, so the next read still resolves done rather
+// than rejecting with the release. Default, autoAllocateChunkSize and BYOB
+// reads, at cancel() and close(); BYOB reads at a close() the source
+// answers with respond(0) as well (C++ settles them at close(), and has no
+// byobRequest after it).
+export const thenGetterReleasesReaderWhileByteReadsSettle = {
+  async test() {
+    const cancel = (reader) => reader.cancel('bye');
+    const close = (reader, controller) => controller.close();
+    const cases = {
+      defaultCancel: { end: cancel },
+      defaultClose: { end: close },
+      autoAllocateCancel: { source: { autoAllocateChunkSize: 8 }, end: cancel },
+      autoAllocateClose: { source: { autoAllocateChunkSize: 8 }, end: close },
+      byobCancel: { mode: 'byob', end: cancel },
+      byobClose: { mode: 'byob', end: close },
+      byobCloseAndRespond: {
+        mode: 'byob',
+        end: (reader, controller) => {
+          controller.close();
+          controller.byobRequest?.respond(0);
+        },
+      },
+    };
+    for (const [name, { mode, source, end }] of Object.entries(cases)) {
+      let controller;
+      const rs = new ReadableStream({
+        type: 'bytes',
+        ...source,
+        start(c) {
+          controller = c;
+        },
+      });
+      const reader = rs.getReader({ mode });
+      const read = () =>
+        mode === 'byob' ? reader.read(new Uint8Array(4)) : reader.read();
+      const reads = [read(), read()];
+      let fired = 0;
+      Object.defineProperty(Object.prototype, 'then', {
+        get() {
+          if (Object.hasOwn(this, 'done') && fired++ === 0) {
+            reader.releaseLock();
+          }
+          return undefined;
+        },
+        configurable: true,
+      });
+      try {
+        const ended = end(reader, controller);
+        for (const pending of reads) {
+          const result = await Promise.race([
+            pending,
+            scheduler.wait(250).then(() => 'pending'),
+          ]);
+          strictEqual(result.done, true, name);
+        }
+        strictEqual(fired > 0, true, `${name}: the then getter did not run`);
+        await ended;
+      } finally {
+        delete Object.prototype.then;
+      }
+    }
+  },
+};
+
+// A then getter that errors the source from the first result of a tee
+// branch's pending reads, while close() settles them: the close answers
+// them all, so the next read still resolves done. The other branch still
+// holds a chunk, so in TypeScript the error reaches it (ledger #23, on a
+// tee branch). autoAllocateChunkSize and BYOB reads.
+export const thenGetterErrorsSourceWhileBranchByteReadsSettle = {
+  async test() {
+    const cases = {
+      autoAllocate: { source: { autoAllocateChunkSize: 8 } },
+      byob: { mode: 'byob' },
+    };
+    for (const [name, { mode, source }] of Object.entries(cases)) {
+      let controller;
+      const rs = new ReadableStream({
+        type: 'bytes',
+        ...source,
+        start(c) {
+          controller = c;
+        },
+      });
+      const [branch] = rs.tee();
+      controller.enqueue(new Uint8Array([1]));
+      const reader = branch.getReader({ mode });
+      const read = () =>
+        mode === 'byob' ? reader.read(new Uint8Array(4)) : reader.read();
+      strictEqual((await read()).done, false, name);
+      const reads = [read(), read()];
+      const error = new Error('boom');
+      let fired = 0;
+      Object.defineProperty(Object.prototype, 'then', {
+        get() {
+          if (Object.hasOwn(this, 'done') && fired++ === 0) {
+            controller.error(error);
+          }
+          return undefined;
+        },
+        configurable: true,
+      });
+      try {
+        controller.close();
+        for (const pending of reads) {
+          const result = await Promise.race([
+            pending,
+            scheduler.wait(250).then(() => 'pending'),
+          ]);
+          strictEqual(result.done, true, name);
+        }
+        strictEqual(fired > 0, true, `${name}: the then getter did not run`);
+      } finally {
+        delete Object.prototype.then;
+      }
+    }
+  },
+};
+
+// A then getter that closes the source from the first result of an
+// enqueue() that answers reads on both tee branches. In TypeScript the
+// first branch's read resolves first, so the close reaches the second
+// branch together with the chunk: the chunk fills that branch's first two
+// autoAllocateChunkSize reads and the close answers the third done. The
+// reads resolve in the order they were made.
+export const thenGetterClosesSourceWhileBranchByteReadsFill = {
+  async test() {
+    let controller;
+    const rs = new ReadableStream({
+      type: 'bytes',
+      autoAllocateChunkSize: 2,
+      start(c) {
+        controller = c;
+      },
+    });
+    const [first, second] = rs.tee();
+    const firstRead = first.getReader().read();
+    const reader = second.getReader();
+    const order = [];
+    const results = [];
+    const reads = [0, 1, 2].map((i) =>
+      reader.read().then((result) => {
+        order.push(i);
+        results[i] = result;
+      })
+    );
+    let fired = 0;
+    let closeError;
+    Object.defineProperty(Object.prototype, 'then', {
+      get() {
+        if (Object.hasOwn(this, 'done') && fired++ === 0) {
+          try {
+            controller.close();
+          } catch (e) {
+            closeError = e;
+          }
+        }
+        return undefined;
+      },
+      configurable: true,
+    });
+    try {
+      controller.enqueue(new Uint8Array([1, 2, 3, 4]));
+      const settled = await Promise.race([
+        Promise.all(reads),
+        scheduler.wait(250).then(() => 'pending'),
+      ]);
+      strictEqual(settled === 'pending', false, 'a read is still pending');
+      strictEqual(fired > 0, true, 'the then getter did not run');
+    } finally {
+      delete Object.prototype.then;
+    }
+    strictEqual(closeError, undefined);
+    const firstResult = await firstRead;
+    deepStrictEqual([...firstResult.value], [1, 2]);
+    strictEqual(results[0].done, false);
+    deepStrictEqual([...results[0].value], [1, 2]);
+    strictEqual(results[1].done, false);
+    deepStrictEqual([...results[1].value], [3, 4]);
+    strictEqual(results[2].done, true);
+    deepStrictEqual(order, [0, 1, 2]);
+  },
+};
+
+// When a BYOB read's `then` lookup runs relative to the pull it triggers
+// (ledger #34). Answered from the queue, the spec fills the read, pulls
+// (HandleQueueDrain, CallPullIfNeeded) and only then runs its chunk steps,
+// so the pull comes first. Answered by an enqueue(), the spec fulfills the
+// read first and pulls at the end of the enqueue(). TypeScript follows the
+// spec in both. C++ settles the read's promise a microtask later, after the
+// enqueue()'s pull, and makes no pull for a read answered from the queue.
+export const byobReadThenLookupFollowsItsPull = {
+  async test() {
+    const log = [];
+    let controller;
+    const rs = new ReadableStream(
+      {
+        type: 'bytes',
+        start(c) {
+          controller = c;
+        },
+        pull() {
+          log.push('pull');
+        },
+      },
+      { highWaterMark: 8 }
+    );
+    const reader = rs.getReader({ mode: 'byob' });
+    const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+    // Logs pulls and `then` lookups from op() until the read it returns
+    // settles.
+    const observe = async (op) => {
+      await tick();
+      log.length = 0;
+      Object.defineProperty(Object.prototype, 'then', {
+        get() {
+          if (Object.hasOwn(this, 'done')) log.push('then');
+          return undefined;
+        },
+        configurable: true,
+      });
+      try {
+        await op();
+      } finally {
+        delete Object.prototype.then;
+      }
+      return [...log];
+    };
+    controller.enqueue(new Uint8Array([1, 2, 3, 4]));
+    const fromQueue = await observe(() => reader.read(new Uint8Array(4)));
+    const pending = reader.read(new Uint8Array(4));
+    const fromEnqueue = await observe(() => {
+      controller.enqueue(new Uint8Array([5]));
+      return pending;
+    });
+    strictEqual('then' in {}, false, 'interceptor must be removed');
+    if (usingTsImpl) {
+      deepStrictEqual(fromQueue, ['pull', 'then']);
+      deepStrictEqual(fromEnqueue, ['then', 'pull']);
+    } else {
+      deepStrictEqual(fromQueue, ['then']);
+      deepStrictEqual(fromEnqueue, ['pull', 'then']);
+    }
+  },
+};

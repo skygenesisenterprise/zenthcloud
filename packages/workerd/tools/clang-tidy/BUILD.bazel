@@ -1,0 +1,316 @@
+"""Workerd clang-tidy plugin.
+
+`workerd-lint` is a clang-tidy module providing workerd-specific static checks:
+
+  - `jsg-shared-visit`: flags visitForGc() bodies that visit through a shared
+    owner (kj::Rc, kj::Arc, or a kj::Own of a refcounted type).
+  - `jsg-visit-for-gc`: validates JSG resource types correctly visit their
+    GC roots.
+  - `workerd-angled-includes` - requires includes of workers/capnproto code from
+    different directories to use angled brackets
+  - `workerd-consume`: validates that calls to methods annotated with
+    WD_CONSUME are made through consume() when invoked on kj::Ptr.
+  - `workerd-coroutine-hostile-raii`: flags hostile RAII objects that persist
+    across coroutine suspension.
+  - `workerd-legacy-stream-alloc`: flags direct allocation of the legacy C++
+    ReadableStream / WritableStream (`js.alloc<ReadableStream>(...)`) outside
+    JsReadableStream::create() / JsWritableStream::create(), the dispatch
+    points that select the stream implementation by compatibility flag.
+  - `workerd-promise-ignore-result` - warns on superfluous `ignoreResult()`
+    calls: on promises that are immediately `co_await`ed, and on
+    `capnp::Request::send()` results, which should use `sendIgnoringResult()`
+    instead
+  - `workerd-unsafe-continuation-capture`: flags lambdas passed to async
+    sinks (e.g. kj::Promise::then) that capture bare references, raw
+    pointers, or non-owning views.
+  - `workerd-use-after-move`: flags high-confidence uses of local variables
+    after they are passed to `kj::mv()`.
+
+The plugin is loaded into clang-tidy via `--load=<path>`. Symbols defined
+in the host clang-tidy binary (ClangTidyCheck vtable, ClangTidyModuleRegistry,
+etc.) are resolved at dlopen() time. This requires the host clang-tidy to
+have been built with LLVM_ENABLE_PLUGINS=ON, CLANG_PLUGIN_SUPPORT=ON, and
+LLVM_ENABLE_RTTI=ON; the binary published by cloudflare/workerd-tools
+(version >= clang-tidy-22.1.5) meets all three.
+"""
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_shared_library.bzl", "cc_shared_library")
+load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+load(":test-headers.bzl", "cc_test_headers", "cc_test_toolchain_flags")
+
+filegroup(
+    name = "srcs",
+    srcs = [
+        "angled-includes.c++",
+        "consume.c++",
+        "coroutine-hostile-raii.c++",
+        "legacy-stream-alloc.c++",
+        "promise-ignore-result.c++",
+        "shared-visit.c++",
+        "unsafe-continuation-capture.c++",
+        "use-after-move.c++",
+        "use-after-move-analysis.c++",
+        "visit-for-gc.c++",
+        "workerd-lint.c++",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "hdrs",
+    srcs = [
+        "angled-includes.h",
+        "consume.h",
+        "coroutine-hostile-raii.h",
+        "legacy-stream-alloc.h",
+        "promise-ignore-result.h",
+        "shared-visit.h",
+        "unsafe-continuation-capture.h",
+        "use-after-move.h",
+        "use-after-move-analysis.h",
+        "visit-for-gc.h",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# workerd-tools clang-tidy links against libstdc++ on Linux, and the plugin
+# must match. The toolchain builds against its own libc++, so on Linux the
+# plugin turns that off and compiles against libstdc++'s headers instead.
+# toolchains_llvm's feature for its libc++ is <config>_nomsan_stdlib (it has
+# another for MSan builds, which workerd doesn't use). macOS uses libc++ (Apple
+# default) throughout.
+_LIBSTDCXX = select({
+    "@bazel_tools//src/conditions:linux_aarch64": ["@libstdcxx_linux_aarch64//sysroot:headers"],
+    "@bazel_tools//src/conditions:linux_x86_64": ["@libstdcxx_linux_x86_64//sysroot:headers"],
+    "//conditions:default": [],
+})
+
+_NO_LIBCXX = [
+    "-local-aarch64-linux_nomsan_stdlib",
+    "-local-x86_64-linux_nomsan_stdlib",
+]
+
+cc_library(
+    name = "workerd-lint-static",
+    srcs = [":srcs"],
+    hdrs = [":hdrs"],
+    copts = select({
+        "@platforms//os:linux": ["-nostdinc++"],
+        "//conditions:default": [],
+    }),
+    features = _NO_LIBCXX,
+    tags = ["manual"],
+    # No clang-tidy is published by workerd-tools for Windows.
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    deps = ["@clang_tidy_dev_headers"] + _LIBSTDCXX,
+)
+
+cc_shared_library(
+    name = "workerd-lint",
+    features = _NO_LIBCXX,
+    tags = ["manual"],
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    # A host-loaded plugin resolves clang-tidy's symbols (ClangTidyCheck vtable
+    # etc.) when clang-tidy loads it. On Linux that includes libstdc++'s, from
+    # the copy clang-tidy itself loads; ld64 needs -undefined dynamic_lookup to
+    # allow it.
+    user_link_flags = select({
+        "@platforms//os:macos": [
+            "-undefined",
+            "dynamic_lookup",
+        ],
+        "//conditions:default": [],
+    }),
+    visibility = ["//visibility:public"],
+    deps = [":workerd-lint-static"],
+)
+
+sh_test(
+    name = "consume-test",
+    srcs = ["consume-test.sh"],
+    data = [
+        ":consume-negative-test.c++",
+        ":consume-positive-test.c++",
+        ":workerd-lint",
+        "//tools:clang-tidy",
+    ],
+    tags = ["no-asan"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+sh_test(
+    name = "coroutine-hostile-raii-test",
+    srcs = ["coroutine-hostile-raii-test.sh"],
+    data = [
+        ":coroutine-hostile-raii-negative-test.c++",
+        ":coroutine-hostile-raii-positive-test.c++",
+        ":toolchain-flags",
+        ":workerd-lint",
+        "//tools:clang-tidy",
+    ],
+    tags = ["no-asan"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+sh_test(
+    name = "legacy-stream-alloc-test",
+    srcs = ["legacy-stream-alloc-test.sh"],
+    data = [
+        ":legacy-stream-alloc-negative-test.c++",
+        ":legacy-stream-alloc-positive-test.c++",
+        ":workerd-lint",
+        "//tools:clang-tidy",
+    ],
+    tags = ["no-asan"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+sh_test(
+    name = "shared-visit-test",
+    srcs = ["shared-visit-test.sh"],
+    data = [
+        ":shared-visit-negative-test.c++",
+        ":shared-visit-positive-test.c++",
+        ":workerd-lint",
+        "//tools:clang-tidy",
+    ],
+    tags = ["no-asan"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+sh_test(
+    name = "use-after-move-test",
+    srcs = ["use-after-move-test.sh"],
+    data = [
+        ":toolchain-flags",
+        ":use-after-move-kj-headers",
+        ":use-after-move-negative-test.c++",
+        ":use-after-move-oneof-test.c++",
+        ":use-after-move-positive-test.c++",
+        ":workerd-lint",
+        "//tools:clang-tidy",
+    ],
+    tags = ["no-asan"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+py_test(
+    name = "unsafe-continuation-capture-test",
+    srcs = ["unsafe-continuation-capture-test.py"],
+    data = [
+        "tests/unsafe-continuation-capture-test.c++",
+        ":toolchain-flags",
+        ":workerd-lint",
+        "//tools:clang-tidy",
+    ],
+    main = "unsafe-continuation-capture-test.py",
+    tags = ["no-asan"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+cc_test_headers(
+    name = "use-after-move-kj-headers",
+    dep = "@capnp-cpp//src/kj:kj",
+)
+
+# The fixtures include standard headers, which clang-tidy finds through the C++ toolchain's header flags.
+cc_test_toolchain_flags(
+    name = "toolchain-flags",
+    tags = ["manual"],
+)
+
+sh_test(
+    name = "visit-for-gc-test",
+    srcs = ["visit-for-gc-test.sh"],
+    data = [
+        ":visit-for-gc-negative-test.c++",
+        ":visit-for-gc-positive-test.c++",
+        ":workerd-lint",
+        "//tools:clang-tidy",
+    ],
+    tags = ["no-asan"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+# Tests the `custom-iocontext-run-manual-capture` query-based check, which is
+# defined in the workerd `.clang-tidy` config rather than in the plugin. The
+# test drives clang-tidy against the real merged config, so it does not need the
+# plugin loaded.
+sh_test(
+    name = "iocontext-run-manual-capture-test",
+    srcs = ["iocontext-run-manual-capture-test.sh"],
+    data = [
+        ":iocontext-run-manual-capture-negative-test.c++",
+        ":iocontext-run-manual-capture-positive-test.c++",
+        "//:merged_clang_tidy_config",
+        "//tools:clang-tidy",
+    ],
+    tags = ["no-asan"],
+    # workerd-tools publishes clang-tidy for macOS arm64 only.
+    # TODO (cleanup): This and the other tests here are compatible with arm64 Linux, but our custom
+    # clang-tidy needs a more recent glibc than is available on the arm64 runner image we currently
+    # use in CI. Enable on arm64 Linux once the image has been updated.
+    target_compatible_with = select({
+        "@bazel_tools//src/conditions:darwin_x86_64": ["@platforms//:incompatible"],
+        "@bazel_tools//src/conditions:linux_aarch64": ["@platforms//:incompatible"],
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
+# Tests the `custom-raw-v8-trycatch` query-based check, which is
+# defined in the workerd `.clang-tidy` config rather than in the plugin. The
+# test drives clang-tidy against the real merged config, so it does not need the
+# plugin loaded.
+sh_test(
+    name = "raw-v8-trycatch-test",
+    srcs = ["raw-v8-trycatch-test.sh"],
+    data = [
+        ":raw-v8-trycatch-negative-test.c++",
+        ":raw-v8-trycatch-positive-test.c++",
+        "//:merged_clang_tidy_config",
+        "//tools:clang-tidy",
+    ],
+    tags = ["no-asan"],
+    # workerd-tools publishes clang-tidy for macOS arm64 only. Not on arm64 Linux for now, as for
+    # iocontext-run-manual-capture-test above.
+    target_compatible_with = select({
+        "@bazel_tools//src/conditions:darwin_x86_64": ["@platforms//:incompatible"],
+        "@bazel_tools//src/conditions:linux_aarch64": ["@platforms//:incompatible"],
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)

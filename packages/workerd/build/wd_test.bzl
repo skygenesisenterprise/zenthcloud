@@ -1,0 +1,435 @@
+load("@workerd//:build/lint_test.bzl", "lint_test")
+load("@workerd//build/bazelflare:exec_properties.bzl", "test_exec_properties")
+load("@workerd//build/tools/llvm:coverage.bzl", "COVERAGE_TOOLCHAINS", "coverage_llvm_tools")
+
+def wd_test(
+        src,
+        data = [],
+        name = None,
+        args = [],
+        lint = True,
+        python_snapshot_test = False,
+        generate_default_variant = True,
+        generate_all_autogates_variant = True,
+        generate_all_compat_flags_variant = True,
+        generate_gc_stress_variant = True,
+        predictable = True,
+        compat_date = "",
+        _configurable_data = [],
+        **kwargs):
+    """Rule to define tests that run `workerd test` with a particular config.
+
+    Args:
+     src: A .capnp config file defining the test. (`name` will be derived from this if not
+        specified.) The extension `.wd-test` is also permitted instead of `.capnp`, in order to
+        avoid confusing other build systems that may assume a `.capnp` file should be compiled.
+     data: Additional files which the .capnp config file may embed. All TypeScript files will be compiled,
+     their resulting files will be passed to the test as well. Usually TypeScript or Javascript source files.
+     args: Additional arguments to pass to `workerd`. Typically used to pass `--experimental`.
+     generate_default_variant: If True (default), generate the default variant with oldest compat date.
+     generate_all_autogates_variant: If True (default), generate @all-autogates variants.
+     generate_all_compat_flags_variant: If True (default), generate @all-compat-flags variants.
+     generate_gc_stress_variant: If True (default), generate @gc-stress variant.
+     predictable: If True (default), pass `--predictable` to workerd.
+     compat_date: If specified, use this compat date for the default variant instead of 2000-01-01.
+        Does not affect the @all-compat-flags variant which always uses 2999-12-31.
+
+    The following test variants are generated based on the flags:
+     - name@ (if generate_default_variant): oldest compat date (2000-01-01)
+     - name@all-compat-flags (if generate_all_compat_flags_variant): newest compat date (2999-12-31)
+     - name@all-autogates (if generate_all_autogates_variant): all autogates + oldest compat date
+     - name@gc-stress (if generate_gc_stress_variant): forced GC at every continuation
+    """
+
+    # Add workerd binary to "data" dependencies.
+    data = data + [src, "//src/workerd/server:workerd"]
+    kwargs["exec_properties"] = test_exec_properties(kwargs.get("size", "medium"), kwargs.get("tags", [])) | kwargs.get("exec_properties", {})
+
+    ts_srcs = [src for src in data if src.endswith(".ts")]
+
+    # Default name based on src.
+    if name == None:
+        name = src.removesuffix(".capnp").removesuffix(".wd-test").removesuffix(".ts-wd-test")
+
+    if len(ts_srcs) != 0:
+        data += [js_src.removesuffix(".ts") + ".js" for js_src in ts_srcs]
+
+    if lint:
+        lint_srcs = [s for s in data if (s.endswith(".ts") or s.endswith(".mts") or s.endswith(".js") or s.endswith(".mjs")) and not s.startswith("../") and not s.startswith("//")]
+        if lint_srcs:
+            lint_test(
+                name = name,
+                eslintrc_json = "@workerd//tools:base.eslint.config.mjs",
+                tsconfig_json = "@workerd//tools:base.tsconfig.json",
+                srcs = lint_srcs,
+                data = ["tsconfig.json"] if len(ts_srcs) > 0 else [],
+                no_copy_to_bin = [
+                    "@workerd//tools:base.eslint.config.mjs",
+                    "@workerd//tools:base.tsconfig.json",
+                ],
+            )
+
+    # Keep configurable data separate until after inspecting the ordinary data above. Selectors
+    # cannot be inspected by macros because their values are resolved during rule analysis.
+    data = data + _configurable_data
+
+    # Add initial arguments for `workerd test` command.
+    base_args = [
+        "$(location //src/workerd/server:workerd)",
+        "test",
+    ] + (["--predictable"] if predictable else []) + [
+        "$(location {})".format(src),
+    ] + args
+
+    # Define the compat-date args for each variant
+    # Note: dates must be in range [2000-01-01, 2999-12-31] due to parsing constraints
+    default_compat_args = ["--compat-date=2000-01-01"]
+    newest_compat_args = ["--compat-date=2999-12-31"]
+
+    if compat_date:
+        default_compat_args = ["--compat-date={}".format(compat_date)]
+
+    # Generate variants based on the flags
+    # Default variant: oldest compat date
+    if generate_default_variant:
+        _wd_test(
+            src = src,
+            name = name + "@",
+            data = data,
+            args = base_args + default_compat_args,
+            python_snapshot_test = python_snapshot_test,
+            **kwargs
+        )
+
+    # All compat flags variant: newest compat date
+    if generate_all_compat_flags_variant:
+        _wd_test(
+            src = src,
+            name = name + "@all-compat-flags",
+            data = data,
+            args = base_args + newest_compat_args,
+            python_snapshot_test = python_snapshot_test,
+            **kwargs
+        )
+
+    # All autogates variant: all autogates + oldest compat date
+    if generate_all_autogates_variant:
+        _wd_test(
+            src = src,
+            name = name + "@all-autogates",
+            data = data,
+            args = base_args + default_compat_args + ["--all-autogates"],
+            python_snapshot_test = python_snapshot_test,
+            **kwargs
+        )
+
+    # GC stress variant: forced full GC at every awaitIo continuation.
+    # Uses newest compat date unless the test opted out of @all-compat-flags (meaning
+    # it is compat-date-sensitive), in which case it uses the default compat date.
+    # Tagged off-by-default so it only runs when explicitly requested.
+    if generate_gc_stress_variant:
+        gc_stress_compat = newest_compat_args if generate_all_compat_flags_variant else default_compat_args
+        gc_stress_kwargs = dict(kwargs)
+        gc_stress_tags = gc_stress_kwargs.pop("tags", []) + ["gc-stress", "no-coverage", "off-by-default"]
+        _wd_test(
+            src = src,
+            name = name + "@gc-stress",
+            data = data,
+            args = base_args + gc_stress_compat + ["--gc-stress"],
+            python_snapshot_test = python_snapshot_test,
+            tags = gc_stress_tags,
+            **gc_stress_kwargs
+        )
+
+WINDOWS_TEMPLATE = """
+@echo off
+setlocal EnableDelayedExpansion
+
+REM Run supervisor to assign ports and start the sidecar, if any
+if "{supervise}" == "true" (
+    REM These environment variables are processed by the supervisor executable
+    set PORTS_TO_ASSIGN={port_bindings}
+    set LISTEN_PORT_BINDINGS={listen_port_bindings}
+    set RANDOMIZE_IP={randomize_ip}
+    set SIDECAR_PORT_MODE={sidecar_port_mode}
+    set SIDECAR_COMMAND={windows_sidecar_command}
+    powershell -Command \"{supervisor} {runtest}\"
+) else (
+    {runtest}
+)
+
+set TEST_EXIT=!ERRORLEVEL!
+exit /b !TEST_EXIT!
+
+:run_workerd
+REM cmd requires a quoted native path for Bazel's slash-separated executable name.
+setlocal DisableDelayedExpansion
+set "WORKERD_BINARY=%~1"
+set "WORKERD_BINARY=%WORKERD_BINARY:/=\\%"
+set "WORKERD_ARGUMENTS="
+shift
+:next_workerd_argument
+if [%1]==[] goto launch_workerd
+set WORKERD_ARGUMENTS=%WORKERD_ARGUMENTS% %1
+shift
+goto next_workerd_argument
+:launch_workerd
+"%WORKERD_BINARY%" %WORKERD_ARGUMENTS% "-dTEST_TMPDIR=%TEST_TMPDIR%"
+exit /b %ERRORLEVEL%
+"""
+
+SH_TEMPLATE = """#!/bin/bash
+set -euo pipefail
+
+# Set up coverage for workerd subprocess
+if [ -n "${{COVERAGE_DIR:-}}" ]; then
+    export LLVM_PROFILE_FILE="${{COVERAGE_DIR}}/%p-%m.profraw"
+    export KJ_CLEAN_SHUTDOWN=1
+fi
+{load_images}
+# Run supervisor to assign ports and start the sidecar, if any
+if [ "{supervise}" = "true" ]; then
+    # These environment variables are processed by the supervisor executable. The supervisor and
+    # the sidecar aren't instrumented, and under COVERAGE_DIR a js_binary loads a coverage module
+    # that only instrumented ones carry; workerd's profile goes to LLVM_PROFILE_FILE.
+    env -u COVERAGE_DIR PORTS_TO_ASSIGN={port_bindings} LISTEN_PORT_BINDINGS={listen_port_bindings} RANDOMIZE_IP={randomize_ip} SIDECAR_PORT_MODE={sidecar_port_mode} SIDECAR_COMMAND="{sidecar}" {supervisor} {runtest}
+else
+    {runtest}
+fi
+"""
+
+WINDOWS_RUNTEST_NORMAL = "goto run_workerd"
+
+WINDOWS_RUNTEST_SIDECAR = """powershell -Command \"%*\" `-dTEST_TMPDIR=$ENV:TEST_TMPDIR"""
+
+SH_RUNTEST_NORMAL = """"$@" -dTEST_TMPDIR=$TEST_TMPDIR"""
+
+# We need variants of the RUN_TEST command for Python memory snapshot tests. We have to invoke
+# workerd twice, once with --python-save-snapshot to produce the snapshot and once with
+# --python-load-snapshot to use it.
+#
+# We would like to implement this in py_wd_test and not have to complicate wd_test for it, but
+# unfortunately bazel provides no way for a test to create a file that is used by another test. So
+# we cannot do this with two separate `wd_test` rules. We _could_ use a build step to create the
+# snapshot, but then a failure at this stage would be reported as a build failure when really it
+# should count as a test failure. So the only option left is to make this modification to wd_test to
+# invoke workerd twice for snapshot tests.
+
+WINDOWS_RUNTEST_SNAPSHOT = """
+$PYTHON_SAVE_SNAPSHOT_OPTIONS = $ENV:PYTHON_SAVE_SNAPSHOT_ARGS -split ' '
+powershell -Command \"%* --python-save-snapshot @PYTHON_SAVE_SNAPSHOT_OPTIONS\" `-dTEST_TMPDIR=$ENV:TEST_TMPDIR
+set TEST_EXIT=!ERRORLEVEL!
+if !TEST_EXIT! EQU 0 (
+    powershell -Command \"%* --python-load-snapshot snapshot.bin\" `-dTEST_TMPDIR=$ENV:TEST_TMPDIR
+    set TEST_EXIT=!ERRORLEVEL!
+)
+"""
+
+SH_RUNTEST_SNAPSHOT = """
+echo Creating Python Snapshot
+"$@" -dTEST_TMPDIR=$TEST_TMPDIR --python-save-snapshot $PYTHON_SAVE_SNAPSHOT_ARGS
+echo ""
+echo Using Python Snapshot
+"$@" -dTEST_TMPDIR=$TEST_TMPDIR --python-load-snapshot snapshot.bin
+"""
+
+def _wd_test_impl(ctx):
+    is_windows = ctx.target_platform_has_constraint(ctx.attr._platforms_os_windows[platform_common.ConstraintValueInfo])
+    supervise = ctx.file.sidecar or ctx.attr.listen_port_bindings
+
+    if supervise and ctx.attr.python_snapshot_test:
+        # TODO(later): Implement support for generating a combined script with these two options
+        # if we have a test that requires it. Not doing it for now due to complexity.
+        return print("sidecar or listen_port_bindings and python_snapshot_test currently cannot be used together")
+
+    # Bazel insists that the rule must actually create the executable that it intends to run; it
+    # can't just specify some other executable with some args. OK, fine, we'll use a script that
+    # just execs its args.
+    if is_windows:
+        # Batch script executables must end with ".bat"
+        executable = ctx.actions.declare_file("%s_wd_test.bat" % ctx.label.name)
+        template = WINDOWS_TEMPLATE
+        if ctx.attr.python_snapshot_test:
+            runtest = WINDOWS_RUNTEST_SNAPSHOT
+        elif supervise:
+            runtest = WINDOWS_RUNTEST_SIDECAR
+        else:
+            runtest = WINDOWS_RUNTEST_NORMAL
+    else:
+        executable = ctx.outputs.executable
+        template = SH_TEMPLATE
+        runtest = SH_RUNTEST_SNAPSHOT if ctx.attr.python_snapshot_test else SH_RUNTEST_NORMAL
+
+    content = template.format(
+        supervise = "true" if supervise else "false",
+        sidecar = ctx.file.sidecar.short_path if ctx.file.sidecar else "",
+        # `set NAME=` with nothing after it leaves NAME unset, where `""` would set it to two quotes.
+        windows_sidecar_command = '"{}"'.format(ctx.file.sidecar.short_path) if ctx.file.sidecar else "",
+        runtest = runtest,
+        supervisor = ctx.file.sidecar_supervisor.short_path if ctx.file.sidecar_supervisor else "",
+        port_bindings = ",".join(ctx.attr.sidecar_port_bindings),
+        listen_port_bindings = ",".join(["{}={}".format(name, env) for name, env in ctx.attr.listen_port_bindings.items()]),
+        randomize_ip = "true" if ctx.attr.sidecar_randomize_ip else "false",
+        sidecar_port_mode = ctx.attr.sidecar_port_mode,
+        load_images = "".join([
+            'docker load --quiet --input "{}"\n'.format(f.short_path)
+            for f in ctx.files.container_images
+        ]),
+    )
+
+    ctx.actions.write(
+        output = executable,
+        content = content,
+        is_executable = True,
+    )
+
+    runfiles = ctx.runfiles(files = ctx.files.data + ctx.files.container_images)
+
+    # Add runfiles for the workerd binary, such as shared libraries (if any)
+    workerd_runfiles = ctx.attr.workerd[DefaultInfo].default_runfiles
+    if workerd_runfiles:
+        runfiles = runfiles.merge(workerd_runfiles)
+
+    if ctx.file.sidecar:
+        runfiles = runfiles.merge(ctx.runfiles(files = [ctx.file.sidecar]))
+
+        # Also merge the sidecar's own runfiles if it has any
+        default_runfiles = ctx.attr.sidecar[DefaultInfo].default_runfiles
+        if default_runfiles:
+            runfiles = runfiles.merge(default_runfiles)
+
+    if supervise:
+        runfiles = runfiles.merge(ctx.runfiles(files = [ctx.file.sidecar_supervisor]))
+
+        # Also merge the supervisor's own runfiles if it has any
+        default_runfiles = ctx.attr.sidecar_supervisor[DefaultInfo].default_runfiles
+        if default_runfiles:
+            runfiles = runfiles.merge(default_runfiles)
+
+    # IMPORTANT: The workerd binary must be listed in dependency_attributes
+    # to ensure its transitive dependencies (all the C++ source files) are
+    # included in the coverage instrumentation. Without this, coverage data
+    # won't be collected for the actual workerd implementation code.
+    instrumented_files_info = coverage_common.instrumented_files_info(
+        ctx,
+        source_attributes = ["src", "data"],
+        dependency_attributes = ["workerd", "sidecar", "sidecar_supervisor"],
+    )
+    environment = dict(ctx.attr.env)
+    if ctx.attr.python_snapshot_test:
+        environment["PYTHON_SAVE_SNAPSHOT_ARGS"] = ""
+    if ctx.attr.load_snapshot:
+        if ctx.attr.python_snapshot_test:
+            environment["PYTHON_SAVE_SNAPSHOT_ARGS"] = "--python-load-snapshot load_snapshot.bin"
+        runfiles = runfiles.merge(ctx.runfiles(symlinks = {"load_snapshot.bin": ctx.file.load_snapshot}))
+    runfiles = runfiles.merge(coverage_llvm_tools(ctx, executable, environment))
+
+    return [
+        DefaultInfo(
+            executable = executable,
+            runfiles = runfiles,
+        ),
+        RunEnvironmentInfo(
+            environment = environment,
+        ),
+        instrumented_files_info,
+    ]
+
+_wd_test = rule(
+    implementation = _wd_test_impl,
+    test = True,
+    toolchains = COVERAGE_TOOLCHAINS,
+    attrs = {
+        # Implicit dependencies used by Bazel to generate coverage reports.
+        "_lcov_merger": attr.label(
+            default = configuration_field(fragment = "coverage", name = "output_generator"),
+            executable = True,
+            cfg = config.exec(exec_group = "test"),
+        ),
+        "_collect_cc_coverage": attr.label(
+            default = "@bazel_tools//tools/test:collect_cc_coverage",
+            executable = True,
+            cfg = config.exec(exec_group = "test"),
+        ),
+        # Source file
+        "src": attr.label(allow_single_file = True),
+        # The workerd executable is used to run all tests.
+        # Using cfg = "target" instead of "exec" ensures workerd is built with coverage
+        # instrumentation when running `bazel coverage`. With cfg = "exec", the binary
+        # would be built in exec configuration which doesn't include coverage flags.
+        "workerd": attr.label(
+            allow_single_file = True,
+            executable = True,
+            cfg = "target",
+            default = "//src/workerd/server:workerd",
+        ),
+        # A list of files that this test requires to be present in order to run.
+        "data": attr.label_list(allow_files = True),
+        # Image tarballs (an oci_load's `tarball` output group) that the test loads into the Docker
+        # engine at /var/run/docker.sock before workerd starts, so that a container test brings its
+        # images wherever it runs. Linux only.
+        "container_images": attr.label_list(allow_files = [".tar"]),
+        # If set, an executable that is run in parallel with the test, and provides some functionality
+        # needed for the test. This is usually a backend server, with workerd serving as the client.
+        # The sidecar will be killed once the test completes.
+        "sidecar": attr.label(
+            allow_single_file = True,
+            executable = True,
+            cfg = "exec",
+        ),
+        # Sidecars
+        # ---------
+        # For detailed documentation, see src/workerd/api/node/tests/sidecar-supervisor.mjs
+
+        # A list of binding names which will be filled in with random port numbers that the sidecar
+        # and test can use for communication. The test will only begin once the sidecar is
+        # listening to these ports.
+        #
+        # In the sidecar, access these bindings as environment variables. In the wd-test file, add
+        # fromEnvironment bindings to expose them to the test.
+        #
+        # Reminder: you'll also need to add a network = ( allow = ["private"] ) service as well.
+        "sidecar_port_bindings": attr.string_list(),
+        # If true, a random loopback IP address is chosen for the sidecar and for the sockets in
+        # listen_port_bindings, and provided in the environment variable SIDECAR_HOSTNAME.
+        "sidecar_randomize_ip": attr.bool(default = True),
+        # How port assignments are coordinated between the supervisor and the sidecar.
+        # - "report" (default): the sidecar binds port 0 and prints "<NAME>=<PORT>" on stdout, and
+        #   the supervisor reads those lines. Race-free; preferred for sidecars under our control.
+        # - "preallocate": the supervisor binds port 0, captures the kernel-assigned port, closes
+        #   the socket, and exports the port in the environment before spawning the sidecar. This
+        #   has an inherent close-then-rebind race (mitigated by retry inside the supervisor) and
+        #   exists only for sidecars that can't participate in the report protocol (e.g. wptserve).
+        "sidecar_port_mode": attr.string(default = "report", values = ["report", "preallocate"]),
+        # Sockets of the test's own config that listen on a port assigned when the test runs, rather
+        # than on a fixed one that another test on the same machine might hold. Maps each socket's
+        # name to the environment variable that receives its port. The supervisor assigns each port
+        # as in "preallocate" mode, on the address in SIDECAR_HOSTNAME, and overrides the socket's
+        # address with `--socket-addr`. Expose the variables to the test with fromEnvironment
+        # bindings, as for sidecar_port_bindings; the address in the config is replaced.
+        "listen_port_bindings": attr.string_dict(),
+        # An executable that is used to manage port assignments and child process creation when a
+        # sidecar or listen_port_bindings is specified.
+        "sidecar_supervisor": attr.label(
+            allow_single_file = True,
+            executable = True,
+            cfg = "exec",
+            default = "//src/workerd/api/node/tests:sidecar-supervisor",
+        ),
+        "python_snapshot_test": attr.bool(),
+        "load_snapshot": attr.label(allow_single_file = True),
+        # Environment variables to set when running the test
+        "env": attr.string_dict(),
+        # A reference to the Windows platform label, needed for the implementation of wd_test
+        "_platforms_os_windows": attr.label(default = "@platforms//os:windows"),
+    },
+)
+
+def wd_cli_test(**kwargs):
+    """Defines a test that runs workerd with the given `args`, as wd_test()'s variants do.
+
+    The first argument is usually `$(location //src/workerd/server:workerd)`, which must also
+    be in `data`. `-dTEST_TMPDIR=<dir>` is appended to the arguments. For macros outside this
+    file, such as wd_bench().
+    """
+    _wd_test(**kwargs)

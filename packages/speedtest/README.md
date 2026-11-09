@@ -1,0 +1,203 @@
+# Cloudflare Speedtest
+
+[![NPM package][npm-img]][npm-url]
+[![Build Size][build-size-img]][build-size-url]
+[![NPM Downloads][npm-downloads-img]][npm-downloads-url]
+
+`@cloudflare/speedtest` is a JavaScript module to measure the quality of a client’s Internet connection. It's the measurement engine that powers the Cloudflare speedtest measurement application available at [https://speed.cloudflare.com](https://speed.cloudflare.com).
+
+The module performs test requests against the [Cloudflare](https://www.cloudflare.com/) edge network and relies on the [PerformanceResourceTiming browser api](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) to extract timing results.
+The network connection is characterized by items such as download/upload bandwidth, latency and packet loss.
+
+Please note that measurement results are collected by Cloudflare on completion for the purpose of calculating aggregated insights regarding Internet connection quality.
+
+## Installation
+
+Add this package to your `package.json` by running this in the root of your project's directory:
+
+```sh
+npm install @cloudflare/speedtest
+```
+
+## Simple Usage
+
+```js
+import SpeedTest from '@cloudflare/speedtest';
+
+new SpeedTest().onFinish = results => console.log(results.getSummary());
+```
+
+## API reference
+
+`SpeedTest` is a JavaScript Class and should be instantiated with the `new` keyword. It's not required to pass a config object, as all items have default values.
+
+### Instantiation
+
+```js
+new SpeedTest({ configOptions })
+```
+
+Options marked 🧪 are **experimental and unstable**: they may change behaviour,
+be renamed, or be removed in any release, including a patch. Do not depend on
+them.
+
+| Config option | Description | Default |
+| --- | --- | :--: |
+| **autoStart**: *boolean* | Whether to automatically start the measurements on instantiation. | `true` |
+| **measurementTargets**: *string[]* | The origins to send latency, download and upload requests to, at `measurementDownloadPath` and `measurementUploadPath`. The test iterates over the targets. When empty, `downloadApiUrl` and `uploadApiUrl` are used instead. An entry that isn't a bare `http(s)` origin throws a `TypeError` when the engine is created. Targets on a different origin from the page must send a `Timing-Allow-Origin` header: requests to a target without it are reported through `onError` and skipped. | `[]` |
+| **measurementDownloadPath**: *string* | The path for latency and download requests on each of the `measurementTargets`. It may include a query string. A path that doesn't start with `/` throws a `TypeError` when the engine is created. | `/__down` |
+| **measurementUploadPath**: *string* | The path for upload requests on each of the `measurementTargets`. It may include a query string. A path that doesn't start with `/` throws a `TypeError` when the engine is created. | `/__up` |
+| **downloadApiUrl**: *string* | *Deprecated: use `measurementTargets`.* The URL of the API for performing download GET requests, used when `measurementTargets` is empty. | `https://speed.cloudflare.com/__down` |
+| **uploadApiUrl**: *string* | *Deprecated: use `measurementTargets`.* The URL of the API for performing upload POST requests, used when `measurementTargets` is empty. | `https://speed.cloudflare.com/__up` |
+| **turnServerUri**: *string* | The URI of the TURN server used to measure packet loss, e.g. `turn.cloudflare.com:3478`. See [packetLoss](#packetloss). | `null` |
+| **turnServerCredsApiUrl**: *string* | A URI that returns TURN server credentials. Expects a JSON response with `username` and `credential` keys. See [packetLoss](#packetloss). | `null` |
+| **turnServerUser**: *string* | The username for the TURN server credentials. | - |
+| **turnServerPass**: *string* | The password for the TURN server credentials. | - |
+| **authorizationToken**: *string* | 🧪 *Experimental.* An opaque token attributing the test to a registered customer, sent as an `Authorization: Bearer` header on the measurement, TURN credential and results-logging requests. Obtain it from your own backend — the engine never requests one itself. Requires `authorizationEnabled`; on its own it is never sent. Not sent over plain HTTP unless `allowInsecureAuthorizationToken` is set. | `null` |
+| **authorizationEnabled**: *`'header'` \| boolean* | 🧪 *Experimental.* Opts in to sending `authorizationToken`, which is otherwise withheld even when set. `'header'` and `true` both send it as `Authorization: Bearer`; `true` is a permanent alias for `'header'`, so a future transport can be added without changing what an existing config does. | `undefined` |
+| **allowInsecureAuthorizationToken**: *boolean* | 🧪 *Experimental.* Sends `authorizationToken` even when the endpoint is not HTTPS, for local development against an `http://` server. Never enable this in production: the server treats a token seen over plaintext as compromised and revokes it. | `false` |
+| **measurements**: *array* | The sequence of measurements to perform by the speedtest engine. See [below](#measurement-config) for the specific syntax of this option. ||
+| **measureDownloadLoadedLatency**: *boolean* | Whether to perform additional latency measurements simultaneously with download requests, to measure loaded latency (during download). | `true` |
+| **measureUploadLoadedLatency**: *boolean* | Whether to perform additional latency measurements simultaneously with upload requests, to measure loaded latency (during upload). | `true` |
+| **loadedLatencyThrottle**: *number* | Time interval to wait in between loaded latency requests (in milliseconds). | 400 |
+| **bandwidthFinishRequestDuration**: *number* | The minimum duration (in milliseconds) to reach in download/upload measurement sets for halting further measurements with larger file sizes in the same direction. | 1000 |
+| **abortRequestDuration**: *number* | The maximum duration (in milliseconds) of a single request. Requests that take longer are aborted and skipped. `bandwidthAbortRequestDuration` is a deprecated alias. | 0 (disabled) |
+| **abortTestDuration**: *number* | The maximum running time (in milliseconds, excluding paused time) of the whole test. When it's reached, the test ends with the results collected so far. | 0 (disabled) |
+| **estimatedServerTime**: *number* | If the download/upload APIs do not return a `server-timing` response header containing the time spent in the server, this fixed value (in milliseconds) will be subtracted from all time-to-first-byte calculations. | 0 |
+| **latencyPercentile**: *number* | The percentile (between 0 and 1) used to calculate latency from a set of measurements. | 0.5 |
+| **bandwidthPercentile**: *number* | The percentile (between 0 and 1) used to calculate bandwidth from a set of measurements. | 0.9 |
+| **bandwidthMinRequestDuration**: *number* | The minimum duration (in milliseconds) of a request to consider a measurement good enough to use in the bandwidth calculation. | 10 |
+| **loadedRequestMinDuration**: *number* | The minimum duration (in milliseconds) of a request to consider it to be loading the connection. | 250 |
+| **loadedLatencyMaxPoints**: *number* | The maximum number of data points to keep for loaded latency measurements. When more than this amount are available, the latest ones are kept. | 20 |
+
+### Attributes
+
+| Attribute | Description |
+| --- | --- |
+| **results**: *[Results](#results-object)* | Getter of the current [test results](#results-object) object. May yield incomplete values if the test is still running. |
+| **isRunning**: *boolean* | Getter of whether the test engine is currently running. |
+| **isFinished**: *boolean* | Getter of whether the test engine has finished all the measurements, and the results are considered final. |
+
+### Methods
+
+| Method | Description |
+| --- | --- |
+| **play()** | Starts or resumes the measurements. Does nothing if the engine is already running or is finished. |
+| **pause()** | Pauses the measurements. Does nothing if the engine is already paused or is finished. |
+| **restart()** | Clears the current results and restarts the measurements from the beginning. |
+
+### Notification Events
+
+| Event Method | Arguments | Description |
+| --- | --- | --- |
+| **onRunningChange** | running: *boolean* | Invoked whenever the test engine starts or stops. The current state is included as a function argument. |
+| **onResultsChange** | { type: *string* } | Invoked whenever any item changes in the results, usually indicating the completion of a measurement. The type of measurement that changed is included as an info attribute in the function argument. |
+| **onFinish** | results: *[Results](#results-object)* | Invoked when the test ends, with the [results object](#results-object) collected so far as a function argument. |
+| **onError** | error: *string*, status: *number \| undefined* | Invoked whenever an error occurs during one of the measurements, with the HTTP status when available. Most errors don't stop the test; call `pause()` from this callback to stop it. |
+
+### Measurement config
+
+The specific measurements to be performed by the test engine (and their sequence) can be customized using the `measurements` config option. This should be an array of objects, each with a `type` field, plus additional fields specific to that measurement type.
+
+The default set of measurements that is performed by the engine is:
+
+```js
+[
+  { type: 'latency', numPackets: 1 }, // initial latency estimation
+  { type: 'download', bytes: 1e5, count: 1, bypassMinDuration: true }, // initial download estimation
+  { type: 'latency', numPackets: 20 },
+  { type: 'download', bytes: 1e5, count: 9 },
+  { type: 'download', bytes: 1e6, count: 8 },
+  { type: 'upload', bytes: 1e5, count: 8 },
+  { type: 'upload', bytes: 1e6, count: 6 },
+  { type: 'download', bytes: 1e7, count: 6 },
+  { type: 'upload', bytes: 1e7, count: 4 },
+  { type: 'download', bytes: 2.5e7, count: 4 },
+  { type: 'upload', bytes: 2.5e7, count: 4 },
+  { type: 'download', bytes: 1e8, count: 3 },
+  { type: 'upload', bytes: 5e7, count: 3 },
+  { type: 'download', bytes: 2.5e8, count: 2 }
+]
+```
+
+Here are the fields available per measurement type:
+
+#### latency
+
+| Field | Required | Description | Default |
+| --- | :--: | --- | :--: |
+| **numPackets**: *number* | yes | The number of latency GET requests to perform. These requests are performed against the download API with `bytes=0`, and then the round-trip time-to-first-byte timing between `requestStart` and `responseStart` is extracted. | - |
+
+#### download / upload
+
+Each of these measurement sets are bound to a specific file size. The engine follows a ramp-up methodology per direction (download or upload). Whenever there are multiple measurement sets (with increasing file sizes) for a direction, the engine will keep on performing them until it reaches the condition specified by `bandwidthFinishRequestDuration`, at which point further sets in the same direction are ignored.
+
+| Field | Required | Description | Default |
+| --- | :--: | --- | :--: |
+| **bytes**: *number* | yes | The file size to request from the download API, or post to the upload API. The bandwidth (calculated as bits per second, or bps) for each request is calculated by dividing the `transferSize` (in bits) by the request duration (excluding the server processing time). Durations are measured from the final response headers where the browser reports them (`finalResponseHeadersStart`), so interim `1xx` responses do not shorten them. | - |
+| **count**: *number* | yes | The number of requests to perform for this file size. A request whose reported duration is zero or negative, or that has no resource timing entry, has no measurable bandwidth: it still counts towards `count`, but is discarded from the results with a console warning, so a set can return fewer data points than requested. If three requests in a row within one measurement set have no resource timing entry, the test ends with the results collected so far, and reports it through `onError`. | - |
+| **bypassMinDuration**: *boolean* | no | Whether the `bandwidthFinishRequestDuration` check should be ignored, and the engine is instructed to proceed with the measurements of this direction in any case. | `false` |
+
+#### packetLoss
+
+Packet loss is measured by submitting a set of UDP packets to a WebRTC TURN server in a round-trip fashion, and determining how many packets do not arrive. The submission of these packets can be done in a batching method, in which there's a sleep time in between batches.
+
+Packet loss is opt-in: it is not part of the default measurements, and it needs your own TURN server configuration. To enable it, add a `packetLoss` measurement and either:
+
+- set `turnServerCredsApiUrl` to an endpoint you host that returns TURN credentials, plus `turnServerUri` (e.g. `turn.cloudflare.com:3478`) unless the endpoint also returns a `server` field, or
+- set `turnServerUri` together with your own `turnServerUser` and `turnServerPass`.
+
+```js
+new SpeedTest({
+  turnServerUri: 'turn.cloudflare.com:3478',
+  turnServerCredsApiUrl: 'https://turn.example.com/turn-credentials',
+  measurements: [
+    // ...
+    { type: 'packetLoss', numPackets: 1e3, responsesWaitTime: 3000 }
+  ]
+});
+```
+
+A `packetLoss` measurement without either option fails with an error, and the engine moves on to the next measurement.
+
+Example code to serve TURN credentials from a Cloudflare Worker, using a [Cloudflare Realtime TURN server](https://developers.cloudflare.com/realtime/turn/), is available at [example/turn-worker](example/turn-worker). Refer to the worker's [documentation](example/turn-worker/README.md) for setup and deployment instructions.
+
+| Field | Required | Description | Default |
+| --- | :--: | --- | :--: |
+| **numPackets**: *number* | no | The total number of UDP packets to send. | 100 |
+| **responsesWaitTime**: *number* | no | The interval of time (in milliseconds) to wait after the latest packet reception before determining the measurement as complete, and all non-returned packets as lost. | 5000 |
+| **batchSize**: *number* | no | The number of packets in a batch. If this value is higher than `numPackets` there will be only one batch. | 10 |
+| **batchWaitTime**: *number* | no | How long to wait (in milliseconds) between batches. | 10 |
+| **connectionTimeout**: *number* | no | Timeout for the connection to the TURN server. | 5000 |
+
+### Results object
+
+An instance object used to access the results of the speedtest measurements. The following methods are available on this object:
+
+| Method | Description |
+| --- | --- |
+| **getSummary()** | Returns a high-level summary object with the computed results from the performed measurements. |
+| **getUnloadedLatency()** | Returns the reduced value of the connection latency while at idle. Requires at least one `latency` measurement. |
+| **getUnloadedJitter()** | Returns the connection jitter while at idle. Jitter is calculated as the average distance between consecutive latency measurements. Requires at least two `latency` measurements. |
+| **getUnloadedLatencyPoints()** | Returns an array with all the latencies measured while at idle. Includes one value per measurement in sequence. |
+| **getDownLoadedLatency()** | Returns the reduced value of the connection latency while loaded in the download direction. Requires `measureDownloadLoadedLatency` to be enabled. |
+| **getDownLoadedJitter()** | Returns the connection jitter while loaded in the download direction. Requires `measureDownloadLoadedLatency` to be enabled, and at least two loaded latency measurements. |
+| **getDownLoadedLatencyPoints()** | Returns an array with all the latencies measured while loaded in the download direction. Includes one value per loaded measurement in sequence. Requires `measureDownloadLoadedLatency` to be enabled. |
+| **getUpLoadedLatency()** | Returns the reduced value of the connection latency while loaded in the upload direction. Requires `measureUploadLoadedLatency` to be enabled. |
+| **getUpLoadedJitter()** | Returns the connection jitter while loaded in the upload direction. Requires `measureUploadLoadedLatency` to be enabled, and at least two loaded latency measurements. |
+| **getUpLoadedLatencyPoints()** | Returns an array with all the latencies measured while loaded in the upload direction. Includes one value per loaded measurement in sequence. Requires `measureUploadLoadedLatency` to be enabled. |
+| **getDownloadBandwidth()** | Returns the reduced value of the download bandwidth (in bps). Requires at least one `download` measurement, longer than the `bandwidthMinRequestDuration` threshold. |
+| **getDownloadBandwidthPoints()** | Returns an array with all the download measurement results. Each item will include the following fields: `{ bytes, bps, duration, ping, measTime, serverTime, transferSize }`. |
+| **getUploadBandwidth()** | Returns the reduced value of the upload bandwidth (in bps). Requires at least one `upload` measurement, longer than the `bandwidthMinRequestDuration` threshold. |
+| **getUploadBandwidthPoints()** | Returns an array with all the upload measurement results. Each item will include the following fields: `{ bytes, bps, duration, ping, measTime, serverTime, transferSize }`. |
+| **getPacketLoss()** | Returns the reduced value of the measured packet loss ratio (between 0 and 1). Requires a `packetLoss` measurement set. |
+| **getPacketLossDetails()** | Returns an object with the details of the packet loss measurement. Includes the following fields: `{ packetLoss, totalMessages, numMessagesSent, lostMessages }`. Requires a `packetLoss` measurement set. |
+| **getTotalDurationMs()** | Returns the total time (in milliseconds) the engine spent running, excluding any time spent paused. Only available after the engine has finished. |
+| **getScores()** | Returns the computed [AIM scores](https://developers.cloudflare.com/fundamentals/speed/aim/) that categorize the quality of the network connection according to use cases such as streaming, gaming or real-time communications. This score is only available after the engine has finished performing all of the measurements. Without a `packetLoss` measurement, packet loss is left out of the scores, so they come out lower than for a connection measured with under 5% loss. A failed `packetLoss` measurement counts as 0 points. |
+
+[npm-img]: https://img.shields.io/npm/v/@cloudflare/speedtest
+[npm-url]: https://npmjs.org/package/@cloudflare/speedtest
+[build-size-img]: https://img.shields.io/bundlephobia/minzip/@cloudflare/speedtest
+[build-size-url]: https://bundlephobia.com/result?p=@cloudflare/speedtest
+[npm-downloads-img]: https://img.shields.io/npm/dt/@cloudflare/speedtest
+[npm-downloads-url]: https://www.npmtrends.com/@cloudflare/speedtest

@@ -1,0 +1,62 @@
+load("//:build/wd_cc_library.bzl", "wd_cc_library")
+load("//:build/wd_rust_crate.bzl", "wd_rust_crate")
+
+wd_cc_library(
+    name = "ffi-hdrs",
+    hdrs = [
+        "cpp-interop.h",
+        "ffi.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/rust/jsg:ffi",
+        "//src/rust/jsg-cpp:ffi",
+        "//src/workerd/jsg",
+    ],
+)
+
+wd_cc_library(
+    name = "ffi-impl",
+    srcs = [
+        "cpp-interop.c++",
+        "ffi.c++",
+    ],
+    implementation_deps = [
+        ":cpp_interop.rs@cxx",
+        ":lib.rs@cxx",
+        "//src/workerd/io:features",
+        "//src/workerd/util:autogate",
+        "@capnp-cpp//src/capnp:capnp",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":ffi-hdrs",
+    ],
+)
+
+wd_rust_crate(
+    name = "jsg-test",
+    testonly = True,
+    cxx_bridge_deps = [
+        "//src/workerd/jsg:jsg-core",
+        ":ffi-hdrs",
+    ],
+    cxx_bridge_srcs = [
+        "cpp_interop.rs",
+        "lib.rs",
+    ],
+    link_deps = [
+        ":ffi-impl",
+    ],
+    proc_macro_deps = ["//src/rust/jsg-macros"],
+    # The crate has hundreds of subtests and uses RUST_TEST_THREADS=1 (serial),
+    # so in debug builds it runs close to the "large" (60s) timeout.
+    test_size = "enormous",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/rust/jsg",
+        "//src/rust/jsg-cpp",
+        "@crates_vendor//:capnp",
+        "@crates_vendor//:serde_json",
+    ],
+)

@@ -1,0 +1,84 @@
+# src/workerd/api/streams/
+
+Web Streams API: ReadableStream, WritableStream, TransformStream.
+See `README.md` for terse reference (classification, state machines, safety patterns).
+See `docs/streams.md` for narrative tutorial.
+
+## ARCHITECTURE
+
+NOTE: C++ code outside this directory does not use `jsg::Ref<ReadableStream>` or
+`jsg::Ref<WritableStream>` directly; it goes through the `JsReadableStream` / `JsWritableStream`
+abstractions in `src/workerd/api/js-{readable,writable}-stream.{h,c++}`, which hide which stream
+implementation backs a given stream (and provide `JsReadableWritablePair` +
+`pipeTo`/`pipeThrough` for abstraction-level pipelines). New C++ consumers of streams should use
+those abstractions, not the types defined here.
+
+Allocating the types defined here directly (`js.alloc<ReadableStream>(...)` and friends) is
+rejected by the `workerd-legacy-stream-alloc` clang-tidy check everywhere except inside
+`JsReadableStream::create()` / `JsWritableStream::create()`, which dispatch on the
+`typescript_implemented_streams` compatibility flag. The legacy implementation's own internals
+that necessarily produce legacy streams (`tee()`, `detach()`, the legacy JS constructors, the
+`deserialize()` legacy fallbacks) and tests that exercise this implementation directly carry
+`NOLINT(workerd-legacy-stream-alloc)` with a comment saying why.
+
+Dual implementation behind unified API:
+
+- **Internal** (`internal.h`): kj-backed, byte-only, single pending read, no JS queue
+- **Standard** (`standard.h`): WHATWG spec, JS promises, value+byte, dual queues (data + pending reads)
+
+Controller pattern: `ReadableStream` → `ReadableStreamController` → impl-specific controller.
+4 pipe loop variants (kj↔kj, kj↔JS, JS↔kj, JS↔JS) selected by stream type combination.
+Tee uses `kj::Rc<Entry>` shared refs (non-standard optimization, avoids data copies).
+
+Key deps: `util/state-machine.h` (stream state FSM), `util/weak-refs.h`, `util/ring-buffer.h`.
+
+## FILE MAP
+
+| File                                | Role                                                                                                |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `readable.{h,c++}`                  | `ReadableStream` public API, `ReaderImpl`, readers                                                  |
+| `writable.{h,c++}`                  | `WritableStream` public API, `WriterImpl`, writer                                                   |
+| `transform.{h,c++}`                 | Standard `TransformStream` (JS algorithms)                                                          |
+| `identity-transform-stream.{h,c++}` | Internal identity transform (byte-only, 1:1 read↔write)                                            |
+| `internal.{h,c++}`                  | `ReadableStreamInternalController`, `WritableStreamInternalController`                              |
+| `standard.{h,c++}`                  | `ReadableStreamJsController`, `WritableStreamJsController` — main complexity (~5400 lines combined) |
+| `common.{h,c++}`                    | Shared types: `ReadResult`, `StreamStates`, controller interfaces                                   |
+| `queue.{h,c++}`                     | `ValueQueue`/`ByteQueue` for Standard stream backpressure                                           |
+| `compression.{h,c++}`               | `CompressionStream`/`DecompressionStream` (zlib transforms)                                         |
+| `encoding.{h,c++}`                  | `TextEncoderStream`/`TextDecoderStream`                                                             |
+
+## INVARIANTS
+
+These rules MUST be followed when modifying stream code:
+
+1. **Always use `deferControllerStateChange()`** when calling code that may invoke JS
+   callbacks during a read/write operation
+2. **Always use `snapshot()`** when iterating over consumers if loop body may trigger JS
+3. **Never access `this`** after calling a StateListener callback that may destroy the object
+4. **Always re-check operation and lock identity** after calls that may enter JS, including
+   promise settlement; reacquire state references rather than retaining them across callbacks.
+   Serialize responses to the same BYOB request: identity alone does not protect mutable progress.
+5. **Use WeakRef** for any handle that user code may hold longer than the underlying object
+6. **State before promises**: Publish terminal or released/unlocked state before settlement.
+   Move pending requests to local ownership and remove them from the live queue before resolving
+   or rejecting them. A live ring buffer must retain usable storage for reentrant operations.
+7. **No dangling captures**: Retain an owner or weak identity across callbacks, not raw state
+   references. A pending native read owns its source and non-sandbox buffer in its KJ promise;
+   source transfers move the existing shared claim without nesting ownership adapters.
+
+See `README.md` §Safety Pattern Catalog for detailed When/Why/How for each pattern.
+
+## CODE REVIEW RULE
+
+When reviewing changes to streams code, check whether the change requires updates to
+any of these documentation files:
+
+- **`README.md`** — if the change alters stream classification (e.g. new stream type),
+  state machine behavior, pipe loop selection, or introduces/modifies a safety pattern
+- **`docs/streams.md`** — if the change affects user-visible behavior, data flow
+  semantics, or backpressure mechanics that the tutorial describes
+- **This file (`AGENTS.md`)** — if the change adds/removes files, changes the
+  architecture summary, or introduces new invariants
+
+Flag any needed doc updates in the review. Do not let behavioral or architectural
+changes land without corresponding documentation updates.

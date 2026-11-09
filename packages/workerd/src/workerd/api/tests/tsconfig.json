@@ -1,0 +1,16 @@
+{
+  "extends": "../../../../tools/base.tsconfig.json",
+  "compilerOptions": {
+    "lib": ["esnext", "webworker"],
+    "paths": {
+      "@workerd/*": ["../../../bazel-bin/src/workerd/*"]
+    },
+    "skipLibCheck": true,
+    "allowJs": false,
+    "types": ["@types/node"]
+  },
+  "include": ["**/*.ts"],
+  // r2-binding-service has its own project; the other entries repeat the base config's exclude,
+  // which this one replaces.
+  "exclude": ["node_modules", "**/*.mjs", "r2-binding-service"]
+}

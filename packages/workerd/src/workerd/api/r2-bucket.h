@@ -1,0 +1,811 @@
+// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+#pragma once
+
+#include "r2-rpc.h"
+
+#include <workerd/api/streams/readable.h>
+#include <workerd/api/worker-rpc.h>
+#include <workerd/jsg/jsg.h>
+
+namespace workerd::api {
+class Headers;
+}
+
+namespace workerd::api::public_beta {
+
+struct StringTagParams {
+  kj::LiteralStringConst key;
+  kj::StringPtr value;
+};
+
+struct R2UserTracing {
+  kj::LiteralStringConst op;
+  StringTagParams method;
+  // Passing Maybe<kj::StringPtr> instead of Maybe<StringTagParams> here – this avoids a branch on
+  // the caller side when bucket is already a Maybe, which is more convenient.
+  kj::Maybe<kj::StringPtr> bucket;
+  kj::Maybe<StringTagParams> extraTag;
+};
+
+// Helper for creating R2 HTTP Client with the right span tags across operations. This is much
+// cleaner than setting span tags directly in each function.
+kj::Own<kj::HttpClient> r2GetClient(IoContext& context, uint subrequestChannel, R2UserTracing user);
+
+kj::ArrayPtr<kj::StringPtr> fillR2Path(
+    kj::StringPtr pathStorage[1], const kj::Maybe<kj::String>& bucket);
+
+kj::Maybe<kj::String> buildSsecKey(
+    kj::Maybe<kj::OneOf<kj::Array<byte>, kj::String>> maybeRawSsecKey);
+
+class R2MultipartUpload;
+
+// A capability to an R2 Bucket.
+class R2Bucket: public jsg::Object {
+ protected:
+  struct friend_tag_t {};
+
+  struct FeatureFlags {
+    FeatureFlags(CompatibilityFlags::Reader featureFlags);
+
+    bool listHonorsIncludes;
+  };
+
+ public:
+  // `clientIndex` is what to pass to IoContext::getHttpClient() to get an HttpClient
+  // representing this namespace.
+  explicit R2Bucket(CompatibilityFlags::Reader featureFlags, uint clientIndex)
+      : featureFlags(featureFlags),
+        clientChannel(clientIndex) {}
+
+  explicit R2Bucket(FeatureFlags featureFlags, uint clientIndex, kj::String bucket, friend_tag_t)
+      : featureFlags(featureFlags),
+        clientChannel(clientIndex),
+        adminBucket(kj::mv(bucket)) {}
+
+  explicit R2Bucket(
+      FeatureFlags featureFlags, uint clientIndex, kj::String bucket, kj::String binding)
+      : featureFlags(featureFlags),
+        clientChannel(clientIndex),
+        bucket(kj::mv(bucket)),
+        binding(kj::mv(binding)) {}
+
+  explicit R2Bucket(
+      FeatureFlags featureFlags, uint clientIndex, kj::String bucket, kj::String jwt, friend_tag_t)
+      : featureFlags(featureFlags),
+        clientChannel(clientIndex),
+        adminBucket(kj::mv(bucket)),
+        jwt(kj::mv(jwt)) {}
+
+  // Construct an R2Bucket backed by a live subrequest channel rather than a channel number, used
+  // when the binding is carried as a capability (e.g. via `ctx.props`).
+  explicit R2Bucket(
+      FeatureFlags featureFlags, IoOwn<IoChannelFactory::SubrequestChannel> subrequestChannel)
+      : featureFlags(featureFlags),
+        clientChannel(kj::mv(subrequestChannel)) {}
+
+  struct Range {
+    jsg::Optional<double> offset;
+    jsg::Optional<double> length;
+    jsg::Optional<double> suffix;
+
+    JSG_STRUCT(offset, length, suffix);
+    JSG_STRUCT_TS_OVERRIDE(type R2Range =
+      | { offset: number; length?: number }
+      | { offset?: number; length: number }
+      | { suffix: number }
+    );
+  };
+
+  struct Conditional {
+    jsg::Optional<jsg::NonCoercible<kj::String>> etagMatches;
+    jsg::Optional<jsg::NonCoercible<kj::String>> etagDoesNotMatch;
+    jsg::Optional<kj::Date> uploadedBefore;
+    jsg::Optional<kj::Date> uploadedAfter;
+    jsg::Optional<bool> secondsGranularity;
+
+    JSG_STRUCT(etagMatches, etagDoesNotMatch, uploadedBefore, uploadedAfter, secondsGranularity);
+    JSG_STRUCT_TS_OVERRIDE(R2Conditional);
+  };
+
+  struct GetOptions {
+    jsg::Optional<kj::OneOf<Conditional, jsg::Ref<Headers>>> onlyIf;
+    jsg::Optional<kj::OneOf<Range, jsg::Ref<Headers>>> range;
+    jsg::Optional<kj::OneOf<kj::Array<byte>, kj::String>> ssecKey;
+
+    JSG_STRUCT(onlyIf, range, ssecKey);
+    JSG_STRUCT_TS_OVERRIDE(R2GetOptions);
+  };
+
+  struct StringChecksums {
+    jsg::Optional<kj::String> md5;
+    jsg::Optional<kj::String> sha1;
+    jsg::Optional<kj::String> sha256;
+    jsg::Optional<kj::String> sha384;
+    jsg::Optional<kj::String> sha512;
+
+    JSG_STRUCT(md5, sha1, sha256, sha384, sha512);
+    JSG_STRUCT_TS_OVERRIDE(R2StringChecksums);
+  };
+
+  struct SerializableChecksums;
+
+  class Checksums: public jsg::Object {
+   public:
+    Checksums(jsg::Optional<kj::Array<kj::byte>> md5,
+        jsg::Optional<kj::Array<kj::byte>> sha1,
+        jsg::Optional<kj::Array<kj::byte>> sha256,
+        jsg::Optional<kj::Array<kj::byte>> sha384,
+        jsg::Optional<kj::Array<kj::byte>> sha512)
+        : md5(kj::mv(md5)),
+          sha1(kj::mv(sha1)),
+          sha256(kj::mv(sha256)),
+          sha384(kj::mv(sha384)),
+          sha512(kj::mv(sha512)) {}
+
+    jsg::Optional<jsg::JsArrayBuffer> getMd5(jsg::Lock& js);
+    jsg::Optional<jsg::JsArrayBuffer> getSha1(jsg::Lock& js);
+    jsg::Optional<jsg::JsArrayBuffer> getSha256(jsg::Lock& js);
+    jsg::Optional<jsg::JsArrayBuffer> getSha384(jsg::Lock& js);
+    jsg::Optional<jsg::JsArrayBuffer> getSha512(jsg::Lock& js);
+
+    StringChecksums toJSON();
+    SerializableChecksums toSerializable() const;
+
+    JSG_RESOURCE_TYPE(Checksums) {
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(md5, getMd5);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(sha1, getSha1);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(sha256, getSha256);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(sha384, getSha384);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(sha512, getSha512);
+      JSG_METHOD(toJSON);
+      JSG_TS_OVERRIDE(R2Checksums {
+        readonly md5?: ArrayBuffer;
+        readonly sha1?: ArrayBuffer;
+        readonly sha256?: ArrayBuffer;
+        readonly sha384?: ArrayBuffer;
+        readonly sha512?: ArrayBuffer;
+      });
+    }
+
+    void serialize(jsg::Lock& js,
+        jsg::Serializer& serializer,
+        const jsg::TypeHandler<SerializableChecksums>& checksumsHandler);
+    static jsg::Ref<Checksums> deserialize(jsg::Lock& js,
+        rpc::SerializationTag tag,
+        jsg::Deserializer& deserializer,
+        const jsg::TypeHandler<SerializableChecksums>& checksumsHandler);
+
+    JSG_SERIALIZABLE(rpc::SerializationTag::R2_CHECKSUMS);
+
+    jsg::Optional<kj::Array<kj::byte>> md5;
+    jsg::Optional<kj::Array<kj::byte>> sha1;
+    jsg::Optional<kj::Array<kj::byte>> sha256;
+    jsg::Optional<kj::Array<kj::byte>> sha384;
+    jsg::Optional<kj::Array<kj::byte>> sha512;
+
+    void visitForMemoryInfo(jsg::MemoryTracker& tracker) const {
+      tracker.trackField("md5", md5);
+      tracker.trackField("sha1", sha1);
+      tracker.trackField("sha256", sha256);
+      tracker.trackField("sha384", sha384);
+      tracker.trackField("sha512", sha512);
+    }
+  };
+
+  struct HttpMetadata {
+    static HttpMetadata fromRequestHeaders(jsg::Lock& js, Headers& h);
+
+    jsg::Optional<kj::String> contentType;
+    jsg::Optional<kj::String> contentLanguage;
+    jsg::Optional<kj::String> contentDisposition;
+    jsg::Optional<kj::String> contentEncoding;
+    jsg::Optional<kj::String> cacheControl;
+    jsg::Optional<kj::Date> cacheExpiry;
+
+    JSG_STRUCT(contentType,
+        contentLanguage,
+        contentDisposition,
+        contentEncoding,
+        cacheControl,
+        cacheExpiry);
+    JSG_STRUCT_TS_OVERRIDE(R2HTTPMetadata);
+
+    HttpMetadata clone() const;
+
+    JSG_MEMORY_INFO(HttpMetadata) {
+      tracker.trackField("contentType", contentType);
+      tracker.trackField("contentLanguage", contentLanguage);
+      tracker.trackField("contentDisposition", contentDisposition);
+      tracker.trackField("contentEncoding", contentEncoding);
+      tracker.trackField("cacheControl", cacheControl);
+    }
+  };
+
+  struct PutOptions {
+    jsg::Optional<kj::OneOf<Conditional, jsg::Ref<Headers>>> onlyIf;
+    jsg::Optional<kj::OneOf<HttpMetadata, jsg::Ref<Headers>>> httpMetadata;
+    jsg::Optional<jsg::Dict<kj::String>> customMetadata;
+    jsg::Optional<kj::OneOf<jsg::JsRef<jsg::JsBufferSource>, jsg::NonCoercible<kj::String>>> md5;
+    jsg::Optional<kj::OneOf<jsg::JsRef<jsg::JsBufferSource>, jsg::NonCoercible<kj::String>>> sha1;
+    jsg::Optional<kj::OneOf<jsg::JsRef<jsg::JsBufferSource>, jsg::NonCoercible<kj::String>>> sha256;
+    jsg::Optional<kj::OneOf<jsg::JsRef<jsg::JsBufferSource>, jsg::NonCoercible<kj::String>>> sha384;
+    jsg::Optional<kj::OneOf<jsg::JsRef<jsg::JsBufferSource>, jsg::NonCoercible<kj::String>>> sha512;
+    jsg::Optional<kj::String> storageClass;
+    jsg::Optional<kj::OneOf<kj::Array<byte>, kj::String>> ssecKey;
+
+    JSG_STRUCT(onlyIf,
+        httpMetadata,
+        customMetadata,
+        md5,
+        sha1,
+        sha256,
+        sha384,
+        sha512,
+        storageClass,
+        ssecKey);
+    JSG_STRUCT_TS_OVERRIDE(R2PutOptions);
+  };
+
+  struct MultipartOptions {
+    jsg::Optional<kj::OneOf<HttpMetadata, jsg::Ref<Headers>>> httpMetadata;
+    jsg::Optional<jsg::Dict<kj::String>> customMetadata;
+    jsg::Optional<kj::String> storageClass;
+    jsg::Optional<kj::OneOf<kj::Array<byte>, kj::String>> ssecKey;
+
+    JSG_STRUCT(httpMetadata, customMetadata, storageClass, ssecKey);
+    JSG_STRUCT_TS_OVERRIDE(R2MultipartOptions);
+  };
+
+  // Internal JSRPC payload types. SerializableChecksums, SerializableHeadResult, and
+  // SerializableGetResult are the payloads used by the custom serializers for the corresponding
+  // native R2 resource types. RPC reconstructs those native resources before a named R2 method's
+  // result is unwrapped.
+  //
+  // These are not customer-facing types, so they carry no TS overrides.
+
+  // Serialized Checksums payload.
+  struct SerializableChecksums {
+    jsg::Optional<kj::Array<kj::byte>> md5;
+    jsg::Optional<kj::Array<kj::byte>> sha1;
+    jsg::Optional<kj::Array<kj::byte>> sha256;
+    jsg::Optional<kj::Array<kj::byte>> sha384;
+    jsg::Optional<kj::Array<kj::byte>> sha512;
+
+    JSG_STRUCT(md5, sha1, sha256, sha384, sha512);
+  };
+
+  // The serialized field is `key`, while HeadResult stores it internally as `name`.
+  // `kj::Maybe` accepts both undefined and null for absent optional fields in a payload.
+  struct SerializableHeadResult {
+    kj::String key;
+    kj::String version;
+    double size;
+    kj::String etag;
+    kj::Date uploaded;
+    kj::String storageClass;
+    SerializableChecksums checksums;
+    kj::Maybe<HttpMetadata> httpMetadata;
+    kj::Maybe<jsg::Dict<kj::String>> customMetadata;
+    kj::Maybe<Range> range;
+    kj::Maybe<kj::String> ssecKeyMd5;
+
+    JSG_STRUCT(key,
+        version,
+        size,
+        etag,
+        uploaded,
+        storageClass,
+        checksums,
+        httpMetadata,
+        customMetadata,
+        range,
+        ssecKeyMd5);
+  };
+
+  struct SerializableGetResult {
+    kj::String kind;
+    SerializableHeadResult object;
+    kj::Maybe<JsReadableStream> body;
+
+    JSG_STRUCT(kind, object, body);
+  };
+
+  class HeadResult: public jsg::Object {
+   public:
+    HeadResult(kj::String name,
+        kj::String version,
+        double size,
+        kj::String etag,
+        jsg::Ref<Checksums> checksums,
+        kj::Date uploaded,
+        jsg::Optional<HttpMetadata> httpMetadata,
+        jsg::Optional<jsg::Dict<kj::String>> customMetadata,
+        jsg::Optional<Range> range,
+        kj::String storageClass,
+        jsg::Optional<kj::String> ssecKeyMd5)
+        : name(kj::mv(name)),
+          version(kj::mv(version)),
+          size(size),
+          etag(kj::mv(etag)),
+          checksums(kj::mv(checksums)),
+          uploaded(uploaded),
+          httpMetadata(kj::mv(httpMetadata)),
+          customMetadata(kj::mv(customMetadata)),
+          range(kj::mv(range)),
+          storageClass(kj::mv(storageClass)),
+          ssecKeyMd5(kj::mv(ssecKeyMd5)) {}
+
+    kj::StringPtr getName() const {
+      return name;
+    }
+    kj::StringPtr getVersion() const {
+      return version;
+    }
+    double getSize() const {
+      return size;
+    }
+    kj::StringPtr getEtag() const {
+      return etag;
+    }
+    kj::String getHttpEtag() const {
+      return kj::str('"', etag, '"');
+    }
+    jsg::Ref<Checksums> getChecksums() {
+      return checksums.addRef();
+    }
+    kj::Date getUploaded() const {
+      return uploaded;
+    }
+    kj::StringPtr getStorageClass() const {
+      return storageClass;
+    }
+    jsg::Optional<kj::StringPtr> getSSECKeyMd5() const {
+      return ssecKeyMd5;
+    }
+
+    jsg::Optional<HttpMetadata> getHttpMetadata() const {
+      return httpMetadata.map([](const HttpMetadata& m) { return m.clone(); });
+    }
+
+    const jsg::Optional<jsg::Dict<kj::String>> getCustomMetadata() const {
+      return customMetadata.map([](const jsg::Dict<kj::String>& m) {
+        return jsg::Dict<kj::String>{
+          .fields =
+              KJ_MAP(f, m.fields) {
+          return jsg::Dict<kj::String>::Field{.name = kj::str(f.name), .value = kj::str(f.value)};
+        },
+        };
+      });
+    }
+
+    jsg::Optional<Range> getRange() {
+      return range;
+    }
+
+    SerializableHeadResult toSerializable() const;
+
+    void writeHttpMetadata(jsg::Lock& js, Headers& headers);
+
+    JSG_RESOURCE_TYPE(HeadResult) {
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(key, getName);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(version, getVersion);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(size, getSize);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(etag, getEtag);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(httpEtag, getHttpEtag);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(checksums, getChecksums);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(uploaded, getUploaded);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(httpMetadata, getHttpMetadata);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(customMetadata, getCustomMetadata);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(range, getRange);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(storageClass, getStorageClass);
+      JSG_LAZY_READONLY_INSTANCE_PROPERTY(ssecKeyMd5, getSSECKeyMd5);
+      JSG_METHOD(writeHttpMetadata);
+      JSG_TS_OVERRIDE(R2Object);
+    }
+
+    void serialize(jsg::Lock& js,
+        jsg::Serializer& serializer,
+        const jsg::TypeHandler<SerializableHeadResult>& headResultHandler);
+    static jsg::Ref<HeadResult> deserialize(jsg::Lock& js,
+        rpc::SerializationTag tag,
+        jsg::Deserializer& deserializer,
+        const jsg::TypeHandler<SerializableHeadResult>& headResultHandler);
+
+    JSG_SERIALIZABLE(rpc::SerializationTag::R2_OBJECT);
+
+    void visitForMemoryInfo(jsg::MemoryTracker& tracker) const {
+      tracker.trackField("name", name);
+      tracker.trackField("version", version);
+      tracker.trackField("etag", etag);
+      tracker.trackField("checksums", checksums);
+      tracker.trackField("httpMetadata", httpMetadata);
+      tracker.trackField("customMetadata", customMetadata);
+      tracker.trackField("ssecKeyMd5", ssecKeyMd5);
+    }
+
+   protected:
+    kj::String name;
+    kj::String version;
+    double size;
+    kj::String etag;
+    jsg::Ref<Checksums> checksums;
+    kj::Date uploaded;
+    jsg::Optional<HttpMetadata> httpMetadata;
+    jsg::Optional<jsg::Dict<kj::String>> customMetadata;
+
+    jsg::Optional<Range> range;
+    kj::String storageClass;
+    jsg::Optional<kj::String> ssecKeyMd5;
+
+    void visitForGc(jsg::GcVisitor& visitor) {
+      visitor.visit(checksums);
+    }
+
+    friend class R2Bucket;
+  };
+
+  class GetResult: public HeadResult {
+   public:
+    GetResult(kj::String name,
+        kj::String version,
+        double size,
+        kj::String etag,
+        jsg::Ref<Checksums> checksums,
+        kj::Date uploaded,
+        jsg::Optional<HttpMetadata> httpMetadata,
+        jsg::Optional<jsg::Dict<kj::String>> customMetadata,
+        jsg::Optional<Range> range,
+        kj::String storageClass,
+        jsg::Optional<kj::String> ssecKeyMd5,
+        JsReadableStream body,
+        kj::Maybe<uint64_t> expectedBodyLength = kj::none)
+        : HeadResult(kj::mv(name),
+              kj::mv(version),
+              size,
+              kj::mv(etag),
+              kj::mv(checksums),
+              uploaded,
+              kj::mv(KJ_ASSERT_NONNULL(httpMetadata)),
+              kj::mv(KJ_ASSERT_NONNULL(customMetadata)),
+              range,
+              kj::mv(storageClass),
+              kj::mv(ssecKeyMd5)),
+          body(kj::mv(body)),
+          expectedBodyLength(expectedBodyLength) {}
+
+    JsReadableStream getBody(jsg::Lock& js) {
+      ensureBodyLength(js);
+      return body.addRef(js);
+    }
+
+    bool getBodyUsed(jsg::Lock& js) {
+      return body.isDisturbed(js);
+    }
+
+    jsg::Promise<jsg::JsRef<jsg::JsArrayBuffer>> arrayBuffer(jsg::Lock& js);
+    jsg::Promise<jsg::JsRef<jsg::JsUint8Array>> bytes(jsg::Lock& js);
+    jsg::Promise<kj::String> text(jsg::Lock& js);
+    jsg::Promise<jsg::Value> json(jsg::Lock& js);
+    jsg::Promise<jsg::Ref<Blob>> blob(jsg::Lock& js);
+
+    JSG_RESOURCE_TYPE(GetResult) {
+      JSG_INHERIT(HeadResult);
+      JSG_READONLY_PROTOTYPE_PROPERTY(body, getBody);
+      JSG_READONLY_PROTOTYPE_PROPERTY(bodyUsed, getBodyUsed);
+      JSG_METHOD(arrayBuffer);
+      JSG_METHOD(bytes);
+      JSG_METHOD(text);
+      JSG_METHOD(json);
+      JSG_METHOD(blob);
+      JSG_TS_OVERRIDE(R2ObjectBody {
+        json<T>(): Promise<T>;
+        bytes(): Promise<Uint8Array>;
+        arrayBuffer(): Promise<ArrayBuffer>;
+      });
+    }
+
+    void serialize(jsg::Lock& js,
+        jsg::Serializer& serializer,
+        const jsg::TypeHandler<SerializableGetResult>& getResultHandler);
+    static jsg::Ref<GetResult> deserialize(jsg::Lock& js,
+        rpc::SerializationTag tag,
+        jsg::Deserializer& deserializer,
+        const jsg::TypeHandler<SerializableGetResult>& getResultHandler);
+
+    JSG_SERIALIZABLE(rpc::SerializationTag::R2_OBJECT_BODY);
+
+    void visitForMemoryInfo(jsg::MemoryTracker& tracker) const {
+      body.visitForMemoryInfo(tracker);
+    }
+
+   private:
+    JsReadableStream body;
+    // RPC deserialization cannot run the JavaScript needed to wrap a TypeScript stream.
+    // Its length is restored on first use, after the deserializer finishes reading the graph.
+    kj::Maybe<uint64_t> expectedBodyLength;
+
+    void ensureBodyLength(jsg::Lock& js);
+
+    void visitForGc(jsg::GcVisitor& visitor) {
+      visitor.visit(body);
+    }
+  };
+
+  using HeadBackendResult = jsg::Ref<HeadResult>;
+  using GetBackendResult = kj::OneOf<jsg::Ref<GetResult>, jsg::Ref<HeadResult>>;
+
+  struct ListResult {
+    kj::Array<jsg::Ref<HeadResult>> objects;
+    bool truncated;
+    jsg::Optional<kj::String> cursor;
+    kj::Array<kj::String> delimitedPrefixes;
+
+    JSG_STRUCT(objects, truncated, cursor, delimitedPrefixes);
+    JSG_STRUCT_TS_OVERRIDE(type R2Objects = {
+      objects: R2Object[];
+      delimitedPrefixes: string[];
+    } & (
+      | { truncated: true; cursor: string }
+      | { truncated: false }
+    ));
+  };
+
+  // The backing entrypoint's createMultipartUpload() reply. A named field rather than a bare
+  // string makes it harder for an implementation to return some other string, such as the key,
+  // by mistake. NonCoercible rejects a non-string uploadId rather than stringifying it.
+  struct CreateMultipartUploadBackendResult {
+    jsg::NonCoercible<kj::String> uploadId;
+
+    JSG_STRUCT(uploadId);
+  };
+
+  struct ListOptions {
+    jsg::Optional<int> limit;
+    jsg::Optional<jsg::NonCoercible<kj::String>> prefix;
+    jsg::Optional<jsg::NonCoercible<kj::String>> cursor;
+    jsg::Optional<jsg::NonCoercible<kj::String>> delimiter;
+    jsg::Optional<jsg::NonCoercible<kj::String>> startAfter;
+    jsg::Optional<kj::Array<jsg::NonCoercible<kj::String>>> include;
+
+    JSG_STRUCT(limit, prefix, cursor, delimiter, startAfter, include);
+    JSG_STRUCT_TS_OVERRIDE(type R2ListOptions = never);
+    // Delete the auto-generated ListOptions definition, we instead define it
+    // with R2Bucket so we can access compatibility flags. Note, even though
+    // we're deleting the definition, all definitions will still be renamed
+    // from `R2BucketListOptions` to `R2ListOptions`.
+  };
+
+  jsg::Promise<kj::Maybe<jsg::Ref<HeadResult>>> head(jsg::Lock& js,
+      kj::String key,
+      const jsg::TypeHandler<jsg::Ref<R2Error>>& errorType,
+      CompatibilityFlags::Reader flags);
+  jsg::Promise<kj::OneOf<kj::Maybe<jsg::Ref<GetResult>>, jsg::Ref<HeadResult>>> get(jsg::Lock& js,
+      kj::String key,
+      jsg::Optional<GetOptions> options,
+      const jsg::TypeHandler<jsg::Ref<R2Error>>& errorType,
+      CompatibilityFlags::Reader flags);
+  jsg::Promise<kj::Maybe<jsg::Ref<HeadResult>>> put(jsg::Lock& js,
+      kj::String key,
+      kj::Maybe<R2PutValue> value,
+      jsg::Optional<PutOptions> options,
+      const jsg::TypeHandler<jsg::Ref<R2Error>>& errorType);
+  jsg::Promise<jsg::Ref<R2MultipartUpload>> createMultipartUpload(jsg::Lock& js,
+      kj::String key,
+      jsg::Optional<MultipartOptions> options,
+      const jsg::TypeHandler<jsg::Ref<R2Error>>& errorType);
+  jsg::Ref<R2MultipartUpload> resumeMultipartUpload(jsg::Lock& js,
+      kj::String key,
+      kj::String uploadId,
+      const jsg::TypeHandler<jsg::Ref<R2Error>>& errorType);
+  jsg::Promise<void> delete_(jsg::Lock& js,
+      kj::OneOf<kj::String, kj::Array<kj::String>> keys,
+      const jsg::TypeHandler<jsg::Ref<R2Error>>& errorType);
+
+  // JSRPC equivalents of the above, selected by JSG_RESOURCE_TYPE when the r2_binding_jsrpc
+  // compatibility flag is on. They dispatch to the backing entrypoint instead of synthesizing an
+  // HTTP request. Typed signatures provide the TypeHandlers that validate the entrypoint contract
+  // and unwrap the custom JSRPC thenable. Native R2 results are reconstructed by their custom RPC
+  // deserializers before these handlers receive them.
+  jsg::Promise<kj::Maybe<jsg::Ref<HeadResult>>> headRpc(jsg::Lock& js,
+      kj::String key,
+      const jsg::TypeHandler<jsg::Ref<JsRpcProperty>>& rpcPropHandler,
+      const jsg::TypeHandler<jsg::Function<jsg::Value(kj::String)>>& headFnHandler,
+      const jsg::TypeHandler<jsg::Promise<kj::Maybe<HeadBackendResult>>>& headResultHandler);
+  jsg::Promise<kj::OneOf<kj::Maybe<jsg::Ref<GetResult>>, jsg::Ref<HeadResult>>> getRpc(
+      jsg::Lock& js,
+      kj::String key,
+      jsg::Optional<GetOptions> options,
+      const jsg::TypeHandler<jsg::Ref<JsRpcProperty>>& rpcPropHandler,
+      const jsg::TypeHandler<jsg::Function<jsg::Value(kj::String, jsg::Optional<GetOptions>)>>&
+          getFnHandler,
+      const jsg::TypeHandler<jsg::Promise<kj::Maybe<GetBackendResult>>>& getResultHandler);
+  jsg::Promise<void> deleteRpc(jsg::Lock& js,
+      kj::OneOf<kj::String, kj::Array<kj::String>> keys,
+      const jsg::TypeHandler<jsg::Ref<JsRpcProperty>>& rpcPropHandler,
+      const jsg::TypeHandler<
+          jsg::Function<jsg::Value(kj::OneOf<kj::String, kj::Array<kj::String>>)>>& deleteFnHandler,
+      const jsg::TypeHandler<jsg::Promise<void>>& deleteResultHandler);
+  jsg::Promise<kj::Maybe<jsg::Ref<HeadResult>>> putRpc(jsg::Lock& js,
+      kj::String key,
+      kj::Maybe<R2PutValue> value,
+      jsg::Optional<PutOptions> options,
+      const jsg::TypeHandler<jsg::Ref<JsRpcProperty>>& rpcPropHandler,
+      const jsg::TypeHandler<jsg::Function<jsg::Value(
+          kj::String, kj::Maybe<R2PutValue>, jsg::Optional<PutOptions>)>>& putFnHandler,
+      const jsg::TypeHandler<jsg::Promise<kj::Maybe<HeadBackendResult>>>& putResultHandler);
+  jsg::Promise<jsg::Ref<R2MultipartUpload>> createMultipartUploadRpc(jsg::Lock& js,
+      kj::String key,
+      jsg::Optional<MultipartOptions> options,
+      const jsg::TypeHandler<jsg::Ref<JsRpcProperty>>& rpcPropHandler,
+      const jsg::TypeHandler<
+          jsg::Function<jsg::Value(kj::String, jsg::Optional<MultipartOptions>)>>& createFnHandler,
+      const jsg::TypeHandler<jsg::Promise<CreateMultipartUploadBackendResult>>&
+          createResultHandler);
+  jsg::Promise<ListResult> listRpc(jsg::Lock& js,
+      jsg::Optional<ListOptions> options,
+      const jsg::TypeHandler<jsg::Ref<JsRpcProperty>>& rpcPropHandler,
+      const jsg::TypeHandler<jsg::Function<jsg::Value(jsg::Optional<ListOptions>)>>& listFnHandler,
+      const jsg::TypeHandler<jsg::Promise<ListResult>>& listResultHandler,
+      CompatibilityFlags::Reader flags);
+  jsg::Promise<ListResult> list(jsg::Lock& js,
+      jsg::Optional<ListOptions> options,
+      const jsg::TypeHandler<jsg::Ref<R2Error>>& errorType,
+      CompatibilityFlags::Reader flags);
+
+  JSG_RESOURCE_TYPE(R2Bucket, CompatibilityFlags::Reader flags) {
+    // The compatibility flag restricts the new transport to allowlisted
+    // workers, because it is marked $experimental and EWC decides who
+    // may opt in.
+    // Method order determines the generated TypeScript declaration order, so both branches
+    // declare resumeMultipartUpload in the same position.
+    if (flags.getR2BindingsJsrpc()) {
+      JSG_METHOD_NAMED(head, headRpc);
+      JSG_METHOD_NAMED(get, getRpc);
+      JSG_METHOD_NAMED(put, putRpc);
+      JSG_METHOD_NAMED(createMultipartUpload, createMultipartUploadRpc);
+      JSG_METHOD(resumeMultipartUpload);
+      JSG_METHOD_NAMED(delete, deleteRpc);
+      JSG_METHOD_NAMED(list, listRpc);
+    } else {
+      JSG_METHOD(head);
+      JSG_METHOD(get);
+      JSG_METHOD(put);
+      JSG_METHOD(createMultipartUpload);
+      JSG_METHOD(resumeMultipartUpload);
+      JSG_METHOD_NAMED(delete, delete_);
+      JSG_METHOD(list);
+    }
+    JSG_TS_ROOT();
+    JSG_TS_OVERRIDE({
+      // The order of these matters, since typescript tries to match function signatures in order
+      get(key: string, options: R2GetOptions & { onlyIf: R2BucketConditional | Headers }): Promise<R2ObjectBody | R2Object | null>;
+      get(key: string, options?: R2GetOptions): Promise<R2ObjectBody | null>;
+
+      put(
+        key: string, value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null | Blob,
+        options?: R2PutOptions & { onlyIf: R2BucketConditional | Headers }
+      ): Promise<R2Object | null>;
+      put(key: string, value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null | Blob, options?: R2PutOptions): Promise<R2Object>;
+    });
+    // Exclude `R2Object` from `get` return type if `onlyIf` not specified, and exclude `null` from `put` return type
+
+    // Rather than using the auto-generated R2ListOptions definition, we define
+    // it here so we can access compatibility flags from JSG_RESOURCE_TYPE.
+    if (flags.getR2ListHonorIncludeFields()) {
+      JSG_TS_DEFINE(interface R2ListOptions {
+        limit?: number;
+        prefix?: string;
+        cursor?: string;
+        delimiter?: string;
+        startAfter?: string;
+        include?: ("httpMetadata" | "customMetadata")[];
+      });
+    } else {
+      JSG_TS_DEFINE(interface R2ListOptions {
+        limit?: number;
+        prefix?: string;
+        cursor?: string;
+        delimiter?: string;
+        startAfter?: string;
+      });
+      // Omit `include` field if compatibility flag disabled as ignored
+    }
+  }
+
+  // serialize() always throws; only deserialize() (from a Frankenvalue capability, e.g. ctx.props)
+  // is supported.
+  void serialize(jsg::Lock& js, jsg::Serializer& serializer);
+  static jsg::Ref<R2Bucket> deserialize(
+      jsg::Lock& js, rpc::SerializationTag tag, jsg::Deserializer& deserializer);
+
+  JSG_SERIALIZABLE(rpc::SerializationTag::R2_BUCKET);
+
+  struct WildcardEtag {};
+  struct WeakEtag {
+    kj::String value;
+  };
+  struct StrongEtag {
+    kj::String value;
+  };
+  using Etag = kj::OneOf<WildcardEtag, WeakEtag, StrongEtag>;
+
+  struct UnwrappedConditional {
+    UnwrappedConditional(jsg::Lock& js, Headers& h);
+    UnwrappedConditional(const Conditional& c);
+
+    kj::Maybe<kj::Array<Etag>> etagMatches;
+    kj::Maybe<kj::Array<Etag>> etagDoesNotMatch;
+    kj::Maybe<kj::Date> uploadedBefore;
+    kj::Maybe<kj::Date> uploadedAfter;
+    bool secondsGranularity = false;
+  };
+
+  void visitForMemoryInfo(jsg::MemoryTracker& tracker) const {
+    tracker.trackField("adminBucket", adminBucket);
+    tracker.trackField("jwt", jwt);
+  }
+
+ protected:
+  kj::Maybe<kj::StringPtr> adminBucketName() const {
+    return adminBucket;
+  }
+
+  kj::Maybe<kj::StringPtr> bucketName() const {
+    return bucket;
+  }
+
+  kj::Maybe<kj::StringPtr> bindingName() const {
+    return binding;
+  }
+
+ private:
+  FeatureFlags featureFlags;
+
+  // A channel number, or a live channel when the binding is carried as a capability (e.g. props).
+  kj::OneOf<uint, IoOwn<IoChannelFactory::SubrequestChannel>> clientChannel;
+
+  kj::Maybe<kj::String> adminBucket;
+  kj::Maybe<kj::String> bucket;
+  kj::Maybe<kj::String> binding;
+  kj::Maybe<kj::String> jwt;
+
+  kj::Own<kj::HttpClient> getHttpClient(IoContext& context, TraceContext& traceContext);
+
+  TraceContext makeR2TraceContext(kj::LiteralStringConst spanName,
+      kj::LiteralStringConst operation,
+      kj::Maybe<kj::StringPtr> key = kj::none);
+
+  // Look up a method on the backing entrypoint over this binding's subrequest
+  // channel.
+  jsg::Ref<JsRpcProperty> getRpcMethod(jsg::Lock& js, kj::StringPtr methodName);
+
+  friend class R2MultipartUpload;
+};
+
+// Helper enum to indicate whether returned httpMetadata and customMetadata to be empty or absent.
+// Use EMPTY for `head`, successful `get`, conditional `get`, `put`, and multipart completion. Use ABSENT for list fields that were not requested.
+enum class MissingMetadataPolicy {
+  EMPTY,
+  ABSENT,
+};
+
+jsg::Ref<R2Bucket::HeadResult> headResultFromSerializable(jsg::Lock& js,
+    R2Bucket::SerializableHeadResult rpc,
+    MissingMetadataPolicy policy = MissingMetadataPolicy::EMPTY);
+jsg::Ref<R2Bucket::HeadResult> headResultFromBackend(jsg::Lock& js,
+    R2Bucket::HeadBackendResult result,
+    MissingMetadataPolicy policy = MissingMetadataPolicy::EMPTY);
+
+// Non-generic wrapper avoid moving the parseObjectMetadata implementation into this header file
+// by making use of dynamic dispatch.
+kj::Maybe<jsg::Ref<R2Bucket::HeadResult>> parseHeadResultWrapper(jsg::Lock& js,
+    kj::StringPtr action,
+    R2Result& r2Result,
+    const jsg::TypeHandler<jsg::Ref<R2Error>>& errorType);
+
+void addHeadResultSpanTags(jsg::Lock& js, TraceContext& traceContext, R2Bucket::HeadResult& result);
+
+}  // namespace workerd::api::public_beta

@@ -1,0 +1,414 @@
+// Copyright (c) 2026 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+use std::iter::Peekable;
+use std::str::Chars;
+
+use jsg_macros::jsg_method;
+use jsg_macros::jsg_resource;
+use jsg_macros::jsg_struct;
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum DnsParserError {
+    #[error("Invalid hex string: {0}")]
+    InvalidHexString(String),
+    #[error("ParseInt error: {0}")]
+    ParseIntError(#[from] std::num::ParseIntError),
+    #[error("Invalid DNS response: {0}")]
+    InvalidDnsResponse(String),
+    #[error("unknown dns parser error")]
+    Unknown,
+}
+
+impl From<DnsParserError> for jsg::Error {
+    fn from(val: DnsParserError) -> Self {
+        match val {
+            DnsParserError::InvalidHexString(msg) | DnsParserError::InvalidDnsResponse(msg) => {
+                Self::new_error(&msg)
+            }
+            DnsParserError::ParseIntError(msg) => Self::new_range_error(msg.to_string()),
+            DnsParserError::Unknown => Self::new_error("Unknown dns parser error"),
+        }
+    }
+}
+
+/// CAA record representation
+#[jsg_struct]
+#[derive(Debug)]
+pub struct CaaRecord {
+    pub critical: u8,
+    pub field: String,
+    pub value: String,
+}
+
+/// NAPTR record representation
+#[jsg_struct]
+#[derive(Debug)]
+pub struct NaptrRecord {
+    pub flags: String,
+    pub service: String,
+    pub regexp: String,
+    pub replacement: String,
+    pub order: u32,
+    pub preference: u32,
+}
+
+/// Given a vector of strings, converts each slice to UTF-8 from HEX.
+///
+/// # Errors
+/// `DnsParserError::InvalidHexString`
+/// `DnsParserError::ParseIntError`
+pub fn decode_hex(input: &[&str]) -> Result<Vec<String>, DnsParserError> {
+    let mut v = Vec::with_capacity(input.len());
+
+    for slice in input {
+        let num = u16::from_str_radix(slice, 16)?;
+        let ch = String::from_utf16(&[num])
+            .map_err(|_| DnsParserError::InvalidHexString("Invalid UTF-16 sequence".to_owned()))?;
+        v.push(ch);
+    }
+
+    Ok(v)
+}
+
+/// Replacement values needs to be parsed accordingly.
+///
+/// It has a similar characteristic to CAA and NAPTR records whereas
+/// first character contains the length of the input, and the second character
+/// is the starting index of the substring. We need to continue parsing until there
+/// are no input left, and later join them using "."
+///
+/// It is important that the returning value doesn't end with dot (".") character.
+///
+/// # Errors
+/// `DnsParserError::InvalidHexString`
+/// `DnsParserError::ParseIntError`
+pub fn parse_replacement(input: &[&str]) -> jsg::Result<String, DnsParserError> {
+    if input.is_empty() {
+        return Ok(String::new());
+    }
+
+    let mut output: Vec<String> = vec![];
+    let mut length_index = 0;
+    let mut offset_index = 1;
+
+    // Iterate through each character to parse different frames.
+    // Each frame starts with the length of the remaining frame.
+    while length_index < input.len() {
+        let length = usize::from_str_radix(input[length_index], 16)?;
+        if length + offset_index > input.len() {
+            return Err(DnsParserError::InvalidDnsResponse(
+                "replacement data too short for declared frame length".to_owned(),
+            ));
+        }
+        let subset = input[offset_index..length + offset_index].to_vec();
+        let decoded = decode_hex(&subset)?.join("");
+
+        // We omit the trailing "." from replacements.
+        // Cloudflare DNS returns "_sip._udp.sip2sip.info." whereas Node.js removes trailing dot
+        if !decoded.is_empty() {
+            output.push(decoded);
+        }
+
+        length_index += subset.len() + 1;
+        offset_index = length_index + 1;
+    }
+
+    Ok(output.join("."))
+}
+
+/// Marks RDATA in the RFC 3597 generic format: `\# <length> <hex octets>`.
+/// Anything else is in presentation format.
+const GENERIC_RDATA_PREFIX: &str = "\\#";
+
+fn unterminated_rdata() -> DnsParserError {
+    DnsParserError::InvalidDnsResponse("unterminated escape or quote in RDATA".to_owned())
+}
+
+/// Decodes the escape sequence following a backslash, leaving the iterator
+/// positioned after it. RFC 1035 §5.1 defines two forms: `\DDD`, exactly three
+/// decimal digits naming an octet, and `\X`, a literal X.
+///
+/// An octet becomes the character with the same numeric value, matching how
+/// `decode_hex` maps the octets of generic-format RDATA.
+fn decode_escape(chars: &mut Peekable<Chars<'_>>) -> Result<char, DnsParserError> {
+    let digits: Vec<char> = chars.clone().take(3).collect();
+    if digits.len() == 3 && digits.iter().all(char::is_ascii_digit) {
+        let octet: u8 = digits.iter().collect::<String>().parse()?;
+        chars.nth(2);
+        return Ok(char::from(octet));
+    }
+
+    chars.next().ok_or_else(unterminated_rdata)
+}
+
+/// Splits presentation-format RDATA into its fields. A field is either a bare
+/// whitespace-delimited token or a `"`-quoted character-string; escape
+/// sequences are decoded in both, so escaped whitespace does not end a field.
+///
+/// The master-file metacharacters `;`, `@` and `( )` are deliberately not
+/// implemented: the input is a single RDATA field rather than a zone file, so
+/// there is no comment or origin context. Treating `;` as a comment would
+/// truncate CAA values carrying RFC 8657 parameters.
+fn split_rdata_fields(input: &str) -> Result<Vec<String>, DnsParserError> {
+    let mut fields = Vec::new();
+    let mut chars = input.chars().peekable();
+    loop {
+        while chars.next_if(char::is_ascii_whitespace).is_some() {}
+
+        let quoted = match chars.peek() {
+            None => return Ok(fields),
+            Some('"') => {
+                chars.next();
+                true
+            }
+            Some(_) => false,
+        };
+
+        let mut field = String::new();
+        loop {
+            let Some(c) = chars.next() else {
+                if quoted {
+                    return Err(unterminated_rdata());
+                }
+                break;
+            };
+            match c {
+                '"' if quoted => break,
+                '\\' => field.push(decode_escape(&mut chars)?),
+                c if !quoted && c.is_ascii_whitespace() => break,
+                c => field.push(c),
+            }
+        }
+        fields.push(field);
+    }
+}
+
+/// A CAA property tag must be one of "issue", "issuewild" or "iodef".
+fn validate_caa_field(field: &str) -> Result<(), DnsParserError> {
+    if field == "issuewild" || field == "issue" || field == "iodef" {
+        return Ok(());
+    }
+    Err(DnsParserError::InvalidDnsResponse(format!(
+        "Received unknown field '{field}'"
+    )))
+}
+
+/// Parses CAA RDATA in presentation format: `<flags> <tag> <value>`,
+/// e.g. `0 issue "pki.goog"`.
+fn parse_presentation_caa_record(record: &str) -> Result<CaaRecord, DnsParserError> {
+    let fields = split_rdata_fields(record)?;
+    let [critical, field, value] = fields.as_slice() else {
+        return Err(DnsParserError::InvalidDnsResponse(format!(
+            "CAA record expected 3 fields, got {}",
+            fields.len()
+        )));
+    };
+    validate_caa_field(field)?;
+
+    Ok(CaaRecord {
+        critical: critical.parse()?,
+        field: field.clone(),
+        value: value.clone(),
+    })
+}
+
+/// Parses NAPTR RDATA in presentation format:
+/// `<order> <preference> "<flags>" "<service>" "<regexp>" <replacement>`,
+/// e.g. `20 100 "s" "SIP+D2U" "" _sip._udp.sip2sip.info.`.
+fn parse_presentation_naptr_record(record: &str) -> Result<NaptrRecord, DnsParserError> {
+    let fields = split_rdata_fields(record)?;
+    let [order, preference, flags, service, regexp, replacement] = fields.as_slice() else {
+        return Err(DnsParserError::InvalidDnsResponse(format!(
+            "NAPTR record expected 6 fields, got {}",
+            fields.len()
+        )));
+    };
+
+    Ok(NaptrRecord {
+        flags: flags.clone(),
+        service: service.clone(),
+        regexp: regexp.clone(),
+        // Presentation-format names are fully qualified, but Node.js reports
+        // them without the trailing dot (and the root name as an empty string).
+        replacement: replacement
+            .strip_suffix('.')
+            .unwrap_or(replacement)
+            .to_owned(),
+        order: order.parse()?,
+        preference: preference.parse()?,
+    })
+}
+
+#[jsg_resource]
+pub struct DnsUtil;
+
+#[jsg_resource]
+impl DnsUtil {
+    pub fn new(lock: &mut jsg::Lock<'_>) -> jsg::Rc<Self> {
+        jsg::Rc::new(lock, Self {})
+    }
+
+    /// Parses an unknown RR format returned from Cloudflare DNS.
+    /// Specification is available at
+    /// `<https://datatracker.ietf.org/doc/html/rfc3597>`
+    ///
+    /// The format of the record is as follows:
+    ///   \# <length-in-bytes> <bytes-in-hex>
+    ///   \\# 15 00 05 69 73 73 75 65 70 6b 69 2e 67 6f 6f 67
+    ///       |  |  |  |
+    ///       |  |  |  - Starting point of the actual data
+    ///       |  |  - Length of the field.
+    ///       |  - Number representation of "`is_critical`"
+    ///       - Length of the data
+    ///
+    /// Note: Field can be "issuewild", "issue" or "iodef".
+    ///
+    /// ```
+    /// let record = parse_caa_record("\\# 15 00 05 69 73 73 75 65 70 6b 69 2e 67 6f 6f 67");
+    /// assert_eq!(record.critical, 0);
+    /// assert_eq!(record.field, "issue");
+    /// assert_eq!(record.value, "pki.goog");
+    /// ```
+    /// # Errors
+    /// `DnsParserError::InvalidHexString`
+    /// `DnsParserError::ParseIntError`
+    #[jsg_method]
+    pub fn parse_caa_record(&self, record: String) -> Result<CaaRecord, DnsParserError> {
+        // Let's remove "\\#" and the length of data from the beginning of the record
+        let parts: Vec<_> = record.split_ascii_whitespace().collect();
+        if parts.first() != Some(&GENERIC_RDATA_PREFIX) {
+            return parse_presentation_caa_record(&record);
+        }
+        if parts.len() < 3 {
+            return Err(DnsParserError::InvalidDnsResponse(
+                "CAA record too short: expected at least 3 fields".to_owned(),
+            ));
+        }
+        let data = parts[2..].to_vec();
+        if data.len() < 2 {
+            return Err(DnsParserError::InvalidDnsResponse(
+                "CAA record data too short: expected critical and prefix length fields".to_owned(),
+            ));
+        }
+        let critical = u8::from_str_radix(data[0], 16)?;
+        let prefix_length = usize::from_str_radix(data[1], 16)?;
+
+        if data.len() < 2 + prefix_length {
+            return Err(DnsParserError::InvalidDnsResponse(format!(
+                "CAA record data too short for prefix_length {prefix_length}"
+            )));
+        }
+        let field = decode_hex(&data[2..prefix_length + 2])?.join("");
+        let value = decode_hex(&data[(prefix_length + 2)..])?.join("");
+
+        validate_caa_field(&field)?;
+
+        Ok(CaaRecord {
+            critical,
+            field,
+            value,
+        })
+    }
+
+    /// Parses an unknown RR format returned from Cloudflare DNS.
+    /// Specification is available at
+    /// `<https://datatracker.ietf.org/doc/html/rfc3597>`
+    ///
+    /// The format of the record is as follows:
+    /// \# 37 15 b3 08 ae 01 73 0a 6d 79 2d 73 65 72 76 69 63 65 06 72 65 67 65 78 70 0b 72 65 70 6c 61 63 65 6d 65 6e 74 00
+    ///       |--|  |--|  |  |  |  |--------------------------|  |  |--------------|  |  |--------------------------------|
+    ///       |     |     |  |  |  |                             |  |                 |  - Replacement
+    ///       |     |     |  |  |  |                             |  |                 - Length of first part of the replacement
+    ///       |     |     |  |  |  |                             |  - Regexp
+    ///       |     |     |  |  |  |                             - Regexp length
+    ///       |     |     |  |  |  - Service
+    ///       |     |     |  |  - Length of service
+    ///       |     |     |  - Flag
+    ///       |     |     - Length of flags
+    ///       |     - Preference
+    ///       - Order
+    ///
+    /// ```
+    /// let record = parse_naptr_record("\\# 37 15 b3 08 ae 01 73 0a 6d 79 2d 73 65 72 76 69 63 65 06 72 65 67 65 78 70 0b 72 65 70 6c 61 63 65 6d 65 6e 74 00");
+    /// assert_eq!(record.flags, "s");
+    /// assert_eq!(record.service, "my-service");
+    /// assert_eq!(record.regexp, "regexp");
+    /// assert_eq!(record.replacement, "replacement");
+    /// assert_eq!(record.order, 5555);
+    /// assert_eq!(record.preference, 2222);
+    /// ```
+    ///
+    /// # Errors
+    /// `DnsParserError::InvalidHexString`
+    /// `DnsParserError::ParseIntError`
+    #[jsg_method]
+    pub fn parse_naptr_record(&self, record: String) -> jsg::Result<NaptrRecord, DnsParserError> {
+        let parts: Vec<_> = record.split_ascii_whitespace().collect();
+        if parts.first() != Some(&GENERIC_RDATA_PREFIX) {
+            return parse_presentation_naptr_record(&record);
+        }
+        if parts.len() < 2 {
+            return Err(DnsParserError::InvalidDnsResponse(
+                "NAPTR record too short".to_owned(),
+            ));
+        }
+        let data = parts[1..].to_vec();
+
+        // Need at least: length(1) + order(2) + preference(2) + flag_length(1) = 6 fields
+        if data.len() < 6 {
+            return Err(DnsParserError::InvalidDnsResponse(
+                "NAPTR record data too short: expected at least 6 fields".to_owned(),
+            ));
+        }
+
+        let order_str = data[1..3].to_vec();
+        let order = u32::from_str_radix(&order_str.join(""), 16)?;
+        let preference_str = data[3..5].to_vec();
+        let preference = u32::from_str_radix(&preference_str.join(""), 16)?;
+
+        let flag_length = usize::from_str_radix(data[5], 16)?;
+        let flag_offset = 6;
+        if data.len() < flag_offset + flag_length + 1 {
+            return Err(DnsParserError::InvalidDnsResponse(
+                "NAPTR record too short for flags field".to_owned(),
+            ));
+        }
+        let flags = decode_hex(&data[flag_offset..flag_length + flag_offset])?.join("");
+
+        let service_length = usize::from_str_radix(data[flag_offset + flag_length], 16)?;
+        let service_offset = flag_offset + flag_length + 1;
+        if data.len() < service_offset + service_length + 1 {
+            return Err(DnsParserError::InvalidDnsResponse(
+                "NAPTR record too short for service field".to_owned(),
+            ));
+        }
+        let service = decode_hex(&data[service_offset..service_length + service_offset])?.join("");
+
+        let regexp_length = usize::from_str_radix(data[service_offset + service_length], 16)?;
+        let regexp_offset = service_offset + service_length + 1;
+        if data.len() < regexp_offset + regexp_length {
+            return Err(DnsParserError::InvalidDnsResponse(
+                "NAPTR record too short for regexp field".to_owned(),
+            ));
+        }
+        let regexp = decode_hex(&data[regexp_offset..regexp_length + regexp_offset])?.join("");
+
+        let replacement = parse_replacement(&data[regexp_offset + regexp_length..])?;
+
+        Ok(NaptrRecord {
+            flags,
+            service,
+            regexp,
+            replacement,
+            order,
+            preference,
+        })
+    }
+}
+
+#[cfg(test)]
+#[path = "dns-test.rs"]
+mod tests;

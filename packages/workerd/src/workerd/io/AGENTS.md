@@ -1,0 +1,69 @@
+# src/workerd/io/
+
+## OVERVIEW
+
+I/O lifecycle, per-request context, worker/isolate management, actor storage, consistency gates, and compatibility flags.
+
+## KEY CLASSES
+
+| Class                                       | File                   | Role                                                                                        |
+| ------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------- |
+| `IoContext`                                 | `io-context.{h,c++}`   | Per-request god object; thread-local via `IoContext::current()`                             |
+| `IoContext::IncomingRequest`                | `io-context.h`         | Tracks one inbound request for metrics/tracing; actors have many per IoContext              |
+| `Worker`                                    | `worker.{h,c++}`       | Ref-counted worker instance; owns Script + Isolate refs                                     |
+| `Worker::Isolate`                           | `worker.h:337`         | V8 isolate wrapper; shared across workers with same config                                  |
+| `Worker::Script`                            | `worker.h:250`         | Compiled script bound to an Isolate                                                         |
+| `Worker::Lock`                              | `worker.h:677`         | Synchronous V8 isolate lock (must hold to touch JS heap)                                    |
+| `Worker::AsyncLock`                         | `worker.h:799`         | Fair async queue for acquiring `Worker::Lock`                                               |
+| `Worker::Actor`                             | `worker.h:819`         | Durable Object instance; owns gates + cache + hibernation state                             |
+| `ActorCache`                                | `actor-cache.{h,c++}`  | LRU write-back cache over RPC storage; `ActorCacheOps` base                                 |
+| `ActorSqlite`                               | `actor-sqlite.{h,c++}` | SQLite-backed `ActorCacheOps` implementation                                                |
+| `InputGate` / `OutputGate`                  | `io-gate.{h,c++}`      | Consistency primitives for DO concurrent request handling                                   |
+| `IoOwn<T>` / `IoPtr<T>` / `ReverseIoOwn<T>` | `io-own.{h,c++}`       | Cross-heap smart pointers preventing KJ↔JS ref leaks                                       |
+
+## WHERE TO LOOK
+
+| Task                            | File(s)                                                                           |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| Promise bridging KJ↔JS         | `io-context.h` — `awaitIo()`, `awaitJs()`                                         |
+| Request lifecycle / subrequests | `io-context.{h,c++}`, `worker-entrypoint.{h,c++}`                                 |
+| `IoContext` from Rust           | `io-context/` — the `io-context` crate; identifies an `IoContext` by its `Id`     |
+| Actor storage ops               | `actor-cache.h` (`ActorCacheOps`), `actor-sqlite.h`, `actor-storage.capnp`        |
+| DO gate semantics               | `io-gate.{h,c++}` — `InputGate::CriticalSection`, `OutputGate::lockWhile()`       |
+| Worker/isolate creation         | `worker.{h,c++}`, `worker-modules.{h,c++}`                                        |
+| Metrics/logging hooks           | `observer.h` — `RequestObserver`, `IsolateObserver`, `ActorObserver`              |
+| Tracing                         | `trace.{h,c++,capnp}`, `trace-stream.{h,c++}`, `tracer.{h,c++}`                   |
+| Resource limits                 | `limit-enforcer.h` (abstract interface)                                           |
+| Timer scheduling                | `io-context.c++` (`TimeoutManagerImpl`), `timer-queue.{h,c++}`, `io-timers.{h,c++}`                         |
+| Hibernatable WebSockets         | `hibernation-manager.{h,c++}`                                                     |
+| Cap'n Proto schemas             | `worker-interface.capnp`, `actor-storage.capnp`, `container.capnp`, `trace.capnp` |
+
+## CONVENTIONS
+
+- Isolate-level JSG compatibility settings belong in `configureJsgIsolate()` in `features.h`, shared by workers and the Rust JSG test harness. Call it on a fresh isolate before creating contexts or resource templates; it does not resolve compatibility dates or flag implications.
+- `IoContext::current()` — ambient thread-local access; only valid inside a request
+- `awaitIo(js, kjPromise, func)` bridges KJ→JS; `func` runs under V8 lock. `awaitIo(js, kjPromise)` for identity
+- `awaitJs(js, jsPromise)` bridges JS→KJ
+- `addObject(kj::Own<T>)` returns `IoOwn<T>` — the **only** safe way to store KJ I/O objects reachable from JS heap
+- Cross-context actions (`IoCrossContextExecutor::tryExecute()`, `DeleteQueue::scheduleAction()`) can wait in the owning IoContext's queue, keeping what they capture alive: coalesce actions holding just a weak reference, and count native copies of JS data as external memory. See `scheduleAction()` in `io-own.h`.
+- Two-phase locking: `Worker::AsyncLock` (fair queue) → `Worker::Lock` (V8 isolate lock)
+- `ActorCacheOps` methods return `kj::OneOf<Result, kj::Promise<Result>>` — sync when cached, async otherwise
+- `OutputGate::lockWhile(promise)` blocks outgoing responses until the promise resolves
+- `InputGate::CriticalSection` must succeed or permanently breaks the gate
+- Timer callbacks serialize per input-gate scope; `IoContext::finishCriticalSection()` completes the section and merges its timer queue into the parent. Already-fired callbacks retain input-gate waiter order across adoption and can run before earlier parent deadlines that have not yet been armed.
+- `TimerQueue` (`timer-queue.{h,c++}`) owns deadline ordering and timer rearming and is nonmovable because its timer task captures its address. Section records retain their critical section only while they have timers. Clock reads and cancellation never allocate section records.
+- `bench-timer-clock` measures clock reads inside a critical section with blocked parent timers; lookups must not scan unrelated timer backlogs. It shares the deterministic clock and gate fixture with `io-context-timer-test`.
+- `IoContext::observeTime()` advances the observable clock floor only while an input lock selects the caller's scope; internal pre-entry reads see the root scope and must not override a nested timer's clamp. Timer delivery samples the channel with the callback's own deadline and retains that observation through the V8 microtask checkpoint. Handoff tests must cover callbacks that defer their first clock read to a microtask.
+- Observer classes (`RequestObserver`, `IsolateObserver`, etc.) have no-op defaults; all methods optional
+- Module registry selection: **always** use `isNewModuleRegistryEnabled(flags)` (`features.h`), never read `getNewModuleRegistry()` directly — Python workers ignore the flag and must not end up split across the two registries
+
+## Adding a compatibility flag
+
+When needing to add a compatibility flag, see [`adding-a-compatibility-flag.md`](../../../docs/reference/adding-a-compatibility-flag.md) for guidance.
+
+## ANTI-PATTERNS
+
+- **NEVER** use `awaitIoLegacy()` in new code — use `awaitIo()` with continuation
+- `awaitIoImpl` parameter ordering (promise by-value, func by-ref) is **critical** for exception safety
+- `abortWhen()` promises must **never** enter the V8 isolate
+- Cross-request I/O object access throws by design (IoOwn prevents this)

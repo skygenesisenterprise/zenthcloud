@@ -1,0 +1,210 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_unpretty")
+load("//:build/linking.bzl", "CC_LIBRARY_LINKSTATIC")
+load("//:build/wd_rust_test.bzl", "split_rust_test_srcs", "wd_rust_test")
+
+def rust_cxx_bridge(
+        name,
+        src,
+        hdrs = [],
+        deps = [],
+        visibility = [],
+        strip_include_prefix = None,
+        include_prefix = None,
+        tags = [],
+        local_defines = [],
+        features = []):
+    native.genrule(
+        name = "%s/generated" % name,
+        srcs = [src],
+        outs = [
+            src + ".h",
+            src + ".cc",
+        ],
+        cmd = "$(location //src/rust/cxx:codegen) $(location %s) -o $(location %s.h) -o $(location %s.cc)" % (src, src, src),
+        tools = ["//src/rust/cxx:codegen"],
+    )
+    cc_library(
+        name = name,
+        srcs = [src + ".cc"],
+        hdrs = [src + ".h"] + hdrs,
+        strip_include_prefix = strip_include_prefix,
+        include_prefix = include_prefix,
+        local_defines = local_defines,
+        features = features,
+        linkstatic = CC_LIBRARY_LINKSTATIC,
+        deps = deps,
+        visibility = visibility,
+        tags = tags,
+    )
+
+def rust_cxx_include_prefix():
+    """The include path of the calling package's generated cxx headers.
+
+    It matches the package's C++ include path: <workerd/server/foo.rs.h> for src/workerd/server,
+    and <workerd/rust/jsg/v8.rs.h> for src/rust/jsg.
+    """
+    path = native.package_name().removeprefix("src/")
+    if path == "workerd" or path.startswith("workerd/"):
+        return path
+    return "workerd/" + path
+
+def wd_rust_crate(
+        name,
+        srcs = None,
+        crate_root = None,
+        cxx_bridge_src = None,
+        cxx_bridge_srcs = [],
+        deps = [],
+        link_deps = [],
+        proc_macro_deps = [],
+        rustc_env = {},
+        data = [],
+        test_env = {},
+        test_tags = [],
+        test_deps = [],
+        test_proc_macro_deps = [],
+        test_compile_data = [],
+        test_size = "medium",
+        cxx_bridge_deps = [],
+        cxx_bridge_hdrs = None,
+        cxx_bridge_tags = [],
+        cxx_bridge_local_defines = [],
+        cxx_bridge_features = [],
+        cxx_bridge_visibility = [],
+        testonly = False,
+        visibility = None):
+    """Define rust crate.
+
+    Args:
+        name: crate name.
+        srcs: crate sources; defaults to every .rs file in the package. Name them explicitly when
+            the package also holds other crates or C++. The *-test.rs files among them are the
+            crate's unit tests and are compiled only into <name>_test; see split_rust_test_srcs.
+        crate_root: the crate's root module, if not lib.rs or <name>.rs.
+        cxx_bridge_src: (optional) .rs source file with cxx ffi bridge definition. The rule will
+            generation additional<name>@cxx c++ library with cxx bindings if this is set.
+        deps: crate dependencies: rust crates.
+        link_deps: c/c++ libraries to link with the rust crate/binary
+        visibility: crate visibility.
+        data: additional data files.
+        proc_macro_deps: proc_macro dependencies.
+        rustc_env: rustc environment variables,
+        test_env: additional test environment variable.
+        test_tags: additional test tags.
+        test_deps: test-only dependencies.
+        test_proc_macro_deps: test-only proc_macro dependencies.
+        test_compile_data: files the unit tests read at compile time (include_str!, include_bytes!),
+            such as test vectors. Like the *-test.rs files, they are inputs of <name>_test only.
+        test_size: Bazel test size (default "medium"); affects test timeout. Use "large" for
+            crates with many subtests, since RUST_TEST_THREADS=1 forces serial execution.
+        cxx_bridge_deps: either a flat dependency list applied to every bridge source, or a dict of
+            bridge source => dependency list.
+        cxx_bridge_hdrs: headers the bridges include!(); defaults to every .h file in the package.
+        cxx_bridge_visibility: visibility of the generated <bridge>@cxx libraries, for C++ in
+            another package that includes a bridge's header (it must also link the crate).
+        testonly: True for a crate that only tests depend on (a test harness, the Rust half of a
+            C++ test). Like other test code, it is not held to //build/rust:lints.
+    """
+    if srcs == None:
+        srcs = native.glob(["**/*.rs"])
+    srcs, test_srcs = split_rust_test_srcs(srcs)
+    crate_name = name.replace("-", "_")
+
+    if cxx_bridge_src:
+        cxx_bridge_srcs = cxx_bridge_srcs + [cxx_bridge_src]
+
+    if type(cxx_bridge_deps) == "dict":
+        invalid_bridge_srcs = [bridge_src for bridge_src in cxx_bridge_deps.keys() if bridge_src not in cxx_bridge_srcs]
+        if invalid_bridge_srcs:
+            fail("cxx_bridge_deps contains keys not present in cxx_bridge_srcs: %s" % sorted(invalid_bridge_srcs))
+    else:
+        cxx_bridge_deps = {
+            bridge_src: cxx_bridge_deps + []
+            for bridge_src in cxx_bridge_srcs
+        }
+
+    # Add cxx dependency if there are any cxx bridges
+    if len(cxx_bridge_srcs) > 0:
+        deps = deps + [
+            "//src/rust/cxx/kj-rs",
+            "//src/rust/cxx:cxx",
+        ]
+
+    include_prefix = rust_cxx_include_prefix()
+
+    hdrs = cxx_bridge_hdrs
+    if hdrs == None:
+        hdrs = native.glob(["**/*.h"], allow_empty = True)
+    for bridge_src in cxx_bridge_srcs:
+        rust_cxx_bridge(
+            name = bridge_src + "@cxx",
+            src = bridge_src,
+            hdrs = hdrs,
+            include_prefix = include_prefix,
+            strip_include_prefix = "",
+            # Private by default: a C++ library that includes the bridge header also needs the
+            # crate itself at link time.
+            visibility = cxx_bridge_visibility,
+            deps = cxx_bridge_deps.get(bridge_src, []) + [
+                "//src/rust/cxx/kj-rs",
+                "//src/rust/cxx:cxx",
+            ],
+            tags = cxx_bridge_tags,
+            local_defines = cxx_bridge_local_defines,
+            features = cxx_bridge_features,
+        )
+
+    for bridge_src in cxx_bridge_srcs:
+        link_deps = link_deps + [bridge_src + "@cxx"]
+
+    crate_features = []
+
+    library_kwargs = {}
+    if crate_root != None:
+        library_kwargs["crate_root"] = crate_root
+
+    rust_library(
+        name = name,
+        crate_name = crate_name,
+        srcs = srcs,
+        deps = deps,
+        link_deps = link_deps + ["@@//deps:rust_runtime"],
+        rustc_env = rustc_env,
+        visibility = visibility,
+        data = data,
+        proc_macro_deps = proc_macro_deps,
+        crate_features = crate_features,
+        lint_config = None if testonly else "@workerd//build/rust:lints",
+        testonly = testonly,
+        **library_kwargs
+    )
+
+    wd_rust_test(
+        name = name + "_test",
+        compile_data = test_srcs + test_compile_data,
+        crate = ":" + name,
+        env = test_env,
+        size = test_size,
+        tags = test_tags,
+        crate_features = crate_features,
+        rustc_env = rustc_env,
+        deps = test_deps,
+        proc_macro_deps = test_proc_macro_deps,
+    )
+
+    if len(proc_macro_deps) + len(cxx_bridge_srcs) > 0:
+        rust_unpretty(
+            name = name + "@expand",
+            deps = [":" + name],
+            tags = ["manual", "off-by-default"],
+            testonly = testonly,
+        )
+
+    if len(test_proc_macro_deps) > 0:
+        rust_unpretty(
+            name = name + "_test@expand",
+            deps = [":" + name + "_test"],
+            tags = ["manual", "off-by-default"],
+            testonly = True,
+        )

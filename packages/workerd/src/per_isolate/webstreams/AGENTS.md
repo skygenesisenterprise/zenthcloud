@@ -1,0 +1,283 @@
+# src/per_isolate/webstreams/
+
+TypeScript Streams implementation with a backend-blind reader layer and
+two consumer backends behind the `StreamConsumer`/`ByteStreamConsumer`
+fence. Authoritative docs are IN-SOURCE — read the file headers first.
+
+Parent directory conventions (primordials discipline, JSG capture trap,
+private-brand dispatch, no `instanceof`) apply here — see
+`src/per_isolate/AGENTS.md`.
+
+## FILE MAP
+
+| File          | Role                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| `ring-buffer.ts` | O(1) FIFO with indexed access backing every internal queue below; `drain()` settles a whole queue, emptying it before the first settlement can run user code; leaf module |
+| `view-extent.ts` | A caller-supplied view's byte extent through captured getters, and any BufferSource's (`bufferSourceExtent`); detached/out-of-bounds inputs (DataViews included) read as empty; `copyExtent` copies an extent; requires only `common` |
+| `common.ts`   | Helpers shared by the webstreams modules, including WebIDL argument conversion (`requireObject` for a source, sink, transformer or strategy `init`; `toDictionary` for an options dictionary; `convertQueuingStrategy`, then `extractHighWaterMark` and `extractSizeAlgorithm`, for a strategy; `convertUnderlyingSource`, `convertUnderlyingSink` and `convertTransformer` for the constructors' first argument, each reading every member once, in lexicographic order, into a null-prototype record before the constructor checks `type` or the strategy), `normalizeExpectedLength` (every `expectedLength` and `FixedLengthStream` length converts through it, as C++ converts a uint64_t), `promiseResolvedWith` (WebIDL's "a promise resolved with", for the controllers' start() results and the transformer's cancel and flush) and the promise-slot helpers (`newHandledPending`, `newHandledRejected`, `slotPromise`, `slotResolved` and `slotRejected`: a writer's ready and closed promises and a reader's closed promise are made, read and settled through them, and every promise they make is marked handled) and `nullPrototypeRecord`, which makes a class's instances null-prototype records (the `convert*` results are its record classes); leaf module |
+| `queue.ts`    | QUEUED backend: single-queue/multi-cursor, JS sources; fence interfaces; invariant list      |
+| `native.ts`   | NATIVE backend: C++-backed pull conduit; **the C++/JS contract** + invariants                |
+| `readable.ts` | Reader layer + queued controllers (their shared state machine in `QueuedControllerCore`) + the BACKEND-DISPATCH points (constructor, tee, chains, byte-capable gate, JS-to-C++ extraction) |
+| `writable.ts` / `transform.ts` / `strategies.ts` | WHATWG writable/transform/strategies                                     |
+| `identity.ts` | IdentityTransformStream and FixedLengthStream (byte-capable identity transforms)             |
+| `compression.ts` | CompressionStream/DecompressionStream over the C++ codec handle (utils.newCompressionCodec) |
+| `encoding.ts` | TextEncoderStream and TextDecoderStream (pure JS codec transforms)                           |
+| `streams.ts`  | Module aggregator (user-visible classes + the flag-gated DrainingReader)                     |
+| `types.d.ts`  | TypeScript type definitions for the streams API                                              |
+
+## THE QUEUED TEE MODEL (deliberate spec divergence)
+
+The spec's `tee()` gives each branch its own controller and queue, fed by a
+reader on the original. The queued backend instead has ONE queue with N
+consumers (cursors), one per live branch: `tee()` forks the stream's cursor
+into two branch cursors, removes the original's, and leaves the original an
+inert shell, permanently locked and disturbed (as C++ leaves it; the spec
+disturbs it at the tee's first read) — it consumes nothing, and there is no
+per-branch controller to close or error. A tee of a branch does the same to
+the branch: its two branches join the queue as consumers alongside their
+aunt. Consequences, all handled by the controller (`readable.ts`,
+`controllerConsumerLeaving`):
+
+- The source is cancelled only when the LAST consumer leaves the queue
+  (cancelled, or errored through the Node.js interop hook before the
+  source requested close), with the reason of every consumer that left —
+  one reason as is, several as an `AggregateError` in the order they left
+  (the spec passes `[reason1, reason2]`). A consumer that leaves while
+  others remain gets a promise settled with that cancel, or with
+  `undefined` once the source closes or errors on its own (the spec's
+  shared cancel promise). A branch that errors alone once close is
+  requested — through the hook, or a byte branch's fractional-element fill
+  at close — leaves without a reason and never cancels the source (the
+  spec never forwards a branch's error to it); if it was the last
+  consumer, the source ends as when every consumer has drained
+  (`controllerConsumerErrored`).
+- Erroring the source's own stream (its controller's `error()`, the
+  interop hook) errors every consumer; erroring a live branch errors that
+  branch alone.
+- The source's own stream, once teed away, is closed by the source's own
+  events, never by the branches' progress: it closes when close is
+  requested (having no cursor, it has nothing to drain — so before any
+  branch has read, while chunks may still be buffered for them), or when
+  the last consumer's leaving cancels the source; it errors when the
+  source errors. That is what `finished()` on a teed source observes (the
+  spec's source closes once the tee's reader has drained it, or both
+  branches have cancelled). The source itself ends later — errored,
+  cancelled, or closed with every consumer drained — and that, not its
+  stream's state, gates the controller's `error()`: an `error()` after
+  `close()` still errors the branches that have chunks to drain, although
+  the source's stream has already closed. `addAbortSignal()` on that
+  stream, which stops listening once its stream has finished, no longer
+  reaches them by then, and the interop hook is a no-op on it as on any
+  stream that is no longer readable.
+- A branch that has itself been teed is not the controller's stream, so
+  none of the source's events would reach it: the tee closes it
+  (`closeReadableStreamHusk`), and erroring it does nothing.
+- Consumers that are collected rather than cancelled (every branch dropped
+  while the source still holds its controller) leave the queue with no
+  consumer for good: it drops what it holds and what is enqueued later,
+  `desiredSize` reads as the high-water mark, and the controller releases
+  the source — no more pulls, and its cancel never runs, since GC timing
+  runs no user callback — and retires a `byobRequest` the source holds,
+  while keeping its own state machine (`close()` closes the source's
+  stream; `enqueue()` after it throws as ever). C++ does the same but
+  keeps pulling (readable ledger #20) and keeps the request
+  (readable-byte ledger #25). Suite: `gc.js` in the readable and
+  readable-byte suites.
+- Backpressure follows the SLOWEST consumer: `desiredSize` is the
+  high-water mark minus the largest backlog among the cursors. This trades
+  flow for bounded memory: the spec's per-branch queues keep a reading
+  branch flowing but buffer without bound for an idle one, while here a
+  source that enqueues only while `desiredSize > 0` stalls every branch
+  once an idle branch's backlog reaches the high-water mark, until that
+  branch reads or leaves. The pull trigger is unaffected: a pending read
+  on any cursor triggers a pull regardless of `desiredSize` (a `pull()`
+  that itself gates on `desiredSize` stalls the same way). C++ behaves the
+  same. Suite:
+  `teeBackpressureFollowsSlowestBranch` in the readable suite.
+- The controller's `byobRequest` covers a cursor's reads only while that
+  cursor is the queue's only one. The exception is a released reader's
+  head pull-into on the sole cursor at `tee()`/detach: the controller takes
+  it over (`#releasedHead`), so a request the source holds across the fork
+  keeps working, as in the spec. Responding to it enqueues the head's
+  bytes, old and new, for every cursor (each drops its own copy of the old
+  ones, from `adoptReleasedBytes`). `enqueue()`, `error()`, cancel and a
+  closed-state `respond(0)` retire it. A fractional element fill in it
+  makes `close()` throw and error the source, as the spec's does, when the
+  source's own stream made the read (it is the source's own pull-into);
+  a read taken over from a tee branch is that branch's, and the forked
+  branches error alone at the close, as the branch would. Suite:
+  readable-byte ledgers #25 and #7.
+- Nothing walks a tree of streams: closing, cancelling and erroring act on
+  cursors and their owners, and no stream retains another.
+
+## HANDED-OFF STREAMS
+
+A stream whose data moves to another stream is closed at the handoff,
+left locked and disturbed, and drops its controller
+(`closeReadableStreamHusk`): a teed branch (above), the source of a
+native-backed tee, a native-backed stream whose source is extracted
+(a native-to-native pipe, the C++ bridge's `pumpTo`, a body consumption
+of a native-backed stream: see below) or detached (the
+bridge's `detach()`: `new Request(request)`, socket upgrades), and a
+detached queued stream other than the source's own stream (a tee
+branch, or a copy detached again). The legacy C++ streams leave the
+same streams locked, disturbed and closed. The exception to the lock is
+a native-to-native `pipeTo()`: once the pipe settles, its source is
+unlocked (still closed), and its destination, whose native sink the pipe
+also extracted, is closed or errored with the pipe's error and unlocked
+(`finishNativePipe` in readable.ts), as a pipe releases its endpoints.
+The Node.js interop closed-promise settles then, and the interop error
+hook, which acts only
+on a readable stream, cannot reach the moved source. A queued source's
+own stream, once detached, is the exception: it stays the controller's
+stream, closing and erroring with the source, and the hook on it errors
+the detached stream. Suites:
+`src/tests/node/stream/finished-and-abort.js`,
+`src/tests/streams/sockets/socket-streams.js`.
+
+A native-backed writable detached by the bridge (`detachWritableStream`:
+socket upgrades) closes at once and stays locked, as the legacy one
+does. Writes still pending from a released writer reject with the
+native sink's disconnect error ("Network connection lost."), and the
+sink cancels the one in flight, so nothing reaches the taken-over
+connection.
+
+## KEY RULES
+
+- The reader layer must stay backend-blind; backend divergence is
+  confined to the fence interface and the marked BACKEND-DISPATCH points.
+- Internal code never dispatches through a user-reachable prototype
+  method: call the private method (`#error`, `#read`), a module slot
+  (`controllerError`), or an `uncurryThis` capture taken at load time
+  (`transform.ts`, `encoding.ts`). The public method is the brand check
+  for its own class plus that internal entry. A helper chained across
+  sibling classes (`getReaderBase`, the chained controller helpers)
+  accepts every class in the chain, so it is no brand check.
+- Every dictionary the implementation builds itself — the sources, sinks,
+  strategies and transformers of the internal pairs, and the stand-in for
+  an omitted argument (`kNullProtoObject`) — is null-prototype, so a
+  polluted `Object.prototype` cannot supply members. The internal pairs
+  build theirs from the same record classes the `convert*` functions
+  return (`QueuingStrategyRecord`, `UnderlyingSinkRecord`,
+  `UnderlyingSourceRecord`, `TransformerRecord` in `common.ts`), whose
+  prototypes `nullPrototypeRecord` detaches; see `src/per_isolate/AGENTS.md`
+  for when to use a record class. Members of the C++
+  native source are read with `declaresMember`, which stops before
+  `Object.prototype`. Copies of internal bytes use `cloneArrayBuffer`
+  (spec CloneArrayBuffer), never the species-consulting `slice`.
+  Suite guard: each suite's `pollution.js`.
+- The backends settle reads with results whose prototype chain has no
+  `Object.prototype` (`createReadResult` in queue.ts), so internal reads
+  run no user code.
+  A user's read settles the promise the user holds, inside the call that
+  answers it, with a plain `{ value, done }` (`userReadResult`), after the
+  read's completion steps: one `then` lookup per read, at the spec's
+  moment. Suite guard: `then-interceptors.js` (readable), `pollution.js`
+  (readable-byte).
+- Every promise the C++ bridge awaits resolves with a primitive,
+  `undefined` or a null-prototype record, never an object on the
+  `Object.prototype` chain, whose `then` a patched
+  `Object.prototype.then` would supply. Body consumption resolves
+  `consumeReadableStreamAsArrayBufferRecord`'s `{ buffer }`, from which
+  C++ builds every result (`arrayBuffer()`, `bytes()`, `blob()`,
+  `text()`, `json()`), as the legacy implementation builds them from
+  its own reads. Suite guard: `thenPatchOnlyInterceptsConsumptionResult`
+  (readable), plus the patched-`then` consumption test in
+  `js-readable-stream-test.c++`.
+- A body consumption of a native-backed stream that the JS collector
+  would read straight from its source (readable, unlocked, undisturbed,
+  not pending closure, any declared `expectedLength` within the limit)
+  skips the JS collector: `extractNativeSourceForCollection` hands the
+  source over, and the bridge collects it in C++
+  (`collectNativeSource` in `js-readable-stream.c++`), failing as the
+  JS path would: the conduit's `expectedLength` errors, and
+  `collectChunks()`'s memory-limit error, which cancels the source. The
+  stream is handed off at once (HANDED-OFF STREAMS), so it is closed
+  while the bytes are still being read, and a source failure no longer
+  errors it. Keep the two paths' outcomes identical when changing
+  either.
+- Do not port logic across the fence without checking BOTH invariant
+  lists (`queue.ts` and `native.ts` headers).
+- The native source contract (V8-private marker, standard pull/cancel hooks,
+  byobRequest discrimination, once-per-pull delivery of a non-empty
+  answer, memory handed over that the conduit neither checks nor
+  transfers, per-pull abort signal for cancellation, under-delivery =
+  EOF signal delivering the partial as `{done: false, value: partial}`
+  with the next read observing EOF, tee hook, `expectedLength`
+  exact-total byte contract) is specified in the `native.ts` header.
+  The C++ implementation (`ReadableStreamNativeSource` in
+  `src/workerd/api/js-readable-stream.{h,c++}`) MUST conform to it; JS
+  mocks in tests exercise the conduit independently. Key addition:
+  `pull` receives an extension `signal`
+  argument — the source checks `signal.aborted` before delivery and stashes
+  bytes for redelivery if aborted (race buffering lives source-side; the JS
+  conduit is uniformly bufferless), while an aborted pull's rejection errors
+  the stream as a live pull's does, unless it is `signal.reason`.
+- The `webstreams/cpp_exports` table, which the C++ bridge reads with an
+  ordinary property get (`getCppExport`), is frozen and has a null
+  prototype, so a name missing from it cannot resolve through
+  `Object.prototype`. Keep both when adding exports.
+- `nativeStreamInternals` (private-slot labels, conduit
+  construction) is module-private, consumed only by readable.ts/writable.ts
+  and the C++ bridge via `v8::Private::ForApi`. The C++ mocks in
+  `js-readable-stream-test.c++` construct real `ReadableStreamNativeSource`
+  objects, or, for a source that breaks the contract, mark a plain object
+  with a `kNativeSource` private slot through test-only native accessors;
+  no JS-visible private-access utility or marker export exists.
+- Every stream instance carries a V8-private brand
+  (`kReadableStreamBrand` / `kWritableStreamBrand`), stamped at the very
+  top of the constructor (before any early return). The C++ bridge's
+  `tryUnwrapTs` recognizes streams by reading the private slot without JS
+  execution. It is neither reflected nor inherited, and an ordinary symbol
+  cannot forge it. That constraint is load-bearing: recognition
+  runs during RPC deserialization, inside V8's no-JS-execution scope. Any
+  new construction path MUST go through the constructors (or stamp the
+  brand itself).
+- The C++ bridge MUST NOT dispatch into the TypeScript implementation
+  while JS execution is disallowed (`js.isJavascriptExecutionDisallowed()`,
+  set during RPC value deserialization): `getCppExport`/`dispatchCall`/
+  `invokeMethod` assert this. Bridge operations reachable in that scope
+  either answer from C++-side knowledge (state probes return the
+  hydration-fresh answers; see `JsReadableStream::isDisturbed`) or happen
+  before the scope entirely (stream construction via
+  `RpcDeserializerExternalHandler::prepare()`'s externals hydration).
+
+## NODE.JS INTEROP HOOKS
+
+`ReadableStream.prototype` and `WritableStream.prototype` carry two
+non-enumerable members keyed by the well-known symbols Node's own web
+streams use: a `Symbol.for('nodejs.webstream.isClosedPromise')` getter
+(an object whose `promise` settles with the stream: fulfilled on close,
+rejected with the stored error, created lazily and marked handled) and a
+`Symbol.for('nodejs.webstream.controllerErrorFunction')` method (errors
+the stream as its controller's `error()` would; a native-backed readable
+also cancels its source; a queued tee branch, whose controller is shared
+with its siblings, errors alone — its cursor leaves the queue as a
+cancelled branch's would, until the source requests close; a branch that
+has itself been teed is inert; see the tee model above). The readable method errors byte streams too, native
+ones included; Node's is deliberately a no-op for byte stream controllers,
+so `addAbortSignal()` on a `Response` body (a byte stream in Node) is
+inert there and errors the body here. The method runs neither the sink's
+abort nor the source's cancel, so on a half of a transform pair
+(`transform.ts`, `identity.ts`, `compression.ts`; the encoding streams
+are TransformStreams) the other half would never learn of it: each pair
+registers an interop error hook on both halves (`setInteropErrorHook` in
+`internalsForPipe` and `internalsForTransform`), called synchronously
+after the hook has errored a half, and errors the pair as
+`TransformStreamDefaultController.error()` would (`TransformStreamError`).
+Node errors the one half only and the other's pending operations stay
+pending. `src/node`'s `finished()`/`eos()` (also behind
+`stream/promises`) and `addAbortSignal()` rely on the hooks to observe or
+error a web stream without taking its lock; nothing else in the node layer
+touches them. The C++ implementation has no equivalent, and the node layer
+raises `ERR_WEB_STREAM_INTEROP_UNSUPPORTED` there. Suite:
+`src/tests/node/stream/finished-and-abort.js` and
+`abort-transform-pairs.js`.
+
+## ANTI-PATTERNS
+
+- **NEVER** expose internals on user-visible exports. `streams.ts` exports
+  exactly the user-visible classes plus `ReadableStreamDrainingReader`,
+  which `main.ts` installs only under the internal-testing
+  `expose_draining_reader` flag. (The Node.js interop hooks above are the
+  one deliberate, symbol-keyed exception.)

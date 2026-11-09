@@ -1,0 +1,20 @@
+load("//:build/wd_test.bzl", "wd_test")
+
+# The formdata streams suite runs the same test modules under two
+# configs: formdata-cpp against the C++ implementation, formdata-ts
+# against the TypeScript implementation.
+
+formdata_suite_srcs = glob(["*.js"]) + ["formdata-modules.capnp"]
+
+wd_test(
+    size = "large",
+    src = "formdata-cpp.wd-test",
+    data = formdata_suite_srcs,
+)
+
+wd_test(
+    size = "large",
+    src = "formdata-ts.wd-test",
+    args = ["--experimental"],
+    data = formdata_suite_srcs,
+)

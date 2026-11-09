@@ -1,0 +1,1423 @@
+// Copyright (c) 2026 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+//! Tests for resource method callbacks.
+//!
+//! These tests ensure that resource methods can be called from JavaScript and that
+//! the resource pointer is correctly unwrapped. This specifically validates that
+//! V8's internal field embedder data type tags are used correctly when getting
+//! aligned pointers from internal fields.
+
+use std::cell::Cell;
+use std::rc::Rc;
+
+use jsg::ExceptionType;
+use jsg::ToJS;
+use jsg::v8;
+use jsg_macros::jsg_constructor;
+use jsg_macros::jsg_method;
+use jsg_macros::jsg_resource;
+use jsg_macros::jsg_static_constant;
+
+#[jsg_resource]
+struct EchoResource {
+    prefix: String,
+}
+
+#[jsg_resource]
+#[expect(clippy::unnecessary_wraps)]
+impl EchoResource {
+    #[jsg_method]
+    pub fn echo(&self, message: String) -> Result<String, jsg::Error> {
+        Ok(format!("{}{}", self.prefix, message))
+    }
+
+    #[jsg_method]
+    pub fn greet(&self, name: &str) -> String {
+        format!("{}{}!", self.prefix, name)
+    }
+}
+
+#[jsg_resource]
+struct DirectReturnResource {
+    name: String,
+    counter: Rc<Cell<u32>>,
+}
+
+#[jsg_resource]
+impl DirectReturnResource {
+    #[jsg_method]
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
+    #[jsg_method]
+    pub fn is_valid(&self) -> bool {
+        !self.name.is_empty()
+    }
+
+    #[jsg_method]
+    pub fn get_counter(&self) -> u32 {
+        self.counter.get()
+    }
+
+    #[jsg_method]
+    pub fn increment_counter(&self) {
+        self.counter.set(self.counter.get() + 1);
+    }
+
+    #[jsg_method]
+    pub fn maybe_name(&self) -> Option<String> {
+        Some(self.name.clone()).filter(|s| !s.is_empty())
+    }
+}
+
+/// Validates that resource methods can be called from JavaScript.
+/// This test ensures the embedder data type tag is correctly used when
+/// unwrapping resource pointers from V8 internal fields.
+#[test]
+fn resource_method_callback_receives_correct_self() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(
+            lock,
+            EchoResource {
+                prefix: "Hello, ".to_owned(),
+            },
+        );
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "echoResource", wrapped);
+
+        // Call the method from JavaScript
+        let result: String = ctx.eval(lock, "echoResource.echo('World!')").unwrap();
+        assert_eq!(result, "Hello, World!");
+        Ok(())
+    });
+}
+
+/// Validates that multiple method calls work correctly on the same resource.
+#[test]
+fn resource_method_can_be_called_multiple_times() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(
+            lock,
+            EchoResource {
+                prefix: ">> ".to_owned(),
+            },
+        );
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "echo", wrapped);
+
+        // First call
+        let result: String = ctx.eval(lock, "echo.echo('first')").unwrap();
+        assert_eq!(result, ">> first");
+
+        // Second call
+        let result: String = ctx.eval(lock, "echo.echo('second')").unwrap();
+        assert_eq!(result, ">> second");
+        Ok(())
+    });
+}
+
+/// Validates that methods can accept &str parameters.
+#[test]
+fn resource_method_accepts_str_ref_parameter() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(
+            lock,
+            EchoResource {
+                prefix: "Hello, ".to_owned(),
+            },
+        );
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "echo", wrapped);
+
+        let result: String = ctx.eval(lock, "echo.greet('World')").unwrap();
+        assert_eq!(result, "Hello, World!");
+        Ok(())
+    });
+}
+
+/// Validates that methods can return values directly without Result wrapper.
+#[test]
+fn resource_method_returns_non_result_values() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let counter = Rc::new(Cell::new(42));
+        let resource = jsg::Rc::new(
+            lock,
+            DirectReturnResource {
+                name: "TestResource".to_owned(),
+                counter: counter.clone(),
+            },
+        );
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "resource", wrapped);
+
+        // Test getString returns string
+        let result: String = ctx.eval(lock, "resource.getName()").unwrap();
+        assert_eq!(result, "TestResource");
+
+        // Test isValid returns boolean
+        let result: bool = ctx.eval(lock, "resource.isValid()").unwrap();
+        assert!(result);
+
+        // Test getCounter returns number
+        assert_eq!(ctx.eval::<u32>(lock, "resource.getCounter()").unwrap(), 42);
+
+        // Test incrementCounter returns undefined (we just check it doesn't error)
+        let _: Option<bool> = ctx.eval(lock, "resource.incrementCounter()").unwrap();
+        assert_eq!(counter.get(), 43);
+
+        // Test maybeName returns string for Some
+        let result: String = ctx.eval(lock, "resource.maybeName()").unwrap();
+        assert_eq!(result, "TestResource");
+        Ok(())
+    });
+}
+
+#[jsg_resource]
+struct MathResource;
+
+#[jsg_resource]
+impl MathResource {
+    #[jsg_method]
+    pub fn add(a: i32, b: i32) -> i32 {
+        a + b
+    }
+
+    #[jsg_method]
+    pub fn greet(name: String) -> String {
+        format!("Hello, {name}!")
+    }
+
+    #[jsg_method]
+    pub fn divide(a: f64, b: f64) -> Result<f64, jsg::Error> {
+        if b == 0.0 {
+            return Err(jsg::Error::new_range_error("Division by zero"));
+        }
+        Ok(a / b)
+    }
+
+    #[jsg_method]
+    pub fn get_prefix(&self) -> String {
+        "math".to_owned()
+    }
+}
+
+/// Validates that methods without &self are registered as static methods on the class.
+#[test]
+fn static_method_callable_on_class() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<MathResource>(lock).unwrap();
+        ctx.set_global(lock, "MathResource", constructor);
+
+        assert_eq!(ctx.eval::<i32>(lock, "MathResource.add(2, 3)").unwrap(), 5);
+
+        let result: String = ctx.eval(lock, "MathResource.greet('World')").unwrap();
+        assert_eq!(result, "Hello, World!");
+        Ok(())
+    });
+}
+
+/// Validates that instance methods still work when static methods are present.
+#[test]
+fn instance_and_static_methods_coexist() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        // Expose the class constructor as a global
+        let constructor = jsg::resource::function_template_of::<MathResource>(lock).unwrap();
+        ctx.set_global(lock, "MathResource", constructor);
+
+        // Allocate and expose an instance as a global
+        let resource = jsg::Rc::new(lock, MathResource);
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "math", wrapped);
+
+        // Instance method works on the object
+        let result: String = ctx.eval(lock, "math.getPrefix()").unwrap();
+        assert_eq!(result, "math");
+
+        // Static method works on the class
+        assert_eq!(
+            ctx.eval::<i32>(lock, "MathResource.add(10, 20)").unwrap(),
+            30
+        );
+
+        // Static methods are NOT on the instance
+        let is_undefined: bool = ctx.eval(lock, "typeof math.add === 'undefined'").unwrap();
+        assert!(is_undefined);
+        Ok(())
+    });
+}
+
+/// Validates that static methods with Result return type work on the success path.
+#[test]
+fn static_method_result_return_type() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<MathResource>(lock).unwrap();
+        ctx.set_global(lock, "MathResource", constructor);
+
+        let result: String = ctx.eval(lock, "MathResource.greet('Rust')").unwrap();
+        assert_eq!(result, "Hello, Rust!");
+        Ok(())
+    });
+}
+
+/// Validates that static methods propagate JS exceptions from `Result::Err`.
+#[test]
+fn static_method_throws_exception() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<MathResource>(lock).unwrap();
+        ctx.set_global(lock, "MathResource", constructor);
+
+        // Valid call succeeds
+        let result: f64 = ctx.eval(lock, "MathResource.divide(10, 2)").unwrap();
+        assert!((result - 5.0).abs() < f64::EPSILON);
+
+        // Division by zero throws a RangeError
+        let err = ctx
+            .eval::<f64>(lock, "MathResource.divide(1, 0)")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert_eq!(err.name, ExceptionType::RangeError);
+        assert!(err.message.contains("Division by zero"));
+        Ok(())
+    });
+}
+
+/// Validates that Option<T> returns null for None.
+#[test]
+fn resource_method_returns_null_for_none() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(
+            lock,
+            DirectReturnResource {
+                name: String::new(),
+                counter: Rc::new(Cell::new(0)),
+            },
+        );
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "resource", wrapped);
+
+        let result: Option<String> = ctx.eval(lock, "resource.maybeName()").unwrap();
+        assert!(result.is_none());
+        Ok(())
+    });
+}
+
+// =============================================================================
+// Static constant tests
+// =============================================================================
+
+#[jsg_resource]
+struct ConstantResource;
+
+#[jsg_resource]
+impl ConstantResource {
+    #[jsg_static_constant]
+    pub const MAX_SIZE: u32 = 1024;
+
+    #[jsg_static_constant]
+    pub const STATUS_OK: i32 = 0;
+
+    #[jsg_static_constant]
+    pub const STATUS_ERROR: i32 = -1;
+
+    #[jsg_static_constant]
+    pub const SCALE_FACTOR: f64 = 2.5;
+
+    #[jsg_method]
+    pub fn get_name(&self) -> String {
+        "constant_resource".to_owned()
+    }
+}
+
+/// Validates that static constants are accessible on the constructor.
+#[test]
+fn static_constant_accessible_on_constructor() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<ConstantResource>(lock).unwrap();
+        ctx.set_global(lock, "ConstantResource", constructor);
+
+        assert_eq!(
+            ctx.eval::<u32>(lock, "ConstantResource.MAX_SIZE").unwrap(),
+            1024
+        );
+        assert_eq!(
+            ctx.eval::<i32>(lock, "ConstantResource.STATUS_OK").unwrap(),
+            0
+        );
+        assert_eq!(
+            ctx.eval::<i32>(lock, "ConstantResource.STATUS_ERROR")
+                .unwrap(),
+            -1
+        );
+
+        let result: f64 = ctx.eval(lock, "ConstantResource.SCALE_FACTOR").unwrap();
+        assert!((result - 2.5).abs() < f64::EPSILON);
+        Ok(())
+    });
+}
+
+/// Validates that static constants are also accessible on instances (via prototype).
+#[test]
+fn static_constant_accessible_on_instance() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(lock, ConstantResource {});
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "obj", wrapped);
+
+        assert_eq!(ctx.eval::<u32>(lock, "obj.MAX_SIZE").unwrap(), 1024);
+        assert_eq!(ctx.eval::<i32>(lock, "obj.STATUS_OK").unwrap(), 0);
+        Ok(())
+    });
+}
+
+/// Validates that static constants are read-only (not writable).
+#[test]
+fn static_constant_is_read_only() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<ConstantResource>(lock).unwrap();
+        ctx.set_global(lock, "ConstantResource", constructor);
+
+        // Attempt to overwrite should silently fail (strict mode would throw).
+        // The value should remain unchanged.
+        let result: u32 = ctx
+            .eval(
+                lock,
+                "ConstantResource.MAX_SIZE = 9999; ConstantResource.MAX_SIZE",
+            )
+            .unwrap();
+        assert_eq!(result, 1024);
+        Ok(())
+    });
+}
+
+/// Validates that static constants coexist with methods.
+#[test]
+fn static_constant_coexists_with_methods() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(lock, ConstantResource {});
+
+        let constructor = jsg::resource::function_template_of::<ConstantResource>(lock).unwrap();
+        ctx.set_global(lock, "ConstantResource", constructor);
+
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "obj", wrapped);
+
+        // Instance method works
+        let result: String = ctx.eval(lock, "obj.getName()").unwrap();
+        assert_eq!(result, "constant_resource");
+
+        // Static constant works on constructor
+        assert_eq!(
+            ctx.eval::<u32>(lock, "ConstantResource.MAX_SIZE").unwrap(),
+            1024
+        );
+
+        // Static constant works on instance
+        assert_eq!(ctx.eval::<u32>(lock, "obj.MAX_SIZE").unwrap(), 1024);
+        Ok(())
+    });
+}
+
+// =============================================================================
+// catch_panic tests
+// =============================================================================
+
+/// A resource whose `panic_now` method unconditionally panics.
+/// Used to verify that a panic inside a `#[jsg_method]` callback is caught and
+/// converted to a JavaScript exception rather than aborting the process.
+#[jsg_resource]
+struct PanicResource;
+
+#[jsg_resource]
+impl PanicResource {
+    #[jsg_method]
+    pub fn panic_now(&self) {
+        panic!("intentional panic in jsg_method");
+    }
+}
+
+/// Full round-trip: a JS "request handler" function calls a Rust-backed API
+/// method that panics.  Verifies that:
+///
+/// 1. `catch_panic` converts the panic to an `"internal error"` JS exception
+///    whose message does NOT expose the raw Rust panic string to JS.
+/// 2. `terminate_execution()` is called so no further JS executes.
+/// 3. The process is not aborted.
+///
+/// This mirrors a real Worker fetch handler that delegates to a Rust-backed
+/// binding: the panic must error the request cleanly and terminate the isolate.
+#[test]
+fn panic_in_rust_backed_api_errors_request_and_terminates_isolate() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(lock, PanicResource);
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "obj", wrapped);
+
+        // Simulate a fetch-handler that delegates to a Rust-backed binding.
+        // The handler calls `obj.panicNow()` — just like real Worker code
+        // would call into a Rust-implemented API method.
+        ctx.eval_raw(
+            lock,
+            "function handleRequest() { while(true) { obj.panicNow(); } throw null; }",
+        )
+        .unwrap();
+
+        // Invoke the handler — the panic inside panicNow() is caught by
+        // catch_panic, which calls throw_internal_error() then
+        // terminate_execution().  The internal error exception is set first
+        // and is visible to eval's TryCatch; it carries "internal error" in
+        // its message while hiding the raw panic string from JS.
+        let err = ctx
+            .eval::<bool>(lock, "handleRequest()")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+
+        assert!(
+            err.message.contains("internal error"),
+            "JS error message should say \"internal error\", got: {:?}",
+            err.message
+        );
+        assert!(
+            !err.message.contains("intentional panic in jsg_method"),
+            "raw panic message must not be exposed to JS, got: {:?}",
+            err.message
+        );
+
+        Ok(())
+    });
+}
+
+/// A resource whose method runs closures in a nested `CallbackScope` through
+/// `jsg::catch_panic`, as a Rust entry point called from C++ does.
+#[jsg_resource]
+struct CatchPanicResource;
+
+#[jsg_resource]
+impl CatchPanicResource {
+    #[jsg_method]
+    pub fn catch_nested_panic(&self, lock: &mut jsg::Lock) {
+        let isolate = lock.isolate().as_ffi();
+
+        // SAFETY: the callback's scope is open and innermost while `scope` lives, and `lock`
+        // is not used meanwhile.
+        let scope = std::pin::pin!(unsafe { jsg::CallbackScope::new(isolate) });
+        assert_eq!(jsg::catch_panic(scope, |_| 7), Some(7));
+
+        // SAFETY: as above.
+        let scope = std::pin::pin!(unsafe { jsg::CallbackScope::new(isolate) });
+        let result: Option<()> = jsg::catch_panic(scope, |_| panic!("intentional nested panic"));
+        assert_eq!(result, None);
+    }
+}
+
+/// A panic caught by `jsg::catch_panic` leaves an internal error pending, which
+/// reaches JavaScript once the method returns.
+#[test]
+fn catch_panic_returns_none_and_leaves_exception_pending() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let wrapped = jsg::Rc::new(lock, CatchPanicResource).to_js(lock)?;
+        ctx.set_global(lock, "obj", wrapped);
+        let err = ctx
+            .eval::<bool>(lock, "obj.catchNestedPanic(); true")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert!(
+            err.message.contains("internal error"),
+            "unexpected error: {:?}",
+            err.message
+        );
+        assert!(!err.message.contains("intentional nested panic"));
+        Ok(())
+    });
+}
+
+// =============================================================================
+// Re-entrancy tests
+// =============================================================================
+
+/// A resource whose method calls back into JavaScript, which can call the method again.
+#[jsg_resource]
+struct ReentrantResource {
+    depth: Cell<u32>,
+    max_depth: Cell<u32>,
+}
+
+#[jsg_resource]
+impl ReentrantResource {
+    #[jsg_method]
+    pub fn enter<'s>(
+        &self,
+        lock: &mut jsg::Lock<'s>,
+        callback: v8::Local<'s, v8::Value>,
+    ) -> Result<(), jsg::Error> {
+        self.depth.set(self.depth.get() + 1);
+        self.max_depth
+            .set(self.max_depth.get().max(self.depth.get()));
+        let callback: v8::Local<v8::Function> = callback
+            .try_into()
+            .map_err(|_| jsg::Error::new_type_error("not a function"))?;
+        callback.call(lock, None, &[])?;
+        self.depth.set(self.depth.get() - 1);
+        Ok(())
+    }
+}
+
+/// A method that calls into JavaScript can be re-entered on the same resource, since
+/// methods share their resource instead of borrowing it exclusively.
+#[test]
+fn method_can_be_reentered() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(
+            lock,
+            ReentrantResource {
+                depth: Cell::new(0),
+                max_depth: Cell::new(0),
+            },
+        );
+        let wrapped = resource.clone().to_js(lock)?;
+        ctx.set_global(lock, "obj", wrapped);
+        ctx.eval_raw(
+            lock,
+            "obj.enter(() => obj.enter(() => obj.enter(() => {})))",
+        )
+        .unwrap();
+        assert_eq!(resource.depth.get(), 0);
+        assert_eq!(resource.max_depth.get(), 3);
+        Ok(())
+    });
+}
+
+/// A resource whose methods call callbacks and return what they threw, as C++ JSG does when a
+/// `jsg::Function` throws.
+#[jsg_resource]
+struct CallingResource {
+    /// Set when a call fails with an error that stands for a pending exception.
+    saw_pending: Cell<bool>,
+    /// An error kept by `catch_and_save`.
+    saved: Cell<Option<jsg::Error>>,
+}
+
+impl CallingResource {
+    fn function(
+        callback: v8::Local<'_, v8::Value>,
+    ) -> Result<v8::Local<'_, v8::Function>, jsg::Error> {
+        v8::Local::<v8::Function>::try_from(callback)
+            .map_err(|_| jsg::Error::new_type_error("not a function"))
+    }
+}
+
+#[jsg_resource]
+impl CallingResource {
+    #[jsg_method]
+    pub fn call<'s>(
+        &self,
+        lock: &mut jsg::Lock<'s>,
+        callback: v8::Local<'s, v8::Value>,
+    ) -> Result<(), jsg::Error> {
+        Self::function(callback)?
+            .call(lock, None, &[])
+            .inspect_err(|err| self.saw_pending.set(err.is_pending()))?;
+        Ok(())
+    }
+
+    /// Calls `first`, then `second` even if `first` failed, and returns how `first` ended.
+    #[jsg_method]
+    pub fn call_both<'s>(
+        &self,
+        lock: &mut jsg::Lock<'s>,
+        first: v8::Local<'s, v8::Value>,
+        second: v8::Local<'s, v8::Value>,
+    ) -> Result<(), jsg::Error> {
+        let first = Self::function(first)?.call(lock, None, &[]);
+        let second = Self::function(second)?.call(lock, None, &[]);
+        self.saw_pending
+            .set(second.is_err_and(|err| err.is_pending()));
+        first.map(|_| ())
+    }
+
+    /// Calls `callback` in `try_catch`, and returns how `try_catch` ended.
+    #[jsg_method]
+    pub fn call_catching<'s>(
+        &self,
+        lock: &mut jsg::Lock<'s>,
+        callback: v8::Local<'s, v8::Value>,
+    ) -> Result<bool, jsg::Error> {
+        let callback = Self::function(callback)?;
+        let caught = lock
+            .try_catch(|lock| callback.call(lock, None, &[]))
+            .inspect_err(|err| self.saw_pending.set(err.is_pending()))?;
+        Ok(caught.is_err())
+    }
+
+    /// Calls `callback`, and fails with a new error whether or not it threw.
+    #[jsg_method]
+    pub fn call_then_fail<'s>(
+        &self,
+        lock: &mut jsg::Lock<'s>,
+        callback: v8::Local<'s, v8::Value>,
+    ) -> Result<(), jsg::Error> {
+        let _ = Self::function(callback)?.call(lock, None, &[]);
+        Err(jsg::Error::new_type_error("replaced"))
+    }
+
+    /// Calls `callback` in `try_catch`, keeping the error the call failed with after
+    /// `try_catch` caught its exception.
+    #[jsg_method]
+    pub fn catch_and_save<'s>(
+        &self,
+        lock: &mut jsg::Lock<'s>,
+        callback: v8::Local<'s, v8::Value>,
+    ) -> Result<(), jsg::Error> {
+        let callback = Self::function(callback)?;
+        let _ = lock.try_catch(|lock| {
+            let result = callback.call(lock, None, &[]);
+            if let Err(err) = &result {
+                self.saved.set(Some(err.clone()));
+            }
+            result
+        })?;
+        Ok(())
+    }
+
+    /// Fails with the error `catch_and_save` kept.
+    #[jsg_method]
+    pub fn throw_saved(&self) -> Result<(), jsg::Error> {
+        Err(self.saved.take().unwrap())
+    }
+
+    /// Fails with the error `catch_and_save` kept in `try_catch`, and returns whether
+    /// `try_catch` caught an exception.
+    #[jsg_method]
+    pub fn catch_saved(&self, lock: &mut jsg::Lock) -> Result<bool, jsg::Error> {
+        let saved = self.saved.take().unwrap();
+        Ok(lock.try_catch(|_| Err::<(), _>(saved))?.is_err())
+    }
+}
+
+fn calling_resource(
+    lock: &mut jsg::Lock,
+    ctx: &crate::EvalContext<'_>,
+) -> jsg::Rc<CallingResource> {
+    let resource = jsg::Rc::new(
+        lock,
+        CallingResource {
+            saw_pending: Cell::new(false),
+            saved: Cell::new(None),
+        },
+    );
+    ctx.set_global(lock, "obj", resource.clone());
+    let panicker = jsg::Rc::new(lock, PanicResource);
+    ctx.set_global(lock, "panicker", panicker);
+    resource
+}
+
+/// JavaScript that terminates execution: `panicNow()` throws an internal error and requests
+/// termination, which takes effect at the next interrupt check, in the loop.
+const TERMINATE: &str = "() => { try { panicker.panicNow(); } catch (e) {} while (true) {} }";
+
+/// An exception thrown by a callback propagates unchanged through the method that called it.
+#[test]
+fn exception_from_callback_propagates_through_method() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = calling_resource(lock, ctx);
+        let caught = ctx.eval::<bool>(
+            lock,
+            "const thrown = new Error('boom');
+             thrown.extra = 1;
+             let caught;
+             try { obj.call(() => { throw thrown; }); } catch (e) { caught = e; }
+             caught === thrown && caught.extra === 1",
+        );
+        assert!(caught.unwrap());
+        let caught = ctx.eval::<bool>(
+            lock,
+            "try { obj.call(() => { throw 'a string'; }); false } catch (e) { e === 'a string' }",
+        );
+        assert!(caught.unwrap());
+        assert!(resource.saw_pending.get());
+        Ok(())
+    });
+}
+
+/// An exception propagates through two methods with a JavaScript frame between them that
+/// catches and rethrows it.
+#[test]
+fn exception_propagates_through_nested_methods() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        calling_resource(lock, ctx);
+        let caught = ctx.eval::<bool>(
+            lock,
+            "const thrown = new Error('boom');
+             let caught;
+             try {
+               obj.call(() => {
+                 try {
+                   obj.call(() => { throw thrown; });
+                 } catch (e) {
+                   e.rethrown = true;
+                   throw e;
+                 }
+               });
+             } catch (e) { caught = e; }
+             caught === thrown && caught.rethrown === true",
+        );
+        assert!(caught.unwrap());
+        Ok(())
+    });
+}
+
+/// A callback that terminates execution fails the call, and the termination keeps propagating
+/// past the method.
+#[test]
+fn termination_in_callback_propagates_through_method() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = calling_resource(lock, ctx);
+        let result = ctx.eval::<bool>(
+            lock,
+            &format!("try {{ obj.call({TERMINATE}); }} catch (e) {{}} true"),
+        );
+        assert!(result.is_err());
+        assert!(resource.saw_pending.get());
+        Ok(())
+    });
+}
+
+/// A call made while execution is terminating runs no JavaScript and fails.
+#[test]
+fn call_while_terminating_runs_nothing() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = calling_resource(lock, ctx);
+        let result = ctx.eval::<bool>(
+            lock,
+            &format!(
+                "globalThis.secondRan = false;
+                 obj.callBoth({TERMINATE}, () => {{ globalThis.secondRan = true; }});
+                 true"
+            ),
+        );
+        assert!(result.is_err());
+        assert!(resource.saw_pending.get());
+        // V8 clears the termination once no JavaScript is running.
+        assert!(!ctx.eval::<bool>(lock, "secondRan").unwrap());
+        Ok(())
+    });
+}
+
+/// A call made while an exception is pending runs no JavaScript and fails with a pending error,
+/// and the exception reaches JavaScript unchanged.
+#[test]
+fn call_while_exception_pending_runs_nothing() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = calling_resource(lock, ctx);
+        let caught = ctx
+            .eval::<String>(
+                lock,
+                "globalThis.secondRan = false;
+                 try {
+                   obj.callBoth(() => { throw new RangeError('first'); },
+                                () => { globalThis.secondRan = true; });
+                   'nothing'
+                 } catch (e) { String(e); }",
+            )
+            .unwrap();
+        assert_eq!(caught, "RangeError: first");
+        assert!(resource.saw_pending.get());
+        assert!(!ctx.eval::<bool>(lock, "secondRan").unwrap());
+        Ok(())
+    });
+}
+
+/// `try_catch` catches what a callback throws, but not a termination: that fails `try_catch`
+/// with a pending error and keeps propagating past the method.
+#[test]
+fn try_catch_does_not_catch_termination() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = calling_resource(lock, ctx);
+        let caught = ctx.eval::<bool>(lock, "obj.callCatching(() => { throw new Error('boom'); })");
+        assert!(caught.unwrap());
+        assert!(!resource.saw_pending.get());
+
+        let result = ctx.eval::<bool>(
+            lock,
+            &format!("try {{ obj.callCatching({TERMINATE}); false }} catch (e) {{ true }}"),
+        );
+        assert!(result.is_err(), "the termination was caught: {result:?}");
+        assert!(resource.saw_pending.get());
+        Ok(())
+    });
+}
+
+/// An error that replaces a termination is not thrown, so JavaScript cannot catch it and the
+/// termination keeps propagating.
+#[test]
+fn error_does_not_replace_termination() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        calling_resource(lock, ctx);
+        let result = ctx.eval::<bool>(
+            lock,
+            &format!("try {{ obj.callThenFail({TERMINATE}); false }} catch (e) {{ true }}"),
+        );
+        assert!(result.is_err(), "the termination was caught: {result:?}");
+        Ok(())
+    });
+}
+
+/// An error that replaces a pending exception is thrown in its place, as when C++ JSG code
+/// throws while a `JsExceptionThrown` unwinds.
+#[test]
+fn error_replaces_pending_exception() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        calling_resource(lock, ctx);
+        let message = ctx.eval::<String>(
+            lock,
+            "try { obj.callThenFail(() => { throw new Error('boom'); }); '' } \
+             catch (e) { e.message }",
+        );
+        assert_eq!(message.unwrap(), "replaced");
+        Ok(())
+    });
+}
+
+/// An error for a pending exception, kept after `try_catch` caught the exception, is thrown
+/// as an internal error rather than as nothing.
+#[test]
+fn pending_error_kept_after_exception_was_caught_throws_internal_error() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = calling_resource(lock, ctx);
+        let message = ctx.eval::<String>(
+            lock,
+            "obj.catchAndSave(() => { throw new Error('boom'); });
+             try { obj.throwSaved(); 'nothing thrown' } catch (e) { e.message }",
+        );
+        assert!(
+            message
+                .as_ref()
+                .is_ok_and(|m| m.starts_with("internal error; reference = ")),
+            "{message:?}"
+        );
+
+        ctx.eval::<bool>(lock, "obj.catchAndSave(() => { throw 'boom'; }); true")
+            .unwrap();
+        assert!(ctx.eval::<bool>(lock, "obj.catchSaved()").unwrap());
+        assert!(resource.saved.take().is_none());
+        Ok(())
+    });
+}
+
+// =============================================================================
+// Receiver guard tests
+// =============================================================================
+
+/// Validates that destructuring an instance method and calling it without a
+/// receiver throws a `TypeError: Illegal invocation` rather than reaching Rust.
+///
+/// This tests the `v8::Signature` guard described in the SAFETY comment of the
+/// `#[jsg_method]` callback generated by `jsg-macros`.
+#[test]
+fn instance_method_throws_on_missing_receiver() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(
+            lock,
+            EchoResource {
+                prefix: "Hello, ".to_owned(),
+            },
+        );
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "obj", wrapped);
+
+        // Destructure the method and call it with no receiver (`this` === global
+        // / undefined in strict mode). V8's Signature check must fire before the
+        // Rust callback is invoked.
+        let err = ctx
+            .eval::<String>(lock, "const { echo } = obj; echo('world')")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert_eq!(err.name, ExceptionType::TypeError);
+        assert!(
+            err.message.to_lowercase().contains("illegal invocation")
+                || err.message.to_lowercase().contains("illegal"),
+            "unexpected error message: {}",
+            err.message
+        );
+        Ok(())
+    });
+}
+
+/// Validates that `Reflect.apply` with a plain-object receiver also throws
+/// `TypeError: Illegal invocation`.
+#[test]
+fn instance_method_throws_on_wrong_receiver_via_reflect_apply() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(
+            lock,
+            EchoResource {
+                prefix: "Hello, ".to_owned(),
+            },
+        );
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "obj", wrapped);
+
+        let err = ctx
+            .eval::<String>(lock, "Reflect.apply(obj.echo, {}, ['world'])")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert_eq!(err.name, ExceptionType::TypeError);
+        assert!(
+            err.message.to_lowercase().contains("illegal invocation")
+                || err.message.to_lowercase().contains("illegal"),
+            "unexpected error message: {}",
+            err.message
+        );
+        Ok(())
+    });
+}
+
+/// Validates that a method called on the correct receiver still works after
+/// the above receiver-guard checks, confirming normal dispatch is unaffected.
+#[test]
+fn instance_method_works_on_correct_receiver() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let resource = jsg::Rc::new(
+            lock,
+            EchoResource {
+                prefix: "Hi, ".to_owned(),
+            },
+        );
+        let wrapped = resource.to_js(lock)?;
+        ctx.set_global(lock, "obj", wrapped);
+
+        // `Function.prototype.call` with the correct `this` must succeed.
+        let result: String = ctx.eval(lock, "obj.echo.call(obj, 'world')").unwrap();
+        assert_eq!(result, "Hi, world");
+        Ok(())
+    });
+}
+
+/// Validates that a method called on a resource of another Rust type throws
+/// `TypeError: Illegal invocation`: all Rust resources share one `CppHeap` tag,
+/// so the signature is what rejects it.
+#[test]
+fn instance_method_throws_on_other_resource_receiver() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let echo = jsg::Rc::new(
+            lock,
+            EchoResource {
+                prefix: "Hi, ".to_owned(),
+            },
+        )
+        .to_js(lock)?;
+        ctx.set_global(lock, "obj", echo);
+        let greeting = jsg::Rc::new(
+            lock,
+            Greeting {
+                message: "hello".to_owned(),
+            },
+        )
+        .to_js(lock)?;
+        ctx.set_global(lock, "other", greeting);
+
+        let err = ctx
+            .eval::<String>(lock, "Reflect.apply(obj.echo, other, ['world'])")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert_eq!(err.name, ExceptionType::TypeError);
+        assert!(
+            err.message.contains("Illegal invocation"),
+            "unexpected error message: {}",
+            err.message
+        );
+        Ok(())
+    });
+}
+
+/// Validates that a method called on an object inheriting from a resource
+/// throws `TypeError: Illegal invocation`: the signature accepts only the
+/// wrapper itself, so the callback never sees an object without a wrapper.
+#[test]
+fn instance_method_throws_on_object_inheriting_from_resource() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let echo = jsg::Rc::new(
+            lock,
+            EchoResource {
+                prefix: "Hi, ".to_owned(),
+            },
+        )
+        .to_js(lock)?;
+        ctx.set_global(lock, "obj", echo);
+
+        let err = ctx
+            .eval::<String>(lock, "Object.create(obj).echo('world')")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert_eq!(err.name, ExceptionType::TypeError);
+        assert!(
+            err.message.contains("Illegal invocation"),
+            "unexpected error message: {}",
+            err.message
+        );
+        Ok(())
+    });
+}
+
+/// Validates that `resolve_receiver`, used by callbacks without a signature,
+/// finds only a wrapper of the requested resource type.
+#[test]
+fn resolve_receiver_rejects_everything_but_the_resource_type() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let echo = jsg::Rc::new(
+            lock,
+            EchoResource {
+                prefix: "Hi, ".to_owned(),
+            },
+        )
+        .to_js(lock)?;
+        ctx.set_global(lock, "obj", echo);
+        let greeting = jsg::Rc::new(
+            lock,
+            Greeting {
+                message: "hello".to_owned(),
+            },
+        )
+        .to_js(lock)?;
+        ctx.set_global(lock, "other", greeting);
+
+        for source in ["42", "'obj'", "({})", "Object.create(obj)", "other"] {
+            let value = ctx.eval_raw(lock, source).unwrap();
+            assert!(
+                v8::WrappableRc::resolve_receiver::<EchoResource>(lock, value).is_none(),
+                "resolved {source}"
+            );
+        }
+        let cpp_obj = crate::Harness::create_cpp_tagged_object(lock);
+        assert!(v8::WrappableRc::resolve_receiver::<EchoResource>(lock, cpp_obj).is_none());
+
+        let value = ctx.eval_raw(lock, "obj").unwrap();
+        let resource = v8::WrappableRc::resolve_receiver::<EchoResource>(lock, value).unwrap();
+        // SAFETY: `obj` is a global, so its wrapper keeps the resource alive.
+        assert_eq!(unsafe { resource.as_ref() }.prefix, "Hi, ");
+        Ok(())
+    });
+}
+
+// =============================================================================
+// Constructor tests
+// =============================================================================
+
+#[jsg_resource]
+struct Greeting {
+    message: String,
+}
+
+#[jsg_resource]
+impl Greeting {
+    #[jsg_constructor]
+    fn constructor(message: String) -> Self {
+        Self { message }
+    }
+
+    #[jsg_method]
+    fn get_message(&self) -> String {
+        self.message.clone()
+    }
+}
+
+/// Resources without `#[jsg_constructor]` should throw when called with `new`.
+#[test]
+fn resource_without_constructor_throws() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<EchoResource>(lock).unwrap();
+        ctx.set_global(lock, "EchoResource", constructor);
+
+        let err = ctx
+            .eval::<jsg::Rc<EchoResource>>(lock, "new EchoResource('hi')")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert_eq!(err.name, ExceptionType::TypeError);
+        assert_eq!(err.message, "Illegal constructor");
+        Ok(())
+    });
+}
+
+/// A `#[jsg_constructor]` method is callable from JavaScript via `new`.
+#[test]
+fn constructor_creates_instance() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<Greeting>(lock).unwrap();
+        ctx.set_global(lock, "Greeting", constructor);
+
+        let result: String = ctx
+            .eval(lock, "new Greeting('hello').getMessage()")
+            .unwrap();
+        assert_eq!(result, "hello");
+        Ok(())
+    });
+}
+
+/// Constructor arguments are converted from JS types via `FromJS`.
+#[test]
+fn constructor_converts_arguments() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<Greeting>(lock).unwrap();
+        ctx.set_global(lock, "Greeting", constructor);
+
+        // Number is coerced to string by V8
+        let result: String = ctx
+            .eval(lock, "new Greeting(String(42)).getMessage()")
+            .unwrap();
+        assert_eq!(result, "42");
+        Ok(())
+    });
+}
+
+/// Multiple `new` calls create distinct JS objects.
+#[test]
+fn constructor_creates_distinct_objects() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<Greeting>(lock).unwrap();
+        ctx.set_global(lock, "Greeting", constructor);
+
+        let result: String = ctx
+            .eval(
+                lock,
+                "let a = new Greeting('one'); let b = new Greeting('two'); \
+                 a.getMessage() + ',' + b.getMessage()",
+            )
+            .unwrap();
+        assert_eq!(result, "one,two");
+        Ok(())
+    });
+}
+
+/// `instanceof` works correctly for constructor-created instances.
+#[test]
+fn constructor_instanceof_works() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<Greeting>(lock).unwrap();
+        ctx.set_global(lock, "Greeting", constructor);
+
+        let result: String = ctx
+            .eval(
+                lock,
+                "let g = new Greeting('test'); \
+                 String(g instanceof Greeting)",
+            )
+            .unwrap();
+        assert_eq!(result, "true");
+        Ok(())
+    });
+}
+
+// Constructor with Lock parameter
+
+#[jsg_resource]
+struct Counter {
+    value: u32,
+}
+
+#[jsg_resource]
+impl Counter {
+    #[jsg_constructor]
+    fn constructor(_lock: &mut jsg::Lock, value: u32) -> Self {
+        Self { value }
+    }
+
+    #[jsg_method]
+    fn get_value(&self) -> u32 {
+        self.value
+    }
+}
+
+/// `#[jsg_constructor]` with a `Lock` parameter works.
+#[test]
+fn constructor_with_lock_parameter() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let constructor = jsg::resource::function_template_of::<Counter>(lock).unwrap();
+        ctx.set_global(lock, "Counter", constructor);
+
+        assert_eq!(
+            ctx.eval::<u32>(lock, "new Counter(99).getValue()").unwrap(),
+            99
+        );
+        Ok(())
+    });
+}
+
+// =============================================================================
+// Constructor type-mismatch tests
+// =============================================================================
+
+#[jsg_resource]
+struct Wrapper {
+    inner: jsg::Rc<Greeting>,
+}
+
+#[jsg_resource]
+impl Wrapper {
+    #[jsg_constructor]
+    fn constructor(inner: jsg::Rc<Greeting>) -> Self {
+        Self { inner }
+    }
+}
+
+/// `#[jsg_constructor]` with a wrong-typed resource argument throws `TypeError` (not a plain `Error`).
+#[test]
+fn constructor_with_wrong_resource_type_throws_type_error() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let wrapper_ctor = jsg::resource::function_template_of::<Wrapper>(lock).unwrap();
+        ctx.set_global(lock, "Wrapper", wrapper_ctor);
+
+        let err = ctx
+            .eval::<jsg::Rc<Wrapper>>(lock, "new Wrapper(42)")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert_eq!(err.name, jsg::ExceptionType::TypeError);
+        Ok(())
+    });
+}
+
+// =============================================================================
+// Fallible constructor tests
+// =============================================================================
+
+#[jsg_resource]
+struct Positive {
+    value: i32,
+}
+
+#[jsg_resource]
+impl Positive {
+    #[jsg_constructor]
+    fn constructor(value: i32) -> jsg::Result<Self> {
+        if value > 0 {
+            Ok(Self { value })
+        } else {
+            Err(jsg::Error::new_range_error("value must be positive"))
+        }
+    }
+
+    #[jsg_method]
+    fn get_value(&self) -> i32 {
+        self.value
+    }
+}
+
+/// An error type converted to a `jsg::Error` when thrown.
+struct EmptyLabel;
+
+impl From<EmptyLabel> for jsg::Error {
+    fn from(_: EmptyLabel) -> Self {
+        Self::new_type_error("label must not be empty")
+    }
+}
+
+#[jsg_resource]
+struct Label {
+    text: String,
+}
+
+#[jsg_resource]
+impl Label {
+    #[jsg_constructor]
+    fn constructor(_lock: &mut jsg::Lock, text: String) -> Result<Self, EmptyLabel> {
+        if text.is_empty() {
+            Err(EmptyLabel)
+        } else {
+            Ok(Self { text })
+        }
+    }
+
+    #[jsg_method]
+    fn get_text(&self) -> String {
+        self.text.clone()
+    }
+}
+
+/// A constructor returning `Ok` creates an instance.
+#[test]
+fn fallible_constructor_ok_creates_instance() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let positive = jsg::resource::function_template_of::<Positive>(lock).unwrap();
+        ctx.set_global(lock, "Positive", positive);
+        let label = jsg::resource::function_template_of::<Label>(lock).unwrap();
+        ctx.set_global(lock, "Label", label);
+
+        let result: String = ctx
+            .eval(
+                lock,
+                "const p = new Positive(2); const l = new Label('x'); \
+                 [p.getValue(), p instanceof Positive, l.getText()].join()",
+            )
+            .unwrap();
+        assert_eq!(result, "2,true,x");
+        Ok(())
+    });
+}
+
+/// A constructor returning `Err` throws the error, converted with
+/// `Into<jsg::Error>`.
+#[test]
+fn fallible_constructor_err_throws() {
+    let harness = crate::Harness::new();
+    harness.run_in_context(|lock, ctx| {
+        let positive = jsg::resource::function_template_of::<Positive>(lock).unwrap();
+        ctx.set_global(lock, "Positive", positive);
+        let label = jsg::resource::function_template_of::<Label>(lock).unwrap();
+        ctx.set_global(lock, "Label", label);
+
+        let err = ctx
+            .eval::<jsg::Rc<Positive>>(lock, "new Positive(-1)")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert_eq!(err.name, ExceptionType::RangeError);
+        assert_eq!(err.message, "value must be positive");
+
+        let err = ctx
+            .eval::<jsg::Rc<Label>>(lock, "new Label('')")
+            .unwrap_err()
+            .unwrap_jsg_err(lock);
+        assert_eq!(err.name, ExceptionType::TypeError);
+        assert_eq!(err.message, "label must not be empty");
+        Ok(())
+    });
+}

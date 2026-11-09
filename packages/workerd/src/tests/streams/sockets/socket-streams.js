@@ -1,0 +1,778 @@
+// Copyright (c) 2026 Cloudflare, Inc.
+// Licensed under the Apache 2.0 license found in the LICENSE file or at:
+//     https://opensource.org/licenses/Apache-2.0
+
+// connect() sockets expose their TCP halves as a readable/writable
+// stream pair — internal streams whose consumption shapes this suite
+// pins under both implementations. The sidecar provides a pure echo
+// server (half-close aware) and a greet-then-end server.
+//
+// Canceling a pending read diverges: C++ rejects with a re-created Error
+// carrying the cancel reason, while TypeScript resolves the read done.
+//
+// The order in which a startTls() detach settles things diverges: TypeScript
+// rejects the pending writes inside the detach, before the old socket's
+// closed promise resolves; C++ resolves closed first and rejects the writes
+// an event-loop turn later, once the canceled write's I/O reports back
+// (detachRejectsPendingWrites).
+//
+// The source's state once a native-to-native pipe settles diverges:
+// TypeScript's reads done, C++ errors it when the pipe is aborted or the
+// source fails (nativePipeReleasesEndpoints).
+
+import { connect } from 'cloudflare:sockets';
+import { strictEqual, ok, rejects, deepStrictEqual } from 'node:assert';
+import { usingTsImpl } from 'which-impl';
+
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+
+const PATTERN_MODULUS = 251;
+
+function patternChunk(offset, length) {
+  const chunk = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    chunk[i] = (offset + i) % PATTERN_MODULUS;
+  }
+  return chunk;
+}
+
+function echoAddress(env) {
+  return `${env.SIDECAR_HOSTNAME}:${env.STREAMS_ECHO_PORT}`;
+}
+
+function greetAddress(env) {
+  return `${env.SIDECAR_HOSTNAME}:${env.STREAMS_GREET_PORT}`;
+}
+
+async function drainToBytes(readable) {
+  const reader = readable.getReader();
+  const parts = [];
+  let total = 0;
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    parts.push(value);
+    total += value.byteLength;
+  }
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const part of parts) {
+    out.set(part, offset);
+    offset += part.byteLength;
+  }
+  reader.releaseLock();
+  return out;
+}
+
+// Write, half-close, and read the echo back to EOF with a default
+// reader.
+export const echoRoundTrip = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env));
+    strictEqual(
+      Object.getOwnPropertySymbols(socket.writable).some(
+        (key) =>
+          key.description === 'kExtractNativeSink' ||
+          key.description === 'kWritableStreamBrand'
+      ),
+      false
+    );
+    const writer = socket.writable.getWriter();
+    await writer.write(enc.encode('hello '));
+    await writer.write(enc.encode('sockets'));
+    await writer.close(); // half-close: server flushes and ends
+    const echoed = await drainToBytes(socket.readable);
+    strictEqual(dec.decode(echoed), 'hello sockets');
+    await socket.close();
+  },
+};
+
+// With a highWaterMark the writable counts bytes. Views already detached,
+// or left out of bounds by a shrink, count and send nothing — DataViews
+// too, whose byteLength getter throws where a typed array's reports 0 —
+// and the stream keeps writing (parity).
+export const degenerateViewsWithHighWaterMark = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env), { highWaterMark: 1024 });
+    const writer = socket.writable.getWriter();
+    for (const View of [Uint8Array, DataView]) {
+      const ab = new ArrayBuffer(8);
+      const detached = new View(ab, 2, 4);
+      ab.transfer();
+      await writer.write(detached);
+      const rab = new ArrayBuffer(8, { maxByteLength: 8 });
+      const outOfBounds = new View(rab, 4, 4);
+      rab.resize(2);
+      await writer.write(outOfBounds);
+    }
+    await writer.write(enc.encode('still writable'));
+    await writer.close();
+    strictEqual(
+      dec.decode(await drainToBytes(socket.readable)),
+      'still writable'
+    );
+    await socket.close();
+  },
+};
+
+// With a highWaterMark a string counts the UTF-8 bytes written for it:
+// 2-, 3- and 4-byte sequences, and 3 for each lone surrogate (sent as
+// U+FFFD) (parity).
+export const stringSizesWithHighWaterMark = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env), { highWaterMark: 1024 });
+    const writer = socket.writable.getWriter();
+    const strings = [
+      'hello',
+      'h\u00e9llo',
+      '\u20acuro',
+      'a\u{1f600}b',
+      'a\ud800b',
+      '\udc00',
+    ];
+    let expected = '';
+    for (const str of strings) {
+      const write = writer.write(str);
+      strictEqual(writer.desiredSize, 1024 - enc.encode(str).byteLength, str);
+      await write;
+      expected += str.toWellFormed();
+    }
+    await writer.close();
+    strictEqual(dec.decode(await drainToBytes(socket.readable)), expected);
+    await socket.close();
+  },
+};
+
+// The greet server ends after one message: the readable delivers it
+// and reaches done; the socket's closed promise settles.
+export const greetReadsToEof = {
+  async test(ctrl, env) {
+    const socket = connect(greetAddress(env));
+    const bytes = await drainToBytes(socket.readable);
+    strictEqual(dec.decode(bytes), 'hello from the greet server');
+    const reader = socket.readable.getReader();
+    const tail = await reader.read();
+    strictEqual(tail.done, true);
+    strictEqual(tail.value, undefined);
+    await socket.close();
+  },
+};
+
+// BYOB reads over the socket readable, byte-exact against the echo.
+export const echoByobReads = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env));
+    const writer = socket.writable.getWriter();
+    const payload = patternChunk(0, 4096);
+    await writer.write(payload);
+    await writer.close();
+    const reader = socket.readable.getReader({ mode: 'byob' });
+    const out = new Uint8Array(4096);
+    let offset = 0;
+    let view = new Uint8Array(1024);
+    for (;;) {
+      const { value, done } = await reader.read(view);
+      if (done) break;
+      out.set(value, offset);
+      offset += value.byteLength;
+      view = new Uint8Array(value.buffer);
+    }
+    strictEqual(offset, 4096);
+    deepStrictEqual(out, payload);
+    await socket.close();
+  },
+};
+
+// readAtLeast accumulates echo fragments up to the minimum.
+export const echoReadAtLeast = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env));
+    const writer = socket.writable.getWriter();
+    // Three separate writes; readAtLeast(12) must accumulate across
+    // however TCP fragments them.
+    await writer.write(enc.encode('aaaa'));
+    await writer.write(enc.encode('bbbb'));
+    await writer.write(enc.encode('cccc'));
+    await writer.close();
+    const reader = socket.readable.getReader({ mode: 'byob' });
+    const first = await reader.readAtLeast(12, new Uint8Array(64));
+    ok(first.value.byteLength >= 12);
+    strictEqual(
+      dec.decode(first.value),
+      'aaaabbbbcccc'.slice(0, first.value.byteLength)
+    );
+    await socket.close();
+  },
+};
+
+// Socket readable piped into a JS sink.
+export const pipeSocketReadableToJsSink = {
+  async test(ctrl, env) {
+    const socket = connect(greetAddress(env));
+    const chunks = [];
+    await socket.readable.pipeTo(
+      new WritableStream({
+        write(chunk) {
+          chunks.push(chunk);
+        },
+      })
+    );
+    const total = chunks.reduce((n, c) => n + c.byteLength, 0);
+    const bytes = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    strictEqual(dec.decode(bytes), 'hello from the greet server');
+    await socket.close();
+  },
+};
+
+// A JS source piped into the socket writable, echo read back
+// concurrently.
+export const pipeJsSourceToSocketWritable = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env));
+    const source = new ReadableStream({
+      start(c) {
+        c.enqueue(enc.encode('piped '));
+        c.enqueue(enc.encode('payload'));
+        c.close();
+      },
+    });
+    const [echoed] = await Promise.all([
+      drainToBytes(socket.readable),
+      source.pipeTo(socket.writable),
+    ]);
+    strictEqual(dec.decode(echoed), 'piped payload');
+    await socket.close();
+  },
+};
+
+// Socket readable piped THROUGH a JS transform.
+export const pipeSocketThroughJsTransform = {
+  async test(ctrl, env) {
+    const socket = connect(greetAddress(env));
+    const upper = new TransformStream({
+      transform(chunk, controller) {
+        controller.enqueue(dec.decode(chunk, { stream: true }).toUpperCase());
+      },
+    });
+    const parts = [];
+    await socket.readable.pipeThrough(upper).pipeTo(
+      new WritableStream({
+        write(chunk) {
+          parts.push(chunk);
+        },
+      })
+    );
+    strictEqual(parts.join(''), 'HELLO FROM THE GREET SERVER');
+    await socket.close();
+  },
+};
+
+// Socket-to-socket: the greet server's output piped into the echo
+// server, echo read back.
+export const pipeSocketToSocket = {
+  async test(ctrl, env) {
+    const greetSocket = connect(greetAddress(env));
+    const echoSocket = connect(echoAddress(env));
+    const [echoed] = await Promise.all([
+      drainToBytes(echoSocket.readable),
+      greetSocket.readable.pipeTo(echoSocket.writable),
+    ]);
+    strictEqual(dec.decode(echoed), 'hello from the greet server');
+    await Promise.all([greetSocket.close(), echoSocket.close()]);
+  },
+};
+
+// A native-to-native pipe takes the source's native source away at the
+// start: the source is left locked and closed, as the legacy C++ streams
+// leave it. The closed state is observable here only through the Node.js
+// interop closed-promise, which only the TypeScript streams carry.
+const kIsClosedPromise = Symbol.for('nodejs.webstream.isClosedPromise');
+export const pipeSocketToSocketClosesSource = {
+  async test(ctrl, env) {
+    const greetSocket = connect(greetAddress(env));
+    const echoSocket = connect(echoAddress(env));
+    const source = greetSocket.readable;
+    const piped = source.pipeTo(echoSocket.writable);
+    strictEqual(source.locked, true);
+    if (usingTsImpl) {
+      const closed = await Promise.race([
+        source[kIsClosedPromise].promise.then(() => 'closed'),
+        scheduler.wait(100).then(() => 'pending'),
+      ]);
+      strictEqual(closed, 'closed');
+    }
+    const echoed = await drainToBytes(echoSocket.readable);
+    await piped;
+    strictEqual(dec.decode(echoed), 'hello from the greet server');
+    await Promise.all([greetSocket.close(), echoSocket.close()]);
+  },
+};
+
+// A header written without awaiting it, the writer released, then a body
+// piped into the socket (a native-to-native pipe): the body follows the
+// header, and the pipe leaves both endpoints unlocked.
+export const pipeBehindUnawaitedWrite = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env));
+    await socket.opened;
+    const writer = socket.writable.getWriter();
+    const headerWritten = writer.write(enc.encode('HEADER|'));
+    writer.releaseLock();
+    const body = new Response('BODY').body;
+    const piped = body.pipeTo(socket.writable);
+    const echoed = drainToBytes(socket.readable);
+    await Promise.all([headerWritten, piped]);
+    strictEqual(body.locked, false);
+    strictEqual(socket.writable.locked, false);
+    strictEqual(dec.decode(await echoed), 'HEADER|BODY');
+    await socket.close();
+  },
+};
+
+// The same shape within connect()'s turn, before the socket writable has
+// started: the header is still queued when the pipe begins.
+export const pipeBehindWriteBeforeStart = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env));
+    const writer = socket.writable.getWriter();
+    const headerWritten = writer.write(enc.encode('HEADER|'));
+    writer.releaseLock();
+    const body = new Response('BODY').body;
+    const piped = body.pipeTo(socket.writable);
+    const echoed = drainToBytes(socket.readable);
+    await Promise.all([headerWritten, piped]);
+    strictEqual(body.locked, false);
+    strictEqual(socket.writable.locked, false);
+    strictEqual(dec.decode(await echoed), 'HEADER|BODY');
+    await socket.close();
+  },
+};
+
+async function settled(promise) {
+  return promise.then(
+    () => 'resolved',
+    (e) => `rejected ${e.message}`
+  );
+}
+
+// What a read on the unlocked source settles with: 'done', 'value', or
+// the rejection.
+async function sourceOutcome(source) {
+  const reader = source.getReader();
+  const outcome = await reader.read().then(
+    ({ done }) => (done ? 'done' : 'value'),
+    (e) => `rejected ${e.message}`
+  );
+  reader.releaseLock();
+  return outcome;
+}
+
+// How the unlocked writable's writer.closed settles, 'pending' if it has
+// not within 50 ms.
+async function writableOutcome(writable) {
+  const writer = writable.getWriter();
+  const outcome = await Promise.race([
+    settled(writer.closed),
+    scheduler.wait(50).then(() => 'pending'),
+  ]);
+  writer.releaseLock();
+  return outcome;
+}
+
+async function pipeOutcome(source, writable, options) {
+  const pipe = await settled(source.pipeTo(writable, options));
+  strictEqual(source.locked, false, 'source locked');
+  strictEqual(writable.locked, false, 'writable locked');
+  return {
+    pipe,
+    source: await sourceOutcome(source),
+    writable: await writableOutcome(writable),
+  };
+}
+
+// A native-to-native pipe into a socket writable unlocks both endpoints
+// once it settles, however it settles.
+//
+// DIVERGENCE: the source's final state. TypeScript extracts the source's
+// native half at the start, closing it (pipeSocketToSocketClosesSource),
+// so it reads done whatever the outcome; this follows the spec when the
+// pipe is aborted, which cancels the source. C++ errors the source with
+// the pipe's error when it is aborted or the source fails, and with an
+// already-aborted signal touches neither endpoint.
+export const nativePipeReleasesEndpoints = {
+  async test(ctrl, env) {
+    {
+      const socket = connect(echoAddress(env));
+      const echoed = drainToBytes(socket.readable);
+      deepStrictEqual(
+        await pipeOutcome(new Response('BODY').body, socket.writable),
+        { pipe: 'resolved', source: 'done', writable: 'resolved' }
+      );
+      strictEqual(dec.decode(await echoed), 'BODY');
+      await socket.close();
+    }
+    {
+      const idle = connect(echoAddress(env));
+      const socket = connect(echoAddress(env));
+      const ac = new AbortController();
+      const outcome = pipeOutcome(idle.readable, socket.writable, {
+        signal: ac.signal,
+      });
+      await scheduler.wait(20);
+      ac.abort(new Error('stop'));
+      deepStrictEqual(await outcome, {
+        pipe: 'rejected stop',
+        source: usingTsImpl ? 'done' : 'rejected stop',
+        writable: 'rejected stop',
+      });
+      await Promise.all([idle.close(), socket.close()]);
+    }
+    {
+      const socket = connect(echoAddress(env));
+      const signal = AbortSignal.abort(new Error('early'));
+      deepStrictEqual(
+        await pipeOutcome(new Response('BODY').body, socket.writable, {
+          signal,
+        }),
+        usingTsImpl
+          ? {
+              pipe: 'rejected early',
+              source: 'done',
+              writable: 'rejected early',
+            }
+          : { pipe: 'rejected early', source: 'value', writable: 'pending' }
+      );
+      await socket.close();
+    }
+    {
+      const socket = connect(echoAddress(env));
+      const body = (await env.SELF.fetch('http://self/failing')).body;
+      deepStrictEqual(await pipeOutcome(body, socket.writable), {
+        pipe: 'rejected the body failed',
+        source: usingTsImpl ? 'done' : 'rejected the body failed',
+        writable: 'rejected the body failed',
+      });
+      await socket.close();
+    }
+  },
+};
+
+// A pipe reads its options before it checks the locks, so an option
+// getter that locks an endpoint of a native-to-native pipe fails the pipe
+// before it takes either endpoint's native half. That matters most for
+// the destination: the pipe would take the source's native half before
+// finding the sink locked. Both endpoints are left as they were: the
+// reader or writer the getter took keeps working, and the other endpoint
+// reads or writes in full (parity; the piping suite's ledger #18 pins
+// the messages).
+export const pipeOptionGetterLocksNativeEndpoint = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env));
+    const body = new Response('BODY').body;
+    let reader;
+    await rejects(
+      body.pipeTo(socket.writable, {
+        get preventAbort() {
+          reader = body.getReader();
+          return false;
+        },
+      }),
+      { name: 'TypeError' }
+    );
+    reader.releaseLock();
+    strictEqual(dec.decode(await drainToBytes(body)), 'BODY');
+    const next = new Response('NEXT').body;
+    let writer;
+    await rejects(
+      next.pipeTo(socket.writable, {
+        get preventAbort() {
+          writer = socket.writable.getWriter();
+          return false;
+        },
+      }),
+      { name: 'TypeError' }
+    );
+    strictEqual(dec.decode(await drainToBytes(next)), 'NEXT');
+    const echoed = drainToBytes(socket.readable);
+    await writer.write(enc.encode('ECHO'));
+    await writer.close();
+    strictEqual(dec.decode(await echoed), 'ECHO');
+    await socket.close();
+  },
+};
+
+// Cancel a pending socket read while the peer remains open, then close
+// the socket and observe its public closed promise.
+export const cancelReadableSettlesSocket = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env));
+    await socket.opened;
+    const reader = socket.readable.getReader();
+    const pendingRead = reader.read();
+    await reader.cancel('done');
+    if (usingTsImpl) {
+      const { value, done } = await pendingRead;
+      strictEqual(done, true);
+      strictEqual(value, undefined);
+    } else {
+      await rejects(pendingRead, { name: 'Error', message: 'done' });
+    }
+    await socket.close();
+    await socket.closed;
+  },
+};
+
+// startTls() detaches the socket's streams once the writable's flush
+// settles. (A plain workerd network has no TLS starter, so the upgraded
+// socket fails to open, but only after the detach.)
+function startTlsIgnoringUpgrade(socket) {
+  const tls = socket.startTls();
+  tls.opened.catch(() => {});
+  tls.closed.catch(() => {});
+  return tls;
+}
+
+// DETACH WITH WRITES PENDING: writes made after startTls() through a
+// writer released before the flush settles are still pending at the
+// detach: one in flight (32 MiB to a server that never reads, well past
+// the loopback socket buffers even on hosts with a raised tcp_wmem) and two
+// queued. The detach closes the writable, leaves it locked, and rejects
+// all three with the same disconnect error; none of them completes on
+// the connection the upgrade takes over. The order of the write
+// rejections relative to the old socket's closed promise diverges (see
+// the file header).
+export const detachRejectsPendingWrites = {
+  async test(ctrl, env) {
+    const socket = connect(
+      `${env.SIDECAR_HOSTNAME}:${env.STREAMS_STALL_PORT}`,
+      {
+        secureTransport: 'starttls',
+      }
+    );
+    await socket.opened;
+    const tls = startTlsIgnoringUpgrade(socket);
+    const order = [];
+    socket.closed.then(() => order.push('closed'));
+    const writer = socket.writable.getWriter();
+    const writes = [
+      writer.write(new Uint8Array(32 * 1024 * 1024)),
+      writer.write(enc.encode('a')),
+      writer.write(enc.encode('b')),
+    ];
+    writer.releaseLock();
+    const reasons = await Promise.race([
+      Promise.all(
+        writes.map((p, i) =>
+          p.then(
+            () => 'fulfilled',
+            (e) => {
+              order.push(`write${i}`);
+              return e;
+            }
+          )
+        )
+      ),
+      scheduler.wait(10_000).then(() => 'unsettled'),
+    ]);
+    ok(Array.isArray(reasons), 'pending writes settle');
+    for (const reason of reasons) {
+      ok(reason instanceof Error, String(reason));
+      strictEqual(reason.message, 'Network connection lost.');
+    }
+    strictEqual(reasons[1], reasons[0]);
+    strictEqual(reasons[2], reasons[0]);
+    await socket.closed;
+    deepStrictEqual(
+      order,
+      usingTsImpl
+        ? ['write0', 'write1', 'write2', 'closed']
+        : ['closed', 'write0', 'write1', 'write2']
+    );
+    strictEqual(socket.writable.locked, true);
+    if (usingTsImpl) {
+      await socket.writable[kIsClosedPromise].promise;
+    }
+    await tls.close();
+  },
+};
+
+// DETACH WITH NOTHING PENDING: the writable is closed and locked. The
+// interop closed-promise is taken before the detach, which settles it.
+export const detachClosesIdleWritable = {
+  async test(ctrl, env) {
+    const socket = connect(echoAddress(env), { secureTransport: 'starttls' });
+    await socket.opened;
+    const interopClosed = usingTsImpl
+      ? socket.writable[kIsClosedPromise].promise
+      : undefined;
+    const tls = startTlsIgnoringUpgrade(socket);
+    await socket.closed;
+    strictEqual(socket.writable.locked, true);
+    if (usingTsImpl) {
+      const closed = await Promise.race([
+        interopClosed.then(() => 'closed'),
+        scheduler.wait(100).then(() => 'pending'),
+      ]);
+      strictEqual(closed, 'closed');
+    }
+    await tls.close();
+  },
+};
+
+// VOLUME: 256 KiB patterned bytes through the echo, concurrent
+// producer/consumer, byte-exact.
+export const largeEchoVolume = {
+  async test(ctrl, env) {
+    const TOTAL = 256 * 1024;
+    const CHUNK = 16 * 1024;
+    const socket = connect(echoAddress(env));
+    const producer = (async () => {
+      const writer = socket.writable.getWriter();
+      for (let offset = 0; offset < TOTAL; offset += CHUNK) {
+        await writer.write(patternChunk(offset, CHUNK));
+      }
+      await writer.close();
+    })();
+    const consumer = (async () => {
+      const reader = socket.readable.getReader();
+      let received = 0;
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        for (let i = 0; i < value.byteLength; i++) {
+          if (value[i] !== (received + i) % PATTERN_MODULUS) {
+            strictEqual(
+              value[i],
+              (received + i) % PATTERN_MODULUS,
+              `pattern break at byte ${received + i}`
+            );
+          }
+        }
+        received += value.byteLength;
+      }
+      return received;
+    })();
+    const [, received] = await Promise.all([producer, consumer]);
+    strictEqual(received, TOTAL);
+    await socket.close();
+  },
+};
+
+// CLOSE WITH A PIPE CLOSE IN FLIGHT: a connect() handler pipes an inbound
+// socket to an outbound one; once the pipes settle it closes both. Under the
+// C++ implementation the pipe's close of the writable may still be queued at
+// that point (pipeTo resolves before it completes; TypeScript resolves after),
+// and socket.close() aborts it. Whatever a later writer's closed promise then
+// reports must be a real error, never undefined.
+export default {
+  // /failing: a body that delivers one chunk and then errors, for the
+  // native pipes whose source fails.
+  async fetch(request) {
+    let sent = false;
+    return new Response(
+      new ReadableStream({
+        async pull(c) {
+          if (!sent) {
+            sent = true;
+            c.enqueue(enc.encode('PART|'));
+            return;
+          }
+          await scheduler.wait(10);
+          c.error(new Error('the body failed'));
+        },
+      })
+    );
+  },
+
+  async connect(socket, env) {
+    const { localAddress } = await socket.opened;
+    if (localAddress.startsWith('echo:')) {
+      // Explicit loop: a same-socket pipeTo over an in-process pipe splices,
+      // so the peer's write could not complete before it reads the echo.
+      const writer = socket.writable.getWriter();
+      for await (const chunk of socket.readable) {
+        await writer.write(chunk);
+      }
+      // The socket closes its write side itself on the peer's FIN; the
+      // TypeScript implementation reports a close racing that as an error.
+      await writer.close().catch(() => {});
+      await socket.close();
+      await socket.closed;
+      return;
+    }
+    // Everything observed here is asserted by closeWithPipeCloseInFlight,
+    // which runs in a different request.
+    const outcome = {};
+    globalThis.proxyOutcome = outcome;
+    try {
+      const target = env.SELF.connect('echo:1', { allowHalfOpen: true });
+      const pipes = await Promise.allSettled([
+        socket.readable.pipeTo(target.writable),
+        target.readable.pipeTo(socket.writable),
+      ]);
+      outcome.pipes = pipes.map((r) => r.status);
+      const closes = await Promise.allSettled([socket.close(), target.close()]);
+      outcome.closes = closes.map((r) => r.status);
+      outcome.abortReasons = [];
+      for (const s of [socket, target]) {
+        let writer;
+        try {
+          writer = s.writable.getWriter();
+        } catch {
+          // Still locked to the pipe (TypeScript); nothing to observe.
+          continue;
+        }
+        outcome.abortReasons.push(
+          await writer.closed.then(
+            () => 'resolved',
+            (e) => e
+          )
+        );
+      }
+      await Promise.all([socket.closed, target.closed]);
+      outcome.closed = 'resolved';
+    } catch (e) {
+      outcome.error = e;
+    }
+  },
+};
+
+export const closeWithPipeCloseInFlight = {
+  async test(ctrl, env) {
+    const socket = env.SELF.connect('proxy:1');
+    const writer = socket.writable.getWriter();
+    await writer.write(new TextEncoder().encode('hello'));
+    const reader = socket.readable.getReader();
+    const { value } = await reader.read();
+    strictEqual(new TextDecoder().decode(value), 'hello');
+    reader.releaseLock();
+    await writer.close();
+    strictEqual((await drainToBytes(socket.readable)).length, 0);
+    // The handler runs in its own request; give its closes a moment.
+    for (
+      let i = 0;
+      i < 100 && globalThis.proxyOutcome?.closed === undefined;
+      i++
+    ) {
+      await scheduler.wait(10);
+    }
+    const outcome = globalThis.proxyOutcome;
+    strictEqual(outcome.error, undefined, String(outcome.error));
+    deepStrictEqual(outcome.pipes, ['fulfilled', 'fulfilled']);
+    deepStrictEqual(outcome.closes, ['fulfilled', 'fulfilled']);
+    strictEqual(outcome.closed, 'resolved');
+    for (const reason of outcome.abortReasons) {
+      // Resolved when the queued close completed before the abort took effect
+      // (compat dates before internal_writable_stream_abort_clears_queue).
+      if (reason === 'resolved') continue;
+      ok(reason instanceof TypeError, String(reason));
+      strictEqual(reason.message, 'This socket has been closed.');
+    }
+  },
+};

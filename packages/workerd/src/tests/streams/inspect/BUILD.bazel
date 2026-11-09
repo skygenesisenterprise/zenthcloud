@@ -1,0 +1,20 @@
+load("//:build/wd_test.bzl", "wd_test")
+
+# The inspect suite runs the same test modules under two configs:
+# inspect-cpp against the C++ implementation, inspect-ts against the
+# TypeScript implementation.
+
+inspect_suite_srcs = glob(["*.js"]) + ["inspect-modules.capnp"]
+
+wd_test(
+    size = "large",
+    src = "inspect-cpp.wd-test",
+    data = inspect_suite_srcs,
+)
+
+wd_test(
+    size = "large",
+    src = "inspect-ts.wd-test",
+    args = ["--experimental"],
+    data = inspect_suite_srcs,
+)
