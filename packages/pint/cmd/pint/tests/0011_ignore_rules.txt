@@ -1,0 +1,76 @@
+! exec pint --no-color lint rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Loading configuration file" path=.pint.hcl
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=INFO msg="Checking Prometheus rules" entries=10 workers=10 online=true
+Fatal: PromQL syntax error (promql/syntax)
+  ---> rules/1.yaml:5 -> `active` [+1 duplicates]
+5 |   expr: sum(errors_total) by )
+                                 ^ unexpected right parenthesis ')'
+
+Warning: required label is being removed via aggregation (promql/aggregate)
+  ---> rules/1.yaml:16 -> `active` [+1 duplicates]
+16 |   expr: sum(errors_total) without(job)
+                                       ^^^
+                                       Query is using aggregation with `without(job)`, all labels
+                                       included inside `without(...)` will be removed from the results.
+                                       `job` label is required and should be preserved when aggregating
+                                       all rules.
+
+Warning: always firing alert (alerts/comparison)
+  ---> rules/1.yaml:33 -> `active`
+33 |   expr: sum(errors_total) without(job)
+                 ^^^^^^^^^^^^
+                 This query doesn't have any condition and so this alert will always fire if it matches
+                 anything.
+
+level=INFO msg="Some problems are duplicated between rules and all the duplicates were hidden, pass `--show-duplicates` to see them" total=5 duplicates=2 shown=3
+level=INFO msg="Problems found" Fatal=2 Warning=3
+level=ERROR msg="Execution completed with error(s)" err="found 2 problem(s) with severity Bug or higher"
+-- rules/1.yaml --
+- record: disabled
+  expr: sum(errors_total) by ) # pint disable promql/syntax
+
+- record: active
+  expr: sum(errors_total) by )
+
+- record: disabled
+  # pint disable promql/aggregate(job:true)
+  expr: sum(errors_total) without(job)
+
+- record: disabled
+  # pint disable promql/aggregate
+  expr: sum(errors_total) without(job)
+
+- record: active
+  expr: sum(errors_total) without(job)
+
+- alert: disabled
+  expr: sum(errors_total) by ) # pint disable promql/syntax
+
+- alert: active
+  expr: sum(errors_total) by )
+
+- alert: disabled
+  # pint disable promql/aggregate(job:true)
+  expr: sum(errors_total) without(job) > 0
+
+- alert: disabled
+  # pint disable promql/aggregate
+  expr: sum(errors_total) without(job) > 0
+
+- alert: active
+  expr: sum(errors_total) without(job)
+
+-- .pint.hcl --
+parser {
+  relaxed = [".*"]
+}
+rule {
+    aggregate ".+" {
+        keep = [ "job" ]
+    }
+}

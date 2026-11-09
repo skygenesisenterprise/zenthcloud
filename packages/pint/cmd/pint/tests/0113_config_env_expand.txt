@@ -1,0 +1,108 @@
+env FOO=BAR
+env AUTH_KEY=1234
+env FAKE_ENV=KEY=VAL
+exec pint --no-color config
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Loading configuration file" path=.pint.hcl
+{
+  "ci": {
+    "baseBranch": "master",
+    "maxCommits": 20
+  },
+  "parser": {
+    "relaxed": [
+      ".*"
+    ]
+  },
+  "repository": {},
+  "checks": {
+    "enabled": [
+      "alerts/absent",
+      "alerts/annotation",
+      "alerts/comparison",
+      "alerts/count",
+      "alerts/external_labels",
+      "alerts/for",
+      "alerts/template",
+      "labels/conflict",
+      "promql/aggregate",
+      "promql/counter",
+      "promql/features",
+      "promql/fragile",
+      "group/interval",
+      "promql/impossible",
+      "promql/nan",
+      "promql/offset",
+      "promql/range_query",
+      "promql/rate",
+      "promql/regexp",
+      "promql/selector",
+      "promql/series",
+      "promql/syntax",
+      "promql/vector_matching",
+      "query/cost",
+      "rule/dependency",
+      "rule/duplicate",
+      "rule/for",
+      "rule/label",
+      "rule/link",
+      "rule/name",
+      "rule/reject",
+      "rule/report"
+    ]
+  },
+  "owners": {},
+  "prometheus": [
+    {
+      "headers": {
+        "X-Auth": "1234"
+      },
+      "name": "prod",
+      "uri": "http://localhost",
+      "timeout": "2m0s",
+      "uptime": "up",
+      "concurrency": 16,
+      "rateLimit": 100,
+      "required": false
+    }
+  ],
+  "rules": [
+    {
+      "match": [
+        {
+          "kind": "recording"
+        }
+      ],
+      "aggregate": [
+        {
+          "name": ".+",
+          "keep": [
+            "BAR",
+            "KEY=VAL"
+          ]
+        }
+      ]
+    }
+  ]
+}
+-- .pint.hcl --
+parser {
+  relaxed = [".*"]
+}
+prometheus "prod" {
+  uri = "http://localhost"
+  headers = {
+    X-Auth = "${ENV_AUTH_KEY}"
+  }
+}
+rule {
+    match {
+      kind = "recording"
+    }
+    aggregate ".+" {
+        keep = [ "${ENV_FOO}", "${ENV_FAKE_ENV}" ]
+    }
+}

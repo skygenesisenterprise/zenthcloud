@@ -1,0 +1,21 @@
+! exec pint --no-color lint --require-owner rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=WARN msg="Failed to parse file content" err="duplicated group name" path=rules/strict.yml line=4
+level=INFO msg="Checking Prometheus rules" entries=1 workers=10 online=true
+Fatal: duplicated group name (yaml/parse)
+  ---> rules/strict.yml:4
+4 | - name: foo
+            ^^^ duplicated group name
+
+level=INFO msg="Problems found" Fatal=1
+level=ERROR msg="Execution completed with error(s)" err="found 1 problem(s) with severity Bug or higher"
+-- rules/strict.yml --
+groups:
+- name: foo
+  rules: []
+- name: foo
+  rules: []

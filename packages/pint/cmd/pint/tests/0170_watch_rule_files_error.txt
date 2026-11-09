@@ -1,0 +1,43 @@
+http response prometheus /api/v1/status/config 500 {"status":"error"}
+http start prometheus 127.0.0.1:7170
+
+exec bash -x ./test.sh &
+
+exec pint --no-color -l error watch --interval=5s --listen=127.0.0.1:6170 --pidfile=pint.pid rule_files prom
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=ERROR msg="Query returned an error" err= uri=http://localhost:7170 query=/api/v1/status/config
+level=ERROR msg="Got an error when running checks" err="failed to get the list of paths to check: failed to query \"prom\" Prometheus configuration: unknown: "
+level=ERROR msg="Query returned an error" err= uri=http://localhost:7170 query=/api/v1/status/config
+level=ERROR msg="Got an error when running checks" err="failed to get the list of paths to check: failed to query \"prom\" Prometheus configuration: unknown: "
+level=ERROR msg="Query returned an error" err= uri=http://localhost:7170 query=/api/v1/status/config
+level=ERROR msg="Got an error when running checks" err="failed to get the list of paths to check: failed to query \"prom\" Prometheus configuration: unknown: "
+-- test.sh --
+sleep 7
+mv more/*.yaml rules/
+sleep 7
+cat pint.pid | xargs kill
+
+-- rules/1.yaml --
+groups:
+- name: g1
+  rules:
+  - alert: DownAlert1
+    expr: up == 0
+-- rules/2.yaml --
+groups:
+- name: g2
+  rules:
+  - alert: DownAlert2
+    expr: up == 0
+-- more/3.yaml --
+groups:
+- name: g2
+  rules:
+  - alert: DownAlert2
+    expr: up == 0
+-- .pint.hcl --
+prometheus "prom" {
+    uri = "http://localhost:7170"
+}

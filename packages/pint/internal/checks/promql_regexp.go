@@ -1,0 +1,345 @@
+package checks
+
+import (
+	"context"
+	"fmt"
+	"iter"
+	"regexp"
+	"regexp/syntax"
+	"slices"
+	"strings"
+	"unicode"
+
+	"github.com/prometheus/common/model"
+	"github.com/prometheus/prometheus/model/labels"
+	"github.com/prometheus/prometheus/promql/parser/posrange"
+
+	"github.com/cloudflare/pint/internal/diags"
+	"github.com/cloudflare/pint/internal/discovery"
+	"github.com/cloudflare/pint/internal/parser/source"
+
+	promParser "github.com/prometheus/prometheus/promql/parser"
+)
+
+const (
+	RegexpCheckName = "promql/regexp"
+
+	RegexpCheckDetails = `See [Prometheus documentation](https://prometheus.io/docs/prometheus/latest/querying/basics/#time-series-selectors) for details on how vector selectors work.`
+)
+
+type PromqlRegexpSettings struct {
+	Smelly        *bool `hcl:"smelly,optional" json:"smelly,omitzero"`
+	smellyEnabled bool
+}
+
+func (c *PromqlRegexpSettings) Validate() error {
+	c.smellyEnabled = true
+	if c.Smelly != nil {
+		c.smellyEnabled = *c.Smelly
+	}
+	return nil
+}
+
+func NewRegexpCheck() RegexpCheck {
+	return RegexpCheck{}
+}
+
+type RegexpCheck struct{}
+
+func (c RegexpCheck) Meta() CheckMeta {
+	return CheckMeta{
+		States: []discovery.ChangeType{
+			discovery.Noop,
+			discovery.Added,
+			discovery.Modified,
+			discovery.Moved,
+		},
+		Online:        false,
+		AlwaysEnabled: false,
+	}
+}
+
+func (c RegexpCheck) String() string {
+	return RegexpCheckName
+}
+
+func (c RegexpCheck) Reporter() string {
+	return RegexpCheckName
+}
+
+func (c RegexpCheck) Check(ctx context.Context, entry *discovery.Entry, _ []*discovery.Entry) (problems []Problem) {
+	expr := entry.Rule.Expr()
+	if expr.SyntaxError() != nil {
+		return nil
+	}
+
+	var settings *PromqlRegexpSettings
+	if s := ctx.Value(SettingsKey(c.Reporter())); s != nil {
+		settings = s.(*PromqlRegexpSettings)
+	}
+	if settings == nil {
+		settings = &PromqlRegexpSettings{}
+		_ = settings.Validate()
+	}
+
+	done := map[string]struct{}{}
+	syntaxCache := map[string]*syntax.Regexp{}
+	for _, src := range expr.Source() {
+		src.WalkSources(func(s *source.Source, _ *source.Join, _ *source.Unless) {
+			vs, ok := source.MostOuterOperation[*promParser.VectorSelector](s)
+			if !ok {
+				return
+			}
+			selector := *vs
+			if _, ok := done[selector.String()]; ok {
+				return
+			}
+
+			good := make([]*labels.Matcher, 0, len(selector.LabelMatchers))
+			bad := make([]badMatcher, 0, len(selector.LabelMatchers))
+
+			var name string
+			for _, lm := range selector.LabelMatchers {
+				if lm.Name == model.MetricNameLabel && lm.Type == labels.MatchEqual {
+					name = lm.Value
+					break
+				}
+			}
+			done[selector.String()] = struct{}{}
+			for _, lm := range selector.LabelMatchers {
+				if lm.Type != labels.MatchRegexp && lm.Type != labels.MatchNotRegexp {
+					good = append(good, lm)
+					continue
+				}
+
+				// We follow Prometheus FastRegexMatcher logic here.
+				// If the matcher string is a literal match then we keep it as is.
+				// If it's not then it's a regexp match and we need to wrap it in ^...$.
+				re := lm.GetRegexString()
+				isWrapped := regexp.QuoteMeta(re) != re
+				if isWrapped {
+					re = "^(?s:" + re + ")$"
+				}
+
+				var hasFlags, isUseful, isWildcard, isLiteral, isBad bool
+				var beginText, endText int
+				var literalValue strings.Builder
+				r, ok := syntaxCache[re]
+				if !ok {
+					r, _ = syntax.Parse(re, syntax.Perl)
+					syntaxCache[re] = r
+				}
+				for _, s := range r.Sub {
+					// nolint: exhaustive
+					switch s.Op {
+					case syntax.OpBeginText:
+						beginText++
+					case syntax.OpEndText:
+						endText++
+					case syntax.OpLiteral:
+						// If effective flags are different from default flags then we assume regexp is useful.
+						// It could be case sensitive match.
+						if s.Flags > 0 && s.Flags != syntax.Perl {
+							hasFlags = true
+						}
+						for _, r := range s.Rune {
+							literalValue.WriteRune(r)
+						}
+						isLiteral = true
+					case syntax.OpEmptyMatch:
+						// pass
+					case syntax.OpStar:
+						isWildcard = true
+					case syntax.OpPlus:
+						isWildcard = true
+						if !isUseful {
+							isUseful = lm.Type == labels.MatchRegexp
+						}
+					default:
+						isUseful = true
+					}
+				}
+				isSmelly := isRegexpSmelly(r.Sub)
+				if hasFlags && !isWildcard {
+					isUseful = true
+				}
+				if isLiteral && isWildcard {
+					isUseful = true
+				}
+				if !isUseful {
+					var op labels.MatchType
+					// nolint: exhaustive
+					switch lm.Type {
+					case labels.MatchRegexp:
+						op = labels.MatchEqual
+					case labels.MatchNotRegexp:
+						op = labels.MatchNotEqual
+					}
+					lv := literalValue.String()
+					if !isWrapped {
+						lv = lm.Value
+					}
+					bad = append(bad, badMatcher{
+						pos:          selector.PosRange,
+						lm:           lm,
+						op:           op,
+						isWildcard:   isWildcard,
+						literalValue: lv,
+					})
+					isBad = true
+				}
+				if beginText > 1 || endText > 1 {
+					bad = append(bad, badMatcher{pos: selector.PosRange, lm: lm, badAnchor: true})
+					isBad = true
+				}
+				if settings.smellyEnabled && isSmelly {
+					bad = append(bad, badMatcher{pos: selector.PosRange, lm: lm, isSmelly: true})
+				}
+				if !isBad {
+					good = append(good, lm)
+				}
+			}
+			for _, b := range bad {
+				var summary, text string
+				switch {
+				case b.badAnchor:
+					summary = "redundant regexp anchors"
+					text = fmt.Sprintf(
+						"Prometheus regexp matchers are automatically fully anchored so a match for `%s` will result in `%s%s\"^%s$\"`, remove regexp anchors `^` and/or `$`.",
+						b.lm, b.lm.Name, b.lm.Type, b.lm.Value,
+					)
+				case b.isWildcard && b.op == labels.MatchEqual:
+					summary = "unnecessary wildcard regexp"
+					text = fmt.Sprintf("Use `%s` if you want to match on all `%s` values.",
+						makeLabel(name, good...), b.lm.Name)
+				case b.isWildcard && b.op == labels.MatchNotEqual:
+					summary = "unnecessary negative wildcard regexp"
+					text = fmt.Sprintf("Use `%s` if you want to match on all time series for `%s` without the `%s` label.",
+						makeLabel(name, slices.Concat(good, []*labels.Matcher{{Type: labels.MatchEqual, Name: b.lm.Name, Value: ""}})...), name, b.lm.Name)
+				case b.isSmelly:
+					summary = "smelly regexp selector"
+					text = fmt.Sprintf("`{%s}` looks like a smelly selector that tries to extract substrings from the value, please consider breaking down the value of this label into multiple smaller labels", b.lm.String())
+				default:
+					summary = "redundant regexp"
+					text = fmt.Sprintf("Unnecessary regexp match on static string `%s`, use `%s%s%q` instead.",
+						b.lm, b.lm.Name, b.op, b.literalValue)
+
+				}
+				pos := source.FindMatcherPos(expr.Value.Value, b.pos, b.lm)
+				problems = append(problems, Problem{
+					Anchor:   AnchorAfter,
+					Lines:    expr.Value.Pos.Lines(),
+					Reporter: c.Reporter(),
+					Summary:  summary,
+					Details:  RegexpCheckDetails,
+					Severity: Warning,
+					Diagnostics: []diags.Diagnostic{
+						{
+							Message:     text,
+							Pos:         expr.Value.Pos,
+							Expr:        expr.Query().Expr,
+							FirstColumn: int(pos.Start) + 1,
+							LastColumn:  int(pos.End),
+							Kind:        diags.Issue,
+						},
+					},
+				})
+			}
+		})
+	}
+
+	return problems
+}
+
+type badMatcher struct {
+	lm           *labels.Matcher
+	literalValue string
+	pos          posrange.PositionRange
+	op           labels.MatchType
+	isWildcard   bool
+	isSmelly     bool
+	badAnchor    bool
+}
+
+func makeLabel(name string, matchers ...*labels.Matcher) string {
+	filtered := make([]*labels.Matcher, 0, len(matchers))
+	for _, m := range matchers {
+		if m.Type == labels.MatchEqual && m.Name == model.MetricNameLabel {
+			continue
+		}
+		filtered = append(filtered, m)
+	}
+	if len(filtered) == 0 {
+		return name
+	}
+
+	var b strings.Builder
+	b.WriteString(name)
+	b.WriteRune('{')
+	for i, m := range filtered {
+		if i > 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(m.String())
+	}
+	b.WriteRune('}')
+	return b.String()
+}
+
+func isWildcardOp(op syntax.Op) bool {
+	return op == syntax.OpStar || op == syntax.OpPlus
+}
+
+func hasNonDigitLiteral(sub *syntax.Regexp) bool {
+	if sub.Op != syntax.OpLiteral {
+		return false
+	}
+	for _, r := range sub.Rune {
+		if !unicode.IsDigit(r) {
+			return true
+		}
+	}
+	return false
+}
+
+func isRegexpSmelly(subs []*syntax.Regexp) bool {
+	for i, s := range subs {
+		if isWildcardOp(s.Op) {
+			if hasSmellyLiteral(slices.Backward(subs[:i]), syntax.OpBeginText) &&
+				hasSmellyLiteral(slices.All(subs[i+1:]), syntax.OpEndText) {
+				return true
+			}
+		}
+		if hasNonDigitLiteral(s) {
+			if hasSmellyWildcard(slices.Backward(subs[:i]), syntax.OpBeginText) &&
+				hasSmellyWildcard(slices.All(subs[i+1:]), syntax.OpEndText) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func hasSmellyLiteral(subs iter.Seq2[int, *syntax.Regexp], anchorOp syntax.Op) bool {
+	for _, s := range subs {
+		if hasNonDigitLiteral(s) {
+			return true
+		}
+		if s.Op != anchorOp && s.Op != syntax.OpEmptyMatch && s.Op != syntax.OpAnyChar && s.Op != syntax.OpAnyCharNotNL {
+			return false
+		}
+	}
+	return false
+}
+
+func hasSmellyWildcard(subs iter.Seq2[int, *syntax.Regexp], anchorOp syntax.Op) bool {
+	for _, s := range subs {
+		if isWildcardOp(s.Op) {
+			return true
+		}
+		if s.Op != anchorOp && s.Op != syntax.OpEmptyMatch {
+			return false
+		}
+	}
+	return false
+}

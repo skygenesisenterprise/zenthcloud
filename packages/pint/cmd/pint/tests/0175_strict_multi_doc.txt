@@ -1,0 +1,34 @@
+! exec pint --no-color lint rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=WARN msg="Failed to parse file content" err="multi-document YAML files are not allowed" path=rules/strict.yml line=13
+level=INFO msg="Checking Prometheus rules" entries=1 workers=10 online=true
+Fatal: multi-document YAML files are not allowed (yaml/parse)
+  ---> rules/strict.yml:13
+ 13 | ---
+      ^^^ multi-document YAML files are not allowed
+
+level=INFO msg="Problems found" Fatal=1
+level=ERROR msg="Execution completed with error(s)" err="found 1 problem(s) with severity Bug or higher"
+-- rules/strict.yml --
+---
+groups:
+- name: foo
+  rules:
+    - record: foo
+      expr: bar
+---
+groups:
+- name: foo
+  rules:
+    - record: foo
+      expr: bar
+---
+groups:
+- name: foo
+  rules:
+    - record: foo
+      expr: bar

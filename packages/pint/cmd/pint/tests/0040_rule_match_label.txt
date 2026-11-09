@@ -1,0 +1,60 @@
+exec pint --no-color -l debug lint rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Loading configuration file" path=.pint.hcl
+level=DEBUG msg="Adding pint config to the parser exclude list" path=.pint.hcl
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=DEBUG msg="File parsed" path=rules/rules.yml rules=4
+level=DEBUG msg="Glob finder completed" count=4
+level=INFO msg="Checking Prometheus rules" entries=4 workers=10 online=true
+level=DEBUG msg="Generated all Prometheus servers" count=0
+level=DEBUG msg="Found recording rule" path=rules/rules.yml record=ignore lines=1-2 state=noop
+level=DEBUG msg="Configured checks for rule" enabled=["promql/syntax","alerts/for","alerts/comparison","alerts/template","promql/fragile","promql/regexp","rule/dependency","promql/impossible","promql/nan","group/interval"] path=rules/rules.yml rule=ignore
+level=DEBUG msg="Found recording rule" path=rules/rules.yml record=match lines=4-7 state=noop
+level=DEBUG msg="Configured checks for rule" enabled=["promql/syntax","alerts/for","alerts/comparison","alerts/template","promql/fragile","promql/regexp","rule/dependency","promql/impossible","promql/nan","group/interval","promql/aggregate(job:true)"] path=rules/rules.yml rule=match
+level=DEBUG msg="Found alerting rule" path=rules/rules.yml alert=ignore lines=9-10 state=noop
+level=DEBUG msg="Configured checks for rule" enabled=["promql/syntax","alerts/for","alerts/comparison","alerts/template","promql/fragile","promql/regexp","rule/dependency","promql/impossible","promql/nan","group/interval"] path=rules/rules.yml rule=ignore
+level=DEBUG msg="Found alerting rule" path=rules/rules.yml alert=match lines=12-15 state=noop
+level=DEBUG msg="Configured checks for rule" enabled=["promql/syntax","alerts/for","alerts/comparison","alerts/template","promql/fragile","promql/regexp","rule/dependency","promql/impossible","promql/nan","group/interval","promql/aggregate(job:true)"] path=rules/rules.yml rule=match
+Warning: required label is being removed via aggregation (promql/aggregate)
+  ---> rules/rules.yml:5 -> `match` [+1 duplicates]
+5 |   expr: sum(foo)
+            ^^^ Query is using aggregation that removes all labels.
+                `job` label is required and should be preserved when aggregating all rules.
+
+level=INFO msg="Some problems are duplicated between rules and all the duplicates were hidden, pass `--show-duplicates` to see them" total=2 duplicates=1 shown=1
+level=INFO msg="Problems found" Warning=2
+-- rules/rules.yml --
+- record: ignore
+  expr: sum(foo)
+
+- record: match
+  expr: sum(foo)
+  labels:
+    foo: bar
+
+- alert: ignore
+  expr: sum(foo) > 0
+
+- alert: match
+  expr: sum(foo) > 0
+  labels:
+    foo: bar
+
+-- .pint.hcl --
+parser {
+  relaxed = [".*"]
+}
+rule {
+    match {
+      label "foo" {
+        value = "bar"
+      }
+    }
+    aggregate ".*" {
+        keep     = [ "job" ]
+        severity = "warning"
+    }
+}

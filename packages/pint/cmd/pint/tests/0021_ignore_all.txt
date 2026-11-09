@@ -1,0 +1,24 @@
+! exec pint --no-color -l debug lint rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Loading configuration file" path=.pint.hcl
+level=ERROR msg="Execution completed with error(s)" err="failed to load config file \".pint.hcl\": ignore block must have at least one condition"
+-- rules/0001.yml --
+- record: "colo:recording"
+  expr: sum(foo) without(job)
+
+- alert: "colo:alerting"
+  expr: sum(bar) without(job)
+
+-- .pint.hcl --
+parser {
+  relaxed = ["rules/.*"]
+}
+rule {
+    ignore {}
+    aggregate ".+" {
+        keep = [ "job" ]
+    }
+}

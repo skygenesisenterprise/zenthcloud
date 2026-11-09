@@ -1,0 +1,209 @@
+exec bash -x ./test.sh &
+
+exec pint --show-duplicates watch --listen=127.0.0.1:6212 --pidfile=pint.pid glob rules
+cmp curl.txt metrics.txt
+
+-- test.sh --
+sleep 3
+curl -s http://127.0.0.1:6212/metrics | grep -vE 'process_|go_info' | perl -pe "s/^([a-zA-Z].+)[ ]([0-9\.\-\+eE]+)$/\1/g" > curl.txt
+cat pint.pid | xargs kill
+
+-- rules/unknown.yml --
+groups:
+- name: unknown
+  rules:
+  - record: broken
+    expr: foo / count())
+  - record: aggregate1
+    expr: sum(foo) without(job)
+  - record: aggregate2
+    expr: sum(foo) without(job)
+
+-- rules/bob.yml --
+# pint file/owner bob
+
+groups:
+- name: bob
+  rules:
+  - alert: ok
+    expr: foo > 0
+  - alert: broken1
+    expr: foo / count())
+  - alert: broken2
+    expr: foo / count())
+
+-- rules/alice.yml --
+groups:
+- name: alice
+  rules:
+  - alert: broken
+    expr: foo / count())
+    # pint rule/owner alice
+
+-- rules/badyaml.yml --
+- {}
+
+-- .pint.hcl --
+rule {
+    match {
+      kind = "recording"
+    }
+    aggregate ".+" {
+        keep = [ "job" ]
+    }
+}
+
+-- metrics.txt --
+# HELP go_gc_duration_seconds A summary of the wall-time pause (stop-the-world) duration in garbage collection cycles.
+# TYPE go_gc_duration_seconds summary
+go_gc_duration_seconds{quantile="0"}
+go_gc_duration_seconds{quantile="0.25"}
+go_gc_duration_seconds{quantile="0.5"}
+go_gc_duration_seconds{quantile="0.75"}
+go_gc_duration_seconds{quantile="1"}
+go_gc_duration_seconds_sum
+go_gc_duration_seconds_count
+# HELP go_gc_gogc_percent Heap size target percentage configured by the user, otherwise 100. This value is set by the GOGC environment variable, and the runtime/debug.SetGCPercent function. Sourced from /gc/gogc:percent.
+# TYPE go_gc_gogc_percent gauge
+go_gc_gogc_percent
+# HELP go_gc_gomemlimit_bytes Go runtime memory limit configured by the user, otherwise math.MaxInt64. This value is set by the GOMEMLIMIT environment variable, and the runtime/debug.SetMemoryLimit function. Sourced from /gc/gomemlimit:bytes.
+# TYPE go_gc_gomemlimit_bytes gauge
+go_gc_gomemlimit_bytes
+# HELP go_goroutines Number of goroutines that currently exist.
+# TYPE go_goroutines gauge
+go_goroutines
+# HELP go_memstats_alloc_bytes Number of bytes allocated in heap and currently in use. Equals to /memory/classes/heap/objects:bytes.
+# TYPE go_memstats_alloc_bytes gauge
+go_memstats_alloc_bytes
+# HELP go_memstats_alloc_bytes_total Total number of bytes allocated in heap until now, even if released already. Equals to /gc/heap/allocs:bytes.
+# TYPE go_memstats_alloc_bytes_total counter
+go_memstats_alloc_bytes_total
+# HELP go_memstats_buck_hash_sys_bytes Number of bytes used by the profiling bucket hash table. Equals to /memory/classes/profiling/buckets:bytes.
+# TYPE go_memstats_buck_hash_sys_bytes gauge
+go_memstats_buck_hash_sys_bytes
+# HELP go_memstats_frees_total Total number of heap objects frees. Equals to /gc/heap/frees:objects + /gc/heap/tiny/allocs:objects.
+# TYPE go_memstats_frees_total counter
+go_memstats_frees_total
+# HELP go_memstats_gc_sys_bytes Number of bytes used for garbage collection system metadata. Equals to /memory/classes/metadata/other:bytes.
+# TYPE go_memstats_gc_sys_bytes gauge
+go_memstats_gc_sys_bytes
+# HELP go_memstats_heap_alloc_bytes Number of heap bytes allocated and currently in use, same as go_memstats_alloc_bytes. Equals to /memory/classes/heap/objects:bytes.
+# TYPE go_memstats_heap_alloc_bytes gauge
+go_memstats_heap_alloc_bytes
+# HELP go_memstats_heap_idle_bytes Number of heap bytes waiting to be used. Equals to /memory/classes/heap/released:bytes + /memory/classes/heap/free:bytes.
+# TYPE go_memstats_heap_idle_bytes gauge
+go_memstats_heap_idle_bytes
+# HELP go_memstats_heap_inuse_bytes Number of heap bytes that are in use. Equals to /memory/classes/heap/objects:bytes + /memory/classes/heap/unused:bytes
+# TYPE go_memstats_heap_inuse_bytes gauge
+go_memstats_heap_inuse_bytes
+# HELP go_memstats_heap_objects Number of currently allocated objects. Equals to /gc/heap/objects:objects.
+# TYPE go_memstats_heap_objects gauge
+go_memstats_heap_objects
+# HELP go_memstats_heap_released_bytes Number of heap bytes released to OS. Equals to /memory/classes/heap/released:bytes.
+# TYPE go_memstats_heap_released_bytes gauge
+go_memstats_heap_released_bytes
+# HELP go_memstats_heap_sys_bytes Number of heap bytes obtained from system. Equals to /memory/classes/heap/objects:bytes + /memory/classes/heap/unused:bytes + /memory/classes/heap/released:bytes + /memory/classes/heap/free:bytes.
+# TYPE go_memstats_heap_sys_bytes gauge
+go_memstats_heap_sys_bytes
+# HELP go_memstats_last_gc_time_seconds Number of seconds since 1970 of last garbage collection.
+# TYPE go_memstats_last_gc_time_seconds gauge
+go_memstats_last_gc_time_seconds
+# HELP go_memstats_mallocs_total Total number of heap objects allocated, both live and gc-ed. Semantically a counter version for go_memstats_heap_objects gauge. Equals to /gc/heap/allocs:objects + /gc/heap/tiny/allocs:objects.
+# TYPE go_memstats_mallocs_total counter
+go_memstats_mallocs_total
+# HELP go_memstats_mcache_inuse_bytes Number of bytes in use by mcache structures. Equals to /memory/classes/metadata/mcache/inuse:bytes.
+# TYPE go_memstats_mcache_inuse_bytes gauge
+go_memstats_mcache_inuse_bytes
+# HELP go_memstats_mcache_sys_bytes Number of bytes used for mcache structures obtained from system. Equals to /memory/classes/metadata/mcache/inuse:bytes + /memory/classes/metadata/mcache/free:bytes.
+# TYPE go_memstats_mcache_sys_bytes gauge
+go_memstats_mcache_sys_bytes
+# HELP go_memstats_mspan_inuse_bytes Number of bytes in use by mspan structures. Equals to /memory/classes/metadata/mspan/inuse:bytes.
+# TYPE go_memstats_mspan_inuse_bytes gauge
+go_memstats_mspan_inuse_bytes
+# HELP go_memstats_mspan_sys_bytes Number of bytes used for mspan structures obtained from system. Equals to /memory/classes/metadata/mspan/inuse:bytes + /memory/classes/metadata/mspan/free:bytes.
+# TYPE go_memstats_mspan_sys_bytes gauge
+go_memstats_mspan_sys_bytes
+# HELP go_memstats_next_gc_bytes Number of heap bytes when next garbage collection will take place. Equals to /gc/heap/goal:bytes.
+# TYPE go_memstats_next_gc_bytes gauge
+go_memstats_next_gc_bytes
+# HELP go_memstats_other_sys_bytes Number of bytes used for other system allocations. Equals to /memory/classes/other:bytes.
+# TYPE go_memstats_other_sys_bytes gauge
+go_memstats_other_sys_bytes
+# HELP go_memstats_stack_inuse_bytes Number of bytes obtained from system for stack allocator in non-CGO environments. Equals to /memory/classes/heap/stacks:bytes.
+# TYPE go_memstats_stack_inuse_bytes gauge
+go_memstats_stack_inuse_bytes
+# HELP go_memstats_stack_sys_bytes Number of bytes obtained from system for stack allocator. Equals to /memory/classes/heap/stacks:bytes + /memory/classes/os-stacks:bytes.
+# TYPE go_memstats_stack_sys_bytes gauge
+go_memstats_stack_sys_bytes
+# HELP go_memstats_sys_bytes Number of bytes obtained from system. Equals to /memory/classes/total:byte.
+# TYPE go_memstats_sys_bytes gauge
+go_memstats_sys_bytes
+# HELP go_sched_gomaxprocs_threads The current runtime.GOMAXPROCS setting, or the number of operating system threads that can execute user-level Go code simultaneously. Sourced from /sched/gomaxprocs:threads.
+# TYPE go_sched_gomaxprocs_threads gauge
+go_sched_gomaxprocs_threads
+# HELP go_threads Number of OS threads created.
+# TYPE go_threads gauge
+go_threads
+# HELP pint_check_duration_seconds How long did a check took to complete.
+# TYPE pint_check_duration_seconds summary
+pint_check_duration_seconds_sum{check="alerts/comparison"}
+pint_check_duration_seconds_count{check="alerts/comparison"}
+pint_check_duration_seconds_sum{check="alerts/for"}
+pint_check_duration_seconds_count{check="alerts/for"}
+pint_check_duration_seconds_sum{check="alerts/template"}
+pint_check_duration_seconds_count{check="alerts/template"}
+pint_check_duration_seconds_sum{check="group/interval"}
+pint_check_duration_seconds_count{check="group/interval"}
+pint_check_duration_seconds_sum{check="promql/aggregate"}
+pint_check_duration_seconds_count{check="promql/aggregate"}
+pint_check_duration_seconds_sum{check="promql/fragile"}
+pint_check_duration_seconds_count{check="promql/fragile"}
+pint_check_duration_seconds_sum{check="promql/impossible"}
+pint_check_duration_seconds_count{check="promql/impossible"}
+pint_check_duration_seconds_sum{check="promql/nan"}
+pint_check_duration_seconds_count{check="promql/nan"}
+pint_check_duration_seconds_sum{check="promql/regexp"}
+pint_check_duration_seconds_count{check="promql/regexp"}
+pint_check_duration_seconds_sum{check="promql/syntax"}
+pint_check_duration_seconds_count{check="promql/syntax"}
+pint_check_duration_seconds_sum{check="rule/dependency"}
+pint_check_duration_seconds_count{check="rule/dependency"}
+pint_check_duration_seconds_sum{check="yaml/parse"}
+pint_check_duration_seconds_count{check="yaml/parse"}
+# HELP pint_check_iterations_total Total number of completed check iterations since pint start.
+# TYPE pint_check_iterations_total counter
+pint_check_iterations_total
+# HELP pint_last_run_checks The number of checks to run in the current iteration.
+# TYPE pint_last_run_checks gauge
+pint_last_run_checks
+# HELP pint_last_run_checks_done The number of checks completed in the current iteration.
+# TYPE pint_last_run_checks_done gauge
+pint_last_run_checks_done
+# HELP pint_last_run_duration_seconds Last checks run duration in seconds.
+# TYPE pint_last_run_duration_seconds gauge
+pint_last_run_duration_seconds
+# HELP pint_last_run_time_seconds Last checks run completion time since unix epoch in seconds.
+# TYPE pint_last_run_time_seconds gauge
+pint_last_run_time_seconds
+# HELP pint_problem Prometheus rule problem reported by pint.
+# TYPE pint_problem gauge
+pint_problem{filename="rules/alice.yml",kind="alerting",name="broken",owner="alice",problem="PromQL syntax error: unexpected right parenthesis ')'",reporter="promql/syntax",severity="fatal"}
+pint_problem{filename="rules/badyaml.yml",kind="invalid",name="unknown",owner="",problem="top level field must be a groups key, got list",reporter="yaml/parse",severity="fatal"}
+pint_problem{filename="rules/bob.yml",kind="alerting",name="broken1",owner="bob",problem="PromQL syntax error: unexpected right parenthesis ')'",reporter="promql/syntax",severity="fatal"}
+pint_problem{filename="rules/bob.yml",kind="alerting",name="broken2",owner="bob",problem="PromQL syntax error: unexpected right parenthesis ')'",reporter="promql/syntax",severity="fatal"}
+pint_problem{filename="rules/unknown.yml",kind="recording",name="broken",owner="",problem="PromQL syntax error: unexpected right parenthesis ')'",reporter="promql/syntax",severity="fatal"}
+# HELP pint_problems Total number of problems reported by pint.
+# TYPE pint_problems gauge
+pint_problems
+# HELP pint_rule_file_owner This is a boolean metric that describes who is the configured owner for given rule file.
+# TYPE pint_rule_file_owner gauge
+pint_rule_file_owner{filename="rules/alice.yml",owner="alice"}
+pint_rule_file_owner{filename="rules/bob.yml",owner="bob"}
+# HELP pint_rules_parsed_total Total number of rules parsed since startup.
+# TYPE pint_rules_parsed_total counter
+pint_rules_parsed_total{kind="alerting"}
+pint_rules_parsed_total{kind="invalid"}
+pint_rules_parsed_total{kind="recording"}
+# HELP pint_version Version information.
+# TYPE pint_version gauge
+pint_version{version="unknown"}

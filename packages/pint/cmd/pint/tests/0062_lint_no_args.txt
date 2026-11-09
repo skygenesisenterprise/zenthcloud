@@ -1,0 +1,6 @@
+! exec pint --workers=1 --no-color lint
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=ERROR msg="Execution completed with error(s)" err="at least one file or directory required"

@@ -1,0 +1,48 @@
+exec pint -l debug --no-color lint rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Loading configuration file" path=.pint.hcl
+level=DEBUG msg="Adding pint config to the parser exclude list" path=.pint.hcl
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=DEBUG msg="File parsed" path=rules/0001.yml rules=1
+level=DEBUG msg="Glob finder completed" count=1
+level=INFO msg="Configured new Prometheus server" name=prom uris=1 uptime=up tags=["foo","bar"] include=[] exclude=[]
+level=DEBUG msg="Starting query workers" name=prom uri=http://127.0.0.1:7103 workers=16
+level=INFO msg="Checking Prometheus rules" entries=1 workers=10 online=true
+level=DEBUG msg="Generated all Prometheus servers" count=1
+level=DEBUG msg="Found recording rule" path=rules/0001.yml record=colo:test1 lines=7-9 state=noop
+level=DEBUG msg="Configured checks for rule" enabled=["promql/syntax","alerts/for","alerts/comparison","alerts/template","promql/fragile","promql/regexp","rule/dependency","promql/impossible","promql/nan","group/interval","alerts/external_labels(prom)","promql/counter(prom)","alerts/absent(prom)","promql/features(prom)"] path=rules/0001.yml rule=colo:test1
+level=DEBUG msg="Scheduling Prometheus metrics metadata query" uri=http://127.0.0.1:7103 metric=foo
+level=DEBUG msg="Getting prometheus metrics metadata" uri=http://127.0.0.1:7103 metric=foo
+level=ERROR msg="Query returned an error" err="failed to query Prometheus metrics metadata: Get \"http://127.0.0.1:7103/api/v1/metadata?metric=foo\": dial tcp 127.0.0.1:7103: connect: connection refused" uri=http://127.0.0.1:7103 query=foo
+Warning: unable to run checks (promql/counter)
+  ---> rules/0001.yml:7-9 -> `colo:test1`
+7 | - record: "colo:test1"
+               ^^^^^^^^^^
+               Couldn't run some online checks due to `prom` Prometheus server at http://127.0.0.1:7103
+               error: `connection refused`.
+
+level=INFO msg="Problems found" Warning=1
+-- rules/0001.yml --
+# pint file/disable promql/series(+bar)
+# pint file/disable promql/rate(+bar)
+# pint file/disable promql/range_query(+bar)
+# pint file/disable promql/offset(+bar)
+# pint file/disable labels/conflict(+foo)
+
+- record: "colo:test1"
+  # pint file/disable rule/duplicate(+foo)
+  expr: sum(foo) without(job)
+
+# pint file/disable promql/vector_matching(+foo)
+
+-- .pint.hcl --
+prometheus "prom" {
+  uri  = "http://127.0.0.1:7103"
+  tags = ["foo", "bar"]
+}
+parser {
+  relaxed = [".*"]
+}

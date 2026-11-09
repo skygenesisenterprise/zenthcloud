@@ -1,0 +1,245 @@
+package promapi
+
+import (
+	"context"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
+	"errors"
+	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
+	"net/url"
+	"strconv"
+	"time"
+
+	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
+	"github.com/prometheus/common/model"
+	"github.com/prometheus/prometheus/model/labels"
+)
+
+const (
+	APIPathQuery = "/api/v1/query"
+)
+
+type QueryResult struct {
+	URI    string
+	Series []Sample
+	Stats  QueryStats
+}
+
+type SampleLabels labels.Labels
+
+func (s *SampleLabels) UnmarshalJSONFrom(dec *jsontext.Decoder) (err error) {
+	var tok jsontext.Token
+
+	if tok, err = dec.ReadToken(); err != nil {
+		return err
+	}
+	if tok.Kind() != '{' {
+		return &json.SemanticError{JSONKind: tok.Kind()} // nolint: exhaustruct_v5
+	}
+
+	var parts []string
+	for {
+		if tok, err = dec.ReadToken(); err != nil {
+			return err
+		}
+		if tok.Kind() == '}' {
+			break
+		}
+		parts = append(parts, tok.String())
+	}
+	*s = SampleLabels(labels.FromStrings(parts...))
+	return nil
+}
+
+type SampleTimestampValue struct {
+	Timestamp model.Time
+	Value     model.SampleValue
+}
+
+func (s *SampleTimestampValue) UnmarshalJSONFrom(dec *jsontext.Decoder) (err error) {
+	var (
+		tok jsontext.Token
+		f   float64
+	)
+
+	if tok, err = dec.ReadToken(); err != nil {
+		return err
+	}
+	if tok.Kind() != '[' {
+		return &json.SemanticError{JSONKind: tok.Kind()} // nolint: exhaustruct_v5
+	}
+
+	tok, err = dec.ReadToken()
+	if err != nil {
+		return err
+	}
+	f, err = strconv.ParseFloat(tok.String(), 64)
+	if err != nil {
+		return err
+	}
+	s.Timestamp = model.Time(int64(f * 1000))
+
+	tok, err = dec.ReadToken()
+	if err != nil {
+		return err
+	}
+	f, err = strconv.ParseFloat(tok.String(), 64)
+	if err == nil {
+		s.Value = model.SampleValue(f)
+	}
+
+	if tok, err = dec.ReadToken(); err != nil {
+		return err
+	}
+	if tok.Kind() != ']' {
+		return &json.SemanticError{JSONKind: tok.Kind()} // nolint: exhaustruct_v5
+	}
+	return nil
+}
+
+type PrometheusQuerySample struct {
+	Labels SampleLabels         `json:"metric"`
+	Value  SampleTimestampValue `json:"value"`
+}
+
+type PrometheusQueryResponse struct {
+	PrometheusResponse
+	Data struct {
+		ResultType string                  `json:"resultType"`
+		Result     []PrometheusQuerySample `json:"result"`
+		Stats      QueryStats              `json:"stats"`
+	} `json:"data"`
+}
+
+type instantQuery struct {
+	timestamp time.Time
+	ctx       context.Context
+	prom      *Prometheus
+	expr      string
+}
+
+func (q instantQuery) Run() queryResult {
+	slog.LogAttrs(
+		q.ctx, slog.LevelDebug,
+		"Running prometheus query",
+		slog.String("uri", q.prom.safeURI),
+		slog.String("query", q.expr),
+	)
+
+	ctx, cancel := q.prom.requestContext(q.ctx)
+	defer cancel()
+
+	var qr queryResult
+
+	args := url.Values{}
+	args.Set("query", q.expr)
+	args.Set("timeout", q.prom.timeout.String())
+	args.Set("stats", "1")
+	resp, err := q.prom.doRequest(ctx, http.MethodPost, q.Endpoint(), args)
+	if err != nil {
+		qr.err = err
+		return qr
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode/100 != 2 {
+		qr.err = tryDecodingAPIError(resp)
+		return qr
+	}
+
+	qr.value, qr.stats, qr.err = parseVectorSamples(resp.Body)
+	return qr
+}
+
+func (q instantQuery) Endpoint() string {
+	return APIPathQuery
+}
+
+func (q instantQuery) String() string {
+	return q.expr
+}
+
+func (q instantQuery) CacheKey() uint64 {
+	return hash(q.prom.unsafeURI, q.Endpoint(), q.expr)
+}
+
+func (q instantQuery) CacheTTL() time.Duration {
+	return time.Minute * 5
+}
+
+func (prom *Prometheus) Query(ctx context.Context, expr string) (*QueryResult, error) {
+	slog.LogAttrs(ctx, slog.LevelDebug, "Scheduling prometheus query", slog.String("uri", prom.safeURI), slog.String("query", expr))
+
+	key := APIPathQuery + expr
+	prom.locker.lock(key)
+	defer prom.locker.unlock(key)
+
+	result, err := prom.runQuery(ctx, instantQuery{
+		prom:      prom,
+		ctx:       ctx,
+		expr:      expr,
+		timestamp: time.Now(),
+	})
+	if err != nil {
+		return nil, QueryError{err: err, msg: decodeError(err)}
+	}
+
+	qr := QueryResult{
+		URI:    prom.publicURI,
+		Series: result.value.([]Sample),
+		Stats:  result.stats,
+	}
+	slog.LogAttrs(ctx, slog.LevelDebug, "Parsed response", slog.String("uri", prom.safeURI), slog.String("query", expr), slog.Int("series", len(qr.Series)))
+
+	return &qr, nil
+}
+
+type Sample struct {
+	Labels labels.Labels
+	Value  float64
+}
+
+func parseVectorSamples(r io.Reader) (samples []Sample, _ QueryStats, err error) {
+	defer dummyReadAll(r)
+
+	var data PrometheusQueryResponse
+	if err = json.UnmarshalRead(r, &data); err != nil {
+		return samples, data.Data.Stats, APIError{
+			Status:    data.Status,
+			ErrorType: v1.ErrBadResponse,
+			Err:       fmt.Errorf("JSON parse error: %w", err),
+		}
+	}
+
+	if data.Status != "success" {
+		if data.Error == "" {
+			data.Error = "empty response object"
+		}
+		return samples, data.Data.Stats, APIError{
+			Status:    data.Status,
+			ErrorType: decodeErrorType(data.ErrorType),
+			Err:       errors.New(data.Error),
+		}
+	}
+
+	if data.Data.ResultType != "vector" {
+		return nil, data.Data.Stats, APIError{
+			Status:    data.Status,
+			ErrorType: v1.ErrBadResponse,
+			Err:       errors.New("invalid result type, expected vector, got " + data.Data.ResultType),
+		}
+	}
+
+	samples = make([]Sample, 0, len(data.Data.Result))
+	for _, s := range data.Data.Result {
+		samples = append(samples, Sample{
+			Labels: labels.Labels(s.Labels),
+			Value:  float64(s.Value.Value),
+		})
+	}
+
+	return samples, data.Data.Stats, nil
+}

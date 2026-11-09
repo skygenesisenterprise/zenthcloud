@@ -1,0 +1,334 @@
+package promapi
+
+import (
+	"context"
+	"crypto/tls"
+	"errors"
+	"io"
+	"log/slog"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/cespare/xxhash/v2"
+	"github.com/klauspost/compress/gzhttp"
+	"go.uber.org/ratelimit"
+	"golang.org/x/time/rate"
+)
+
+var ErrUnsupported = errors.New("unsupported API")
+
+type PrometheusContextKey string
+
+const (
+	AllPrometheusServers = PrometheusContextKey("allServers")
+)
+
+type QueryError struct {
+	err error
+	msg string
+}
+
+func (qe QueryError) Error() string {
+	return qe.msg
+}
+
+func (qe QueryError) Unwrap() error {
+	return qe.err
+}
+
+type querier interface {
+	Endpoint() string
+	String() string
+	CacheKey() uint64
+	CacheTTL() time.Duration
+	Run() queryResult
+}
+
+type queryResult struct {
+	value any
+	err   error
+	stats QueryStats
+}
+
+type QueryTimings struct {
+	EvalTotalTime        float64 `json:"evalTotalTime"`
+	ResultSortTime       float64 `json:"resultSortTime"`
+	QueryPreparationTime float64 `json:"queryPreparationTime"`
+	InnerEvalTime        float64 `json:"innerEvalTime"`
+	ExecQueueTime        float64 `json:"execQueueTime"`
+	ExecTotalTime        float64 `json:"execTotalTime"`
+}
+
+type QuerySamples struct {
+	TotalQueryableSamples int `json:"totalQueryableSamples"`
+	PeakSamples           int `json:"peakSamples"`
+}
+
+type QueryStats struct {
+	Timings QueryTimings `json:"timings"`
+	Samples QuerySamples `json:"samples"`
+}
+
+func sanitizeURI(s string) string {
+	u, err := url.Parse(s)
+	if err != nil {
+		return s
+	}
+	if u.User != nil {
+		if _, pwdSet := u.User.Password(); pwdSet {
+			u.User = url.UserPassword(u.User.Username(), "xxx")
+		}
+		return u.String()
+	}
+	return s
+}
+
+type unsupporedAPIs struct {
+	mtx        sync.RWMutex
+	noConfig   bool
+	noFlags    bool
+	noMetadata bool
+}
+
+func (ua *unsupporedAPIs) isSupported(s string) bool {
+	ua.mtx.RLock()
+	defer ua.mtx.RUnlock()
+	switch s {
+	case APIPathConfig:
+		return !ua.noConfig
+	case APIPathFlags:
+		return !ua.noFlags
+	case APIPathMetadata:
+		return !ua.noMetadata
+	default:
+		return true
+	}
+}
+
+func (ua *unsupporedAPIs) disable(s string) {
+	slog.LogAttrs(context.Background(), slog.LevelDebug, "Disabling unsupported API", slog.String("api", s))
+	ua.mtx.Lock()
+	defer ua.mtx.Unlock()
+	switch s {
+	case APIPathConfig:
+		ua.noConfig = true
+	case APIPathFlags:
+		ua.noFlags = true
+	case APIPathMetadata:
+		ua.noMetadata = true
+	}
+}
+
+type Prometheus struct {
+	rateLimiter      ratelimit.Limiter
+	headers          map[string]string
+	cache            *queryCache
+	locker           *partitionLocker
+	apis             *unsupporedAPIs
+	concurrencyLimit chan struct{}
+	sampleLimiter    *rate.Limiter
+	client           http.Client
+	name             string
+	unsafeURI        string // raw prometheus URI, for queries
+	safeURI          string // prometheus URI but with auth info stripped, for logging
+	publicURI        string // either set explicitly by user in the config or same as safeURI, this ends up as URI in query responses
+	timeout          time.Duration
+	concurrency      int
+}
+
+func NewPrometheus(
+	name, uri, publicURI string, headers map[string]string,
+	timeout time.Duration, concurrency, rl, sampleRateLimit int,
+	tlsConf *tls.Config,
+) *Prometheus {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	if tlsConf != nil {
+		transport.TLSClientConfig = tlsConf
+	}
+
+	unsafeURI := strings.TrimSuffix(uri, "/")
+	safeURI := sanitizeURI(unsafeURI)
+	publicURI = strings.TrimSuffix(publicURI, "/")
+	if publicURI == "" {
+		publicURI = safeURI
+	}
+
+	prom := Prometheus{ // nolint: exhaustruct_v5
+		name:        name,
+		unsafeURI:   uri,
+		safeURI:     safeURI,
+		publicURI:   publicURI,
+		headers:     headers,
+		timeout:     timeout,
+		client:      http.Client{Transport: gzhttp.Transport(transport)},
+		locker:      newPartitionLocker((&sync.Mutex{})),
+		rateLimiter: ratelimit.New(rl),
+		concurrency: concurrency,
+		apis:        &unsupporedAPIs{}, // nolint: exhaustruct_v5
+	}
+	if sampleRateLimit > 0 {
+		// We start with full budget (equal to our limit) and every time we get
+		// a response the number of samples used for that query (from stats)
+		// reduces our budget.
+		// If the budget drops <= zero the next query needs to wait until it is
+		// >= zero.
+		prom.sampleLimiter = rate.NewLimiter(rate.Limit(sampleRateLimit), sampleRateLimit)
+	}
+
+	prometheusSampleRateLimit.WithLabelValues(name).Set(float64(sampleRateLimit))
+
+	return &prom
+}
+
+func (prom *Prometheus) SafeURI() string {
+	return prom.safeURI
+}
+
+func (prom *Prometheus) runQuery(ctx context.Context, query querier) (queryResult, error) {
+	select {
+	case <-ctx.Done():
+		return queryResult{}, ctx.Err()
+	case prom.concurrencyLimit <- struct{}{}:
+	}
+	defer func() { <-prom.concurrencyLimit }()
+
+	result := processJob(prom, query)
+	if result.err != nil {
+		return result, result.err
+	}
+	return result, nil
+}
+
+func (prom *Prometheus) StartWorkers() {
+	slog.LogAttrs(
+		context.Background(), slog.LevelDebug,
+		"Starting query workers",
+		slog.String("name", prom.name),
+		slog.String("uri", prom.safeURI),
+		slog.Int("workers", prom.concurrency),
+	)
+	prom.concurrencyLimit = make(chan struct{}, prom.concurrency)
+}
+
+func (prom *Prometheus) doRequest(ctx context.Context, method, path string, args url.Values) (*http.Response, error) {
+	u, _ := url.Parse(prom.unsafeURI)
+	u.Path = strings.TrimSuffix(u.Path, "/")
+	// url.JoinPath only fails if passed u.String() fails to parse with url.Parse()
+	// but we already parsed it above so it can't fail here.
+	uri, _ := url.JoinPath(u.String(), path)
+
+	var body io.Reader
+	if method == http.MethodPost {
+		body = strings.NewReader(args.Encode())
+	} else if eargs := args.Encode(); eargs != "" {
+		uri += "?" + eargs
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, uri, body)
+	if err != nil {
+		return nil, err
+	}
+	if method == http.MethodPost {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
+
+	for k, v := range prom.headers {
+		req.Header.Set(k, v)
+	}
+
+	return prom.client.Do(req)
+}
+
+func (prom *Prometheus) requestContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(ctx, prom.timeout+time.Second)
+}
+
+func processJob(prom *Prometheus, query querier) queryResult {
+	cacheKey := query.CacheKey()
+	if prom.cache != nil {
+		if cached, ok := prom.cache.get(cacheKey, query.Endpoint()); ok {
+			return cached.(queryResult)
+		}
+	}
+
+	if !prom.apis.isSupported(query.Endpoint()) {
+		return queryResult{err: ErrUnsupported} // nolint: exhaustruct_v5
+	}
+
+	prometheusQueriesTotal.WithLabelValues(prom.name, query.Endpoint()).Inc()
+	prometheusQueriesRunning.WithLabelValues(prom.name, query.Endpoint()).Inc()
+
+	prom.rateLimiter.Take()
+	result := query.Run()
+	prometheusQueriesRunning.WithLabelValues(prom.name, query.Endpoint()).Dec()
+
+	if result.err == nil && result.stats.Samples.TotalQueryableSamples > 0 {
+		prometheusQuerySamplesTotal.WithLabelValues(prom.name).
+			Add(float64(result.stats.Samples.TotalQueryableSamples))
+		if prom.sampleLimiter != nil {
+			// A single query can eat up to the limit itself, never more.
+			// This is so that one huge query cannot stall all later queries
+			// by making the budget a huge negative number that needs to be refilled
+			// slowly over many seconds.
+			// We pass a dummy context so that WaitN never errors.
+			// All we need to do here is wait.
+			_ = prom.sampleLimiter.WaitN(
+				context.Background(),
+				min(result.stats.Samples.TotalQueryableSamples, prom.sampleLimiter.Burst()),
+			)
+		}
+	}
+
+	if result.err != nil {
+		if errors.Is(result.err, context.Canceled) {
+			return result
+		}
+		prometheusQueryErrorsTotal.WithLabelValues(prom.name, query.Endpoint(), errReason(result.err)).Inc()
+		if isUnsupportedError(result.err) {
+			prom.apis.disable(query.Endpoint())
+			slog.LogAttrs(
+				context.Background(), slog.LevelWarn,
+				"Looks like this server doesn't support some Prometheus API endpoints, all checks using this API will be disabled",
+				slog.String("name", prom.name),
+				slog.String("uri", prom.safeURI),
+				slog.String("api", query.Endpoint()),
+			)
+			return queryResult{err: ErrUnsupported} // nolint: exhaustruct_v5
+		}
+		slog.LogAttrs(
+			context.Background(), slog.LevelError,
+			"Query returned an error",
+			slog.Any("err", result.err),
+			slog.String("uri", prom.safeURI),
+			slog.String("query", query.String()),
+		)
+		return result
+	}
+
+	if prom.cache != nil {
+		prom.cache.set(cacheKey, result, query.CacheTTL())
+	}
+
+	return result
+}
+
+func formatTime(t time.Time) string {
+	return strconv.FormatFloat(float64(t.Unix())+float64(t.Nanosecond())/1e9, 'f', -1, 64)
+}
+
+func dummyReadAll(r io.Reader) {
+	_, _ = io.Copy(io.Discard, r)
+}
+
+func hash(s ...string) uint64 {
+	h := xxhash.New()
+	for _, v := range s {
+		_, _ = h.WriteString(v)
+		_, _ = h.WriteString("\n")
+	}
+	return h.Sum64()
+}

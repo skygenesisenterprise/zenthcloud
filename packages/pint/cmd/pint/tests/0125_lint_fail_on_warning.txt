@@ -1,0 +1,29 @@
+! exec pint --no-color lint --fail-on=warning rules
+! stdout .
+cmp stderr stderr.txt
+
+-- rules/0001.yml --
+groups:
+  - name: foo
+    rules:
+    - alert: foo
+      expr: up{job=~"xxx"}
+
+-- stderr.txt --
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=INFO msg="Checking Prometheus rules" entries=1 workers=10 online=true
+Warning: always firing alert (alerts/comparison)
+  ---> rules/0001.yml:5 -> `foo`
+5 |       expr: up{job=~"xxx"}
+                ^^^^^^^^^^^^^^
+                This query doesn't have any condition and so this alert will always fire if it matches
+                anything.
+
+Warning: redundant regexp (promql/regexp)
+  ---> rules/0001.yml:5 -> `foo`
+5 |       expr: up{job=~"xxx"}
+                   ^^^^^^^^^^
+                   Unnecessary regexp match on static string `job=~"xxx"`, use `job="xxx"` instead.
+
+level=INFO msg="Problems found" Warning=2
+level=ERROR msg="Execution completed with error(s)" err="found 2 problem(s) with severity Warning or higher"

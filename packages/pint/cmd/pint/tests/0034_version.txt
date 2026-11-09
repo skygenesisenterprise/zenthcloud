@@ -1,0 +1,6 @@
+exec pint version
+cmp stdout stdout.txt
+! stderr .
+
+-- stdout.txt --
+unknown (revision: unknown)

@@ -1,0 +1,361 @@
+package checks_test
+
+import (
+	"context"
+	"testing"
+
+	"github.com/cloudflare/pint/internal/checks"
+	"github.com/cloudflare/pint/internal/promapi"
+)
+
+func newRegexpCheck(_ *promapi.FailoverGroup) checks.RuleChecker {
+	return checks.NewRegexpCheck()
+}
+
+func TestRegexpCheck(t *testing.T) {
+	testCases := []checkTest{
+		{
+			description: "ignores rules with syntax errors",
+			content:     "- alert: foo\n  expr: sum(foo) without(\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "static match",
+			content:     "- record: foo\n  expr: foo{job=\"bar\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "valid regexp",
+			content:     "- record: foo\n  expr: foo{job=~\"bar|foo\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "valid regexp",
+			content:     "- record: foo\n  expr: foo{job!~\"(.*)\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "valid regexp",
+			content:     "- record: foo\n  expr: foo{job=~\"a|b|c\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "valid partial regexp",
+			content:     "- record: foo\n  expr: foo{job=~\"prefix(a|b)\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "unnecessary regexp",
+			content:     "- record: foo\n  expr: foo{job=~\"bar\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "unnecessary negative regexp",
+			content:     "- record: foo\n  expr: foo{job!~\"bar\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "unnecessary regexp with escaped quote",
+			content:     "- record: foo\n  expr: foo{job=~\"foo\\\"bar\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "empty regexp",
+			content:     "- record: foo\n  expr: foo{job=~\"\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "unnecessary regexp anchor",
+			content:     "- record: foo\n  expr: foo{job=~\"^.+$\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "unnecessary regexp anchor",
+			content:     "- record: foo\n  expr: foo{job=~\"(foo|^.+)$\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "duplicated unnecessary regexp",
+			content:     "- record: foo\n  expr: foo{job=~\"bar\"} / foo{job=~\"bar\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "duplicated unnecessary regexp",
+			content:     "- record: foo\n  expr: foo{job=~\"bar\"} / foo{job=~\"bar\", level=\"total\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "regexp with a modifier",
+			content:     "- record: foo\n  expr: foo{job=~\"(?i)someone\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "unnecessary wildcard regexp",
+			content:     "- record: foo\n  expr: foo{job=~\".*\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "unnecessary wildcard regexp / many filters",
+			content:     "- record: foo\n  expr: foo{job=~\".*\", cluster=~\".*\", instance=\"bob\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "unnecessary wildcard regexp / many filters / no name",
+			content: `- record: foo
+  expr: |
+    {job=~".*", cluster=~".*", instance="bob"}
+`,
+			checker:    newRegexpCheck,
+			prometheus: noProm,
+			problems:   true,
+		},
+		{
+			description: "unnecessary wildcard regexp / many filters / regexp name",
+			content: `- record: foo
+  expr: |
+    {job=~".*", __name__=~"foo|bar", cluster=~".*", instance="bob"}
+`,
+			checker:    newRegexpCheck,
+			prometheus: noProm,
+			problems:   true,
+		},
+		{
+			description: "greedy wildcard regexp",
+			content:     "- record: foo\n  expr: foo{job=~\".+\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "unnecessary negative wildcard regexp",
+			content:     "- record: foo\n  expr: foo{job!~\".*\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "unnecessary negative greedy wildcard regexp",
+			content:     "- record: foo\n  expr: foo{job!~\".+\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "needed wildcard regexp",
+			content:     "- record: foo\n  expr: count({__name__=~\".+\"})\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "empty match",
+			content:     "- record: foo\n  expr: foo{bar=\"\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "empty negative match",
+			content:     "- record: foo\n  expr: foo{bar!=\"\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "positive wildcard regexp",
+			content:     "- record: foo\n  expr: count({name=~\".+\", job=\"foo\"})\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "smelly selector",
+			content:     "- record: foo\n  expr: foo{job=~\"service_.*_prod\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "non-smelly selector",
+			content:     "- record: foo\n  expr: rate(http_requests_total{job=\"foo\", code=~\"5..\"}[5m])\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "smelly selector / enabled",
+			content:     "- record: foo\n  expr: foo{job=~\"service_.*_prod\"}\n",
+			checker:     newRegexpCheck,
+			ctx: func(ctx context.Context, _ string) context.Context {
+				yes := true
+				s := checks.PromqlRegexpSettings{
+					Smelly: &yes,
+				}
+				if err := s.Validate(); err != nil {
+					t.Error(err)
+					t.FailNow()
+				}
+				return context.WithValue(ctx, checks.SettingsKey(checks.RegexpCheckName), &s)
+			},
+			prometheus: noProm,
+			problems:   true,
+		},
+		{
+			description: "smelly selector / disabled",
+			content:     "- record: foo\n  expr: foo{job=~\"service_.*_prod\"}\n",
+			checker:     newRegexpCheck,
+			ctx: func(ctx context.Context, _ string) context.Context {
+				no := false
+				s := checks.PromqlRegexpSettings{
+					Smelly: &no,
+				}
+				if err := s.Validate(); err != nil {
+					t.Error(err)
+					t.FailNow()
+				}
+				return context.WithValue(ctx, checks.SettingsKey(checks.RegexpCheckName), &s)
+			},
+			prometheus: noProm,
+		},
+		{
+			description: "code=~5.*",
+			content:     "- record: foo\n  expr: foo{code=~\"5.*\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "prefix-only selector is not smelly",
+			content: `
+- record: foo
+  expr: |
+    sum by (instance, type) (rate(requests_total{env=~"production.*", status="failed"}[5m])) / (1 + sum by (instance, type) (rate(request_total{env=~"production.*"}[5m]))) > 0.1
+`,
+			checker:    newRegexpCheck,
+			prometheus: noProm,
+		},
+		{
+			description: "valid literal with prefix wildcard",
+			content:     "- record: foo\n  expr: foo{job=~\".*bar\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "prefix with .+ is not smelly",
+			content:     "- record: foo\n  expr: foo{job=~\"service.+\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			// One selector has a redundant static regexp and another has a valid regexp.
+			description: "mixed redundant and valid regexp",
+			content:     "- record: foo\n  expr: foo{job=~\"bar\", cluster=~\"us-east-.*\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			// Smelly regexp alongside a non-smelly valid regexp.
+			description: "smelly and valid regexp",
+			content:     "- record: foo\n  expr: foo{job=~\"service_.*_prod\", code=~\"5..\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			// Redundant wildcard regexp alongside a redundant static regexp.
+			description: "wildcard and static redundant regexp",
+			content:     "- record: foo\n  expr: foo{job=~\".*\", cluster=~\"prod\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			// Digit-only literal adjacent to wildcard is not flagged as smelly.
+			description: "digit only smelly pattern",
+			content:     "- record: foo\n  expr: foo{code=~\"5.*0\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			// Regex with an empty non-capturing group produces OpEmptyMatch.
+			description: "empty non-capturing group regexp",
+			content:     "- record: foo\n  expr: foo{job=~\"(?:)\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "prefix wildcard is not smelly",
+			content:     "- record: foo\n  expr: foo{instance=~\"edge.*\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "suffix wildcard is not smelly",
+			content:     "- record: foo\n  expr: foo{job=~\".*staging\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "contains pattern is smelly",
+			content:     "- record: foo\n  expr: foo{cluster=~\".*dev.*\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "negative contains pattern is smelly",
+			content:     "- record: foo\n  expr: foo{cluster!~\".*staging.*\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "literal-wildcard-literal is smelly",
+			content:     "- record: foo\n  expr: foo{name=~\"etcd-backup-.*.timer\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+			problems:    true,
+		},
+		{
+			description: "character class before literal blocks smelly wildcard lookup",
+			content:     "- record: foo\n  expr: foo{job=~\"[a-z]foo.*\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "character class after literal blocks smelly wildcard lookup",
+			content:     "- record: foo\n  expr: foo{job=~\".*foo[0-9]\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+		{
+			description: "character class after wildcard blocks smelly literal lookup",
+			content:     "- record: foo\n  expr: foo{job=~\"foo.*[0-9]\"}\n",
+			checker:     newRegexpCheck,
+			prometheus:  noProm,
+		},
+	}
+	runTests(t, testCases)
+}

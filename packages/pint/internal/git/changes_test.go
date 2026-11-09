@@ -1,0 +1,1694 @@
+package git_test
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
+	"os"
+	"regexp"
+	"strings"
+	"testing"
+
+	"github.com/neilotoole/slogt/v2"
+	"github.com/stretchr/testify/require"
+
+	"github.com/cloudflare/pint/internal/git"
+)
+
+func debugGitRun(t *testing.T) git.CommandRunner {
+	return func(ctx context.Context, args ...string) ([]byte, error) {
+		out, err := git.RunGit(ctx, args...)
+		if err == nil {
+			if len(out) == 0 {
+				t.Logf("%s ~> no stdout", strings.Join(args, " "))
+			} else {
+				t.Logf("%s\n---\n%s---", strings.Join(args, " "), string(out))
+			}
+		}
+		return out, err
+	}
+}
+
+func mustRun(t *testing.T, args ...string) {
+	_, err := debugGitRun(t)(t.Context(), args...)
+	require.NoError(t, err, strings.Join(args, " "))
+}
+
+func gitCommit(t *testing.T, message string) {
+	t.Setenv("GIT_AUTHOR_NAME", "pint")
+	t.Setenv("GIT_AUTHOR_EMAIL", "pint@example.com")
+	t.Setenv("GIT_COMMITTER_NAME", "pint")
+	t.Setenv("GIT_COMMITTER_EMAIL", "pint")
+	mustRun(t, "commit", "-am", "commit "+message)
+}
+
+func TestChanges(t *testing.T) {
+	type testCaseT struct {
+		setup   func(t *testing.T) git.CommandRunner
+		title   string
+		err     string
+		changes []*git.FileChange
+	}
+
+	testCases := []testCaseT{
+		{
+			title: "git log error",
+			setup: func(_ *testing.T) git.CommandRunner {
+				cmd := func(_ context.Context, args ...string) ([]byte, error) {
+					return nil, fmt.Errorf("mock git error: %v", args)
+				}
+				return cmd
+			},
+			changes: nil,
+			err:     "failed to get the list of modified files from git: mock git error: [log --reverse --no-merges --first-parent --format=%H --name-status main..HEAD]",
+		},
+		{
+			title: "chmod",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("foo"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.Chmod("index.txt", 0o755))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "chmod")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "index.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "index.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("foo"),
+						After:  []byte("foo"),
+						Lines:  []git.LineNumber{},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "dir -> file",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.Mkdir("index.txt", 0o755))
+				require.NoError(t, os.WriteFile("index.txt/.keep", []byte("keep"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.RemoveAll("index.txt"))
+				require.NoError(t, os.WriteFile("index.txt", []byte("foo"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "chmod")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "index.txt",
+							Type: git.Dir,
+						},
+						After: git.Path{
+							Name: "index.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: nil,
+						After:  []byte("foo"),
+						Lines: []git.LineNumber{
+							{Before: 0, After: 1, Modified: true},
+						},
+					},
+				},
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "index.txt/.keep",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "index.txt/.keep",
+							Type: git.Missing,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("keep"),
+						After:  nil,
+						Lines: []git.LineNumber{
+							{Before: 1, After: 0, Modified: false},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "delete and re-add",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("foo"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.Remove("index.txt"))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "rm")
+				require.NoError(t, os.WriteFile("index.txt", []byte("foo"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "add")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1", "2"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "index.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "index.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("foo"),
+						After:  []byte("foo"),
+						Lines:  []git.LineNumber{},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			// A merge commit restores the file to the base version, so the file
+			// has no net change between main and HEAD. Changes() must report the
+			// content from HEAD and no modified lines. Reporting the stale
+			// content from the edit commit makes pint comment on a file that is
+			// missing from the PR diff.
+			title: "file modified then restored in a merge commit",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("1\n2\n3\n4\n5\n"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.WriteFile("index.txt", []byte("1\n2\nX\n4\n5\n"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "edit")
+
+				mustRun(t, "checkout", "main")
+				require.NoError(t, os.WriteFile("other.txt", []byte("other\n"), 0o644))
+				mustRun(t, "add", "other.txt")
+				gitCommit(t, "main moves on")
+
+				mustRun(t, "checkout", "v2")
+				mustRun(t, "merge", "--no-commit", "main")
+				require.NoError(t, os.WriteFile("index.txt", []byte("1\n2\n3\n4\n5\n"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "merge main")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "index.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "index.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("1\n2\n3\n4\n5\n"),
+						After:  []byte("1\n2\n3\n4\n5\n"),
+						Lines:  []git.LineNumber{},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "file -> symlink",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("foo\n1\n"), 0o644))
+				mustRun(t, "add", "index.txt")
+				require.NoError(t, os.WriteFile("second file.txt", []byte("bar\n1\n"), 0o644))
+				mustRun(t, "add", "second file.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.Remove("second file.txt"))
+				require.NoError(t, os.Symlink("index.txt", "second file.txt"))
+				mustRun(t, "add", "second file.txt")
+				gitCommit(t, "symlink")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "second file.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name:          "second file.txt",
+							Type:          git.Symlink,
+							SymlinkTarget: "index.txt",
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("bar\n1\n"),
+						After:  []byte("foo\n1\n"),
+						Lines: []git.LineNumber{
+							{Before: 0, After: 1, Modified: true},
+							{Before: 0, After: 2, Modified: true},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "rename partial",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("1\n2\n3\n4\n5\n6\n7\n8\n9\n"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				mustRun(t, "mv", "index.txt", "second.txt")
+				require.NoError(t, os.WriteFile("second.txt", []byte("1\n2\n3\n4\n5\nX\nX\nX\nX\n"), 0o644))
+				mustRun(t, "add", "second.txt")
+				gitCommit(t, "mv")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "index.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "second.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("1\n2\n3\n4\n5\n6\n7\n8\n9\n"),
+						After:  []byte("1\n2\n3\n4\n5\nX\nX\nX\nX\n"),
+						Lines: []git.LineNumber{
+							{Before: 6, After: 6, Modified: true},
+							{Before: 7, After: 7, Modified: true},
+							{Before: 8, After: 8, Modified: true},
+							{Before: 9, After: 9, Modified: true},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "rename 100% and edit",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("1\n2\n3\n4\n5\n6\n7\n8\n9\n"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				mustRun(t, "mv", "index.txt", "second.txt")
+				gitCommit(t, "mv")
+				require.NoError(t, os.WriteFile("second.txt", []byte("1\n2\n3\n4\n5\nX\n7\n8\n9\n"), 0o644))
+				mustRun(t, "add", "second.txt")
+				gitCommit(t, "edit")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1", "2"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "index.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "second.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("1\n2\n3\n4\n5\n6\n7\n8\n9\n"),
+						After:  []byte("1\n2\n3\n4\n5\nX\n7\n8\n9\n"),
+						Lines: []git.LineNumber{
+							{Before: 6, After: 6, Modified: true},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "add file, add another",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("foo"), 0o644))
+				mustRun(t, "add", "index.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.WriteFile("second.txt", []byte("second"), 0o644))
+				mustRun(t, "add", "second.txt")
+				require.NoError(t, os.WriteFile("third.txt", []byte("third"), 0o644))
+				mustRun(t, "add", "third.txt")
+				gitCommit(t, "add two more")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "",
+							Type: git.Missing,
+						},
+						After: git.Path{
+							Name: "second.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						After: []byte("second"),
+						Lines: []git.LineNumber{
+							{Before: 0, After: 1, Modified: true},
+						},
+					},
+				},
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "",
+							Type: git.Missing,
+						},
+						After: git.Path{
+							Name: "third.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						After: []byte("third"),
+						Lines: []git.LineNumber{
+							{Before: 0, After: 1, Modified: true},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "delete file",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("foo"), 0o644))
+				mustRun(t, "add", "index.txt")
+				require.NoError(t, os.WriteFile("second.txt", []byte("second"), 0o644))
+				mustRun(t, "add", "second.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.Remove("second.txt"))
+				mustRun(t, "add", "second.txt")
+				gitCommit(t, "rm second")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "second.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "second.txt",
+							Type: git.Missing,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("second"),
+						Lines: []git.LineNumber{
+							{Before: 1, After: 0, Modified: false},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "delete symlink",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("foo"), 0o644))
+				mustRun(t, "add", "index.txt")
+				require.NoError(t, os.Symlink("index.txt", "second.txt"))
+				mustRun(t, "add", "second.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.Remove("second.txt"))
+				mustRun(t, "add", "second.txt")
+				gitCommit(t, "rm second")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name:          "second.txt",
+							Type:          git.Symlink,
+							SymlinkTarget: "index.txt",
+						},
+						After: git.Path{
+							Name: "second.txt",
+							Type: git.Missing,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("foo"),
+						Lines: []git.LineNumber{
+							{Before: 1, After: 0, Modified: false},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "delete directory with symlinks",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("foo"), 0o644))
+				mustRun(t, "add", "index.txt")
+				require.NoError(t, os.Mkdir("dir", 0o755))
+				require.NoError(t, os.Symlink("../index.txt", "dir/first.txt"))
+				require.NoError(t, os.Symlink("../index.txt", "dir/second.txt"))
+				mustRun(t, "add", "dir")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.RemoveAll("dir"))
+				mustRun(t, "add", "dir")
+				gitCommit(t, "rm dir")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name:          "dir/first.txt",
+							Type:          git.Symlink,
+							SymlinkTarget: "index.txt",
+						},
+						After: git.Path{
+							Name: "dir/first.txt",
+							Type: git.Missing,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("foo"),
+						Lines: []git.LineNumber{
+							{Before: 1, After: 0, Modified: false},
+						},
+					},
+				},
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name:          "dir/second.txt",
+							Type:          git.Symlink,
+							SymlinkTarget: "index.txt",
+						},
+						After: git.Path{
+							Name: "dir/second.txt",
+							Type: git.Missing,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("foo"),
+						Lines: []git.LineNumber{
+							{Before: 1, After: 0, Modified: false},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "symlink target changed",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("index.txt", []byte("foo\n1\n"), 0o644))
+				mustRun(t, "add", "index.txt")
+				require.NoError(t, os.WriteFile("second file.txt", []byte("bar\n1\n"), 0o644))
+				mustRun(t, "add", "second file.txt")
+				require.NoError(t, os.Mkdir("dir", 0o755))
+				require.NoError(t, os.Symlink("../index.txt", "dir/first.txt"))
+				require.NoError(t, os.Symlink("../second file.txt", "dir/second.txt"))
+				mustRun(t, "add", "dir")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.Remove("dir/second.txt"))
+				require.NoError(t, os.Symlink("first.txt", "dir/second.txt"))
+				mustRun(t, "add", "dir")
+				gitCommit(t, "symlink change")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name:          "dir/second.txt",
+							Type:          git.Symlink,
+							SymlinkTarget: "second file.txt",
+						},
+						After: git.Path{
+							Name:          "dir/second.txt",
+							Type:          git.Symlink,
+							SymlinkTarget: "index.txt",
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("bar\n1\n"),
+						After:  []byte("foo\n1\n"),
+						Lines: []git.LineNumber{
+							{Before: 0, After: 1, Modified: true},
+							{Before: 0, After: 2, Modified: true},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "rule modified then file renamed",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("main.txt", []byte("l1\nl2\nl3\n"), 0o644))
+				mustRun(t, "add", "main.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.WriteFile("main.txt", []byte("l1\nl3\n"), 0o644))
+				mustRun(t, "add", "main.txt")
+				gitCommit(t, "edit")
+
+				mustRun(t, "mv", "main.txt", "pr.txt")
+				gitCommit(t, "rename")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1", "2"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "main.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "pr.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("l1\nl2\nl3\n"),
+						After:  []byte("l1\nl3\n"),
+						Lines: []git.LineNumber{
+							{Before: 2, After: 0, Modified: false},
+							{Before: 3, After: 2, Modified: false},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "directory_renamed",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.Mkdir("dir1", 0o755))
+				require.NoError(t, os.Mkdir("dir1/rules", 0o755))
+				require.NoError(t, os.WriteFile("dir1/rules/file1.txt", []byte("a1\na2\na3\n"), 0o644))
+				require.NoError(t, os.WriteFile("dir1/rules/file2.txt", []byte("b1\nb2"), 0o644))
+				mustRun(t, "add", "dir1")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v1")
+				mustRun(t, "mv", "dir1", "dir2")
+				gitCommit(t, "rename")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "dir1/rules/file1.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "dir2/rules/file1.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("a1\na2\na3\n"),
+						After:  []byte("a1\na2\na3\n"),
+						// Renamed without content changes.
+						Lines: []git.LineNumber{},
+					},
+				},
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "dir1/rules/file2.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "dir2/rules/file2.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("b1\nb2"),
+						After:  []byte("b1\nb2"),
+						// Renamed without content changes.
+						Lines: []git.LineNumber{},
+					},
+				},
+			},
+			err: "",
+		},
+		{
+			title: "rule partially replaced",
+			setup: func(t *testing.T) git.CommandRunner {
+				mustRun(t, "init", "--initial-branch=main", ".")
+				require.NoError(t, os.WriteFile("main.txt", []byte("l1\nl2\nl3\n"), 0o644))
+				mustRun(t, "add", "main.txt")
+				gitCommit(t, "init")
+
+				mustRun(t, "checkout", "-b", "v2")
+				require.NoError(t, os.WriteFile("main.txt", []byte("l1\nl3\n"), 0o644))
+				mustRun(t, "add", "main.txt")
+				gitCommit(t, "edit")
+
+				mustRun(t, "mv", "main.txt", "pr.txt")
+				gitCommit(t, "rename")
+
+				return debugGitRun(t)
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1", "2"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "main.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "pr.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("l1\nl2\nl3\n"),
+						After:  []byte("l1\nl3\n"),
+						Lines: []git.LineNumber{
+							{Before: 2, After: 0, Modified: false},
+							{Before: 3, After: 2, Modified: false},
+						},
+					},
+				},
+			},
+			err: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			slog.SetDefault(slogt.New(t))
+
+			dir := t.TempDir()
+			t.Chdir(dir)
+
+			cmd := tc.setup(t)
+			changes, err := git.Changes(t.Context(), cmd, "main", git.NewPathFilter(nil, nil, nil))
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
+				require.Nil(t, changes)
+			} else {
+				require.NoError(t, err)
+				require.Len(t, changes, len(tc.changes))
+				for i := range tc.changes {
+					require.Len(t, changes[i].Commits, len(tc.changes[i].Commits), "changes[%d].Commits", i)
+					require.Equal(t, tc.changes[i].Path, changes[i].Path, "changes[%d].Path", i)
+					require.Equal(t, tc.changes[i].Body, changes[i].Body, "changes[%d].Body", i)
+				}
+				require.Len(t, changes, len(tc.changes))
+			}
+		})
+	}
+}
+
+func TestChangesParseDiff(t *testing.T) {
+	type testCaseT struct {
+		title   string
+		err     string
+		mock    git.CommandRunner
+		changes []*git.FileChange
+	}
+
+	testCases := []testCaseT{
+		{
+			title: "empty line in git log output",
+			mock: func(_ context.Context, args ...string) ([]byte, error) {
+				if args[0] == "log" {
+					// Empty line should trigger len(parts) == 0
+					return []byte("abc123\n\nM\tfile.txt\n"), nil
+				}
+				if args[0] == "ls-tree" {
+					return []byte("100644 blob abc123def456\tfile.txt\n"), nil
+				}
+				if args[0] == "cat-file" {
+					return []byte("content"), nil
+				}
+				if args[0] == "diff" {
+					return nil, nil
+				}
+				return nil, nil
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "file.txt",
+							Type: git.File,
+						},
+						After: git.Path{
+							Name: "file.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("content"),
+						After:  []byte("content"),
+						Lines:  []git.LineNumber{},
+					},
+				},
+			},
+		},
+		{
+			title: "ls-tree malformed line - less than 3 space-separated parts",
+			mock: func(_ context.Context, args ...string) ([]byte, error) {
+				if args[0] == "log" {
+					return []byte("abc123\nA\tnewfile.txt\n"), nil
+				}
+				if args[0] == "ls-tree" {
+					// Only 2 parts instead of 3
+					return []byte("100644 blob\n"), nil
+				}
+				if args[0] == "cat-file" {
+					return []byte("content"), nil
+				}
+				return nil, nil
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "",
+							Type: git.Missing,
+						},
+						After: git.Path{
+							Name: "newfile.txt",
+							Type: git.Missing,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: nil,
+						After:  []byte("content"),
+						Lines:  []git.LineNumber{},
+					},
+				},
+			},
+		},
+		{
+			title: "ls-tree line missing tab separator",
+			mock: func(_ context.Context, args ...string) ([]byte, error) {
+				if args[0] == "log" {
+					return []byte("abc123\nA\tnewfile.txt\n"), nil
+				}
+				if args[0] == "ls-tree" {
+					// Has 3 space parts but no tab in third part
+					return []byte("100644 blob abc123def456\n"), nil
+				}
+				if args[0] == "cat-file" {
+					return []byte("content"), nil
+				}
+				return nil, nil
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "",
+							Type: git.Missing,
+						},
+						After: git.Path{
+							Name: "newfile.txt",
+							Type: git.Missing,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: nil,
+						After:  []byte("content"),
+						Lines:  []git.LineNumber{},
+					},
+				},
+			},
+		},
+		{
+			title: "ls-tree returns different path",
+			mock: func(_ context.Context, args ...string) ([]byte, error) {
+				if args[0] == "log" {
+					return []byte("abc123\nA\tnewfile.txt\n"), nil
+				}
+				if args[0] == "ls-tree" {
+					// Returns a different file path
+					return []byte("100644 blob abc123def456\totherfile.txt\n"), nil
+				}
+				if args[0] == "cat-file" {
+					return []byte("content"), nil
+				}
+				return nil, nil
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "",
+							Type: git.Missing,
+						},
+						After: git.Path{
+							Name: "newfile.txt",
+							Type: git.Missing,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: nil,
+						After:  []byte("content"),
+						Lines:  []git.LineNumber{},
+					},
+				},
+			},
+		},
+		{
+			title: "ls-tree returns tag object type",
+			mock: func(_ context.Context, args ...string) ([]byte, error) {
+				if args[0] == "log" {
+					return []byte("abc123\nA\tnewfile.txt\n"), nil
+				}
+				if args[0] == "ls-tree" {
+					// Object type is "tag" not "blob" or "tree"
+					return []byte("100644 tag abc123def456\tnewfile.txt\n"), nil
+				}
+				if args[0] == "cat-file" {
+					return []byte("content"), nil
+				}
+				return nil, nil
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "",
+							Type: git.Missing,
+						},
+						After: git.Path{
+							Name: "newfile.txt",
+							Type: git.Missing,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: nil,
+						After:  []byte("content"),
+						Lines:  []git.LineNumber{},
+					},
+				},
+			},
+		},
+		{
+			// git diff command returns an error for a modified file.
+			title: "git diff error",
+			err:   "failed to run git diff for file.txt: git diff for file.txt: mock diff error",
+			mock: func(_ context.Context, args ...string) ([]byte, error) {
+				if args[0] == "log" {
+					return []byte("abc123\nM\tfile.txt\n"), nil
+				}
+				if args[0] == "ls-tree" {
+					return []byte("100644 blob abc123def456\tfile.txt\n"), nil
+				}
+				if args[0] == "cat-file" {
+					return []byte("content"), nil
+				}
+				if args[0] == "diff" {
+					return nil, errors.New("mock diff error")
+				}
+				return nil, nil
+			},
+		},
+		{
+			title: "ls-tree error on before commit",
+			mock: func(_ context.Context, args ...string) ([]byte, error) {
+				if args[0] == "log" {
+					return []byte("abc123\nM\tfile.txt\n"), nil
+				}
+				if args[0] == "ls-tree" {
+					if strings.Contains(strings.Join(args, " "), "abc123^") {
+						return nil, errors.New("mock ls-tree error")
+					}
+					return []byte("100644 blob abc123def456\tfile.txt\n"), nil
+				}
+				if args[0] == "cat-file" {
+					// Fail for the before commit blob ref.
+					if strings.Contains(args[2], "abc123^") {
+						return nil, errors.New("mock cat-file error")
+					}
+					return []byte("new content"), nil
+				}
+				if args[0] == "diff" {
+					return nil, nil
+				}
+				return nil, nil
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name: "file.txt",
+							Type: git.Missing,
+						},
+						After: git.Path{
+							Name: "file.txt",
+							Type: git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: nil,
+						After:  []byte("new content"),
+						Lines: []git.LineNumber{
+							{Before: 0, After: 1, Modified: true},
+						},
+					},
+				},
+			},
+		},
+		{
+			// File content lines starting with "--- " or "+++ " inside a hunk
+			// must be treated as deletions/additions, not as diff headers.
+			// The inHunk flag ensures headers are only matched outside hunks.
+			title: "hunk content with triple-dash and triple-plus lines",
+			mock: func(_ context.Context, args ...string) ([]byte, error) {
+				if args[0] == "log" {
+					return []byte("abc123\nM\tfile.txt\n"), nil
+				}
+				if args[0] == "ls-tree" {
+					return []byte("100644 blob abc123def456\tfile.txt\n"), nil
+				}
+				if args[0] == "cat-file" {
+					if strings.Contains(args[2], "abc123^") {
+						return []byte("-- old\nkeep\n"), nil
+					}
+					return []byte("++ new\nkeep\n"), nil
+				}
+				if args[0] == "diff" {
+					return []byte(
+						"diff --git a/file.txt b/file.txt\n" +
+							"--- a/file.txt\n" +
+							"+++ b/file.txt\n" +
+							"@@ -1,2 +1,2 @@\n" +
+							"--- old\n" +
+							"+++ new\n" +
+							" keep\n",
+					), nil
+				}
+				return nil, nil
+			},
+			changes: []*git.FileChange{
+				{
+					Commits: []string{"1"},
+					Path: git.PathDiff{
+						Before: git.Path{
+							Name:          "file.txt",
+							SymlinkTarget: "",
+							Type:          git.File,
+						},
+						After: git.Path{
+							Name:          "file.txt",
+							SymlinkTarget: "",
+							Type:          git.File,
+						},
+					},
+					Body: git.BodyDiff{
+						Before: []byte("-- old\nkeep\n"),
+						After:  []byte("++ new\nkeep\n"),
+						Lines: git.LineNumbers{
+							{Before: 1, After: 1, Modified: true},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			slog.SetDefault(slogt.New(t))
+
+			changes, err := git.Changes(t.Context(), tc.mock, "main", git.NewPathFilter(nil, nil, nil))
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
+				require.Nil(t, changes)
+			} else {
+				require.NoError(t, err)
+				require.Len(t, changes, len(tc.changes))
+				for i := range tc.changes {
+					require.Len(t, changes[i].Commits, len(tc.changes[i].Commits), "changes[%d].Commits", i)
+					require.Equal(t, tc.changes[i].Path, changes[i].Path, "changes[%d].Path", i)
+					require.Equal(t, tc.changes[i].Body, changes[i].Body, "changes[%d].Body", i)
+				}
+			}
+		})
+	}
+}
+
+// Path filter excludes a file, so it should not appear in results.
+func TestChangesPathFilterExclusion(t *testing.T) {
+	slog.SetDefault(slogt.New(t))
+
+	mock := func(_ context.Context, args ...string) ([]byte, error) {
+		if args[0] == "log" {
+			return []byte("abc123\nM\tfile.txt\nM\texcluded.txt\n"), nil
+		}
+		if args[0] == "ls-tree" {
+			return []byte("100644 blob abc123def456\t" + args[2] + "\n"), nil
+		}
+		if args[0] == "cat-file" {
+			return []byte("content"), nil
+		}
+		if args[0] == "diff" {
+			return nil, nil
+		}
+		return nil, nil
+	}
+
+	exclude := []*regexp.Regexp{regexp.MustCompile(`^excluded\.txt$`)}
+	filter := git.NewPathFilter(nil, exclude, nil)
+	changes, err := git.Changes(t.Context(), mock, "main", filter)
+	require.NoError(t, err)
+	require.Len(t, changes, 1)
+	require.Equal(t, "file.txt", changes[0].Path.After.Name)
+}
+
+// Directory path in git log output is skipped.
+func TestChangesSkipsDirectoryPath(t *testing.T) {
+	slog.SetDefault(slogt.New(t))
+
+	dir := t.TempDir()
+
+	mock := func(_ context.Context, args ...string) ([]byte, error) {
+		if args[0] == "log" {
+			return []byte("abc123\nM\t" + dir + "\n"), nil
+		}
+		return nil, nil
+	}
+
+	changes, err := git.Changes(t.Context(), mock, "main", git.NewPathFilter(nil, nil, nil))
+	require.NoError(t, err)
+	require.Empty(t, changes)
+}
+
+func TestLineNumberString(t *testing.T) {
+	type testCaseT struct {
+		title    string
+		expected string
+		ln       git.LineNumber
+	}
+
+	testCases := []testCaseT{
+		{
+			title:    "added line",
+			ln:       git.LineNumber{Before: 0, After: 5, Modified: false},
+			expected: "+5",
+		},
+		{
+			title:    "deleted line",
+			ln:       git.LineNumber{Before: 3, After: 0, Modified: false},
+			expected: "-3",
+		},
+		{
+			title:    "same before and after",
+			ln:       git.LineNumber{Before: 7, After: 7, Modified: false},
+			expected: "7",
+		},
+		{
+			title:    "different before and after",
+			ln:       git.LineNumber{Before: 4, After: 9, Modified: false},
+			expected: "4->9",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.ln.String())
+		})
+	}
+}
+
+func TestHasAfter(t *testing.T) {
+	type testCaseT struct {
+		title    string
+		lns      git.LineNumbers
+		line     int
+		expected bool
+	}
+
+	testCases := []testCaseT{
+		{
+			title: "match found",
+			lns: git.LineNumbers{
+				{Before: 1, After: 2, Modified: true},
+				{Before: 3, After: 5, Modified: true},
+			},
+			line:     5,
+			expected: true,
+		},
+		{
+			title: "no match",
+			lns: git.LineNumbers{
+				{Before: 1, After: 2, Modified: true},
+				{Before: 3, After: 4, Modified: true},
+			},
+			line:     99,
+			expected: false,
+		},
+		{
+			title:    "empty slice",
+			lns:      git.LineNumbers{},
+			line:     1,
+			expected: false,
+		},
+		{
+			// Shifted context lines have After set but Modified=false,
+			// so HasAfter must return false for them.
+			title: "shifted line not modified",
+			lns: git.LineNumbers{
+				{Before: 3, After: 5, Modified: false},
+			},
+			line:     5,
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.lns.HasAfter(tc.line))
+		})
+	}
+}
+
+func TestHasBefore(t *testing.T) {
+	type testCaseT struct {
+		title    string
+		lns      git.LineNumbers
+		line     int
+		expected bool
+	}
+
+	testCases := []testCaseT{
+		{
+			title: "match found",
+			lns: git.LineNumbers{
+				{Before: 1, After: 2, Modified: false},
+				{Before: 3, After: 5, Modified: false},
+			},
+			line:     3,
+			expected: true,
+		},
+		{
+			title: "no match",
+			lns: git.LineNumbers{
+				{Before: 1, After: 2, Modified: false},
+				{Before: 3, After: 4, Modified: false},
+			},
+			line:     99,
+			expected: false,
+		},
+		{
+			title:    "empty slice",
+			lns:      git.LineNumbers{},
+			line:     1,
+			expected: false,
+		},
+		{
+			title: "additions only, no match",
+			lns: git.LineNumbers{
+				{Before: 0, After: 3, Modified: false},
+				{Before: 0, After: 4, Modified: false},
+			},
+			line:     3,
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.lns.HasBefore(tc.line))
+		})
+	}
+}
+
+func TestHasAnyAfter(t *testing.T) {
+	type testCaseT struct {
+		title    string
+		lns      git.LineNumbers
+		line     int
+		expected bool
+	}
+
+	testCases := []testCaseT{
+		{
+			title: "match on modified line",
+			lns: git.LineNumbers{
+				{Before: 1, After: 5, Modified: true},
+			},
+			line:     5,
+			expected: true,
+		},
+		{
+			title: "match on unmodified context line",
+			lns: git.LineNumbers{
+				{Before: 3, After: 5, Modified: false},
+			},
+			line:     5,
+			expected: true,
+		},
+		{
+			title: "no match",
+			lns: git.LineNumbers{
+				{Before: 1, After: 2, Modified: true},
+			},
+			line:     99,
+			expected: false,
+		},
+		{
+			title:    "empty slice",
+			lns:      git.LineNumbers{},
+			line:     1,
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.lns.HasAnyAfter(tc.line))
+		})
+	}
+}
+
+func TestNearest(t *testing.T) {
+	type testCaseT struct {
+		title          string
+		lns            git.LineNumbers
+		target         int
+		rangeFirst     int
+		rangeLast      int
+		expectedLine   int
+		expectedBefore bool
+	}
+
+	testCases := []testCaseT{
+		{
+			title: "exact modified After match",
+			lns: git.LineNumbers{
+				{Before: 0, After: 5, Modified: true},
+				{Before: 0, After: 10, Modified: true},
+			},
+			target:         10,
+			rangeFirst:     10,
+			rangeLast:      10,
+			expectedLine:   10,
+			expectedBefore: false,
+		},
+		{
+			title: "closer to lower modified After",
+			lns: git.LineNumbers{
+				{Before: 0, After: 5, Modified: true},
+				{Before: 0, After: 20, Modified: true},
+			},
+			target:         8,
+			rangeFirst:     1,
+			rangeLast:      8,
+			expectedLine:   5,
+			expectedBefore: false,
+		},
+		{
+			title: "closer to higher modified After",
+			lns: git.LineNumbers{
+				{Before: 0, After: 5, Modified: true},
+				{Before: 0, After: 20, Modified: true},
+			},
+			target:         18,
+			rangeFirst:     18,
+			rangeLast:      18,
+			expectedLine:   20,
+			expectedBefore: false,
+		},
+		{
+			title: "target below all modified After",
+			lns: git.LineNumbers{
+				{Before: 0, After: 10, Modified: true},
+				{Before: 0, After: 20, Modified: true},
+			},
+			target:         2,
+			rangeFirst:     2,
+			rangeLast:      2,
+			expectedLine:   10,
+			expectedBefore: false,
+		},
+		{
+			title: "target above all modified After",
+			lns: git.LineNumbers{
+				{Before: 0, After: 10, Modified: true},
+				{Before: 0, After: 20, Modified: true},
+			},
+			target:         99,
+			rangeFirst:     99,
+			rangeLast:      99,
+			expectedLine:   20,
+			expectedBefore: false,
+		},
+		{
+			title: "skips deletions when modified After exists",
+			lns: git.LineNumbers{
+				{Before: 5, After: 0, Modified: false},
+				{Before: 0, After: 20, Modified: true},
+			},
+			target:         3,
+			rangeFirst:     3,
+			rangeLast:      3,
+			expectedLine:   20,
+			expectedBefore: false,
+		},
+		{
+			title:          "empty slice returns zero",
+			lns:            git.LineNumbers{},
+			target:         5,
+			rangeFirst:     5,
+			rangeLast:      5,
+			expectedLine:   0,
+			expectedBefore: false,
+		},
+		{
+			title: "falls back to Before when no modified After exists",
+			lns: git.LineNumbers{
+				{Before: 3, After: 0, Modified: false},
+				{Before: 5, After: 0, Modified: false},
+			},
+			target:         4,
+			rangeFirst:     4,
+			rangeLast:      4,
+			expectedLine:   3,
+			expectedBefore: true,
+		},
+		{
+			title: "no usable entries returns zero",
+			lns: git.LineNumbers{
+				{Before: 0, After: 3, Modified: false},
+				{Before: 0, After: 5, Modified: false},
+			},
+			target:         4,
+			rangeFirst:     4,
+			rangeLast:      4,
+			expectedLine:   0,
+			expectedBefore: false,
+		},
+		{
+			title: "in-range modified After preferred over closer out-of-range",
+			lns: git.LineNumbers{
+				{Before: 0, After: 2, Modified: true},
+				{Before: 0, After: 15, Modified: true},
+			},
+			target:         10,
+			rangeFirst:     12,
+			rangeLast:      20,
+			expectedLine:   15,
+			expectedBefore: false,
+		},
+		{
+			title: "in-range Before preferred over closer out-of-range Before",
+			lns: git.LineNumbers{
+				{Before: 2, After: 0, Modified: false},
+				{Before: 15, After: 0, Modified: false},
+			},
+			target:         10,
+			rangeFirst:     12,
+			rangeLast:      20,
+			expectedLine:   15,
+			expectedBefore: true,
+		},
+		{
+			title: "modified After preferred over closer Before",
+			lns: git.LineNumbers{
+				{Before: 9, After: 0, Modified: false},
+				{Before: 0, After: 20, Modified: true},
+			},
+			target:         10,
+			rangeFirst:     10,
+			rangeLast:      10,
+			expectedLine:   20,
+			expectedBefore: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			line, isBefore := tc.lns.Nearest(tc.target, tc.rangeFirst, tc.rangeLast)
+			require.Equal(t, tc.expectedLine, line)
+			require.Equal(t, tc.expectedBefore, isBefore)
+		})
+	}
+}
+
+func TestBeforeForAfter(t *testing.T) {
+	type testCaseT struct {
+		title    string
+		lns      git.LineNumbers
+		line     int
+		expected int
+	}
+
+	testCases := []testCaseT{
+		{
+			title: "match found",
+			lns: git.LineNumbers{
+				{Before: 10, After: 20, Modified: false},
+				{Before: 30, After: 40, Modified: false},
+			},
+			line:     20,
+			expected: 10,
+		},
+		{
+			// Line past the last diff entry — not in the map, so return line itself.
+			title: "line past last entry returns itself",
+			lns: git.LineNumbers{
+				{Before: 10, After: 20, Modified: false},
+			},
+			line:     99,
+			expected: 99,
+		},
+		{
+			title:    "empty slice returns line itself",
+			lns:      git.LineNumbers{},
+			line:     5,
+			expected: 5,
+		},
+		{
+			title: "line before first entry",
+			lns: git.LineNumbers{
+				{Before: 10, After: 20, Modified: false},
+			},
+			line:     5,
+			expected: 5,
+		},
+		{
+			// Line between two entries — not in the map, so return line itself.
+			title: "line between entries",
+			lns: git.LineNumbers{
+				{Before: 5, After: 10, Modified: false},
+				{Before: 25, After: 30, Modified: false},
+			},
+			line:     15,
+			expected: 15,
+		},
+		{
+			// Line not in the map — return line itself regardless of added-only entries.
+			title: "skips added-only entries",
+			lns: git.LineNumbers{
+				{Before: 5, After: 10, Modified: false},
+				{Before: 0, After: 12, Modified: false},
+				{Before: 0, After: 13, Modified: false},
+			},
+			line:     20,
+			expected: 20,
+		},
+		{
+			title: "all entries are added",
+			lns: git.LineNumbers{
+				{Before: 0, After: 3, Modified: false},
+				{Before: 0, After: 4, Modified: false},
+			},
+			line:     10,
+			expected: 10,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.lns.BeforeForAfter(tc.line))
+		})
+	}
+}
+
+func TestMakeLineRangeFromTo(t *testing.T) {
+	type testCaseT struct {
+		title    string
+		expected git.LineNumbers
+		first    int
+		last     int
+		side     git.LineRangeSide
+	}
+
+	testCases := []testCaseT{
+		{
+			title: "before only",
+			first: 5,
+			last:  7,
+			side:  git.LinesBefore,
+			expected: git.LineNumbers{
+				{Before: 5, After: 0, Modified: false},
+				{Before: 6, After: 0, Modified: false},
+				{Before: 7, After: 0, Modified: false},
+			},
+		},
+		{
+			title: "after only",
+			first: 3,
+			last:  4,
+			side:  git.LinesAfter,
+			expected: git.LineNumbers{
+				{Before: 0, After: 3, Modified: true},
+				{Before: 0, After: 4, Modified: true},
+			},
+		},
+		{
+			title: "both",
+			first: 10,
+			last:  12,
+			side:  git.LinesBoth,
+			expected: git.LineNumbers{
+				{Before: 10, After: 10, Modified: false},
+				{Before: 11, After: 11, Modified: false},
+				{Before: 12, After: 12, Modified: false},
+			},
+		},
+		{
+			title:    "negative range",
+			first:    5,
+			last:     3,
+			side:     git.LinesBoth,
+			expected: git.LineNumbers{},
+		},
+		{
+			title: "single element",
+			first: 4,
+			last:  4,
+			side:  git.LinesAfter,
+			expected: git.LineNumbers{
+				{Before: 0, After: 4, Modified: true},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			require.Equal(
+				t, tc.expected,
+				git.MakeLineRangeFromTo(tc.first, tc.last, tc.side),
+			)
+		})
+	}
+}

@@ -1,0 +1,38 @@
+exec pint --no-color -l debug lint rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Loading configuration file" path=.pint.hcl
+level=DEBUG msg="Adding pint config to the parser exclude list" path=.pint.hcl
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=DEBUG msg="File parsed" path=rules/0001.yml rules=2
+level=DEBUG msg="Glob finder completed" count=2
+level=INFO msg="Checking Prometheus rules" entries=2 workers=10 online=true
+level=DEBUG msg="Generated all Prometheus servers" count=0
+level=DEBUG msg="Found recording rule" path=rules/0001.yml record=colo:recording lines=4-5 state=noop
+level=DEBUG msg="Configured checks for rule" enabled=["promql/syntax","alerts/for","alerts/comparison","alerts/template","promql/fragile","promql/regexp","rule/dependency","promql/impossible","promql/nan","group/interval"] path=rules/0001.yml rule=colo:recording
+level=DEBUG msg="Found alerting rule" path=rules/0001.yml alert=colo:alerting lines=7-8 state=noop
+level=DEBUG msg="Configured checks for rule" enabled=["promql/syntax","alerts/for","alerts/comparison","alerts/template","promql/fragile","promql/regexp","rule/dependency","promql/impossible","promql/nan","group/interval"] path=rules/0001.yml rule=colo:alerting
+-- rules/0001.yml --
+groups:
+- name: foo
+  rules:
+  - record: "colo:recording"
+    expr: sum(foo) without(job)
+
+  - alert: "colo:alerting"
+    expr: sum(bar) without(job) > 0
+
+-- .pint.hcl --
+rule {
+    ignore {
+        kind = "recording"
+    }
+    ignore {
+        kind = "alerting"
+    }
+    aggregate ".+" {
+        keep = [ "job" ]
+    }
+}

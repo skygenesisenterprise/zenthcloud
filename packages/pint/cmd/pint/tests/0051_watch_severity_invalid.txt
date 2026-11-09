@@ -1,0 +1,6 @@
+! exec pint --no-color watch --min-severity=foo glob bar
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=ERROR msg="Execution completed with error(s)" err="invalid --min-severity value: unknown severity: foo"

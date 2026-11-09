@@ -1,0 +1,33 @@
+! exec pint --no-color lint rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Loading configuration file" path=.pint.hcl
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=WARN msg="Failed to parse file content" err="did not find expected '-' indicator" path=rules/1.yaml line=6
+level=INFO msg="Checking Prometheus rules" entries=1 workers=10 online=true
+Fatal: did not find expected '-' indicator (yaml/parse)
+  ---> rules/1.yaml:6
+ 6 | 
+     ^^^ did not find expected '-' indicator
+
+level=INFO msg="Problems found" Fatal=1
+level=ERROR msg="Execution completed with error(s)" err="found 1 problem(s) with severity Bug or higher"
+-- rules/1.yaml --
+- alert: Good
+  expr: up == 0
+  for: 2m
+  labels:
+   component: foo
+
+alert: Bad
+  expr: up == 0
+  for: 2m
+  labels:
+   component: foo
+
+-- .pint.hcl --
+parser {
+  relaxed = ["rules/.*"]
+}

@@ -1,0 +1,19 @@
+exec pint parse 'foo offset (5m+1m)'
+cmp stdout stdout.txt
+! stderr .
+
+-- stdout.txt --
+++ node: foo offset (5m + 1m)
+  VectorSelector:
+    * Type: vector
+    * Name: foo
+    * Offset: 0s
+    * OriginalOffsetExpr: (5m + 1m)
+      ++ node: (5m + 1m)
+        DurationExpr:
+          * Type: scalar
+          * Op: +
+          * LHS: 5m
+          * RHS: 1m
+          * Wrapped: true
+    * LabelMatchers: [__name__="foo"]

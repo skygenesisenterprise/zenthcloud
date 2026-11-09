@@ -1,0 +1,21 @@
+! exec pint --no-color lint rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Loading configuration file" path=.pint.hcl
+level=ERROR msg="Execution completed with error(s)" err="failed to load config file \".pint.hcl\": unsupported parser schema: bogus"
+-- rules/1.yml --
+groups:
+- name: foo
+  partial_response_strategy: bob
+  rules:
+  - alert: foo
+    expr: up == 0
+  - record: bar
+    expr: sum(up)
+
+-- .pint.hcl --
+parser {
+  schema = "bogus"
+}

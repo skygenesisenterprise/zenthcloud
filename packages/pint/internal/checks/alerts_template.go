@@ -1,0 +1,688 @@
+package checks
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"regexp"
+	"slices"
+	"strconv"
+	"strings"
+	"sync"
+	textTemplate "text/template"
+	"text/template/parse"
+	"time"
+
+	"github.com/prometheus/common/model"
+	"github.com/prometheus/prometheus/model/timestamp"
+	"github.com/prometheus/prometheus/promql"
+	promParser "github.com/prometheus/prometheus/promql/parser"
+	"github.com/prometheus/prometheus/promql/parser/posrange"
+	promTemplate "github.com/prometheus/prometheus/template"
+
+	"github.com/cloudflare/pint/internal/diags"
+	"github.com/cloudflare/pint/internal/discovery"
+	"github.com/cloudflare/pint/internal/parser"
+	"github.com/cloudflare/pint/internal/parser/source"
+)
+
+const (
+	TemplateCheckName             = "alerts/template"
+	TemplateCheckSyntaxDetails    = `Supported template syntax is documented [here](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/#templating).`
+	TemplateCheckReferenceDetails = "[Click here](https://prometheus.io/docs/prometheus/latest/configuration/template_reference/) for a full list of all available template functions."
+)
+
+var (
+	templateDefs = []string{
+		"{{$labels := .Labels}}",
+		"{{$externalLabels := .ExternalLabels}}",
+		"{{$externalURL := .ExternalURL}}",
+		"{{$value := .Value}}",
+	}
+	templateDefsString = strings.Join(templateDefs, "")
+	templateDefsLen    = len(templateDefsString)
+
+	templateFuncMap = textTemplate.FuncMap{
+		"args":               dummyFuncMap,
+		"externalURL":        dummyFuncMap,
+		"first":              dummyFuncMap,
+		"graphLink":          dummyFuncMap,
+		"humanize":           dummyFuncMap,
+		"humanize1024":       dummyFuncMap,
+		"humanizeDuration":   dummyFuncMap,
+		"humanizePercentage": dummyFuncMap,
+		"humanizeTimestamp":  dummyFuncMap,
+		"label":              dummyFuncMap,
+		"match":              dummyFuncMap,
+		"now":                dummyFuncMap,
+		"parseDuration":      dummyFuncMap,
+		"pathPrefix":         dummyFuncMap,
+		"query":              dummyFuncMap,
+		"reReplaceAll":       dummyFuncMap,
+		"safeHtml":           dummyFuncMap,
+		"sortByLabel":        dummyFuncMap,
+		"stripDomain":        dummyFuncMap,
+		"stripPort":          dummyFuncMap,
+		"strvalue":           dummyFuncMap,
+		"tableLink":          dummyFuncMap,
+		"title":              dummyFuncMap,
+		"tmpl":               dummyFuncMap,
+		"toDuration":         dummyFuncMap,
+		"toLower":            dummyFuncMap,
+		"toTime":             dummyFuncMap,
+		"toUpper":            dummyFuncMap,
+		"urlQueryEscape":     dummyFuncMap,
+		"value":              dummyFuncMap,
+	}
+
+	templatePool = sync.Pool{
+		New: func() any {
+			t := textTemplate.
+				New(TemplateCheckName).
+				Funcs(templateFuncMap).
+				Option(dummyFuncMap("missingkey=zero")) // this is only so that dummyFuncMap is called at least once
+			return t
+		},
+	}
+)
+
+func dummyFuncMap(q string) string {
+	return q
+}
+
+func NewTemplateCheck() TemplateCheck {
+	return TemplateCheck{}
+}
+
+type TemplateCheck struct{}
+
+func (c TemplateCheck) Meta() CheckMeta {
+	return CheckMeta{
+		States: []discovery.ChangeType{
+			discovery.Noop,
+			discovery.Added,
+			discovery.Modified,
+			discovery.Moved,
+		},
+		Online:        false,
+		AlwaysEnabled: false,
+	}
+}
+
+func (c TemplateCheck) String() string {
+	return TemplateCheckName
+}
+
+func (c TemplateCheck) Reporter() string {
+	return TemplateCheckName
+}
+
+func (c TemplateCheck) Check(ctx context.Context, entry *discovery.Entry, _ []*discovery.Entry) (problems []Problem) {
+	if entry.Rule.AlertingRule == nil {
+		return nil
+	}
+
+	if entry.Rule.AlertingRule.Expr.SyntaxError() != nil {
+		return nil
+	}
+
+	src := entry.Rule.AlertingRule.Expr.Source()
+	data := promTemplate.AlertTemplateData(map[string]string{}, map[string]string{}, "", promql.Sample{})
+
+	for _, label := range entry.Labels().Items {
+		meta := analyzeTemplate(label.Value.Value)
+		if syntaxErr, ok := c.checkSyntax(ctx, label, data); ok {
+			problems = append(problems, syntaxErr)
+		} else {
+			problems = append(problems, c.checkTemplateQueries(entry.Rule, label, meta)...)
+		}
+		problems = append(problems, c.checkValueInLabels(label, meta)...)
+		problems = append(problems, c.checkQueryLabels(entry.Group, entry.Rule, label, src, meta)...)
+	}
+
+	if entry.Rule.AlertingRule.Annotations != nil {
+		for _, annotation := range entry.Rule.AlertingRule.Annotations.Items {
+			meta := analyzeTemplate(annotation.Value.Value)
+			if syntaxErr, ok := c.checkSyntax(ctx, annotation, data); ok {
+				problems = append(problems, syntaxErr)
+			} else {
+				problems = append(problems, c.checkTemplateQueries(entry.Rule, annotation, meta)...)
+			}
+			problems = append(problems, c.checkQueryLabels(entry.Group, entry.Rule, annotation, src, meta)...)
+			problems = append(problems, c.checkHumanizeIsNeeded(entry.Rule.AlertingRule.Expr, annotation, meta)...)
+		}
+	}
+
+	return problems
+}
+
+// checkSyntax validates that a label/annotation template parses and expands.
+// It returns a Fatal problem and true when parsing fails, or false when the
+// template is valid.
+func (c TemplateCheck) checkSyntax(ctx context.Context, kv *parser.YamlKeyValue, data any) (problem Problem, found bool) {
+	err := checkTemplateSyntax(ctx, kv.Key.Value, kv.Value.Value, data)
+	if err == nil {
+		return problem, false
+	}
+
+	firstCol, lastCol := 1, len(kv.Value.Value)
+	if terr, ok := errors.AsType[templateError](err); ok {
+		firstCol, lastCol = terr.firstCol, terr.lastCol
+	}
+	return Problem{
+		Anchor: AnchorAfter,
+		Lines: diags.LineRange{
+			First: kv.Key.Pos.Lines().First,
+			Last:  kv.Value.Pos.Lines().Last,
+		},
+		Reporter: c.Reporter(),
+		Summary:  "template syntax error",
+		Details:  TemplateCheckSyntaxDetails,
+		Severity: Fatal,
+		Diagnostics: []diags.Diagnostic{
+			{
+				Message:     fmt.Sprintf("Template failed to parse with this error: `%s`.", err),
+				Pos:         kv.Value.Pos,
+				Expr:        nil,
+				FirstColumn: firstCol,
+				LastColumn:  lastCol,
+				Kind:        diags.Issue,
+			},
+		},
+	}, true
+}
+
+// checkValueInLabels reports labels whose value depends on the query result,
+// which would create a new alert identity on every value change.
+func (c TemplateCheck) checkValueInLabels(label *parser.YamlKeyValue, meta templateMeta) (problems []Problem) {
+	for _, msg := range checkForValueInLabels(meta) {
+		problems = append(problems, Problem{
+			Anchor: AnchorAfter,
+			Lines: diags.LineRange{
+				First: label.Key.Pos.Lines().First,
+				Last:  label.Value.Pos.Lines().Last,
+			},
+			Reporter: c.Reporter(),
+			Summary:  "value used in labels",
+			Details:  "",
+			Severity: Bug,
+			Diagnostics: []diags.Diagnostic{
+				{
+					Message:     msg,
+					Pos:         label.Value.Pos,
+					Expr:        nil,
+					FirstColumn: 1,
+					LastColumn:  len(label.Value.Value),
+					Kind:        diags.Issue,
+				},
+			},
+		})
+	}
+	return problems
+}
+
+func (c TemplateCheck) checkHumanizeIsNeeded(expr parser.PromQLExpr, ann *parser.YamlKeyValue, a templateMeta) (problems []Problem) {
+	if !a.isValid {
+		return problems
+	}
+	if !a.hasValue {
+		return problems
+	}
+	if a.hasHumanize {
+		return problems
+	}
+
+	valAliases := a.aliases.varAliases(".Value")
+	for _, src := range expr.Source() {
+		call := isRateResult(src)
+		if call != nil {
+			dgs := []diags.Diagnostic{
+				{
+					Message:     fmt.Sprintf("`%s()` will produce results that are hard for humans to read.", call.Func.Name),
+					Pos:         expr.Value.Pos,
+					Expr:        expr.Query().Expr,
+					FirstColumn: int(call.PosRange.Start) + 1,
+					LastColumn:  int(call.PosRange.End),
+					Kind:        diags.Context,
+				},
+			}
+			for _, v := range a.vars {
+				for _, va := range valAliases {
+					if v.value[0] == va {
+						dgs = append(dgs, diags.Diagnostic{
+							Message:     "Use one of the humanize template functions to make the result more readable.",
+							Pos:         ann.Value.Pos,
+							Expr:        nil,
+							FirstColumn: v.column,
+							LastColumn:  v.column + len(v.value[0]) - 1,
+							Kind:        diags.Issue,
+						})
+					}
+				}
+			}
+
+			problems = append(problems, Problem{
+				Anchor: AnchorAfter,
+				Lines: diags.LineRange{
+					First: min(expr.Value.Pos.Lines().First, ann.Value.Pos.Lines().First),
+					Last:  max(expr.Value.Pos.Lines().Last, ann.Value.Pos.Lines().Last),
+				},
+				Reporter:    c.Reporter(),
+				Summary:     "use humanize filters for the results",
+				Details:     TemplateCheckReferenceDetails,
+				Diagnostics: dgs,
+				Severity:    Information,
+			})
+		}
+	}
+	return problems
+}
+
+func isRateResult(src *source.Source) *promParser.Call {
+	if src.Type == source.AggregateSource {
+		switch src.Operation() {
+		case "count", "count_values", "group":
+			return nil
+		}
+	}
+
+	call, ok := source.MostOuterOperation[*promParser.Call](src)
+	if !ok {
+		return nil
+	}
+
+	switch call.Func.Name {
+	case "rate", "irate", "deriv":
+		return call
+	default:
+		return nil
+	}
+}
+
+func queryFunc(_ context.Context, expr string, _ time.Time) (promql.Vector, error) {
+	if _, err := parser.PromQLParser.ParseExpr(expr); err != nil {
+		return nil, err
+	}
+	// return a single sample so template using `... | first` don't fail
+	return promql.Vector{{}}, nil
+}
+
+func normalizeTemplateError(name string, err error) error {
+	e := strings.TrimPrefix(err.Error(), "template: "+name+":")
+	if v := strings.SplitN(e, ":", 2); len(v) > 1 {
+		e = strings.TrimPrefix(v[1], " ")
+	}
+	return errors.New(e)
+}
+
+func maybeExpandError(err error) error {
+	if e := errors.Unwrap(err); e != nil {
+		return e
+	}
+	return err
+}
+
+// templateError wraps a template parse or execution error with the exact
+// column range in the source text where the error occurred.
+type templateError struct {
+	msg      string
+	firstCol int
+	lastCol  int
+}
+
+func (e templateError) Error() string {
+	return e.msg
+}
+
+var (
+	templateErrorPrefixRe = regexp.MustCompile(`^template: ([^:]+):(\d+):(\d+):`)
+	templateErrorTokenRe  = regexp.MustCompile(`at <([^>]+)>`)
+)
+
+// newTemplateError builds a templateError from a raw template error,
+// normalizing the message and extracting column positions when possible.
+func newTemplateError(rawErr error, name, text string) templateError {
+	te := templateError{
+		msg:      normalizeTemplateError(name, rawErr).Error(),
+		firstCol: 1,
+		lastCol:  len(text),
+	}
+
+	msg := rawErr.Error()
+	m := templateErrorPrefixRe.FindStringSubmatch(msg)
+	if m == nil || m[1] != name {
+		return te
+	}
+
+	lineNum, _ := strconv.Atoi(m[2])
+	offset, _ := strconv.Atoi(m[3])
+
+	// templateDefsString is prepended to text and has no newlines,
+	// so only line 1 offsets need adjustment.
+	if lineNum == 1 {
+		offset -= templateDefsLen
+	}
+
+	// Find the byte position of the target line in user text.
+	var pos int
+	for range lineNum - 2 {
+		pos += strings.IndexByte(text[pos:], '\n') + 1
+	}
+	pos += offset
+
+	te.firstCol = pos + 1
+	te.lastCol = pos + 1
+
+	if tokenM := templateErrorTokenRe.FindStringSubmatch(msg); tokenM != nil {
+		if idx := strings.Index(text[pos:], tokenM[1]); idx >= 0 {
+			te.firstCol = pos + idx + 1
+			te.lastCol = pos + idx + len(tokenM[1])
+		}
+	}
+
+	return te
+}
+
+// checkTemplateSyntax parses and expands a template value. If parsing or
+// execution fails it returns a templateError with the normalized message
+// and, when possible, the exact column range where the error occurred.
+func checkTemplateSyntax(ctx context.Context, name, text string, data any) error {
+	tmpl := promTemplate.NewTemplateExpander(
+		ctx,
+		templateDefsString+text,
+		name,
+		data,
+		model.Time(timestamp.FromTime(time.Now())),
+		queryFunc,
+		nil,
+		nil,
+	)
+
+	if err := tmpl.ParseTest(); err != nil {
+		return newTemplateError(maybeExpandError(err), name, text)
+	}
+
+	if _, err := tmpl.Expand(); err != nil {
+		return newTemplateError(maybeExpandError(err), name, text)
+	}
+
+	return nil
+}
+
+type templateMeta struct {
+	aliases     aliasMap
+	vars        []tmplVar
+	uses        []templateQueryUse
+	hasValue    bool
+	hasHumanize bool
+	isValid     bool
+}
+
+// parseTemplate parses a label or annotation value and calls fn with the
+// result. ok is false if it can't be parsed.
+func parseTemplate(text string, fn func(*textTemplate.Template)) (ok bool) {
+	t := templatePool.Get().(*textTemplate.Template)
+	defer templatePool.Put(t)
+
+	tt, err := t.Parse(templateDefsString + text)
+	if err != nil {
+		return false
+	}
+	fn(tt)
+	return true
+}
+
+func analyzeTemplate(text string) templateMeta {
+	var meta templateMeta
+	ok := parseTemplate(text, func(tt *textTemplate.Template) {
+		aliases := aliasesForTemplate(tt)
+		vars := make([]tmplVar, 0, len(tt.Root.Nodes))
+		for _, node := range tt.Root.Nodes {
+			vars = append(vars, getVariables(node)...)
+		}
+		meta = templateMeta{
+			aliases: aliases,
+			vars:    vars,
+			uses: walkTemplateNode(tt.Root, queryScope{
+				aliases: map[string]templateQuery{},
+				dot:     nil,
+			}),
+			hasValue:    hasValue(tt, aliases),
+			hasHumanize: hasHumanize(tt, aliases),
+			isValid:     true,
+		}
+	})
+	if !ok {
+		return templateMeta{
+			aliases:     aliasMap{aliases: nil},
+			vars:        nil,
+			uses:        nil,
+			hasValue:    false,
+			hasHumanize: false,
+			isValid:     false,
+		}
+	}
+	return meta
+}
+
+func checkForValueInLabels(a templateMeta) (msgs []string) {
+	if !a.isValid {
+		return nil
+	}
+	valAliases := a.aliases.varAliases(".Value")
+	for _, v := range a.vars {
+		for _, name := range v.value {
+			if slices.Contains(valAliases, name) {
+				msg := fmt.Sprintf("Using `%s` in labels will generate a new alert on every value change, move it to annotations.", name)
+				msgs = append(msgs, msg)
+			}
+		}
+	}
+	return msgs
+}
+
+func containsAliasedNode(am aliasMap, node parse.Node, alias string) (string, bool) {
+	valAliases := am.varAliases(alias)
+	for _, vars := range getVariables(node) {
+		for _, v := range vars.value {
+			if slices.Contains(valAliases, v) {
+				return v, true
+			}
+		}
+	}
+	return "", false
+}
+
+func hasValue(tt *textTemplate.Template, aliases aliasMap) bool {
+	for _, node := range tt.Root.Nodes {
+		if _, ok := containsAliasedNode(aliases, node, ".Value"); ok {
+			return true
+		}
+	}
+	return false
+}
+
+func hasHumanize(tt *textTemplate.Template, aliases aliasMap) bool {
+	for _, node := range tt.Root.Nodes {
+		if _, ok := containsAliasedNode(aliases, node, ".Value"); !ok {
+			continue
+		}
+		if n, ok := node.(*parse.ActionNode); ok {
+			for _, cmd := range n.Pipe.Cmds {
+				for _, arg := range cmd.Args {
+					if m, ok := arg.(*parse.IdentifierNode); ok {
+						for _, f := range []string{"humanize", "humanize1024", "humanizePercentage", "humanizeDuration", "printf"} {
+							if slices.Contains(aliases.varAliases(f), m.Ident) {
+								return true
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false
+}
+
+type aliasMap struct {
+	aliases map[string]map[string]struct{}
+}
+
+func (am aliasMap) varAliases(k string) (vals []string) {
+	vals = append(vals, k)
+	if as, ok := am.aliases[k]; ok {
+		for val := range as {
+			vals = append(vals, am.varAliases(val)...)
+		}
+	}
+	return vals
+}
+
+func aliasesForTemplate(t *textTemplate.Template) aliasMap {
+	aliases := aliasMap{aliases: map[string]map[string]struct{}{}}
+	for _, n := range t.Root.Nodes {
+		getAliases(n, &aliases)
+	}
+	return aliases
+}
+
+func getAliases(node parse.Node, aliases *aliasMap) {
+	if n, ok := node.(*parse.ActionNode); ok {
+		if len(n.Pipe.Decl) == 1 && !n.Pipe.IsAssign && len(n.Pipe.Cmds) == 1 {
+			for _, cmd := range n.Pipe.Cmds {
+				for _, arg := range cmd.Args {
+					for _, k := range getVariables(arg) {
+						for _, d := range n.Pipe.Decl {
+							for _, v := range getVariables(d) {
+								if _, ok := aliases.aliases[k.value[0]]; !ok {
+									aliases.aliases[k.value[0]] = map[string]struct{}{}
+								}
+								aliases.aliases[k.value[0]][v.value[0]] = struct{}{}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+type tmplVar struct {
+	value  []string
+	column int
+}
+
+func getVariables(node parse.Node) (vars []tmplVar) {
+	switch n := node.(type) {
+	case *parse.ActionNode:
+		if len(n.Pipe.Decl) == 0 && len(n.Pipe.Cmds) > 0 {
+			vars = append(vars, getVariables(n.Pipe.Cmds[0])...)
+		}
+	case *parse.CommandNode:
+		for _, arg := range n.Args {
+			vars = append(vars, getVariables(arg)...)
+		}
+	case *parse.FieldNode:
+		ident := make([]string, len(n.Ident))
+		copy(ident, n.Ident)
+		ident[0] = "." + ident[0]
+		vars = append(vars, tmplVar{
+			value:  ident,
+			column: int(n.Pos) + 1 - templateDefsLen,
+		})
+	case *parse.VariableNode:
+		vars = append(vars, tmplVar{
+			value:  n.Ident,
+			column: int(n.Pos) + 1 - templateDefsLen,
+		})
+	}
+	return vars
+}
+
+func findTemplateVariables(_, text string) (vars []tmplVar, aliases aliasMap, ok bool) {
+	aliases.aliases = map[string]map[string]struct{}{}
+	ok = parseTemplate(text, func(tt *textTemplate.Template) {
+		for _, node := range tt.Root.Nodes {
+			getAliases(node, &aliases)
+			vars = append(vars, getVariables(node)...)
+		}
+	})
+	return vars, aliases, ok
+}
+
+// missingLabel checks if none of the sources can return the given label. If so
+// it returns why and where in the query. ok is false if any source can have it.
+func missingLabel(src []*source.Source, name string) (reason string, fragment posrange.PositionRange, ok bool) {
+	for _, s := range src {
+		if s.DeadInfo != nil || s.CanHaveLabel(name) {
+			continue
+		}
+		reason, fragment = s.LabelExcludeReason(name)
+		return reason, fragment, true
+	}
+	return "", posrange.PositionRange{}, false
+}
+
+// nonExistentLabelProblem builds the "template uses non-existent label" problem
+// shared by both label checks.
+func (c TemplateCheck) nonExistentLabelProblem(rule parser.Rule, issue, context diags.Diagnostic) Problem {
+	return Problem{
+		Anchor:      AnchorAfter,
+		Lines:       rule.Lines,
+		Reporter:    c.Reporter(),
+		Summary:     "template uses non-existent label",
+		Details:     "",
+		Severity:    Bug,
+		Diagnostics: []diags.Diagnostic{issue, context},
+	}
+}
+
+func (c TemplateCheck) checkQueryLabels(group *parser.Group, rule parser.Rule, label *parser.YamlKeyValue, src []*source.Source, a templateMeta) (problems []Problem) {
+	if !a.isValid {
+		return nil
+	}
+
+	done := map[string]struct{}{}
+	labelsAliases := a.aliases.varAliases(".Labels")
+	for _, v := range a.vars {
+		// We need both the .Labels alias and the label name after it: .Labels.instance.
+		if len(v.value) < 2 || !slices.Contains(labelsAliases, v.value[0]) {
+			continue
+		}
+		name := v.value[1]
+		if _, ok := done[name]; ok {
+			continue
+		}
+		done[name] = struct{}{}
+
+		if group != nil && group.Labels != nil && group.Labels.GetValue(name) != nil {
+			continue
+		}
+		reason, fragment, ok := missingLabel(src, name)
+		if !ok {
+			continue
+		}
+		problems = append(problems, c.nonExistentLabelProblem(
+			rule,
+			diags.Diagnostic{
+				Message:     fmt.Sprintf("The template is using `%s` label but the query results won't have this label.", name),
+				Pos:         label.Value.Pos,
+				Expr:        nil,
+				FirstColumn: v.column,
+				LastColumn:  v.column + len(name),
+				Kind:        diags.Issue,
+			},
+			diags.Diagnostic{
+				Message:     reason,
+				Pos:         rule.AlertingRule.Expr.Value.Pos,
+				Expr:        rule.Expr().Query().Expr,
+				FirstColumn: int(fragment.Start) + 1,
+				LastColumn:  int(fragment.End),
+				Kind:        diags.Context,
+			},
+		))
+	}
+
+	return problems
+}

@@ -1,0 +1,466 @@
+
+[TestFragileCheck/aggr_/_non_aggr - 1]
+[]
+
+---
+
+[TestFragileCheck/false_positive_aggregation - 1]
+[]
+
+---
+
+[TestFragileCheck/false_positive_max_-_issues_1466 - 1]
+[]
+
+---
+
+[TestFragileCheck/fragile_division_/_different_targets - 1]
+- description: fragile division / different targets
+  content: |4
+
+    - alert: foo
+      expr: sum(rate(metric_a[30m])) / sum(max_over_time(metric_b[30m])) >= 0.02
+  output: |
+    3 |   expr: sum(rate(metric_a[30m])) / sum(max_over_time(metric_b[30m])) >= 0.02
+                                                             ^^^^^^^^^^^^^
+        This query can cause false positives when Prometheus restarts, add
+        `for` option to avoid that.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        This alerting rule performs arithmetic operation on results of two aggregations, this might cause false positive alerts when Prometheus restarts.
+        When Prometheus is started it doesn't scrape all targets at once, it spreads it over the first scrape interval.
+        Until it finishes scraping all target queries that use aggregation will return results calculated from only a subset of targets.
+        If each of these aggregates comes from a different scrape job then one aggregate might have data from more targets than the other.
+        The easiest way to avoid such issues is to add `for: 2m` to your alerting rule.
+    diagnostics:
+        - message: This query can cause false positives when Prometheus restarts, add `for` option to avoid that.
+          firstcolumn: 46
+          lastcolumn: 58
+          kind: 0
+    lines:
+        first: 3
+        last: 3
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/fragile_offset_% - 1]
+- description: fragile offset %
+  content: |4
+
+    - alert: foo
+      expr: sum(selector{job="foo"}) % sum(selector{job="foo"} offset 30m) > 5
+  output: |
+    3 |   expr: sum(selector{job="foo"}) % sum(selector{job="foo"} offset 30m) > 5
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           This query can cause false positives when Prometheus restarts, add
+           `for` option to avoid that.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        This alerting rule performs arithmetic operation on results of two aggregations, this might cause false positive alerts when Prometheus restarts.
+        When Prometheus is started it doesn't scrape all targets at once, it spreads it over the first scrape interval.
+        Until it finishes scraping all target queries that use aggregation will return results calculated from only a subset of targets.
+        If each of these aggregates comes from a different scrape job then one aggregate might have data from more targets than the other.
+        The easiest way to avoid such issues is to add `for: 2m` to your alerting rule.
+    diagnostics:
+        - message: This query can cause false positives when Prometheus restarts, add `for` option to avoid that.
+          firstcolumn: 32
+          lastcolumn: 61
+          kind: 0
+    lines:
+        first: 3
+        last: 3
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/fragile_offset_* - 1]
+- description: fragile offset *
+  content: |4
+
+    - alert: foo
+      expr: sum(selector{job="foo"}) * sum(selector{job="foo"} offset 30m) > 5
+  output: |
+    3 |   expr: sum(selector{job="foo"}) * sum(selector{job="foo"} offset 30m) > 5
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           This query can cause false positives when Prometheus restarts, add
+           `for` option to avoid that.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        This alerting rule performs arithmetic operation on results of two aggregations, this might cause false positive alerts when Prometheus restarts.
+        When Prometheus is started it doesn't scrape all targets at once, it spreads it over the first scrape interval.
+        Until it finishes scraping all target queries that use aggregation will return results calculated from only a subset of targets.
+        If each of these aggregates comes from a different scrape job then one aggregate might have data from more targets than the other.
+        The easiest way to avoid such issues is to add `for: 2m` to your alerting rule.
+    diagnostics:
+        - message: This query can cause false positives when Prometheus restarts, add `for` option to avoid that.
+          firstcolumn: 32
+          lastcolumn: 61
+          kind: 0
+    lines:
+        first: 3
+        last: 3
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/fragile_offset_+ - 1]
+- description: fragile offset +
+  content: |4
+
+    - alert: foo
+      expr: sum(selector{job="foo"}) + sum(selector{job="foo"} offset 30m) > 5
+  output: |
+    3 |   expr: sum(selector{job="foo"}) + sum(selector{job="foo"} offset 30m) > 5
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           This query can cause false positives when Prometheus restarts, add
+           `for` option to avoid that.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        This alerting rule performs arithmetic operation on results of two aggregations, this might cause false positive alerts when Prometheus restarts.
+        When Prometheus is started it doesn't scrape all targets at once, it spreads it over the first scrape interval.
+        Until it finishes scraping all target queries that use aggregation will return results calculated from only a subset of targets.
+        If each of these aggregates comes from a different scrape job then one aggregate might have data from more targets than the other.
+        The easiest way to avoid such issues is to add `for: 2m` to your alerting rule.
+    diagnostics:
+        - message: This query can cause false positives when Prometheus restarts, add `for` option to avoid that.
+          firstcolumn: 32
+          lastcolumn: 61
+          kind: 0
+    lines:
+        first: 3
+        last: 3
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/fragile_offset_- - 1]
+- description: fragile offset -
+  content: |4
+
+    - alert: foo
+      expr: sum(selector{job="foo"}) - sum(selector{job="foo"} offset 30m) > 5
+  output: |
+    3 |   expr: sum(selector{job="foo"}) - sum(selector{job="foo"} offset 30m) > 5
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           This query can cause false positives when Prometheus restarts, add
+           `for` option to avoid that.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        This alerting rule performs arithmetic operation on results of two aggregations, this might cause false positive alerts when Prometheus restarts.
+        When Prometheus is started it doesn't scrape all targets at once, it spreads it over the first scrape interval.
+        Until it finishes scraping all target queries that use aggregation will return results calculated from only a subset of targets.
+        If each of these aggregates comes from a different scrape job then one aggregate might have data from more targets than the other.
+        The easiest way to avoid such issues is to add `for: 2m` to your alerting rule.
+    diagnostics:
+        - message: This query can cause false positives when Prometheus restarts, add `for` option to avoid that.
+          firstcolumn: 32
+          lastcolumn: 61
+          kind: 0
+    lines:
+        first: 3
+        last: 3
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/fragile_offset_/ - 1]
+- description: fragile offset /
+  content: |4
+
+    - alert: foo
+      expr: sum(selector{job="foo"}) / sum(selector{job="foo"} offset 30m) > 5
+  output: |
+    3 |   expr: sum(selector{job="foo"}) / sum(selector{job="foo"} offset 30m) > 5
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           This query can cause false positives when Prometheus restarts, add
+           `for` option to avoid that.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        This alerting rule performs arithmetic operation on results of two aggregations, this might cause false positive alerts when Prometheus restarts.
+        When Prometheus is started it doesn't scrape all targets at once, it spreads it over the first scrape interval.
+        Until it finishes scraping all target queries that use aggregation will return results calculated from only a subset of targets.
+        If each of these aggregates comes from a different scrape job then one aggregate might have data from more targets than the other.
+        The easiest way to avoid such issues is to add `for: 2m` to your alerting rule.
+    diagnostics:
+        - message: This query can cause false positives when Prometheus restarts, add `for` option to avoid that.
+          firstcolumn: 32
+          lastcolumn: 61
+          kind: 0
+    lines:
+        first: 3
+        last: 3
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/fragile_offset_^ - 1]
+- description: fragile offset ^
+  content: |4
+
+    - alert: foo
+      expr: sum(selector{job="foo"}) ^ sum(selector{job="foo"} offset 30m) > 5
+  output: |
+    3 |   expr: sum(selector{job="foo"}) ^ sum(selector{job="foo"} offset 30m) > 5
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           This query can cause false positives when Prometheus restarts, add
+           `for` option to avoid that.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        This alerting rule performs arithmetic operation on results of two aggregations, this might cause false positive alerts when Prometheus restarts.
+        When Prometheus is started it doesn't scrape all targets at once, it spreads it over the first scrape interval.
+        Until it finishes scraping all target queries that use aggregation will return results calculated from only a subset of targets.
+        If each of these aggregates comes from a different scrape job then one aggregate might have data from more targets than the other.
+        The easiest way to avoid such issues is to add `for: 2m` to your alerting rule.
+    diagnostics:
+        - message: This query can cause false positives when Prometheus restarts, add `for` option to avoid that.
+          firstcolumn: 32
+          lastcolumn: 61
+          kind: 0
+    lines:
+        first: 3
+        last: 3
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/fragile_offset_and - 1]
+[]
+
+---
+
+[TestFragileCheck/fragile_offset_but_mismatched_labels - 1]
+- description: fragile offset but mismatched labels
+  content: |4
+
+    - alert: foo
+      expr: sum(selector{job="foo"}) / sum(selector{job="bob"} offset 30m) > 5
+  output: |
+    3 |   expr: sum(selector{job="foo"}) / sum(selector{job="bob"} offset 30m) > 5
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           This query can cause false positives when Prometheus restarts, add
+           `for` option to avoid that.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        This alerting rule performs arithmetic operation on results of two aggregations, this might cause false positive alerts when Prometheus restarts.
+        When Prometheus is started it doesn't scrape all targets at once, it spreads it over the first scrape interval.
+        Until it finishes scraping all target queries that use aggregation will return results calculated from only a subset of targets.
+        If each of these aggregates comes from a different scrape job then one aggregate might have data from more targets than the other.
+        The easiest way to avoid such issues is to add `for: 2m` to your alerting rule.
+    diagnostics:
+        - message: This query can cause false positives when Prometheus restarts, add `for` option to avoid that.
+          firstcolumn: 32
+          lastcolumn: 61
+          kind: 0
+    lines:
+        first: 3
+        last: 3
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/fragile_offset_with_for - 1]
+[]
+
+---
+
+[TestFragileCheck/fragile_offset_without_condition - 1]
+[]
+
+---
+
+[TestFragileCheck/ignores_aggregated_topk() - 1]
+[]
+
+---
+
+[TestFragileCheck/ignores_other_functions - 1]
+[]
+
+---
+
+[TestFragileCheck/ignores_recording_rules - 1]
+[]
+
+---
+
+[TestFragileCheck/ignores_syntax_errors - 1]
+[]
+
+---
+
+[TestFragileCheck/warns_about_bottomk()_as_source_of_series - 1]
+- description: warns about bottomk() as source of series
+  content: |
+    - alert: foo
+      expr: bottomk(10, foo)
+  output: |
+    2 |   expr: bottomk(10, foo)
+                            ^^^
+                            Using `bottomk` to select time series might return different set of time series
+                            on every query, which would cause flapping alerts.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        Alerts are identified by labels, two alerts with identical sets of labels are identical.
+        If two alerts have the same name but the rest of labels isn't 100% identical then they are two different alerts.
+        If the same alert query returns results that over time have different labels on them then previous alert instances will resolve and new alerts will be fired.
+        This can happen when using one of the aggregation operation like topk or bottomk as they can return a different time series each time they are evaluated.
+    diagnostics:
+        - message: Using `bottomk` to select time series might return different set of time series on every query, which would cause flapping alerts.
+          firstcolumn: 13
+          lastcolumn: 15
+          kind: 0
+    lines:
+        first: 2
+        last: 2
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/warns_about_topk()_as_source_of_series - 1]
+- description: warns about topk() as source of series
+  content: |
+    - alert: foo
+      expr: topk(10, foo)
+  output: |
+    2 |   expr: topk(10, foo)
+                         ^^^
+                         Using `topk` to select time series might return different set of time series on
+                         every query, which would cause flapping alerts.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        Alerts are identified by labels, two alerts with identical sets of labels are identical.
+        If two alerts have the same name but the rest of labels isn't 100% identical then they are two different alerts.
+        If the same alert query returns results that over time have different labels on them then previous alert instances will resolve and new alerts will be fired.
+        This can happen when using one of the aggregation operation like topk or bottomk as they can return a different time series each time they are evaluated.
+    diagnostics:
+        - message: Using `topk` to select time series might return different set of time series on every query, which would cause flapping alerts.
+          firstcolumn: 10
+          lastcolumn: 12
+          kind: 0
+    lines:
+        first: 2
+        last: 2
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/warns_about_topk()_as_source_of_series_(multiple) - 1]
+- description: warns about topk() as source of series (multiple)
+  content: |
+    - alert: foo
+      expr: bar or topk(10, foo) or bottomk(10, foo)
+  output: |
+    2 |   expr: bar or topk(10, foo) or bottomk(10, foo)
+                                ^^^
+                                Using `topk` to select time series might return different set of time series
+                                on every query, which would cause flapping alerts.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        Alerts are identified by labels, two alerts with identical sets of labels are identical.
+        If two alerts have the same name but the rest of labels isn't 100% identical then they are two different alerts.
+        If the same alert query returns results that over time have different labels on them then previous alert instances will resolve and new alerts will be fired.
+        This can happen when using one of the aggregation operation like topk or bottomk as they can return a different time series each time they are evaluated.
+    diagnostics:
+        - message: Using `topk` to select time series might return different set of time series on every query, which would cause flapping alerts.
+          firstcolumn: 17
+          lastcolumn: 19
+          kind: 0
+    lines:
+        first: 2
+        last: 2
+    severity: 1
+    anchor: 0
+- description: warns about topk() as source of series (multiple)
+  content: |
+    - alert: foo
+      expr: bar or topk(10, foo) or bottomk(10, foo)
+  output: |
+    2 |   expr: bar or topk(10, foo) or bottomk(10, foo)
+                                                    ^^^
+                                                    Using `bottomk` to select time series might return
+                                                    different set of time series on every query, which would
+                                                    cause flapping alerts.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        Alerts are identified by labels, two alerts with identical sets of labels are identical.
+        If two alerts have the same name but the rest of labels isn't 100% identical then they are two different alerts.
+        If the same alert query returns results that over time have different labels on them then previous alert instances will resolve and new alerts will be fired.
+        This can happen when using one of the aggregation operation like topk or bottomk as they can return a different time series each time they are evaluated.
+    diagnostics:
+        - message: Using `bottomk` to select time series might return different set of time series on every query, which would cause flapping alerts.
+          firstcolumn: 37
+          lastcolumn: 39
+          kind: 0
+    lines:
+        first: 2
+        last: 2
+    severity: 1
+    anchor: 0
+
+---
+
+[TestFragileCheck/warns_about_topk()_as_source_of_series_(or) - 1]
+- description: warns about topk() as source of series (or)
+  content: |
+    - alert: foo
+      expr: bar or topk(10, foo)
+  output: |
+    2 |   expr: bar or topk(10, foo)
+                                ^^^
+                                Using `topk` to select time series might return different set of time series
+                                on every query, which would cause flapping alerts.
+  problem:
+    reporter: promql/fragile
+    summary: fragile query
+    details: |-
+        Alerts are identified by labels, two alerts with identical sets of labels are identical.
+        If two alerts have the same name but the rest of labels isn't 100% identical then they are two different alerts.
+        If the same alert query returns results that over time have different labels on them then previous alert instances will resolve and new alerts will be fired.
+        This can happen when using one of the aggregation operation like topk or bottomk as they can return a different time series each time they are evaluated.
+    diagnostics:
+        - message: Using `topk` to select time series might return different set of time series on every query, which would cause flapping alerts.
+          firstcolumn: 17
+          lastcolumn: 19
+          kind: 0
+    lines:
+        first: 2
+        last: 2
+    severity: 1
+    anchor: 0
+
+---

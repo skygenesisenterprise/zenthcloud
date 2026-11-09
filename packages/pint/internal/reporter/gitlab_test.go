@@ -1,0 +1,1518 @@
+package reporter_test
+
+import (
+	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/neilotoole/slogt/v2"
+	"github.com/stretchr/testify/require"
+	gitlab "gitlab.com/gitlab-org/api/client-go/v3"
+	"go.nhat.io/httpmock"
+
+	"github.com/cloudflare/pint/internal/checks"
+	"github.com/cloudflare/pint/internal/diags"
+	"github.com/cloudflare/pint/internal/discovery"
+	"github.com/cloudflare/pint/internal/git"
+	"github.com/cloudflare/pint/internal/parser"
+	"github.com/cloudflare/pint/internal/promapi"
+	"github.com/cloudflare/pint/internal/reporter"
+)
+
+func TestGitLabReporterBadBaseURI(t *testing.T) {
+	slog.SetDefault(slogt.New(t))
+	_, err := reporter.NewGitLabReporter(
+		"v0.0.0",
+		"branch",
+		"%gh&%ij",
+		time.Minute,
+		"token",
+		123,
+		0,
+	)
+	require.Error(t, err)
+}
+
+func TestGitLabReporter(t *testing.T) {
+	type errorCheck func(err error) error
+
+	p := parser.NewParser(parser.DefaultOptions)
+	mockRules := `
+- record: target is down
+  expr: up == 0
+- record: sum errors
+  expr: sum(errors) by (job)
+`
+	tmpDir := t.TempDir()
+	mockPath := filepath.Join(tmpDir, "foo.txt")
+	require.NoError(t, os.WriteFile(mockPath, []byte(mockRules), 0o644))
+	mockLink := filepath.Join(tmpDir, "link.txt")
+	require.NoError(t, os.Symlink(mockPath, mockLink))
+	mockFile := p.Parse(strings.NewReader(mockRules))
+
+	fooReport := reporter.Report{
+		Path: discovery.Path{
+			SymlinkTarget: "foo.txt",
+			Name:          "foo.txt",
+		},
+		Changes: &discovery.Changes{
+			OldPath: "",
+			Lines:   git.LineNumbers{{Before: 0, After: 2, Modified: true}},
+		},
+		Rule: mockFile.Groups[0].Rules[0],
+		Problem: checks.Problem{
+			Reporter: "foo",
+			Summary:  "foo error",
+			Details:  "foo details",
+			Lines:    diags.LineRange{First: 1, Last: 3},
+			Severity: checks.Fatal,
+			Anchor:   checks.AnchorAfter,
+		},
+	}
+	summaryWithDetails := reporter.NewSummary([]reporter.Report{})
+	summaryWithDetails.MarkCheckDisabled("prom1", promapi.APIPathConfig, []string{"check1", "check3", "check2"})
+	summaryWithDetails.MarkCheckDisabled("prom2", promapi.APIPathMetadata, []string{"check1"})
+
+	summaryABC := reporter.NewSummary([]reporter.Report{
+		{
+			Path: discovery.Path{
+				SymlinkTarget: "foo.txt",
+				Name:          "foo.txt",
+			},
+			Changes: &discovery.Changes{
+				OldPath: "",
+				Lines:   git.LineNumbers{{Before: 0, After: 1, Modified: true}},
+			},
+			Rule: mockFile.Groups[0].Rules[0],
+			Problem: checks.Problem{
+				Reporter: "a",
+				Summary:  "foo error1",
+				Details:  "foo details",
+				Lines:    diags.LineRange{First: 1, Last: 3},
+				Severity: checks.Fatal,
+				Anchor:   checks.AnchorAfter,
+			},
+		},
+		{
+			Path: discovery.Path{
+				SymlinkTarget: "foo.txt",
+				Name:          "foo.txt",
+			},
+			Changes: &discovery.Changes{
+				OldPath: "",
+				Lines:   git.LineNumbers{{Before: 0, After: 2, Modified: true}},
+			},
+			Rule: mockFile.Groups[0].Rules[0],
+			Problem: checks.Problem{
+				Reporter: "b",
+				Summary:  "foo error2",
+				Details:  "foo details",
+				Lines:    diags.LineRange{First: 1, Last: 3},
+				Severity: checks.Fatal,
+				Anchor:   checks.AnchorAfter,
+			},
+		},
+		{
+			Path: discovery.Path{
+				SymlinkTarget: "foo.txt",
+				Name:          "foo.txt",
+			},
+			Changes: &discovery.Changes{
+				OldPath: "",
+				Lines:   git.LineNumbers{{Before: 0, After: 3, Modified: true}},
+			},
+			Rule: mockFile.Groups[0].Rules[0],
+			Problem: checks.Problem{
+				Reporter: "c",
+				Summary:  "foo error3",
+				Details:  "foo details",
+				Lines:    diags.LineRange{First: 1, Last: 3},
+				Severity: checks.Fatal,
+				Anchor:   checks.AnchorAfter,
+			},
+		},
+	})
+
+	const (
+		apiUser              = "/api/v4/user"
+		apiOpenMergeRequests = "/api/v4/projects/123/merge_requests?page=1&source_branch=fakeBranch&state=opened"
+	)
+	apiVersions := func(mrID int) string {
+		return fmt.Sprintf("/api/v4/projects/123/merge_requests/%d/versions?page=1", mrID)
+	}
+	apiDiscussions := func(mrID int, withPage bool) string {
+		path := fmt.Sprintf("/api/v4/projects/123/merge_requests/%d/discussions", mrID)
+		if withPage {
+			path += "?page=1"
+		}
+		return path
+	}
+	discBody := func(check, summary, details string) *string {
+		return new(reporter.AddPintMarker(fmt.Sprintf(`:stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **%s** check.
+
+------
+
+%s
+
+<details>
+<summary>More information</summary>
+%s
+</details>
+
+------
+
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/%s.html).
+`, check, summary, details, check)))
+	}
+	symlinkedDiscBody := func(check, summary, details, link string) *string {
+		return new(reporter.AddPintMarker(fmt.Sprintf(`:warning: **Warning** reported by [pint](https://cloudflare.github.io/pint/) **%s** check.
+
+------
+
+%s
+
+<details>
+<summary>More information</summary>
+%s
+</details>
+
+:leftwards_arrow_with_hook: This problem was detected on a symlinked file `+"`%s`"+`.
+
+------
+
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/%s.html).
+`, check, summary, details, link, check)))
+	}
+	discBodyWithDiag := func(check, summary, details, yml, diag string) *string {
+		return new(reporter.AddPintMarker(fmt.Sprintf(
+			`:stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **%s** check.
+
+<details>
+<summary>%s</summary>
+
+%s
+
+%s
+
+%s
+
+</details>
+
+------
+
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/a.html).
+`, check, summary, yml, diag, details,
+		)))
+	}
+	discPosition := func(path string, line int64) *gitlab.PositionOptions {
+		return new(gitlab.PositionOptions{
+			BaseSHA:      new("base"),
+			StartSHA:     new("start"),
+			HeadSHA:      new("head"),
+			OldPath:      new(path),
+			NewPath:      new(path),
+			PositionType: new("text"),
+			NewLine:      new(line),
+		})
+	}
+	notePos := func(oldPath, newPath string, newLine, oldLine int64) *gitlab.NotePosition {
+		return new(gitlab.NotePosition{
+			BaseSHA:      "base",
+			StartSHA:     "start",
+			HeadSHA:      "head",
+			OldPath:      oldPath,
+			NewPath:      newPath,
+			PositionType: "text",
+			NewLine:      newLine,
+			OldLine:      oldLine,
+		})
+	}
+	discNote := func(id, authorID int64, body string, pos *gitlab.NotePosition) *gitlab.Note {
+		return new(gitlab.Note{
+			ID:       id,
+			Author:   gitlab.NoteAuthor{ID: authorID},
+			Position: pos,
+			Body:     body,
+		})
+	}
+	resolvedNote := func(n *gitlab.Note) *gitlab.Note {
+		n.Resolved = true
+		return n
+	}
+	systemNote := func(n *gitlab.Note) *gitlab.Note {
+		n.System = true
+		return n
+	}
+
+	testCases := []struct {
+		mock           httpmock.Mocker
+		errorHandler   errorCheck
+		description    string
+		summary        reporter.Summary
+		timeout        time.Duration
+		maxComments    int
+		showDuplicates bool
+	}{
+		{
+			description: "bogus JSON responses",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary:     reporter.NewSummary([]reporter.Report{fooReport}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(regexp.MustCompile(".+")).Times(3).Return(`[{"iid": 333}]`)
+				s.ExpectPost(regexp.MustCompile(".+")).ReturnCode(http.StatusBadRequest).ReturnJSON(map[string]string{"error": "Mock error"})
+			}),
+			errorHandler: func(err error) error {
+				if strings.HasSuffix(err.Error(), ": 400 {error: Mock error}") {
+					return nil
+				}
+				return err
+			},
+		},
+		{
+			description: "empty list of merge requests",
+			timeout:     time.Minute,
+			maxComments: 50,
+			summary:     reporter.NewSummary([]reporter.Report{fooReport}),
+			errorHandler: func(err error) error {
+				return err
+			},
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{})
+			}),
+		},
+		{
+			description: "single MR with diagnostics",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary: reporter.NewSummary([]reporter.Report{
+				{
+					Path: discovery.Path{
+						SymlinkTarget: mockPath,
+						Name:          mockPath,
+					},
+					Changes: &discovery.Changes{
+						OldPath: "",
+						Lines: git.LineNumbers{
+							{Before: 0, After: 2, Modified: true},
+						},
+					},
+					Rule: mockFile.Groups[0].Rules[0],
+					Problem: checks.Problem{
+						Reporter: "a",
+						Summary:  "foo error1",
+						Details:  "foo details",
+						Diagnostics: []diags.Diagnostic{
+							{
+								Message: "Diagnostic message",
+								Pos: diags.PositionRanges{
+									{
+										Line:        2,
+										FirstColumn: 3,
+										LastColumn:  24,
+									},
+									{
+										Line:        3,
+										FirstColumn: 3,
+										LastColumn:  15,
+									},
+								},
+								FirstColumn: 1,
+								LastColumn:  24,
+								Kind:        diags.Issue,
+							},
+						},
+						Lines:    diags.LineRange{First: 1, Last: 3},
+						Severity: checks.Fatal,
+						Anchor:   checks.AnchorAfter,
+					},
+				},
+			}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body:     discBodyWithDiag("a", "foo error1", "foo details", "```yaml\n2 | - record: target is down\n3 |   expr: up == 0\n      ^^\n```", "Diagnostic message"),
+					Position: discPosition(mockPath, 2),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "multiple merge requests",
+			timeout:     time.Minute,
+			maxComments: 50,
+			summary:     reporter.NewSummary([]reporter.Report{fooReport}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+					{IID: 2},
+					{IID: 5},
+				})
+				for _, i := range []int{1, 2, 5} {
+					s.ExpectGet(apiVersions(i)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+						{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+						{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					})
+					if i == 5 {
+						s.ExpectGet(apiDiscussions(i, true)).ReturnJSON([]gitlab.Discussion{})
+					} else {
+						s.ExpectGet(apiDiscussions(i, true)).ReturnJSON([]gitlab.Discussion{
+							{ID: "100", Notes: []*gitlab.Note{systemNote(discNote(101, 123, "system message", nil))}},
+							{ID: "200", Notes: []*gitlab.Note{discNote(201, 321, "different user", notePos("foo.txt", "foo.txt", 2, 0))}},
+							{ID: "300", Notes: []*gitlab.Note{discNote(301, 123, reporter.AddPintMarker("stale comment"), notePos("foo.txt", "foo.txt", 2, 0))}},
+							{ID: "400", Notes: []*gitlab.Note{discNote(401, 123, reporter.AddPintMarker("stale comment on unmodified line"), notePos("foo.txt", "foo.txt", 1, 0))}},
+							{ID: "500", Notes: []*gitlab.Note{discNote(101, 123, reporter.AddPintMarker("no position"), nil)}},
+						})
+					}
+
+				}
+
+				for _, i := range []int{1, 2} {
+					s.ExpectPost(apiDiscussions(i, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+						Body:     discBody("foo", "foo error", "foo details"),
+						Position: discPosition("foo.txt", 2),
+					}).ReturnJSON(gitlab.Response{})
+
+					s.ExpectPut(apiDiscussions(i, false) + "/300").WithBodyJSON(
+						gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(true)},
+					).ReturnJSON(gitlab.Response{})
+					s.ExpectPut(apiDiscussions(i, false) + "/400").WithBodyJSON(
+						gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(true)},
+					).ReturnJSON(gitlab.Response{})
+					s.ExpectPut(apiDiscussions(i, false) + "/500").WithBodyJSON(
+						gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(true)},
+					).ReturnJSON(gitlab.Response{})
+				}
+
+				s.ExpectPost(apiDiscussions(5, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body:     new(reporter.AddPintMarker(":stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **foo** check.\n\n------\n\nfoo error\n\n\u003cdetails\u003e\n\u003csummary\u003eMore information\u003c/summary\u003e\nfoo details\n\u003c/details\u003e\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/foo.html).\n")),
+					Position: discPosition("foo.txt", 2),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "list merge requests failed",
+			timeout:     time.Minute,
+			maxComments: 50,
+			summary:     reporter.NewSummary([]reporter.Report{fooReport}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).Times(6).
+					ReturnCode(http.StatusInternalServerError).
+					Return("Mock error")
+			}),
+			errorHandler: func(err error) error {
+				if strings.HasSuffix(err.Error(), ": Mock error") {
+					return nil
+				}
+				return err
+			},
+		},
+		{
+			description: "user request failed",
+			timeout:     time.Minute,
+			maxComments: 50,
+			summary:     reporter.NewSummary([]reporter.Report{fooReport}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).Times(6).
+					ReturnCode(http.StatusInternalServerError).
+					Return("Mock error")
+			}),
+			errorHandler: func(err error) error {
+				if strings.HasSuffix(err.Error(), ": Mock error") {
+					return nil
+				}
+				return err
+			},
+		},
+		{
+			description: "too many comments",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary:     summaryABC,
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{
+					{
+						ID:    "100",
+						Notes: []*gitlab.Note{systemNote(discNote(101, 123, "system comment", nil))},
+					},
+					{
+						ID:    "200",
+						Notes: []*gitlab.Note{discNote(201, 321, "different user", nil)},
+					},
+					{
+						ID:    "300",
+						Notes: []*gitlab.Note{resolvedNote(discNote(301, 123, reporter.AddPintMarker("different line"), notePos("foo.txt", "foo.txt", 1, 0)))},
+					},
+					{
+						ID:    "400",
+						Notes: []*gitlab.Note{discNote(401, 123, "comment without marker", notePos("foo.txt", "foo.txt", 2, 0))},
+					},
+				})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body:     discBody("a", "foo error1", "foo details"),
+					Position: discPosition("foo.txt", 1),
+				}).ReturnJSON(gitlab.Response{})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body: new(reporter.AddPintMarker("This pint run would create 3 comment(s), which is more than the limit configured for pint (1).\n2 comment(s) were skipped and won't be visible on this PR.")),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "stale general comment deleted",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary:     reporter.NewSummary([]reporter.Report{fooReport}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{
+					{
+						ID:    "100",
+						Notes: []*gitlab.Note{systemNote(discNote(101, 123, "system comment", nil))},
+					},
+					{
+						ID:    "200",
+						Notes: []*gitlab.Note{discNote(201, 123, reporter.AddPintMarker("This pint run would create 3 comment(s), which is more than the limit configured for pint (1).\n2 comment(s) were skipped and won't be visible on this PR."), nil)},
+					},
+				})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body:     discBody("foo", "foo error", "foo details"),
+					Position: discPosition("foo.txt", 2),
+				}).ReturnJSON(gitlab.Response{})
+				s.ExpectPut(apiDiscussions(1, false) + "/200").WithBodyJSON(
+					gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(true)},
+				).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "no versions",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary:     reporter.NewSummary([]reporter.Report{fooReport}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{})
+			}),
+			errorHandler: func(err error) error {
+				if strings.HasSuffix(err.Error(), ": no merge request versions found") {
+					return nil
+				}
+				return err
+			},
+		},
+		{
+			description: "versions request error",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary:     reporter.NewSummary([]reporter.Report{fooReport}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).
+					Times(6).
+					ReturnCode(http.StatusBadGateway).
+					ReturnJSON(map[string]string{"error": "Mock error"})
+			}),
+			errorHandler: func(err error) error {
+				if strings.HasSuffix(err.Error(), ": 502 {error: Mock error}") {
+					return nil
+				}
+				return err
+			},
+		},
+		{
+			description: "disabled checks",
+			timeout:     time.Minute,
+			maxComments: 10,
+			summary:     summaryWithDetails,
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body: new(reporter.AddPintMarker(`Some checks were disabled because one or more configured Prometheus server doesn't seem to support all required Prometheus APIs.
+This usually means that you're running pint against a service like Thanos or Mimir that allows to query metrics but doesn't implement all APIs documented [here](https://prometheus.io/docs/prometheus/latest/querying/api/).
+Since pint uses many of these API endpoint for querying information needed to run online checks only a real Prometheus server will allow it to run all of these checks.
+Below is the list of checks that were disabled for each Prometheus server defined in pint config file.
+
+- ` + "`prom1`" + `
+  - ` + "`/api/v1/status/config` " + `is unsupported, disabled checks:
+    - [check1](https://cloudflare.github.io/pint/checks/check1.html)
+    - [check2](https://cloudflare.github.io/pint/checks/check2.html)
+    - [check3](https://cloudflare.github.io/pint/checks/check3.html)
+- ` + "`prom2`" + `
+  - ` + "`/api/v1/metadata` " + `is unsupported, disabled checks:
+    - [check1](https://cloudflare.github.io/pint/checks/check1.html)
+`)),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "disabled checks / error",
+			timeout:     time.Minute,
+			maxComments: 10,
+			summary:     summaryWithDetails,
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				s.ExpectPost(apiDiscussions(1, false)).
+					ReturnCode(http.StatusBadRequest).
+					ReturnJSON(map[string]string{"error": "Mock error"})
+			}),
+			errorHandler: func(err error) error {
+				if strings.HasSuffix(err.Error(), ": 400 {error: Mock error}") {
+					return nil
+				}
+				return err
+			},
+		},
+		{
+			description: "general comment already present",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary:     summaryABC,
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{
+					{
+						ID:    "100",
+						Notes: []*gitlab.Note{systemNote(discNote(101, 123, "system comment", nil))},
+					},
+					{
+						ID:    "200",
+						Notes: []*gitlab.Note{discNote(201, 321, "different user", nil)},
+					},
+					{
+						ID:    "300",
+						Notes: []*gitlab.Note{discNote(301, 123, reporter.AddPintMarker("This pint run would create 3 comment(s), which is more than the limit configured for pint (1).\n2 comment(s) were skipped and won't be visible on this PR."), nil)},
+					},
+				})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body:     discBody("a", "foo error1", "foo details"),
+					Position: discPosition("foo.txt", 1),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "general comment already present / error",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary:     summaryABC,
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body:     discBody("a", "foo error1", "foo details"),
+					Position: discPosition("foo.txt", 1),
+				}).ReturnJSON(gitlab.Response{})
+				s.ExpectPost(apiDiscussions(1, false)).
+					Times(2).
+					ReturnCode(http.StatusBadRequest).
+					ReturnJSON(map[string]string{"error": "Mock error"})
+			}),
+			errorHandler: func(err error) error {
+				if strings.HasSuffix(err.Error(), ": 400 {error: Mock error}") {
+					return nil
+				}
+				return err
+			},
+		},
+		{
+			description: "list discussions failed",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary:     summaryABC,
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).
+					ReturnCode(http.StatusBadRequest).
+					ReturnJSON(map[string]string{"error": "Mock error"})
+			}),
+			errorHandler: func(err error) error {
+				if strings.HasSuffix(err.Error(), ": 400 {error: Mock error}") {
+					return nil
+				}
+				return err
+			},
+		},
+		{
+			description: "comments already exist",
+			timeout:     time.Minute,
+			maxComments: 10,
+			summary:     summaryABC,
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{
+					{
+						ID: "100",
+						Notes: []*gitlab.Note{
+							systemNote(discNote(101, 321, "system note", nil)),
+						},
+					},
+					{
+						ID: "200",
+						Notes: []*gitlab.Note{
+							discNote(201, 123, reporter.AddPintMarker("different path"), notePos("bar.txt", "bar.txt", 5, 0)),
+						},
+					},
+					{
+						ID: "300",
+						Notes: []*gitlab.Note{
+							discNote(301, 123, reporter.AddPintMarker("different path"), notePos("bar.txt", "", 1, 0)),
+						},
+					},
+					{
+						ID: "400",
+						Notes: []*gitlab.Note{
+							discNote(401, 123, reporter.AddPintMarker("different line"), notePos("foo.txt", "", 0, 1)),
+						},
+					},
+					{
+						ID: "500",
+						Notes: []*gitlab.Note{
+							discNote(501, 123, *discBody("a", "foo error1", "foo details"), notePos("foo.txt", "foo.txt", 1, 0)),
+						},
+					},
+					{
+						ID: "600",
+						Notes: []*gitlab.Note{
+							discNote(601, 123, *discBody("b", "foo error2", "foo details"), notePos("foo.txt", "foo.txt", 2, 0)),
+						},
+					},
+					{
+						ID: "700",
+						Notes: []*gitlab.Note{
+							discNote(701, 123, *discBody("c", "foo error3", "foo details"), notePos("foo.txt", "foo.txt", 3, 0)),
+						},
+					},
+				})
+				s.ExpectPut(apiDiscussions(1, false) + "/200").WithBodyJSON(
+					gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(true)},
+				).ReturnJSON(gitlab.Response{})
+				s.ExpectPut(apiDiscussions(1, false) + "/300").WithBodyJSON(
+					gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(true)},
+				).ReturnJSON(gitlab.Response{})
+				s.ExpectPut(apiDiscussions(1, false) + "/400").WithBodyJSON(
+					gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(true)},
+				).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "comments already exist but resolved",
+			timeout:     time.Minute,
+			maxComments: 10,
+			summary:     summaryABC,
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{
+					{
+						ID: "100",
+						Notes: []*gitlab.Note{
+							discNote(101, 123, *discBody("a", "foo error1", "foo details"), notePos("foo.txt", "foo.txt", 1, 0)),
+						},
+					},
+					{
+						ID: "200",
+						Notes: []*gitlab.Note{
+							resolvedNote(
+								discNote(201, 123, *discBody("b", "foo error2", "foo details"), notePos("foo.txt", "foo.txt", 2, 0)),
+							),
+						},
+					},
+					{
+						ID: "300",
+						Notes: []*gitlab.Note{
+							discNote(301, 123, *discBody("c", "foo error3", "foo details"), notePos("foo.txt", "foo.txt", 3, 0)),
+						},
+					},
+				})
+				s.ExpectPut(apiDiscussions(1, false) + "/200").WithBodyJSON(
+					gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(false)},
+				).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "comments already exist but resolved / resolve error",
+			timeout:     time.Minute,
+			maxComments: 10,
+			summary:     summaryABC,
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{
+					{
+						ID: "100",
+						Notes: []*gitlab.Note{
+							discNote(101, 123, *discBody("a", "foo error1", "foo details"), notePos("foo.txt", "foo.txt", 1, 0)),
+						},
+					},
+					{
+						ID: "200",
+						Notes: []*gitlab.Note{
+							resolvedNote(
+								discNote(201, 123, *discBody("b", "foo error2", "foo details"), notePos("foo.txt", "foo.txt", 2, 0)),
+							),
+						},
+					},
+					{
+						ID: "300",
+						Notes: []*gitlab.Note{
+							discNote(301, 123, *discBody("c", "foo error3", "foo details"), notePos("foo.txt", "foo.txt", 3, 0)),
+						},
+					},
+				})
+				s.ExpectPut(apiDiscussions(1, false) + "/200").WithBodyJSON(
+					gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(false)},
+				).Times(6).ReturnCode(http.StatusInternalServerError).Return("Mock error")
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body:     discBody("b", "foo error2", "foo details"),
+					Position: discPosition("foo.txt", 2),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "rule moved to a different file, old deleted",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary: reporter.NewSummary([]reporter.Report{
+				{
+					Path: discovery.Path{
+						SymlinkTarget: mockPath,
+						Name:          mockPath,
+					},
+					Changes: &discovery.Changes{
+						OldPath: "foo.old",
+						Lines: git.LineNumbers{
+							{Before: 0, After: 2, Modified: true},
+							{Before: 0, After: 3, Modified: true},
+						},
+					},
+					Rule: mockFile.Groups[0].Rules[0],
+					Problem: checks.Problem{
+						Reporter: "a",
+						Summary:  "foo error1",
+						Details:  "foo details",
+						Diagnostics: []diags.Diagnostic{
+							{
+								Message: "Diagnostic message",
+								Pos: diags.PositionRanges{
+									{
+										Line:        2,
+										FirstColumn: 3,
+										LastColumn:  24,
+									},
+									{
+										Line:        3,
+										FirstColumn: 3,
+										LastColumn:  15,
+									},
+								},
+								FirstColumn: 1,
+								LastColumn:  24,
+								Kind:        diags.Issue,
+							},
+						},
+						Lines:    diags.LineRange{First: 1, Last: 3},
+						Severity: checks.Fatal,
+						Anchor:   checks.AnchorAfter,
+					},
+				},
+			}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body: discBodyWithDiag("a", "foo error1", "foo details", "```yaml\n2 | - record: target is down\n3 |   expr: up == 0\n      ^^\n```", "Diagnostic message"),
+					Position: new(gitlab.PositionOptions{
+						BaseSHA:      new("base"),
+						StartSHA:     new("start"),
+						HeadSHA:      new("head"),
+						OldPath:      new("foo.old"),
+						NewPath:      new(mockPath),
+						PositionType: new("text"),
+						NewLine:      new(int64(3)),
+						// Old file is gone so we don't have OldLine here at all
+					}),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "rule moved to a different file, old deleted, no diff",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary: reporter.NewSummary([]reporter.Report{
+				{
+					Path: discovery.Path{
+						SymlinkTarget: mockPath,
+						Name:          mockPath,
+					},
+					Changes: &discovery.Changes{
+						OldPath: "foo.old",
+						Lines: git.LineNumbers{
+							{Before: 0, After: 2, Modified: true},
+							{Before: 0, After: 3, Modified: true},
+						},
+					},
+					Rule: mockFile.Groups[0].Rules[0],
+					Problem: checks.Problem{
+						Reporter: "a",
+						Summary:  "foo error1",
+						Details:  "foo details",
+						Diagnostics: []diags.Diagnostic{
+							{
+								Message: "Diagnostic message",
+								Pos: diags.PositionRanges{
+									{
+										Line:        2,
+										FirstColumn: 3,
+										LastColumn:  24,
+									},
+									{
+										Line:        3,
+										FirstColumn: 3,
+										LastColumn:  15,
+									},
+								},
+								FirstColumn: 1,
+								LastColumn:  24,
+								Kind:        diags.Issue,
+							},
+						},
+						Lines:    diags.LineRange{First: 1, Last: 3},
+						Severity: checks.Fatal,
+						Anchor:   checks.AnchorAfter,
+					},
+				},
+			}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body: discBodyWithDiag("a", "foo error1", "foo details", "```yaml\n2 | - record: target is down\n3 |   expr: up == 0\n      ^^\n```", "Diagnostic message"),
+					Position: new(gitlab.PositionOptions{
+						BaseSHA:      new("base"),
+						StartSHA:     new("start"),
+						HeadSHA:      new("head"),
+						OldPath:      new("foo.old"),
+						NewPath:      new(mockPath),
+						PositionType: new("text"),
+						NewLine:      new(int64(3)),
+						// Old file is gone so we don't have OldLine here at all
+					}),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "deleted rule, no diff",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary: reporter.NewSummary([]reporter.Report{
+				{
+					Path: discovery.Path{
+						SymlinkTarget: mockPath,
+						Name:          mockPath,
+					},
+					Changes: &discovery.Changes{
+						OldPath: "",
+						Lines: git.LineNumbers{
+							{Before: 0, After: 2, Modified: true},
+							{Before: 0, After: 3, Modified: true},
+						},
+					},
+					Rule: mockFile.Groups[0].Rules[0],
+					Problem: checks.Problem{
+						Reporter:    "a",
+						Summary:     "foo error1",
+						Details:     "foo details",
+						Diagnostics: []diags.Diagnostic{},
+						Lines:       diags.LineRange{First: 1, Last: 3},
+						Severity:    checks.Fatal,
+						Anchor:      checks.AnchorBefore,
+					},
+				},
+			}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body: discBody("a", "foo error1", "foo details"),
+					Position: new(gitlab.PositionOptions{
+						BaseSHA:      new("base"),
+						StartSHA:     new("start"),
+						HeadSHA:      new("head"),
+						OldPath:      new(mockPath),
+						NewPath:      new(mockPath),
+						PositionType: new("text"),
+						NewLine:      new(int64(3)),
+					}),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "problem line outside diff, moved to nearest changed line",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary: reporter.NewSummary([]reporter.Report{
+				{
+					Path: discovery.Path{
+						SymlinkTarget: mockPath,
+						Name:          mockPath,
+					},
+					Changes: &discovery.Changes{
+						OldPath: "",
+						Lines: git.LineNumbers{
+							{Before: 0, After: 4, Modified: true},
+							{Before: 0, After: 5, Modified: true},
+						},
+					},
+					Rule: mockFile.Groups[0].Rules[0],
+					Problem: checks.Problem{
+						Reporter:    "a",
+						Summary:     "foo error1",
+						Details:     "foo details",
+						Diagnostics: []diags.Diagnostic{},
+						Lines:       diags.LineRange{First: 1, Last: 3},
+						Severity:    checks.Fatal,
+						Anchor:      checks.AnchorAfter,
+					},
+				},
+			}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body: discBody("a", "foo error1", "foo details"),
+					Position: new(gitlab.PositionOptions{
+						BaseSHA:      new("base"),
+						StartSHA:     new("start"),
+						HeadSHA:      new("head"),
+						OldPath:      new(mockPath),
+						NewPath:      new(mockPath),
+						PositionType: new("text"),
+						NewLine:      new(int64(4)),
+					}),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "no diff lines at all, falls back to general comment",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary: reporter.NewSummary([]reporter.Report{
+				{
+					Path: discovery.Path{
+						SymlinkTarget: mockPath,
+						Name:          mockPath,
+					},
+					Changes: &discovery.Changes{
+						OldPath: "",
+						Lines:   git.LineNumbers{},
+					},
+					Rule: mockFile.Groups[0].Rules[0],
+					Problem: checks.Problem{
+						Reporter:    "a",
+						Summary:     "foo error1",
+						Details:     "foo details",
+						Diagnostics: []diags.Diagnostic{},
+						Lines:       diags.LineRange{First: 22, Last: 22},
+						Severity:    checks.Fatal,
+						Anchor:      checks.AnchorAfter,
+					},
+				},
+			}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body: discBody("a", "foo error1", "foo details"),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "symlink target outside diff",
+			timeout:     time.Minute,
+			maxComments: 1,
+			// The merge request adds mockLink, while the problem belongs to
+			// mockPath, which is not in the merge request diff.
+			summary: reporter.NewSummary([]reporter.Report{
+				{
+					Path: discovery.Path{
+						Name:          mockLink,
+						SymlinkTarget: mockPath,
+					},
+					Changes: &discovery.Changes{
+						OldPath:   "",
+						Lines:     git.MakeLineRangeFromTo(1, 4, git.LinesAfter),
+						IsSymlink: true,
+					},
+					Rule: mockFile.Groups[0].Rules[1],
+					Problem: checks.Problem{
+						Reporter:    "foo",
+						Summary:     "foo error",
+						Details:     "foo details",
+						Diagnostics: []diags.Diagnostic{},
+						Lines:       diags.LineRange{First: 4, Last: 4},
+						Severity:    checks.Warning,
+						Anchor:      checks.AnchorAfter,
+					},
+				},
+			}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body: symlinkedDiscBody(
+						"foo",
+						"foo error",
+						"foo details",
+						mockLink,
+					),
+					Position: discPosition(mockLink, 1),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+		{
+			description: "deleted line moved to nearest deleted line",
+			timeout:     time.Minute,
+			maxComments: 1,
+			summary: reporter.NewSummary([]reporter.Report{
+				{
+					Path: discovery.Path{
+						SymlinkTarget: mockPath,
+						Name:          mockPath,
+					},
+					Changes: &discovery.Changes{
+						OldPath: "",
+						Lines: git.LineNumbers{
+							{Before: 5, After: 0},
+						},
+					},
+					Rule: mockFile.Groups[0].Rules[0],
+					Problem: checks.Problem{
+						Reporter:    "a",
+						Summary:     "foo error1",
+						Details:     "foo details",
+						Diagnostics: []diags.Diagnostic{},
+						Lines:       diags.LineRange{First: 3, Last: 3},
+						Severity:    checks.Fatal,
+						Anchor:      checks.AnchorBefore,
+					},
+				},
+			}),
+			mock: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet(apiUser).ReturnJSON(gitlab.User{ID: 123})
+				s.ExpectGet(apiOpenMergeRequests).ReturnJSON([]gitlab.BasicMergeRequest{
+					{IID: 1},
+				})
+				s.ExpectGet(apiVersions(1)).ReturnJSON([]gitlab.MergeRequestDiffVersion{
+					{ID: 2, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+					{ID: 1, HeadCommitSHA: "head", BaseCommitSHA: "base", StartCommitSHA: "start"},
+				})
+				s.ExpectGet(apiDiscussions(1, true)).ReturnJSON([]gitlab.Discussion{})
+				// Problem on old line 3, but only old line 5 is in the diff.
+				// Moved to nearest deleted line: 5.
+				s.ExpectPost(apiDiscussions(1, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
+					Body: discBody("a", "foo error1", "foo details"),
+					Position: new(gitlab.PositionOptions{
+						BaseSHA:      new("base"),
+						StartSHA:     new("start"),
+						HeadSHA:      new("head"),
+						OldPath:      new(mockPath),
+						NewPath:      new(mockPath),
+						PositionType: new("text"),
+						OldLine:      new(int64(5)),
+					}),
+				}).ReturnJSON(gitlab.Response{})
+			}),
+			errorHandler: func(err error) error {
+				return err
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			slog.SetDefault(slogt.New(t))
+			srv := tc.mock(t)
+			t.Cleanup(srv.Close)
+			r, err := reporter.NewGitLabReporter(
+				"v0.0.0",
+				"fakeBranch",
+				srv.URL(),
+				tc.timeout,
+				"fakeToken",
+				123,
+				tc.maxComments,
+			)
+			if err == nil {
+				err = reporter.Submit(t.Context(), tc.summary, r, tc.showDuplicates)
+				require.NoError(t, tc.errorHandler(err))
+			}
+			require.NoError(t, tc.errorHandler(err))
+		})
+	}
+}
+
+func TestGitLabReporterCommentLine(t *testing.T) {
+	type testCaseT struct {
+		description     string
+		changes         git.LineNumbers
+		problemLine     int
+		expectedNewLine int
+		expectedOldLine int
+		anchor          checks.Anchor
+	}
+
+	p := parser.NewParser(parser.DefaultOptions)
+	mockFile := p.Parse(strings.NewReader(`
+- record: target is down
+  expr: up == 0
+- record: sum errors
+  expr: sum(errors) by (job)
+`))
+
+	errorHandler := func(err error) error { return err }
+
+	testCases := []testCaseT{
+		{
+			description:     "comment on new line",
+			problemLine:     18,
+			changes:         git.LineNumbers{{Before: 0, After: 18, Modified: true}},
+			expectedNewLine: 18,
+		},
+		{
+			description:     "comment on removed line",
+			problemLine:     145,
+			changes:         git.LineNumbers{{Before: 145, After: 145}},
+			expectedOldLine: 145,
+			anchor:          checks.AnchorBefore,
+		},
+		{
+			description:     "unmodified line with same old and new",
+			problemLine:     10,
+			changes:         git.LineNumbers{{Before: 10, After: 10}},
+			expectedNewLine: 10,
+			expectedOldLine: 10,
+		},
+		{
+			description:     "unmodified line after added line",
+			problemLine:     19,
+			changes:         git.LineNumbers{{Before: 18, After: 19}},
+			expectedNewLine: 19,
+			expectedOldLine: 18,
+		},
+		{
+			description:     "unmodified line before removed line",
+			problemLine:     143,
+			changes:         git.LineNumbers{{Before: 142, After: 143}},
+			expectedNewLine: 143,
+			expectedOldLine: 142,
+		},
+		{
+			description: "moved to modified replacement line sets only NewLine",
+			problemLine: 17,
+			changes: git.LineNumbers{
+				{Before: 24, After: 17, Modified: false},
+				{Before: 27, After: 20, Modified: true},
+			},
+			expectedNewLine: 20,
+		},
+		{
+			description:     "no After lines, falls back to Before line",
+			problemLine:     22,
+			changes:         git.LineNumbers{{Before: 10, After: 0}},
+			expectedOldLine: 10,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			slog.SetDefault(slogt.New(t))
+
+			srv := httptest.NewServer(getHTTPHandlerForCommentingLines(
+				tc.expectedNewLine, tc.expectedOldLine, t,
+			))
+			t.Cleanup(srv.Close)
+
+			r, err := reporter.NewGitLabReporter(
+				"v0.0.0",
+				"fakeBranch",
+				srv.URL,
+				time.Minute,
+				"fakeToken",
+				123,
+				10,
+			)
+			if err == nil {
+				summary := reporter.NewSummary([]reporter.Report{
+					{
+						Path: discovery.Path{
+							Name:          "foo.txt",
+							SymlinkTarget: "foo.txt",
+						},
+						Changes: &discovery.Changes{
+							OldPath: "",
+							Lines:   tc.changes,
+						},
+						Rule: mockFile.Groups[0].Rules[1],
+						Problem: checks.Problem{
+							Lines: diags.LineRange{
+								First: tc.problemLine,
+								Last:  tc.problemLine,
+							},
+							Reporter: "mock",
+							Summary:  "syntax error",
+							Details:  "syntax details",
+							Severity: checks.Fatal,
+							Anchor:   tc.anchor,
+						},
+					},
+				})
+				err = reporter.Submit(t.Context(), summary, r, false)
+			}
+			require.NoError(t, errorHandler(err))
+		})
+	}
+}
+
+func getHTTPHandlerForCommentingLines(expectedNewLine, expectedOldLine int, t *testing.T) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		switch r.URL.Path {
+		case "/api/v4/user":
+			if r.Method == http.MethodGet {
+				_, _ = w.Write([]byte(`{"id": 123}`))
+			}
+		case "/api/v4/projects/123/merge_requests":
+			if r.Method == http.MethodGet {
+				_, _ = w.Write([]byte(`[{"iid":1}]`))
+			}
+		case "/api/v4/projects/123/merge_requests/1/versions":
+			if r.Method == http.MethodGet {
+				_, _ = w.Write([]byte(`[
+	{"id": 2,"head_commit_sha": "head","base_commit_sha": "base","start_commit_sha": "start"},
+	{"id": 1,"head_commit_sha": "head","base_commit_sha": "base","start_commit_sha": "start"}
+	]`))
+			}
+		case "/api/v4/projects/123/merge_requests/1/discussions":
+			if r.Method == http.MethodGet {
+				_, _ = w.Write([]byte(`[]`))
+			} else {
+				body, _ := io.ReadAll(r.Body)
+				b := strings.TrimSpace(strings.TrimRight(string(body), "\n\t\r"))
+
+				str := ""
+				if expectedNewLine != 0 {
+					str = `"new_line":` + strconv.Itoa(expectedNewLine)
+				}
+				if expectedOldLine != 0 {
+					if str != "" {
+						str += ","
+					}
+					str += `"old_line":` + strconv.Itoa(expectedOldLine)
+				}
+
+				expected := `{
+		"body":":stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n\u003cdetails\u003e\n\u003csummary\u003eMore information\u003c/summary\u003e\nsyntax details\n\u003c/details\u003e\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n\u003c!-- pint --\u003e",
+		"position":{
+			"base_sha":"base",
+			"head_sha":"head",
+			"start_sha":"start",
+			"new_path":"foo.txt",
+			"old_path":"foo.txt",
+			"position_type":"text",
+			` + str + `
+		}
+	}`
+				expected = strings.ReplaceAll(expected, "\n", "")
+				expected = strings.ReplaceAll(expected, "\t", "")
+				if diff := cmp.Diff(b, expected); diff != "" {
+					t.Errorf("Unexpected comment: (-want +got):\n%s", diff)
+					t.FailNow()
+				}
+				_, _ = w.Write([]byte(`{}`))
+			}
+		}
+	})
+}

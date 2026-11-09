@@ -1,0 +1,360 @@
+package discovery
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"log/slog"
+	"regexp"
+	"slices"
+	"sort"
+	"strings"
+
+	"github.com/cloudflare/pint/internal/git"
+	"github.com/cloudflare/pint/internal/parser"
+)
+
+func NewGitBranchFinder(
+	gitCmd git.CommandRunner,
+	filter git.PathFilter,
+	baseBranch string,
+	maxCommits int,
+	opts parser.Options,
+	allowedOwners []*regexp.Regexp,
+) GitBranchFinder {
+	return GitBranchFinder{
+		gitCmd:        gitCmd,
+		filter:        filter,
+		baseBranch:    baseBranch,
+		maxCommits:    maxCommits,
+		opts:          opts,
+		allowedOwners: allowedOwners,
+	}
+}
+
+type GitBranchFinder struct {
+	gitCmd        git.CommandRunner
+	baseBranch    string
+	filter        git.PathFilter
+	allowedOwners []*regexp.Regexp
+	maxCommits    int
+	opts          parser.Options
+}
+
+func (f GitBranchFinder) Find(ctx context.Context, allEntries []*Entry) (entries []*Entry, err error) {
+	changes, err := git.Changes(ctx, f.gitCmd, f.baseBranch, f.filter)
+	if err != nil {
+		return nil, err
+	}
+
+	totalCommits := countCommits(changes)
+	if totalCommits > f.maxCommits {
+		return nil, fmt.Errorf("number of commits to check (%d) is higher than maxCommits (%d), exiting", totalCommits, f.maxCommits)
+	}
+
+	shouldSkip, err := f.shouldSkipAllChecks(ctx, changes)
+	if err != nil {
+		return nil, err
+	}
+	if shouldSkip {
+		return nil, nil
+	}
+
+	for _, change := range changes {
+		beforeParser := parser.NewParser(
+			f.opts.WithStrict(!f.filter.IsRelaxed(change.Path.Before.Name)),
+		)
+		afterParser := parser.NewParser(
+			f.opts.WithStrict(!f.filter.IsRelaxed(change.Path.After.Name)),
+		)
+		var oldPath string
+		if change.Path.Before.Name != change.Path.After.Name {
+			oldPath = change.Path.Before.Name
+		}
+
+		var fileChanges *Changes
+		if len(change.Body.Lines) > 0 || oldPath != "" {
+			fileChanges = &Changes{
+				Lines:     change.Body.Lines,
+				OldPath:   oldPath,
+				IsSymlink: change.Path.After.Type == git.Symlink,
+			}
+		}
+
+		var entriesBefore, entriesAfter []*Entry
+		entriesBefore = readRules(
+			change.Path.Before.EffectivePath(),
+			change.Path.Before.Name,
+			bytes.NewReader(change.Body.Before),
+			beforeParser,
+			nil,
+			fileChanges,
+		)
+		entriesAfter = readRules(
+			change.Path.After.EffectivePath(),
+			change.Path.After.Name,
+			bytes.NewReader(change.Body.After),
+			afterParser,
+			f.allowedOwners,
+			fileChanges,
+		)
+
+		failedEntries := entriesWithPathErrors(entriesAfter)
+
+		slog.LogAttrs(
+			ctx, slog.LevelDebug,
+			"Parsing git file change",
+			slog.Any("commits", change.Commits),
+			slog.String("before.path", change.Path.Before.Name),
+			slog.String("before.target", change.Path.Before.SymlinkTarget),
+			slog.Any("before.type", change.Path.Before.Type),
+			slog.Int("before.entries", len(entriesBefore)),
+			slog.String("after.path", change.Path.After.Name),
+			slog.String("after.target", change.Path.After.SymlinkTarget),
+			slog.Any("after.type", change.Path.After.Type),
+			slog.Int("after.entries", len(entriesAfter)),
+			slog.Any("modifiedLines", change.Body.Lines),
+		)
+		for _, me := range matchEntries(entriesBefore, entriesAfter) {
+			switch {
+			case !me.hasBefore && me.hasAfter:
+				me.after.State = Added
+				slog.LogAttrs(
+					ctx, slog.LevelDebug,
+					"Rule added on HEAD branch",
+					slog.String("name", me.after.Rule.Name()),
+					slog.String("state", me.after.State.String()),
+					slog.String("path", me.after.Path.Name),
+					slog.Any("ruleLines", me.after.Rule.Lines),
+				)
+				entries = append(entries, me.after)
+			case me.hasBefore && me.hasAfter:
+				switch {
+				case me.isIdentical && !me.wasMoved:
+					me.after.State = Noop
+					slog.LogAttrs(
+						ctx, slog.LevelDebug,
+						"Rule content was not modified on HEAD, identical rule present before",
+						slog.String("name", me.after.Rule.Name()),
+						slog.Any("lines", me.after.Rule.Lines),
+					)
+				case me.wasMoved:
+					me.after.State = Moved
+					slog.LogAttrs(
+						ctx, slog.LevelDebug,
+						"Rule content was not modified on HEAD but the file was moved or renamed",
+						slog.String("name", me.after.Rule.Name()),
+						slog.Any("lines", me.after.Rule.Lines),
+					)
+				default:
+					me.after.State = Modified
+					slog.LogAttrs(
+						ctx, slog.LevelDebug,
+						"Rule modified on HEAD branch",
+						slog.String("name", me.after.Rule.Name()),
+						slog.String("state", me.after.State.String()),
+						slog.String("path", me.after.Path.Name),
+						slog.Any("ruleLines", me.after.Rule.Lines),
+					)
+				}
+				entries = append(entries, me.after)
+			case me.hasBefore && !me.hasAfter && len(failedEntries) == 0:
+				me.before.State = Removed
+				slog.LogAttrs(
+					ctx, slog.LevelDebug,
+					"Rule removed on HEAD branch",
+					slog.String("name", me.before.Rule.Name()),
+					slog.String("state", me.before.State.String()),
+					slog.String("path", me.before.Path.Name),
+					slog.Any("ruleLines", me.before.Rule.Lines),
+				)
+				entries = append(entries, me.before)
+			case me.hasBefore && !me.hasAfter && len(failedEntries) > 0:
+				slog.LogAttrs(
+					context.Background(), slog.LevelDebug,
+					"Rule not present on HEAD branch but there are parse errors",
+					slog.String("name", me.before.Rule.Name()),
+					slog.String("state", me.before.State.String()),
+					slog.String("path", me.before.Path.Name),
+					slog.Any("ruleLines", me.before.Rule.Lines),
+				)
+			}
+		}
+	}
+
+	for _, entry := range addSymlinkedEntries(entries) {
+		if f.filter.IsPathAllowed(entry.Path.Name) {
+			entries = append(entries, entry)
+		}
+	}
+
+	var found bool
+	var changedEntries int
+	for _, entry := range entries {
+		if entry.State == Added || entry.State == Modified || entry.State == Moved || entry.State == Removed {
+			changedEntries++
+		}
+		found = false
+		if entry.State == Removed {
+			goto NEXT
+		}
+		for i, globEntry := range allEntries {
+			if entry.Path.Name == globEntry.Path.Name && entry.Rule.IsSame(globEntry.Rule) {
+				allEntries[i].State = entry.State
+				allEntries[i].Changes = entry.Changes
+				found = true
+				break
+			}
+		}
+	NEXT:
+		if !found {
+			allEntries = append(allEntries, entry)
+		}
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "Git file changes parsed",
+		slog.Int("files", len(changes)),
+		slog.Int("entries", changedEntries),
+		slog.Int("commits", totalCommits),
+		slog.Int("maxCommits", f.maxCommits),
+	)
+	return allEntries, nil
+}
+
+func (f GitBranchFinder) shouldSkipAllChecks(ctx context.Context, changes []*git.FileChange) (bool, error) {
+	commits := map[string]struct{}{}
+	for _, change := range changes {
+		for _, commit := range change.Commits {
+			commits[commit] = struct{}{}
+		}
+	}
+
+	for commit := range commits {
+		msg, err := git.CommitMessage(ctx, f.gitCmd, commit)
+		if err != nil {
+			return false, fmt.Errorf("failed to get commit message for %s: %w", commit, err)
+		}
+		for _, comment := range []string{"[skip ci]", "[no ci]"} {
+			if strings.Contains(msg, comment) {
+				slog.LogAttrs(context.Background(), slog.LevelInfo,
+					fmt.Sprintf("Found a commit with '%s', skipping all checks", comment),
+					slog.String("commit", commit))
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
+}
+
+type matchedEntry struct {
+	before      *Entry
+	after       *Entry
+	hasBefore   bool
+	hasAfter    bool
+	isIdentical bool
+	wasMoved    bool
+}
+
+func matchEntries(before, after []*Entry) (ml []matchedEntry) {
+	for _, a := range after {
+		slog.LogAttrs(
+			context.Background(), slog.LevelDebug,
+			"Matching HEAD rule",
+			slog.String("path", a.Path.Name),
+			slog.String("source", a.Path.SymlinkTarget),
+			slog.String("name", a.Rule.Name()),
+		)
+
+		m := matchedEntry{after: a, hasAfter: true} // nolint: exhaustruct_v5
+		beforeSwap := make([]*Entry, 0, len(before))
+		var matches []*Entry
+		var matched bool
+
+		for _, b := range before {
+			if !matched && a.Rule.Name() != "" && a.Rule.IsIdentical(b.Rule) {
+				m.before = b
+				m.hasBefore = true
+				m.isIdentical = isEntryIdentical(b, a)
+				m.wasMoved = a.Path.Name != b.Path.Name
+				matched = true
+				slog.LogAttrs(
+					context.Background(), slog.LevelDebug,
+					"Found identical rule on before & after",
+					slog.Bool("identical", m.isIdentical),
+					slog.Bool("moved", m.wasMoved),
+				)
+			} else {
+				beforeSwap = append(beforeSwap, b)
+			}
+		}
+		before = beforeSwap
+
+		if !matched {
+			before, matches = findRulesByName(before, a.Rule.Name(), a.Rule.Type())
+			switch len(matches) {
+			case 0:
+			case 1:
+				m.before = matches[0]
+				m.hasBefore = true
+				m.wasMoved = a.Path.Name != matches[0].Path.Name
+				slog.LogAttrs(context.Background(), slog.LevelDebug, "Found rule with same name on before & after")
+			default:
+				slog.LogAttrs(
+					context.Background(), slog.LevelDebug,
+					"Found multiple rules with same name on before & after",
+					slog.Int("matches", len(matches)),
+				)
+				before = append(before, matches...)
+			}
+		}
+
+		ml = append(ml, m)
+	}
+
+	for _, b := range before {
+		ml = append(ml, matchedEntry{before: b, hasBefore: true}) // nolint: exhaustruct_v5
+	}
+
+	return ml
+}
+
+func isEntryIdentical(b, a *Entry) bool {
+	if !slices.Equal(sort.StringSlice(b.DisabledChecks), sort.StringSlice(a.DisabledChecks)) {
+		slog.LogAttrs(context.Background(), slog.LevelDebug, "List of disabled checks was modified",
+			slog.Any("before", sort.StringSlice(b.DisabledChecks)),
+			slog.Any("after", sort.StringSlice(a.DisabledChecks)))
+		return false
+	}
+	return true
+}
+
+func findRulesByName(entries []*Entry, name string, ruleType parser.RuleType) (nomatch, match []*Entry) {
+	for _, entry := range entries {
+		if entry.PathError == nil && entry.Rule.Type() == ruleType && entry.Rule.Name() == name {
+			match = append(match, entry)
+		} else {
+			nomatch = append(nomatch, entry)
+		}
+	}
+	return nomatch, match
+}
+
+func countCommits(changes []*git.FileChange) int {
+	commits := map[string]struct{}{}
+	for _, change := range changes {
+		for _, commit := range change.Commits {
+			commits[commit] = struct{}{}
+		}
+	}
+	return len(commits)
+}
+
+func entriesWithPathErrors(entries []*Entry) (match []*Entry) {
+	for _, entry := range entries {
+		if entry.PathError != nil {
+			match = append(match, entry)
+		}
+	}
+	return match
+}

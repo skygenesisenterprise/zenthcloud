@@ -1,0 +1,531 @@
+package reporter
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
+	"strconv"
+	"strings"
+	"time"
+
+	gitlab "gitlab.com/gitlab-org/api/client-go/v3"
+
+	"github.com/cloudflare/pint/internal/output"
+)
+
+type gitlabLogger struct{}
+
+func (l gitlabLogger) Error(msg string, keysAndValues ...any) {
+	slog.LogAttrs(context.Background(), slog.LevelError, msg, keysAndValuesToAttrs(keysAndValues...)...)
+}
+
+func (l gitlabLogger) Info(msg string, keysAndValues ...any) {
+	slog.LogAttrs(context.Background(), slog.LevelInfo, msg, keysAndValuesToAttrs(keysAndValues...)...)
+}
+
+func (l gitlabLogger) Debug(msg string, keysAndValues ...any) {
+	slog.LogAttrs(context.Background(), slog.LevelDebug, msg, keysAndValuesToAttrs(keysAndValues...)...)
+}
+
+func (l gitlabLogger) Warn(msg string, keysAndValues ...any) {
+	slog.LogAttrs(context.Background(), slog.LevelWarn, msg, keysAndValuesToAttrs(keysAndValues...)...)
+}
+
+func keysAndValuesToAttrs(keysAndValues ...any) (attrs []slog.Attr) {
+	attrs = append(attrs, slog.String("reporter", "GitLab"))
+	var key string
+	var ok bool
+	for i, elem := range keysAndValues {
+		switch {
+		case i%2 == 0:
+			key, ok = elem.(string)
+		case ok && key != "":
+			attrs = append(attrs, slog.Any(key, elem))
+		}
+	}
+	return attrs
+}
+
+type gitlabMR struct {
+	version     *gitlab.MergeRequestDiffVersion
+	discussions []*gitlab.Discussion
+	userID      int64
+	mrID        int64
+}
+
+func (glmr gitlabMR) String() string {
+	return strconv.FormatInt(glmr.mrID, 10)
+}
+
+type gitlabComment struct {
+	discussionID string
+	baseSHA      string
+	headSHA      string
+	startSHA     string
+	noteID       int64
+}
+
+type GitLabReporter struct {
+	client      *gitlab.Client
+	version     string
+	branch      string
+	timeout     time.Duration
+	project     int64
+	maxComments int
+}
+
+func NewGitLabReporter(version, branch, uri string, timeout time.Duration, token string, project int64, maxComments int) (_ GitLabReporter, err error) {
+	slog.LogAttrs(
+		context.Background(), slog.LevelInfo,
+		"Will report problems to GitLab",
+		slog.String("uri", uri),
+		slog.String("timeout", output.HumanizeDuration(timeout)),
+		slog.String("branch", branch),
+		slog.Int64("project", project),
+		slog.Int("maxComments", maxComments),
+	)
+	gl := GitLabReporter{
+		client:      nil,
+		timeout:     timeout,
+		version:     version,
+		branch:      branch,
+		project:     project,
+		maxComments: maxComments,
+	}
+
+	options := []gitlab.ClientOptionFunc{
+		gitlab.WithCustomLeveledLogger(gitlabLogger{}),
+	}
+	if uri != "" {
+		options = append(options, gitlab.WithBaseURL(uri+"/api/v4"))
+	}
+
+	gl.client, err = gitlab.NewClient(token, options...)
+	if err != nil {
+		return gl, fmt.Errorf("failed to create a new GitLab client: %w", err)
+	}
+	return gl, nil
+}
+
+func (gl GitLabReporter) Describe() string {
+	return "GitLab"
+}
+
+func (gl GitLabReporter) Destinations(ctx context.Context) ([]any, error) {
+	userID, err := gl.getUserID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get GitLab user ID: %w", err)
+	}
+
+	ids, err := gl.getMRs(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get GitLab merge request details: %w", err)
+	}
+
+	dsts := make([]any, 0, len(ids))
+	for _, id := range ids {
+		slog.LogAttrs(ctx, slog.LevelInfo, "Found open GitLab merge request", slog.String("branch", gl.branch), slog.Int64("id", id))
+		dst := gitlabMR{
+			version:     nil,
+			discussions: nil,
+			userID:      userID,
+			mrID:        id,
+		}
+		if dst.version, err = gl.getVersions(ctx, id); err != nil {
+			return nil, fmt.Errorf("failed to get GitLab merge request versions: %w", err)
+		}
+		if dst.discussions, err = gl.getDiscussions(ctx, id); err != nil {
+			return nil, fmt.Errorf("failed to get GitLab merge request discussions: %w", err)
+		}
+		dsts = append(dsts, dst)
+	}
+	return dsts, nil
+}
+
+func (gl GitLabReporter) Summary(ctx context.Context, dst any, s Summary, pendingComments []PendingComment, errs []error) (err error) {
+	mr := dst.(gitlabMR)
+	if gl.maxComments > 0 && len(pendingComments) > gl.maxComments {
+		if err = gl.generalComment(ctx, mr, tooManyCommentsMsg(len(pendingComments), gl.maxComments)); err != nil {
+			errs = append(errs, fmt.Errorf("failed to create general comment: %w", err))
+		}
+	}
+	if len(errs) > 0 {
+		if err = gl.generalComment(ctx, mr, errsToComment(errs)); err != nil {
+			return fmt.Errorf("failed to create general comment: %w", err)
+		}
+	}
+	if details := makePrometheusDetailsComment(s); details != "" {
+		if err = gl.generalComment(ctx, mr, details); err != nil {
+			return fmt.Errorf("failed to create general comment: %w", err)
+		}
+	}
+	return nil
+}
+
+func (gl GitLabReporter) UserID(_ context.Context, dst any) (string, error) {
+	return strconv.FormatInt(dst.(gitlabMR).userID, 10), nil
+}
+
+func (gl GitLabReporter) List(_ context.Context, dst any) ([]ExistingComment, error) {
+	mr := dst.(gitlabMR)
+	comments := make([]ExistingComment, 0, len(mr.discussions))
+	for _, disc := range mr.discussions {
+		var c ExistingComment
+		for _, note := range disc.Notes {
+			if note.System {
+				goto NEXT
+			}
+			if note.Author.ID != mr.userID {
+				goto NEXT
+			}
+			if note.Position == nil {
+				// General comment, no path, line or commit information available.
+				comments = append(comments, ExistingComment{
+					id:     strconv.FormatInt(note.ID, 10),
+					path:   "",
+					text:   note.Body,
+					author: strconv.FormatInt(note.Author.ID, 10),
+					line:   0,
+					meta: gitlabComment{
+						discussionID: disc.ID,
+						noteID:       note.ID,
+						baseSHA:      "",
+						headSHA:      "",
+						startSHA:     "",
+					},
+					isGeneral: true,
+				})
+				goto NEXT
+			}
+			if note.Resolved {
+				goto NEXT
+			}
+			c = gl.noteToExisting(disc.ID, note)
+			break
+		}
+		if c.path != "" && c.line > 0 && c.meta != nil {
+			comments = append(comments, c)
+		}
+	NEXT:
+	}
+	return comments, nil
+}
+
+func (gl GitLabReporter) Create(ctx context.Context, dst any, comment PendingComment) error {
+	unresolved, err := gl.unresolveIfPresent(ctx, dst, comment)
+	if err != nil {
+		slog.LogAttrs(
+			ctx, slog.LevelWarn, "Failed to un-resolved existing comment, will create a new one",
+			slog.String("path", comment.path),
+			slog.Int("line", comment.line),
+			slog.Any("err", err),
+		)
+	}
+	if unresolved {
+		slog.LogAttrs(ctx, slog.LevelDebug, "Existing comment was un-resolved, skipping creating new one")
+		return nil
+	}
+
+	mr := dst.(gitlabMR)
+	opt := reportToGitLabDiscussion(comment, mr.version)
+	slog.LogAttrs(ctx, slog.LevelDebug, "Creating a new merge request discussion", loggifyDiscussion(opt)...)
+	reqCtx, cancel := context.WithTimeout(ctx, gl.timeout)
+	defer cancel()
+	_, _, err = gl.client.Discussions.CreateMergeRequestDiscussion(gl.project, mr.mrID, opt, gitlab.WithContext(reqCtx))
+	return err
+}
+
+func (gl GitLabReporter) Delete(ctx context.Context, dst any, comment ExistingComment) error {
+	mr := dst.(gitlabMR)
+	c := comment.meta.(gitlabComment)
+	slog.LogAttrs(
+		ctx, slog.LevelDebug, "Deleting stale merge request discussion note",
+		slog.String("discussion", c.discussionID),
+		slog.Int64("note", c.noteID),
+	)
+	reqCtx, cancel := context.WithTimeout(ctx, gl.timeout)
+	defer cancel()
+
+	_, _, err := gl.client.Discussions.ResolveMergeRequestDiscussion(
+		gl.project,
+		mr.mrID,
+		c.discussionID,
+		&gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(true)},
+		gitlab.WithContext(reqCtx),
+	)
+	return err
+}
+
+func (gl GitLabReporter) IsEqual(_ any, existing ExistingComment, pending PendingComment) bool {
+	if existing.path != pending.path {
+		return false
+	}
+	if existing.line != pending.line {
+		return false
+	}
+	return strings.Trim(existing.text, "\n") == strings.Trim(pending.text, "\n")
+}
+
+func (gl GitLabReporter) CanDelete(ExistingComment) bool {
+	return true
+}
+
+func (gl GitLabReporter) MaxComments() int {
+	return gl.maxComments
+}
+
+func (gl GitLabReporter) CanCreate(done int) bool {
+	return done < gl.maxComments
+}
+
+func (gl *GitLabReporter) getUserID(ctx context.Context) (int64, error) {
+	slog.LogAttrs(ctx, slog.LevelDebug, "Getting current GitLab user details")
+	ctx, cancel := context.WithTimeout(ctx, gl.timeout)
+	defer cancel()
+	user, _, err := gl.client.Users.CurrentUser(gitlab.WithContext(ctx))
+	if err != nil {
+		return 0, err
+	}
+	return user.ID, nil
+}
+
+func (gl *GitLabReporter) getMRs(ctx context.Context) (ids []int64, err error) {
+	slog.LogAttrs(ctx, slog.LevelDebug, "Finding merge requests for current branch", slog.String("branch", gl.branch))
+	mrs, err := getGitLabPaginated(func(pageNum int64) ([]*gitlab.BasicMergeRequest, *gitlab.Response, error) {
+		reqCtx, cancel := context.WithTimeout(ctx, gl.timeout)
+		defer cancel()
+		return gl.client.MergeRequests.ListProjectMergeRequests(gl.project, &gitlab.ListProjectMergeRequestsOptions{
+			State:        new("opened"),
+			SourceBranch: new(gl.branch),
+			Page:         pageNum,
+		}, gitlab.WithContext(reqCtx))
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, mr := range mrs {
+		ids = append(ids, mr.IID)
+	}
+	return ids, nil
+}
+
+func (gl *GitLabReporter) getVersions(ctx context.Context, mrNum int64) (*gitlab.MergeRequestDiffVersion, error) {
+	slog.LogAttrs(ctx, slog.LevelDebug, "Getting the list of merge request versions", slog.Int64("mr", mrNum))
+	vers, err := getGitLabPaginated(func(pageNum int64) ([]*gitlab.MergeRequestDiffVersion, *gitlab.Response, error) {
+		reqCtx, cancel := context.WithTimeout(ctx, gl.timeout)
+		defer cancel()
+		return gl.client.MergeRequests.GetMergeRequestDiffVersions(gl.project, mrNum, &gitlab.GetMergeRequestDiffVersionsOptions{
+			Page: pageNum,
+		}, gitlab.WithContext(reqCtx))
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(vers) == 0 {
+		return nil, errors.New("no merge request versions found")
+	}
+	return vers[0], nil
+}
+
+func (gl *GitLabReporter) getDiscussions(ctx context.Context, mrNum int64) ([]*gitlab.Discussion, error) {
+	slog.LogAttrs(ctx, slog.LevelDebug, "Getting the list of merge request discussions", slog.Int64("mr", mrNum))
+	discs, err := getGitLabPaginated(func(pageNum int64) ([]*gitlab.Discussion, *gitlab.Response, error) {
+		reqCtx, cancel := context.WithTimeout(ctx, gl.timeout)
+		defer cancel()
+		return gl.client.Discussions.ListMergeRequestDiscussions(gl.project, mrNum, &gitlab.ListMergeRequestDiscussionsOptions{
+			Page: pageNum,
+		}, gitlab.WithContext(reqCtx))
+	})
+	return discs, err
+}
+
+func (gl GitLabReporter) generalComment(ctx context.Context, mr gitlabMR, msg string) (err error) {
+	slog.LogAttrs(ctx, slog.LevelDebug, "Creating a PR comment", slog.String("body", msg))
+
+	for _, disc := range mr.discussions {
+		for _, note := range disc.Notes {
+			if note.System {
+				continue
+			}
+			if note.Author.ID != mr.userID {
+				continue
+			}
+			if !hasPintMarker(note.Body) {
+				continue
+			}
+			if note.Position != nil {
+				continue
+			}
+			if removePintMarker(note.Body) == msg {
+				slog.LogAttrs(ctx, slog.LevelDebug, "Comment already exits", slog.String("body", msg))
+				return nil
+			}
+		}
+	}
+
+	reqCtx, cancel := context.WithTimeout(ctx, gl.timeout)
+	defer cancel()
+	opt := gitlab.CreateMergeRequestDiscussionOptions{Body: new(AddPintMarker(msg))}
+	_, _, err = gl.client.Discussions.CreateMergeRequestDiscussion(gl.project, mr.mrID, &opt, gitlab.WithContext(reqCtx))
+	return err
+}
+
+func (gl GitLabReporter) noteToExisting(discID string, note *gitlab.Note) (c ExistingComment) {
+	if note.Position.NewPath != "" {
+		c.path = note.Position.NewPath
+	} else {
+		c.path = note.Position.OldPath
+	}
+	if note.Position.NewLine > 0 {
+		c.line = int(note.Position.NewLine) // FIXME int64 -> int
+	} else {
+		c.line = int(note.Position.OldLine) // FIXME int64 -> int
+	}
+	c.id = strconv.FormatInt(note.ID, 10)
+	c.text = note.Body
+	c.author = strconv.FormatInt(note.Author.ID, 10)
+	c.meta = gitlabComment{
+		discussionID: discID,
+		noteID:       note.ID,
+		baseSHA:      note.Position.BaseSHA,
+		headSHA:      note.Position.HeadSHA,
+		startSHA:     note.Position.StartSHA,
+	}
+	return c
+}
+
+func (gl GitLabReporter) unresolveIfPresent(ctx context.Context, dst any, comment PendingComment) (_ bool, err error) {
+	mr := dst.(gitlabMR)
+	for _, disc := range mr.discussions {
+		var c ExistingComment
+		for _, note := range disc.Notes {
+			if note.System {
+				continue
+			}
+			if note.Author.ID != mr.userID {
+				continue
+			}
+			if note.Position == nil {
+				continue
+			}
+			if !note.Resolved {
+				continue
+			}
+			c = gl.noteToExisting(disc.ID, note)
+			if gl.IsEqual(dst, c, comment) {
+				meta := c.meta.(gitlabComment)
+				slog.LogAttrs(
+					ctx, slog.LevelDebug, "Un-resolving merge request discussion note",
+					slog.String("discussion", meta.discussionID),
+					slog.Int64("note", meta.noteID),
+				)
+				reqCtx, cancel := context.WithTimeout(ctx, gl.timeout)
+				defer cancel()
+
+				_, _, err = gl.client.Discussions.ResolveMergeRequestDiscussion(
+					gl.project,
+					mr.mrID,
+					meta.discussionID,
+					&gitlab.ResolveMergeRequestDiscussionOptions{Resolved: new(false)},
+					gitlab.WithContext(reqCtx),
+				)
+				return err == nil, err
+			}
+		}
+	}
+	return false, nil
+}
+
+func reportToGitLabDiscussion(pending PendingComment, ver *gitlab.MergeRequestDiffVersion) *gitlab.CreateMergeRequestDiscussionOptions {
+	// The generated comment must follow these rules:
+	// https://docs.gitlab.com/api/discussions/#create-a-new-thread-in-the-merge-request-diff
+
+	oldPath := pending.path
+	if pending.oldPath != "" {
+		oldPath = pending.oldPath
+	}
+	d := gitlab.CreateMergeRequestDiscussionOptions{
+		Body: new(pending.text),
+		Position: &gitlab.PositionOptions{
+			PositionType: new("text"),
+			BaseSHA:      new(ver.BaseCommitSHA),
+			HeadSHA:      new(ver.HeadCommitSHA),
+			StartSHA:     new(ver.StartCommitSHA),
+			OldPath:      new(oldPath),
+			NewPath:      new(pending.path),
+		},
+	}
+
+	switch {
+	case pending.isGeneral:
+		// No suitable diff line found, post as a general comment.
+		d.Position = nil
+	case pending.isBefore:
+		// Deleted line, comment on the old side.
+		d.Position.OldLine = new(int64(pending.line))
+		d.Position.NewLine = nil
+	case pending.oldLine == 0:
+		// Added line, no old-side mapping.
+		d.Position.NewLine = new(int64(pending.line))
+	case pending.isModified:
+		// Modified line, comment on the new side only.
+		d.Position.NewLine = new(int64(pending.line))
+	default:
+		// Unmodified context line, both sides needed.
+		d.Position.NewLine = new(int64(pending.line))
+		d.Position.OldLine = new(int64(pending.oldLine))
+	}
+
+	return &d
+}
+
+func getGitLabPaginated[T any](searchFunc func(pageNum int64) ([]T, *gitlab.Response, error)) ([]T, error) {
+	items := []T{}
+	var pageNum int64 = 1
+	for {
+		tempItems, response, err := searchFunc(pageNum)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, tempItems...)
+		if response.NextPage == 0 {
+			break
+		}
+		pageNum = response.NextPage
+	}
+	return items, nil
+}
+
+func loggifyDiscussion(opt *gitlab.CreateMergeRequestDiscussionOptions) (attrs []slog.Attr) {
+	if opt.Position == nil {
+		return nil
+	}
+	if opt.Position.BaseSHA != nil {
+		attrs = append(attrs, slog.String("base_sha", *opt.Position.BaseSHA))
+	}
+	if opt.Position.HeadSHA != nil {
+		attrs = append(attrs, slog.String("head_sha", *opt.Position.HeadSHA))
+	}
+	if opt.Position.StartSHA != nil {
+		attrs = append(attrs, slog.String("start_sha", *opt.Position.StartSHA))
+	}
+	if opt.Position.OldPath != nil {
+		attrs = append(attrs, slog.String("old_path", *opt.Position.OldPath))
+	}
+	if opt.Position.NewPath != nil {
+		attrs = append(attrs, slog.String("new_path", *opt.Position.NewPath))
+	}
+	if opt.Position.OldLine != nil {
+		attrs = append(attrs, slog.Int64("old_line", *opt.Position.OldLine))
+	}
+	if opt.Position.NewLine != nil {
+		attrs = append(attrs, slog.Int64("new_line", *opt.Position.NewLine))
+	}
+	return attrs
+}
+
+func tooManyCommentsMsg(nr, m int) string {
+	return fmt.Sprintf(`This pint run would create %d comment(s), which is more than the limit configured for pint (%d).
+%d comment(s) were skipped and won't be visible on this PR.`, nr, m, nr-m)
+}

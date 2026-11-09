@@ -1,0 +1,38 @@
+exec bash -x ./test.sh &
+
+exec pint watch --listen=127.0.0.1:6049 --min-severity=warning --pidfile=pint.pid glob rules
+cmp curl.txt metrics.txt
+
+-- test.sh --
+sleep 5
+curl -s http://127.0.0.1:6049/metrics | grep -E '^pint_problem' > curl.txt
+cat pint.pid | xargs kill
+
+-- rules/1.yml --
+- record: broken
+  expr: foo / count())
+
+- record: aggregate
+  expr: sum(foo) without(job)
+
+- alert: comparison
+  expr: foo
+
+-- .pint.hcl --
+parser {
+  relaxed = [".*"]
+}
+rule {
+    match {
+      kind = "recording"
+    }
+    aggregate ".+" {
+        keep = [ "job" ]
+    }
+}
+
+-- metrics.txt --
+pint_problem{filename="rules/1.yml",kind="alerting",name="comparison",owner="",problem="always firing alert: This query doesn't have any condition and so this alert will always fire if it matches anything.",reporter="alerts/comparison",severity="warning"} 1
+pint_problem{filename="rules/1.yml",kind="recording",name="aggregate",owner="",problem="required label is being removed via aggregation: `job` label is required and should be preserved when aggregating all rules.",reporter="promql/aggregate",severity="warning"} 1
+pint_problem{filename="rules/1.yml",kind="recording",name="broken",owner="",problem="PromQL syntax error: unexpected right parenthesis ')'",reporter="promql/syntax",severity="fatal"} 1
+pint_problems 3

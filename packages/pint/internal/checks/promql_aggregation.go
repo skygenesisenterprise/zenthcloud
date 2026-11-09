@@ -1,0 +1,171 @@
+package checks
+
+import (
+	"context"
+	"fmt"
+
+	promParser "github.com/prometheus/prometheus/promql/parser"
+
+	"github.com/cloudflare/pint/internal/diags"
+	"github.com/cloudflare/pint/internal/discovery"
+	"github.com/cloudflare/pint/internal/parser/source"
+)
+
+const (
+	AggregationCheckName = "promql/aggregate"
+)
+
+func NewAggregationCheck(nameRegex *TemplatedRegexp, label string, keep bool, comment string, severity Severity) AggregationCheck {
+	return AggregationCheck{
+		nameRegex: nameRegex,
+		label:     label,
+		keep:      keep,
+		comment:   comment,
+		severity:  severity,
+		instance:  fmt.Sprintf("%s(%s:%v)", AggregationCheckName, label, keep),
+	}
+}
+
+type AggregationCheck struct {
+	nameRegex *TemplatedRegexp
+	label     string
+	comment   string
+	instance  string
+	severity  Severity
+	keep      bool
+}
+
+func (c AggregationCheck) Meta() CheckMeta {
+	return CheckMeta{
+		States: []discovery.ChangeType{
+			discovery.Noop,
+			discovery.Added,
+			discovery.Modified,
+			discovery.Moved,
+		},
+		Online:        false,
+		AlwaysEnabled: false,
+	}
+}
+
+func (c AggregationCheck) String() string {
+	return c.instance
+}
+
+func (c AggregationCheck) Reporter() string {
+	return AggregationCheckName
+}
+
+func (c AggregationCheck) Check(_ context.Context, entry *discovery.Entry, _ []*discovery.Entry) (problems []Problem) {
+	expr := entry.Rule.Expr()
+	if expr.SyntaxError() != nil {
+		return nil
+	}
+
+	if c.nameRegex != nil {
+		if entry.Rule.RecordingRule != nil && !c.nameRegex.MustExpand(entry.Rule).MatchString(entry.Rule.RecordingRule.Record.Value) {
+			return nil
+		}
+		if entry.Rule.AlertingRule != nil && !c.nameRegex.MustExpand(entry.Rule).MatchString(entry.Rule.AlertingRule.Alert.Value) {
+			return nil
+		}
+	}
+
+	if entry.Rule.RecordingRule != nil && entry.Rule.RecordingRule.Labels != nil {
+		if val := entry.Rule.RecordingRule.Labels.GetValue(c.label); val != nil {
+			return nil
+		}
+	}
+
+	if entry.Rule.AlertingRule != nil && entry.Rule.AlertingRule.Labels != nil {
+		if val := entry.Rule.AlertingRule.Labels.GetValue(c.label); val != nil {
+			return nil
+		}
+	}
+
+	nameDesc := "all"
+	if c.nameRegex != nil {
+		nameDesc = "`" + c.nameRegex.anchored + "`"
+		if nameDesc == "`^.+$`" || nameDesc == "`^.*$`" {
+			nameDesc = "all"
+		}
+	}
+
+	for _, src := range expr.Source() {
+		if src.Type != source.AggregateSource {
+			continue
+		}
+		if c.keep && !src.CanHaveLabel(c.label) {
+			reason, fragment := src.LabelExcludeReason(c.label)
+			problems = append(problems, Problem{
+				Anchor:   AnchorAfter,
+				Lines:    expr.Value.Pos.Lines(),
+				Reporter: c.Reporter(),
+				Summary:  "required label is being removed via aggregation",
+				Details:  maybeComment(c.comment),
+				Diagnostics: []diags.Diagnostic{
+					{
+						Message: fmt.Sprintf("`%s` label is required and should be preserved when aggregating %s rules.",
+							c.label, nameDesc),
+						Pos:         expr.Value.Pos,
+						Expr:        expr.Query().Expr,
+						FirstColumn: int(fragment.Start) + 1,
+						LastColumn:  int(fragment.End),
+						Kind:        diags.Issue,
+					},
+					{
+						Message:     reason,
+						Pos:         expr.Value.Pos,
+						Expr:        expr.Query().Expr,
+						FirstColumn: int(fragment.Start) + 1,
+						LastColumn:  int(fragment.End),
+						Kind:        diags.Context,
+					},
+				},
+				Severity: c.severity,
+			})
+		}
+		if !c.keep && src.CanHaveLabel(c.label) {
+			posrange := src.Position
+			if aggr, ok := source.MostOuterOperation[*promParser.AggregateExpr](src); ok {
+				if aggr.Without {
+					if len(aggr.Grouping) == 0 {
+						// without() with empty grouping removes nothing.
+						posrange = source.FindFuncPosition(expr.Value.Value, aggr.PosRange, "without", nil)
+					} else {
+						// without(...) remove passed labels.
+						posrange = source.FindFuncNamePosition(expr.Value.Value, aggr.PosRange, "without")
+					}
+				} else {
+					// by() with empty grouping drops all labels, so CanHaveLabel
+					// returns false and this branch is never reached for that case.
+					posrange = source.FindFuncNamePosition(expr.Value.Value, aggr.PosRange, "by")
+				}
+			}
+			if l, ok := src.Labels[c.label]; ok {
+				posrange = l.Fragment
+			}
+			problems = append(problems, Problem{
+				Anchor:   AnchorAfter,
+				Lines:    expr.Value.Pos.Lines(),
+				Reporter: c.Reporter(),
+				Summary:  "label must be removed in aggregations",
+				Details:  maybeComment(c.comment),
+				Diagnostics: []diags.Diagnostic{
+					{
+						Message: fmt.Sprintf("`%s` label should be removed when aggregating %s rules.",
+							c.label, nameDesc),
+						Pos:         expr.Value.Pos,
+						Expr:        expr.Query().Expr,
+						FirstColumn: int(posrange.Start) + 1,
+						LastColumn:  int(posrange.End),
+						Kind:        diags.Issue,
+					},
+				},
+				Severity: c.severity,
+			})
+		}
+	}
+
+	return problems
+}

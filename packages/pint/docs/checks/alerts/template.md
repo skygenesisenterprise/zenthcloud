@@ -1,0 +1,94 @@
+---
+layout: default
+parent: Checks
+grand_parent: Documentation
+---
+
+# alerts/template
+
+This check validates templates used in annotations and labels for alerting rules.
+See [Prometheus docs](https://prometheus.io/docs/prometheus/latest/configuration/template_reference/)
+for details of supported template syntax.
+
+This check will also inspect all alert rules and warn if any of them
+use query return values inside alert labels.
+Two alerts are identical if they have identical labels, so using
+query value will generate a new unique alert every time it changes.
+If alerting rule is using `for` it might prevent it from ever firing
+if the value keeps changing before `for` is satisfied, because
+Prometheus will consider it to be a new alert and start `for` tracking
+from zero.
+
+If you want to include query value in the alert then use annotations
+for that. Annotations are not used to compare alert identity and so
+the value of any annotation can change between alert evaluations.
+
+See [this blog post](https://www.robustperception.io/dont-put-the-value-in-alert-labels)
+for more details.
+
+This check will also warn if an annotation template uses `.Value` to display
+the result of a query that uses `rate()`, `irate()`, or `deriv()` without
+applying one of the `humanize` template functions. These functions produce
+very small floating point numbers that are hard to read without formatting.
+
+This check will also validate any PromQL query passed to the `query` template
+function. It will report a problem if the query has a syntax error, or if the
+template reads a label from the query result that the query cannot produce.
+For example this template reads the `instance` label from the query result:
+
+```yaml
+annotations:
+  summary: '{{ with query "up" }}{{ . | first | label "instance" }}{{ end }}'
+```
+
+If the query is changed to one that aggregates away the `instance` label then
+the label read will never return a value, and pint will report it:
+
+```yaml
+annotations:
+  summary: '{{ with query "sum(up)" }}{{ . | first | label "instance" }}{{ end }}'
+```
+
+## Configuration
+
+This check doesn't have any configuration options.
+
+## How to enable it
+
+This check is enabled by default.
+
+## How to disable it
+
+You can disable this check globally by adding this config block:
+
+```js
+checks {
+  disabled = ["alerts/template"]
+}
+```
+
+You can also disable it for all rules inside a given file by adding
+a comment anywhere in that file. Example:
+
+```yaml
+# pint file/disable alerts/template
+```
+
+Or you can disable it per rule by adding a comment to it. Example:
+
+```yaml
+# pint disable alerts/template
+```
+
+## How to snooze it
+
+You can disable this check until a given time by adding a comment to it. Example:
+
+```yaml
+# pint snooze $TIMESTAMP alerts/template
+```
+
+Where `$TIMESTAMP` is either [RFC3339](https://www.rfc-editor.org/rfc/rfc3339)
+formatted or `YYYY-MM-DD`.
+Adding this comment will disable `alerts/template` *until* `$TIMESTAMP`, after which
+the check will be re-enabled.

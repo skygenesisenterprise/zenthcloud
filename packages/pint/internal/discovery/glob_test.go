@@ -1,0 +1,534 @@
+package discovery_test
+
+import (
+	"errors"
+	"io/fs"
+	"os"
+	"path"
+	"regexp"
+	"strconv"
+	"strings"
+	"syscall"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/require"
+
+	"github.com/cloudflare/pint/internal/discovery"
+	"github.com/cloudflare/pint/internal/git"
+	"github.com/cloudflare/pint/internal/parser"
+)
+
+func TestGlobPathFinder(t *testing.T) {
+	type testCaseT struct {
+		setup    func(t *testing.T)
+		files    map[string]string
+		symlinks map[string]string
+		err      string
+		entries  []*discovery.Entry
+		finder   discovery.GlobFinder
+	}
+
+	p := parser.NewParser(parser.DefaultOptions)
+	testRuleBody := "# pint file/owner bob\n\n- record: foo\n  expr: sum(foo)\n"
+	testFile := p.Parse(strings.NewReader(testRuleBody))
+	require.NoError(t, testFile.Error.Err)
+	testCases := []testCaseT{
+		{
+			files:  map[string]string{},
+			finder: discovery.NewGlobFinder([]string{"[]"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			err:    "failed to expand file path pattern []: syntax error in pattern",
+		},
+		{
+			files:  map[string]string{},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			err:    "no matching files",
+		},
+		{
+			files: map[string]string{
+				".git/config": "test",
+				"bar.yml":     testRuleBody,
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, []*regexp.Regexp{regexp.MustCompile(".*")}), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "bar.yml",
+						SymlinkTarget: "bar.yml",
+					},
+					Group: &testFile.Groups[0],
+					Rule:  testFile.Groups[0].Rules[0],
+					Owner: "bob",
+				},
+			},
+		},
+		{
+			files: map[string]string{
+				"bar.yml": testRuleBody,
+			},
+			symlinks: map[string]string{
+				".git": "/nonexistent/target",
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          ".git",
+						SymlinkTarget: ".git",
+					},
+					PathError: errors.New("this is a symlink but target file cannot be evaluated: lstat /nonexistent: no such file or directory"),
+				},
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "bar.yml",
+						SymlinkTarget: "bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+			},
+		},
+		{
+			files:  map[string]string{},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			err:    "no matching files",
+		},
+		{
+			files:  map[string]string{},
+			finder: discovery.NewGlobFinder([]string{"foo/*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			err:    "no matching files",
+		},
+		{
+			files:  map[string]string{"bar.yml": testRuleBody},
+			finder: discovery.NewGlobFinder([]string{"foo/*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			err:    "no matching files",
+		},
+		{
+			files:  map[string]string{"bar.yml": testRuleBody},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, []*regexp.Regexp{regexp.MustCompile(".*")}), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "bar.yml",
+						SymlinkTarget: "bar.yml",
+					},
+					Group: &testFile.Groups[0],
+					Rule:  testFile.Groups[0].Rules[0],
+					Owner: "bob",
+				},
+			},
+		},
+		{
+			files:  map[string]string{"foo/bar.yml": testRuleBody + "\n\n# pint file/owner alice\n"},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, []*regexp.Regexp{regexp.MustCompile(".*")}), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "foo/bar.yml",
+						SymlinkTarget: "foo/bar.yml",
+					},
+					Group: &testFile.Groups[0],
+					Rule:  testFile.Groups[0].Rules[0],
+					Owner: "alice",
+				},
+			},
+		},
+		{
+			files:  map[string]string{"bar.yml": testRuleBody},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "bar.yml",
+						SymlinkTarget: "bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+			},
+		},
+		{
+			files:  map[string]string{"bar.yml": "record:::{}\n  expr: sum(foo)\n\n# pint file/owner bob\n"},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, []*regexp.Regexp{regexp.MustCompile(".*")}), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "bar.yml",
+						SymlinkTarget: "bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("mapping values are not allowed in this context"),
+						Line: 2,
+					},
+					Owner: "bob",
+				},
+			},
+		},
+		{
+			files:    map[string]string{"bar.yml": testRuleBody},
+			symlinks: map[string]string{"link.yml": "bar.yml"},
+			finder:   discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "bar.yml",
+						SymlinkTarget: "bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "link.yml",
+						SymlinkTarget: "bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+			},
+		},
+		{
+			files: map[string]string{"a/bar.yml": testRuleBody},
+			symlinks: map[string]string{
+				"b/link.yml":   "../a/bar.yml",
+				"b/c/link.yml": "../../a/bar.yml",
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "a/bar.yml",
+						SymlinkTarget: "a/bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "b/c/link.yml",
+						SymlinkTarget: "a/bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "b/link.yml",
+						SymlinkTarget: "a/bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+			},
+		},
+		{
+			files: map[string]string{"a/bar.yml": testRuleBody},
+			symlinks: map[string]string{
+				"b/link.yml":   "../a/bar.yml",
+				"b/c/link.yml": "../a/bar.yml",
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "a/bar.yml",
+						SymlinkTarget: "a/bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "b/c/link.yml",
+						SymlinkTarget: "b/c/link.yml",
+					},
+					PathError: errors.New("this is a symlink but target file cannot be evaluated: lstat b/a: no such file or directory"),
+				},
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "b/link.yml",
+						SymlinkTarget: "a/bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+			},
+		},
+		{
+			files: map[string]string{"a/bar.yml": "xxx:\n"},
+			symlinks: map[string]string{
+				"b/c/link.yml": "../../a/bar.yml",
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, []*regexp.Regexp{regexp.MustCompile(".*")}), parser.DefaultOptions, nil),
+		},
+		{
+			files: map[string]string{"a/bar.yml": "xxx:\nyyy:\n"},
+			symlinks: map[string]string{
+				"b/c/link.yml": "../../a/bar.yml",
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "a/bar.yml",
+						SymlinkTarget: "a/bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("unexpected key xxx"),
+						Line: 1,
+					},
+					Owner: "",
+				},
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "b/c/link.yml",
+						SymlinkTarget: "a/bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("unexpected key xxx"),
+						Line: 1,
+					},
+					Owner: "",
+				},
+			},
+		},
+		{
+			files: map[string]string{"a/bar.yml": "xxx:\nyyy:\n"},
+			symlinks: map[string]string{
+				"b/c/link.yml": "../../a/bar.yml",
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, []*regexp.Regexp{regexp.MustCompile(".*")}), parser.DefaultOptions, nil),
+		},
+		{
+			files: map[string]string{"a/bar.yml": "xxx:\nyyy:\n"},
+			symlinks: map[string]string{
+				"b/c/d": "../../a",
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, []*regexp.Regexp{regexp.MustCompile(".*")}), parser.DefaultOptions, nil),
+		},
+		{
+			files: map[string]string{"a/bar.yml": testRuleBody},
+			symlinks: map[string]string{
+				"b/c/link.yml": "../../a/bar.yml",
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "a/bar.yml",
+						SymlinkTarget: "a/bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "b/c/link.yml",
+						SymlinkTarget: "a/bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+			},
+		},
+		{
+			symlinks: map[string]string{
+				"input.yml": "/xx/ccc/fdd",
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "input.yml",
+						SymlinkTarget: "input.yml",
+					},
+					PathError: errors.New("this is a symlink but target file cannot be evaluated: lstat /xx: no such file or directory"),
+				},
+			},
+		},
+		{
+			files: map[string]string{
+				"bar.yml": testRuleBody,
+			},
+			setup: func(_ *testing.T) {
+				_ = os.Chmod("bar.yml", 0o000)
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "bar.yml",
+						SymlinkTarget: "bar.yml",
+					},
+					PathError: &fs.PathError{Op: "open", Path: "bar.yml", Err: syscall.EACCES},
+				},
+			},
+		},
+		{
+			files: map[string]string{
+				"subdir/bar.yml": testRuleBody,
+			},
+			symlinks: map[string]string{
+				"subdir/broken.yml": "/nonexistent/target",
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			entries: []*discovery.Entry{
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "subdir/bar.yml",
+						SymlinkTarget: "subdir/bar.yml",
+					},
+					PathError: parser.ParseError{
+						Err:  errors.New("top level field must be a groups key, got list"),
+						Line: 3,
+					},
+					Owner: "bob",
+				},
+				{
+					State: discovery.Noop,
+					Path: discovery.Path{
+						Name:          "subdir/broken.yml",
+						SymlinkTarget: "subdir/broken.yml",
+					},
+					PathError: errors.New("this is a symlink but target file cannot be evaluated: lstat /nonexistent: no such file or directory"),
+				},
+			},
+		},
+		{
+			files: map[string]string{
+				"subdir/bar.yml": testRuleBody,
+			},
+			setup: func(t *testing.T) {
+				require.NoError(t, os.Chmod("subdir", 0o000))
+				t.Cleanup(func() { _ = os.Chmod("subdir", 0o755) })
+			},
+			finder: discovery.NewGlobFinder([]string{"*"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			err:    "open subdir: permission denied",
+		},
+		{
+			// Symlink inside walked dir points to an unreadable directory.
+			// walkDir encounters the symlink, EvalSymlinks and os.Stat succeed,
+			// but recursive findFiles fails because the target dir is unreadable.
+			files: map[string]string{
+				"topdir/foo.yml": testRuleBody,
+			},
+			setup: func(t *testing.T) {
+				require.NoError(t, os.MkdirAll("targetdir", 0o755))
+				require.NoError(t, os.Symlink("../targetdir", "topdir/link"))
+				require.NoError(t, os.Chmod("targetdir", 0o000))
+				t.Cleanup(func() { _ = os.Chmod("targetdir", 0o755) })
+			},
+			finder: discovery.NewGlobFinder([]string{"topdir"}, git.NewPathFilter(nil, nil, nil), parser.DefaultOptions, nil),
+			err:    "open targetdir: permission denied",
+		},
+		{
+			// File exists but path filter excludes it, no entries returned.
+			files: map[string]string{
+				"bar.yml": testRuleBody,
+			},
+			finder: discovery.NewGlobFinder(
+				[]string{"*"},
+				git.NewPathFilter(
+					[]*regexp.Regexp{regexp.MustCompile("^other/")},
+					nil,
+					nil,
+				),
+				parser.DefaultOptions,
+				nil,
+			),
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			workdir := t.TempDir()
+			t.Chdir(workdir)
+
+			for p, content := range tc.files {
+				if strings.Contains(p, "/") {
+					err := os.MkdirAll(path.Dir(p), 0o755)
+					require.NoError(t, err)
+				}
+				err := os.WriteFile(p, []byte(content), 0o644)
+				require.NoError(t, err)
+			}
+			for symlink, target := range tc.symlinks {
+				if strings.Contains(symlink, "/") {
+					err := os.MkdirAll(path.Dir(symlink), 0o755)
+					require.NoError(t, err)
+				}
+				require.NoError(t, os.Symlink(target, symlink))
+			}
+			if tc.setup != nil {
+				tc.setup(t)
+			}
+
+			entries, err := tc.finder.Find()
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
+			} else {
+				require.NoError(t, err)
+
+				if diff := cmp.Diff(tc.entries, entries, entryCmpOptions...); diff != "" {
+					t.Errorf("tc.finder.Find() returned wrong output (-want +got):\n%s", diff)
+					return
+				}
+			}
+		})
+	}
+}

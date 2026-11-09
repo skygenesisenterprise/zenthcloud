@@ -1,0 +1,78 @@
+exec sh ./copy.sh
+exec sh ./ulimit.sh
+! exec pint --no-color -l error lint rules
+! stdout .
+
+cmp stderr stderr.txt
+
+-- stderr.txt --
+Warning: required annotation not set (alerts/annotation)
+  ---> rules/1.yml:1-2 -> `Test Alert 1` [+527 duplicates]
+2 |   expr: up == 0
+            ^^^ `runbook_url` annotation is required.
+
+Bug: required label not set (rule/label)
+  ---> rules/1.yml:1-2 -> `Test Alert 1` [+527 duplicates]
+2 |   expr: up == 0
+            ^^^ `severity` label is required.
+
+level=ERROR msg="Execution completed with error(s)" err="found 528 problem(s) with severity Bug or higher"
+-- copy.sh --
+for I in `seq 1 263` ; do cp rules/template.yml rules/$I.yml ; done
+
+-- ulimit.sh --
+env GOCACHE=$TMPDIR go run ulimit.go
+-- ulimit.go --
+package main
+
+import (
+	"fmt"
+	"syscall"
+)
+
+func main() {
+	fmt.Println("Setting ulimit -n to 256")
+	var rLimit syscall.Rlimit
+	err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit)
+	if err != nil {
+		fmt.Println("Error Getting Rlimit ", err)
+	}
+	fmt.Println("Current limit", rLimit)
+	rLimit.Max = 256
+	rLimit.Cur = 256
+	err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rLimit)
+	if err != nil {
+		fmt.Println("Error Setting Rlimit ", err)
+	}
+	err = syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit)
+	if err != nil {
+		fmt.Println("Error Getting Rlimit ", err)
+	}
+	fmt.Println("New limit", rLimit)
+}
+
+-- rules/template.yml --
+- alert: Test Alert 1
+  expr: up == 0
+
+- alert: Test Alert 2
+  expr: up == 0
+
+-- .pint.hcl --
+parser {
+  relaxed = ["rules/.*"]
+}
+rule {
+  match {
+    kind = "alerting"
+  }
+  label "severity" {
+    severity = "bug"
+    value    = "(24x7|10x5|debug)"
+    required = true
+  }
+  annotation "runbook_url" {
+    severity = "warning"
+    required = true
+  }
+}

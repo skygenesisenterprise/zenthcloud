@@ -1,0 +1,6 @@
+! exec pint --workers=0 --no-color lint rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=ERROR msg="Execution completed with error(s)" err="--workers flag must be > 0"

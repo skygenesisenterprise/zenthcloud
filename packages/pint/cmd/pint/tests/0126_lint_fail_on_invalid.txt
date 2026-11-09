@@ -1,0 +1,12 @@
+! exec pint --no-color lint --fail-on=xxx rules
+! stdout .
+cmp stderr stderr.txt
+
+-- rules/0001.yml --
+# empty
+
+-- stderr.txt --
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=INFO msg="Checking Prometheus rules" entries=0 workers=10 online=true
+level=INFO msg="No rules found, skipping Prometheus discovery"
+level=ERROR msg="Execution completed with error(s)" err="invalid --fail-on value: unknown severity: xxx"

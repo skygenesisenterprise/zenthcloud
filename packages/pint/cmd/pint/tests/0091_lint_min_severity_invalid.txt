@@ -1,0 +1,16 @@
+! exec pint --no-color lint --min-severity=xxx rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=INFO msg="Checking Prometheus rules" entries=1 workers=10 online=true
+level=ERROR msg="Execution completed with error(s)" err="invalid --min-severity value: unknown severity: xxx"
+-- rules/0001.yml --
+groups:
+- name: foo
+  rules:
+  - alert: foo
+    expr: rate(errors[2m]) > 0
+    annotations:
+      summary: 'error rate: {{ $value }}'

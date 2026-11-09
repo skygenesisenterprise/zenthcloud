@@ -1,0 +1,216 @@
+env NO_COLOR=1
+! exec pint --no-color lint --min-severity=info rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Loading configuration file" path=.pint.hcl
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=INFO msg="Checking Prometheus rules" entries=20 workers=10 online=true
+Warning: required label is being removed via aggregation (promql/aggregate)
+  ---> rules/0001.yml:2 -> `colo_job:fl_cf_html_bytes_in:rate10m`
+2 |   expr: sum(...) WITHOUT (colo_id, instance, node_type, region, node_status, job, colo_name)
+                                                                                 ^^^
+      Query is using aggregation with `without(colo_id, instance, node_type, region,
+      node_status, job, colo_name)`, all labels included inside `without(...)` will be
+      removed from the results.
+      `job` label is required and should be preserved when aggregating all rules.
+
+Warning: label must be removed in aggregations (promql/aggregate)
+  ---> rules/0001.yml:6 -> `colo_job:foo:irate3m` [+3 duplicates]
+6 |   expr: sum(irate(foo[3m])) WITHOUT (colo_id)
+                                ^^^^^^^
+                                `instance` label should be removed when aggregating `^colo(?:_.+)?:.+$`
+                                rules.
+
+Warning: redundant regexp (promql/regexp)
+  ---> rules/0002.yaml:2 -> `colo_job:down:count`
+2 |   expr: up{job=~"foo"} == 0
+               ^^^^^^^^^^
+               Unnecessary regexp match on static string `job=~"foo"`, use `job="foo"` instead.
+
+Warning: redundant regexp (promql/regexp)
+  ---> rules/0002.yaml:5 -> `colo_job:down:count`
+5 |   expr: up{job!~"foo"} == 0
+               ^^^^^^^^^^
+               Unnecessary regexp match on static string `job!~"foo"`, use `job!="foo"` instead.
+
+Warning: required label is being removed via aggregation (promql/aggregate)
+  ---> rules/0003.yaml:11 -> `colo_job:up:count` [+1 duplicates]
+11 |   expr: sum(foo) without(job)
+                              ^^^
+                              Query is using aggregation with `without(job)`, all labels included inside
+                              `without(...)` will be removed from the results.
+                              `job` label is required and should be preserved when aggregating all rules.
+
+Fatal: PromQL syntax error (promql/syntax)
+  ---> rules/0003.yaml:14 -> `invalid`
+14 |   expr: sum(foo) by ())
+                           ^ unexpected right parenthesis ')'
+
+Warning: required label is being removed via aggregation (promql/aggregate)
+  ---> rules/0003.yaml:23-25 -> `colo:multiline` [+1 duplicates]
+23 |     sum(
+24 |       multiline
+25 |     ) without(job, instance)
+                   ^^^
+                   Query is using aggregation with `without(job, instance)`, all labels included inside
+                   `without(...)` will be removed from the results.
+                   `job` label is required and should be preserved when aggregating all rules.
+
+Warning: required label is being removed via aggregation (promql/aggregate)
+  ---> rules/0003.yaml:40 -> `colo_job:up:byinstance`
+40 |   expr: sum(byinstance) by(instance)
+                             ^^
+                             Query is using aggregation with `by(instance)`, only labels included inside
+                             `by(...)` will be present on the results.
+                             `job` label is required and should be preserved when aggregating all rules.
+
+Warning: required matcher missing (promql/selector)
+  ---> rules/0003.yaml:52 -> `Instance Is Down`
+52 |   expr: up == 0
+             ^^ This vector selector must specify `job` label. Please add a `{job="..."} matcher.
+
+Information: use humanize filters for the results (alerts/template)
+  ---> rules/0003.yaml:58-61 -> `Error Rate`
+58 |   expr: sum(rate(errors[5m])) > 0.5
+                 ^^^^^^^^^^^^^^^^ `rate()` will produce results that are hard for humans to read.
+   |   [...]
+61 |     summary: 'error rate: {{ $value }}'
+                                  ^^^^^^
+                                  Use one of the humanize template functions to make the result more
+                                  readable.
+
+Warning: required matcher missing (promql/selector)
+  ---> rules/0003.yaml:64 -> `Absent`
+64 |   expr: absent(foo)
+                    ^^^
+                    Vector selectors inside the `absent()` function must specify `job` label. Please add
+                    a `{job="..."} matcher.
+
+Warning: required matcher missing (promql/selector)
+  ---> rules/0003.yaml:67 -> `AbsentOverTime`
+67 |   expr: absent_over_time(foo[5m])
+                              ^^^
+                              Vector selectors inside the `absent_over_time()` function must specify
+                              `job` label. Please add a `{job="..."} matcher.
+
+level=INFO msg="Some problems are duplicated between rules and all the duplicates were hidden, pass `--show-duplicates` to see them" total=17 duplicates=5 shown=12
+level=INFO msg="Problems found" Fatal=1 Warning=15 Information=1
+level=ERROR msg="Execution completed with error(s)" err="found 1 problem(s) with severity Bug or higher"
+-- rules/0001.yml --
+- record: colo_job:fl_cf_html_bytes_in:rate10m
+  expr: sum(rate(fl_cf_html_bytes_in[10m])) WITHOUT (colo_id, instance, node_type, region, node_status, job, colo_name)
+- record: colo_job:foo:rate1m
+  expr: sum(rate(foo[1m])) WITHOUT (instance)
+- record: colo_job:foo:irate3m
+  expr: sum(irate(foo[3m])) WITHOUT (colo_id)
+
+-- rules/0002.yaml --
+- record: colo_job:down:count
+  expr: up{job=~"foo"} == 0
+
+- record: colo_job:down:count
+  expr: up{job!~"foo"} == 0
+
+-- rules/0003.yaml --
+# pint ignore/begin
+{%- set foo = 1 %}
+{% set bar = 2 -%}
+{# comment #}
+{#
+  comment 
+#}
+# pint ignore/end
+
+- record: colo_job:up:count
+  expr: sum(foo) without(job)
+
+- record: invalid
+  expr: sum(foo) by ())
+
+# pint ignore/begin
+- record: colo_job:down:count
+  expr: up == {{ foo }}
+# pint ignore/end
+
+- record: colo:multiline
+  expr: |
+    sum(
+      multiline
+    ) without(job, instance)
+
+- record: colo:multiline:sum
+  expr: |
+    sum(sum) without(job)
+    +
+    sum(sum) without(job)
+
+- record: colo:multiline2
+  expr: >-
+    sum(
+      multiline2
+    ) without(job, instance)
+
+- record: colo_job:up:byinstance
+  expr: sum(byinstance) by(instance)
+
+- record: instance_mode:node_cpu:rate4m
+  expr:  sum(rate(node_cpu_seconds_total[4m])) without (cpu)
+
+- record: instance_mode:node_cpu:rate4m
+  expr:  sum(rate(node_cpu_seconds_total[5m])) without (cpu)
+
+- record: instance_mode:node_cpu:rate5min
+  expr:  sum(irate(node_cpu_seconds_total[5m])) without (cpu)
+
+- alert: Instance Is Down
+  expr: up == 0
+
+- alert: Error Rate
+  expr: sum(rate(errors[5m])) > 0.5
+
+- alert: Error Rate
+  expr: sum(rate(errors[5m])) > 0.5
+  annotations:
+    link: http://docs
+    summary: 'error rate: {{ $value }}'
+
+- alert: Absent
+  expr: absent(foo)
+
+- alert: AbsentOverTime
+  expr: absent_over_time(foo[5m])
+
+- alert: AbsentVector
+  expr: absent(vector(1))
+
+-- .pint.hcl --
+parser {
+  relaxed = [".*"]
+}
+rule {
+    match {
+      kind = "recording"
+    }
+    aggregate ".+" {
+        keep = [ "job" ]
+    }
+    aggregate "colo(?:_.+)?:.+" {
+        strip = [ "instance" ]
+    }
+}
+rule {
+  selector "up" {
+    requiredLabels = ["job"]
+    comment = "up metric must always specify the job label."
+  }
+}
+rule {
+  call "absent|absent_over_time" {
+    selector ".+" {
+      requiredLabels = ["job"]
+      comment = "All absent calls must specify the job label."
+    }
+  }
+}

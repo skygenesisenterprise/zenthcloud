@@ -1,0 +1,49 @@
+! exec pint --no-color lint rules
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+level=INFO msg="Loading configuration file" path=.pint.hcl
+level=INFO msg="Finding all rules to check" paths=["rules"]
+level=INFO msg="Checking Prometheus rules" entries=3 workers=10 online=true
+Bug: required annotation not set (alerts/annotation)
+  ---> rules/0001.yml:4-6 -> `Instance Is Down 2`
+6 |   for: 5m
+           ^^ `alert_for` annotation is required.
+
+Bug: invalid annotation value (alerts/annotation)
+  ---> rules/0001.yml:12 -> `Instance Is Down 3`
+12 |     alert_for: 4m
+                    ^^ `alert_for` annotation value must match `^{{ $for }}$`.
+
+level=INFO msg="Problems found" Bug=2
+level=ERROR msg="Execution completed with error(s)" err="found 2 problem(s) with severity Bug or higher"
+-- rules/0001.yml --
+- alert: Instance Is Down 1
+  expr: up == 0
+
+- alert: Instance Is Down 2
+  expr: up == 0
+  for: 5m
+
+- alert: Instance Is Down 3
+  expr: up == 0
+  for: 5m
+  annotations:
+    alert_for: 4m
+
+-- .pint.hcl --
+parser {
+  relaxed = [".*"]
+}
+rule {
+  match {
+    for = "> 0"
+  }
+
+  annotation "alert_for" {
+    required = true
+    value    = "{{ $for }}"
+    severity = "bug"
+  }
+}

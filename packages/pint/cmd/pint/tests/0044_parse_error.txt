@@ -1,0 +1,6 @@
+! exec pint parse 'sum(foo) by('
+! stdout .
+cmp stderr stderr.txt
+
+-- stderr.txt --
+[2mlevel=[0m[91mERROR[0m [2mmsg=[0m[97m"Execution completed with error(s)"[0m [2merr=[0m[91m"1:13: parse error: unclosed left parenthesis"[0m
