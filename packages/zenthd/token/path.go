@@ -9,7 +9,7 @@ import (
 
 	homedir "github.com/mitchellh/go-homedir"
 
-	"github.com/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
 )
 
 // GenerateSSHCertFilePathFromURL will return a file path for creating short lived certificates

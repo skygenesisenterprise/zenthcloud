@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 func TestWorkerVersionDataSourceModelSchemaParity(t *testing.T) {

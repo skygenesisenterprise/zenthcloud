@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dns_location"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dns_location"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 func TestZeroTrustDNSLocationDataSourceModelSchemaParity(t *testing.T) {

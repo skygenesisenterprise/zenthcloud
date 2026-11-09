@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/argo_tiered_caching/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/argo_tiered_caching/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"

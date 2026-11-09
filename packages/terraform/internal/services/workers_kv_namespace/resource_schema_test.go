@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_kv_namespace"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_kv_namespace"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 func TestWorkersKVNamespaceModelSchemaParity(t *testing.T) {

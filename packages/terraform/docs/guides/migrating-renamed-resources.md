@@ -33,7 +33,7 @@ Zenthcloud Terraform Provider migration tool.
 Download the latest release from the [tf-migrate releases] page, or install via Go:
 
 ```bash
-go install github.com/zenthcloud/tf-migrate/cmd/tf-migrate@latest
+go install github.com/skygenesisenterprise/zenthcloud/tf-migrate/cmd/tf-migrate@latest
 ```
 
 **Migrate your configuration:**

@@ -1,5 +1,13 @@
 {
 	"name": "@zenthcloud/api",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/skygenesisenterprise/zenthcloud.git"
+	},
+	"homepage": "https://github.com/skygenesisenterprise/zenthcloud",
+	"bugs": {
+		"url": "https://github.com/skygenesisenterprise/zenthcloud/issues"
+	},
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {

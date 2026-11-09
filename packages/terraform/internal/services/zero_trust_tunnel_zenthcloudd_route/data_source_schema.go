@@ -5,7 +5,7 @@ package zero_trust_tunnel_zenthcloudd_route
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"

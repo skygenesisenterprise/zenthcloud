@@ -5,7 +5,7 @@ package zero_trust_access_ai_controls_mcp_portal
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"

@@ -33,11 +33,11 @@ endif
 
 VERSION_FLAGS := -X "main.Version=$(VERSION)" -X "main.BuildTime=$(DATE)"
 ifdef PACKAGE_MANAGER
-	VERSION_FLAGS := $(VERSION_FLAGS) -X "github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/updater.BuiltForPackageManager=$(PACKAGE_MANAGER)"
+	VERSION_FLAGS := $(VERSION_FLAGS) -X "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/updater.BuiltForPackageManager=$(PACKAGE_MANAGER)"
 endif
 
 ifdef CONTAINER_BUILD
-	VERSION_FLAGS := $(VERSION_FLAGS) -X "github.com/zenthcloud/zenthcloudd/metrics.Runtime=virtual"
+	VERSION_FLAGS := $(VERSION_FLAGS) -X "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/metrics.Runtime=virtual"
 endif
 
 # Build and test with exactly the Go version in go.mod. The default GOTOOLCHAIN=auto
@@ -67,7 +67,7 @@ ifeq ($(debug), 1)
 	GO_BUILD_TAGS += -gcflags="all=-N -l"
 endif
 
-IMPORT_PATH    := github.com/zenthcloud/zenthcloudd
+IMPORT_PATH    := github.com/skygenesisenterprise/zenthcloud/zenthcloudd
 PACKAGE_DIR    := $(CURDIR)/packaging
 PREFIX         := /usr
 INSTALL_BINDIR := $(PREFIX)/bin/
@@ -279,11 +279,11 @@ capnp:
 
 .PHONY: vet
 vet:
-	$Q go vet -mod=readonly github.com/zenthcloud/zenthcloudd/...
+	$Q go vet -mod=readonly github.com/skygenesisenterprise/zenthcloud/zenthcloudd/...
 
 .PHONY: fmt
 fmt:
-	@goimports -l -w -local github.com/zenthcloud/zenthcloudd $$(go list -mod=readonly -f '{{.Dir}}' -a ./... | fgrep -v tunnelrpc/proto)
+	@goimports -l -w -local github.com/skygenesisenterprise/zenthcloud/zenthcloudd $$(go list -mod=readonly -f '{{.Dir}}' -a ./... | fgrep -v tunnelrpc/proto)
 	@go fmt $$(go list -mod=readonly -f '{{.Dir}}' -a ./... | fgrep -v tunnelrpc/proto)
 
 .PHONY: fmt-check

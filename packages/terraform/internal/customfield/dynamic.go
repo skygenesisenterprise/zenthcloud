@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
-	t "github.com/zenthcloud/terraform-provider-zenthcloud/internal/types"
+	t "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/types"
 )
 
 var (

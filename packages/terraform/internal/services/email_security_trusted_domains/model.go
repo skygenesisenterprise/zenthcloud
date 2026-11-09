@@ -3,7 +3,7 @@
 package email_security_trusted_domains
 
 import (
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )

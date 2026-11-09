@@ -5,12 +5,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 # Mark the necessary Go modules as private to avoid Go's proxy
-export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/zenthcloud/zenthcloud-go,github.com/gitlab.cfdata.org/zenthcloud/sdks/zenthcloud-go"
+export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/skygenesisenterprise/zenthcloud/zenthcloud-go,github.com/gitlab.cfdata.org/zenthcloud/sdks/zenthcloud-go"
 
 REPLACEMENT="${1:-"../zenthcloud-go"}"
 echo "==> Replacing Go SDK with $REPLACEMENT"
 if [[ -d "$REPLACEMENT" ]] || go list -m "$REPLACEMENT" >/dev/null; then
-    go mod edit -replace github.com/zenthcloud/zenthcloud-go/v7="$REPLACEMENT"
+    go mod edit -replace github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7="$REPLACEMENT"
     go mod tidy -e
 else
     echo "Skipping Go SDK replacement (branch may not exist on Go SDK)"

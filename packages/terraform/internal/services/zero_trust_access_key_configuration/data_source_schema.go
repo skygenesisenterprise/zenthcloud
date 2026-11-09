@@ -5,7 +5,7 @@ package zero_trust_access_key_configuration
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"

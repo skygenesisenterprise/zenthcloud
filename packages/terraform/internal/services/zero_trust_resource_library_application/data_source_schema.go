@@ -5,7 +5,7 @@ package zero_trust_resource_library_application
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"

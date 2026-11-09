@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/web_analytics_rule"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/web_analytics_rule"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 func TestWebAnalyticsRuleModelSchemaParity(t *testing.T) {

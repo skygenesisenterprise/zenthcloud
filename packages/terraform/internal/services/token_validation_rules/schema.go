@@ -5,7 +5,7 @@ package token_validation_rules
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"

@@ -8,9 +8,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/certificate_pack"
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/certificate_pack/migration/v500"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/certificate_pack"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/certificate_pack/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestCertificatePackMigrationModelSchemaParity verifies that TargetCertificatePackModel

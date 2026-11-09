@@ -7,7 +7,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 

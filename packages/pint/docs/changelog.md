@@ -2200,7 +2200,7 @@
 
 - `promql/comparison` only applies to alerts, so it was renamed to
   `alerts/comparison`.
-- Online documentation hosted at [zenthcloud.github.io/pint](https://github.com/skygenesisenterprise/zenthcloud)
+- Online documentation hosted at [github.com/skygenesisenterprise/zenthcloud/pint](https://github.com/skygenesisenterprise/zenthcloud)
   was reworked.
 - `alerts/count` check will now retry range queries with shorter time window
   on `found duplicate series for the match group ...` errors from Prometheus.

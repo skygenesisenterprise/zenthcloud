@@ -7,10 +7,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"

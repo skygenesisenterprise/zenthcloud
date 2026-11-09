@@ -3,7 +3,7 @@ package list
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 )
 
 // normalizeListItems nullifies empty nested objects on list items returned by the

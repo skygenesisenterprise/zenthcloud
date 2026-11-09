@@ -1,8 +1,8 @@
 package universal
 
 import (
-	"github.com/zenthcloud/cfssl/ocsp"
-	ocspConfig "github.com/zenthcloud/cfssl/ocsp/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/ocsp"
+	ocspConfig "github.com/skygenesisenterprise/zenthcloud/cfssl/ocsp/config"
 )
 
 // NewSignerFromConfig generates a new OCSP signer from a config object.

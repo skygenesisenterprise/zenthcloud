@@ -16,11 +16,11 @@ import (
 	"github.com/urfave/cli/v2"
 	"nhooyr.io/websocket"
 
-	"github.com/zenthcloud/zenthcloudd/cfapi"
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
-	cfdflags "github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
-	"github.com/zenthcloud/zenthcloudd/credentials"
-	"github.com/zenthcloud/zenthcloudd/management"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cfapi"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
+	cfdflags "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/credentials"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/management"
 )
 
 var buildInfo *cliutil.BuildInfo

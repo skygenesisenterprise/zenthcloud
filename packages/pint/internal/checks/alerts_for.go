@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/zenthcloud/pint/internal/diags"
-	"github.com/zenthcloud/pint/internal/discovery"
-	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/diags"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/discovery"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser"
 )
 
 const (

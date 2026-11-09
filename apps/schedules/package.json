@@ -1,5 +1,13 @@
 {
 	"name": "@zenthcloud/schedules",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/skygenesisenterprise/zenthcloud.git"
+	},
+	"homepage": "https://github.com/skygenesisenterprise/zenthcloud",
+	"bugs": {
+		"url": "https://github.com/skygenesisenterprise/zenthcloud/issues"
+	},
 	"type": "module",
 	"scripts": {
 		"dev": "PORT=4001 tsx watch src/index.ts",

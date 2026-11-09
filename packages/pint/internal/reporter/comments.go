@@ -9,10 +9,10 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/diags"
-	"github.com/zenthcloud/pint/internal/git"
-	"github.com/zenthcloud/pint/internal/output"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/diags"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/git"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/output"
 )
 
 type PendingComment struct {

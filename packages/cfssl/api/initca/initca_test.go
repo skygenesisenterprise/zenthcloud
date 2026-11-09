@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/zenthcloud/cfssl/csr"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
 )
 
 func csrData(t *testing.T) *bytes.Reader {

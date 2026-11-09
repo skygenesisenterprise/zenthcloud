@@ -2,8 +2,8 @@ package client
 
 import (
 	"crypto/tls"
-	"github.com/zenthcloud/cfssl/auth"
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/auth"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 	"net"
 	"strings"
 	"testing"

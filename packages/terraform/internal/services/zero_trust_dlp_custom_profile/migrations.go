@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_custom_profile/migration/v500"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_custom_profile/migration/v500"
 )
 
 func init() {

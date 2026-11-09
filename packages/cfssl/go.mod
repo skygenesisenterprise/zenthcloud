@@ -1,4 +1,4 @@
-module github.com/zenthcloud/cfssl
+module github.com/skygenesisenterprise/zenthcloud/cfssl
 
 go 1.27
 
@@ -8,8 +8,8 @@ godebug x509negativeserial=1
 
 require (
 	bitbucket.org/liamstask/goose v0.0.0-20150115234039-8488cc47d90c
-	github.com/zenthcloud/backoff v0.0.0-20161212185259-647f3cdfc87a
-	github.com/zenthcloud/redoctober v0.0.0-20211013234631-6a74ccc611f6
+	github.com/skygenesisenterprise/zenthcloud/backoff v0.0.0-20161212185259-647f3cdfc87a
+	github.com/skygenesisenterprise/zenthcloud/redoctober v0.0.0-20211013234631-6a74ccc611f6
 	github.com/go-sql-driver/mysql v1.8.0
 	github.com/google/certificate-transparency-go v1.1.8
 	github.com/jmhodges/clock v1.2.0

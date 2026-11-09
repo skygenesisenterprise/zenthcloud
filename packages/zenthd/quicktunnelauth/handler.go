@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
 )
 
 const (

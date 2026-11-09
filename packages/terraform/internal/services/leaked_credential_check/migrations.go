@@ -5,7 +5,7 @@ package leaked_credential_check
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/leaked_credential_check/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/leaked_credential_check/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

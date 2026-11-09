@@ -6,7 +6,7 @@ import (
 	promParser "github.com/prometheus/prometheus/promql/parser"
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser"
 )
 
 func TestWalkUpExpr(t *testing.T) {

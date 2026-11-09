@@ -24,10 +24,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/log"
-	"github.com/zenthcloud/cfssl/ubiquity"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/ubiquity"
 )
 
 // IntermediateStash contains the path to the directory where

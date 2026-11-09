@@ -5,7 +5,7 @@ package authenticated_origin_pulls
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

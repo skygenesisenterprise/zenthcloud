@@ -18,7 +18,7 @@ import (
 
 	"github.com/getsentry/sentry-go"
 
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
 )
 
 const (

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
 

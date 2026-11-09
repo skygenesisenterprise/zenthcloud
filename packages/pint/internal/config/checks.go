@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
 )
 
 type Checks struct {

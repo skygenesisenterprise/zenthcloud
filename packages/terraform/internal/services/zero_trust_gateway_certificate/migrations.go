@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_certificate/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_certificate/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*ZeroTrustGatewayCertificateResource)(nil)

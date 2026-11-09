@@ -8,7 +8,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 
-	"github.com/zenthcloud/pint/internal/config"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/config"
 )
 
 const (

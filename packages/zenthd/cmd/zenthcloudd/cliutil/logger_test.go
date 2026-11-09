@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli/v2/altsrc"
 
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
 )
 
 func TestTransportLogLevelFlagIsDeprecatedAndHidden(t *testing.T) {

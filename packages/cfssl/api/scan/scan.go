@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/zenthcloud/cfssl/api"
-	"github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/log"
-	"github.com/zenthcloud/cfssl/scan"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/scan"
 )
 
 // scanHandler is an HTTP handler that accepts GET parameters for host (required)

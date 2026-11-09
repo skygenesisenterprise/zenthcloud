@@ -8,7 +8,7 @@ import (
 	"crypto/x509"
 	"time"
 
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 )
 
 // Compute the priority of different hash algorithm based on security

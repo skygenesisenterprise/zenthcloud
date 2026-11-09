@@ -18,13 +18,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/cfssl/certdb"
-	"github.com/zenthcloud/cfssl/config"
-	"github.com/zenthcloud/cfssl/csr"
-	cferr "github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/info"
-	"github.com/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
+	cferr "github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/info"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 )
 
 // Subject contains the information that should be used to override the

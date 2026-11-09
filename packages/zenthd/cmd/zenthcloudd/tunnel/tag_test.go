@@ -3,7 +3,7 @@ package tunnel
 import (
 	"testing"
 
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -7,7 +7,7 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/diags"
 )
 
 // https://github.com/go-yaml/yaml/blob/v3.0.1/resolve.go#L70-L81

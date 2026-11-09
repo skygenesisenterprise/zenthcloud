@@ -9,11 +9,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/zenthcloud/cfssl/api"
-	"github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/log"
-	"github.com/zenthcloud/cfssl/ocsp"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/ocsp"
 )
 
 // A Handler accepts requests with a certficate parameter

@@ -5,7 +5,7 @@ package load_balancer_pool
 import (
 	"sort"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
 )
 
 // The Load Balancing API canonically returns a pool's origins sorted by name

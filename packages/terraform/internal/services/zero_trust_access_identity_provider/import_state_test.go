@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/option"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"

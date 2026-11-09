@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli/v2"
 
-	"github.com/zenthcloud/zenthcloudd/ingress"
-	"github.com/zenthcloud/zenthcloudd/quicktunnelauth"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quicktunnelauth"
 )
 
 func TestBuildQuickTunnelRequestBody_PublicMode(t *testing.T) {

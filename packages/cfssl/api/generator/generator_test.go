@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/cfssl/api"
-	"github.com/zenthcloud/cfssl/config"
-	"github.com/zenthcloud/cfssl/csr"
-	"github.com/zenthcloud/cfssl/signer/local"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer/local"
 )
 
 const (

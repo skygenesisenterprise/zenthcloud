@@ -6,7 +6,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
 )
 
 type ConnTracker struct {

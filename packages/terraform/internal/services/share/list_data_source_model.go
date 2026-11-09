@@ -5,9 +5,9 @@ package share
 import (
 	"context"
 
-	"github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/zenthcloud-go/v7/resource_sharing"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/resource_sharing"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"

@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/discovery"
-	"github.com/zenthcloud/pint/internal/parser"
-	"github.com/zenthcloud/pint/internal/reporter"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/discovery"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/reporter"
 )
 
 type testCheck struct {

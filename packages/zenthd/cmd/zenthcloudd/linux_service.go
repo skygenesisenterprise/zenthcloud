@@ -11,11 +11,11 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
 
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/inits"
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/tunnel"
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/logger"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/inits"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/tunnel"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/logger"
 )
 
 func runApp(app *cli.App, _ chan struct{}) {

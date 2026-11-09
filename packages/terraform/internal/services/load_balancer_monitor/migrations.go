@@ -5,7 +5,7 @@ package load_balancer_monitor
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_monitor/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_monitor/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

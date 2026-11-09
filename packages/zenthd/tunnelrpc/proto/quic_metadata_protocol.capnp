@@ -2,7 +2,7 @@ using Go = import "go.capnp";
 @0xb29021ef7421cc32;
 
 $Go.package("proto");
-$Go.import("github.com/zenthcloud/zenthcloudd/tunnelrpc");
+$Go.import("github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc");
 
 
 struct ConnectRequest @0xc47116a1045e4061 {

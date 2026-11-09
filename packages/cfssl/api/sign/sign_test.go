@@ -10,10 +10,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zenthcloud/cfssl/api"
-	"github.com/zenthcloud/cfssl/auth"
-	"github.com/zenthcloud/cfssl/config"
-	"github.com/zenthcloud/cfssl/signer"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/auth"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer"
 )
 
 const (

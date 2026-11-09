@@ -13,7 +13,7 @@ import (
 	"github.com/neilotoole/slogt/v2"
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/pint/internal/git"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/git"
 )
 
 func debugGitRun(t *testing.T) git.CommandRunner {

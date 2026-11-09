@@ -11,7 +11,7 @@ import (
 
 	gitlab "gitlab.com/gitlab-org/api/client-go/v3"
 
-	"github.com/zenthcloud/pint/internal/output"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/output"
 )
 
 type gitlabLogger struct{}

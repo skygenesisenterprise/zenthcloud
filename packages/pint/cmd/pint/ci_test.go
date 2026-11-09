@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/pint/internal/config"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/config"
 )
 
 func TestDetectCurrentBranch(t *testing.T) {

@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/overwatch"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/overwatch"
 )
 
 // AppService is the main service that runs when no command lines flags are passed to zenthcloudd

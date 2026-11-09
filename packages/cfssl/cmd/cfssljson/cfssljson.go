@@ -10,7 +10,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/zenthcloud/cfssl/cli/version"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli/version"
 )
 
 func readFile(filespec string) ([]byte, error) {

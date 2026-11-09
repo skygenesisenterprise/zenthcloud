@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/zenthcloud-go/v7/page_rules"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/page_rules"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"

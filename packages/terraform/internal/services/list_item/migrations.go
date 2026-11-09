@@ -5,7 +5,7 @@ package list_item
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/list_item/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/list_item/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

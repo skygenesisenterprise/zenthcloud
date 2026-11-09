@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/zenthcloud/cfssl/api/client"
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/cli/sign"
-	"github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/info"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api/client"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli/sign"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/info"
 
 	goerr "errors"
 )

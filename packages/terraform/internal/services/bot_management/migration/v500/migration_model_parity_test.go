@@ -8,9 +8,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/bot_management"
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/bot_management/migration/v500"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/bot_management"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/bot_management/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestBotManagementMigrationModelSchemaParity verifies that TargetBotManagementModel

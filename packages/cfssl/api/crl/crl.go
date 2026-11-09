@@ -8,12 +8,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/zenthcloud/cfssl/api"
-	"github.com/zenthcloud/cfssl/certdb"
-	"github.com/zenthcloud/cfssl/crl"
-	"github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/crl"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 )
 
 // A Handler accepts requests with a serial number parameter

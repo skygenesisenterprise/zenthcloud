@@ -7,10 +7,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/zenthcloud/zenthcloudd/cfapi"
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
-	cfdflags "github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
-	"github.com/zenthcloud/zenthcloudd/credentials"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cfapi"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
+	cfdflags "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/credentials"
 )
 
 var buildInfo *cliutil.BuildInfo

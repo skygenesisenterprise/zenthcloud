@@ -19,11 +19,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/zenthcloudd/client"
-	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/client"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
 
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 func newTestHTTP2ClientConn(ctx context.Context, conn net.Conn) (*http.ClientConn, error) {

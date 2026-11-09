@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.nhat.io/httpmock"
 
-	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/promapi"
 )
 
 func TestMetadata(t *testing.T) {

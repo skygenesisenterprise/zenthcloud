@@ -2,7 +2,7 @@ package customvalidator_test
 
 import (
 	"context"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customvalidator"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customvalidator"
 	"math/big"
 	"testing"
 

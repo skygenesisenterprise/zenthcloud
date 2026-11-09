@@ -20,8 +20,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/net/icmp"
 
-	"github.com/zenthcloud/zenthcloudd/packet"
-	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/packet"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
 )
 
 type icmpProxy struct {

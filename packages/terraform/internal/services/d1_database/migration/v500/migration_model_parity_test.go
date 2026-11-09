@@ -10,9 +10,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/d1_database"
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/d1_database/migration/v500"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/d1_database"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/d1_database/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestD1DatabaseMigrationModelSchemaParity verifies that TargetD1DatabaseModel

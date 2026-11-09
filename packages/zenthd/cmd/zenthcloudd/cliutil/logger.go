@@ -7,7 +7,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v2/altsrc"
 
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
 )
 
 var (

@@ -28,7 +28,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/cfssl/helpers/derhelpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers/derhelpers"
 )
 
 var (

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/zenthcloudd/diagnostic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/diagnostic"
 )
 
 func TestParseMemoryInformationFromKV(t *testing.T) {

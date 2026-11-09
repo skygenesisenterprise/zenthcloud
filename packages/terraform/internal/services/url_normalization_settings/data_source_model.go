@@ -5,8 +5,8 @@ package url_normalization_settings
 import (
 	"context"
 
-	"github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/zenthcloud-go/v7/url_normalization"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/url_normalization"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )

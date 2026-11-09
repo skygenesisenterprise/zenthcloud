@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/pint/internal/git"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/git"
 )
 
 func TestPathFilterIsPathAllowed(t *testing.T) {

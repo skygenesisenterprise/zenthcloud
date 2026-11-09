@@ -10,9 +10,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/origin_ca_certificate"
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/origin_ca_certificate/migration/v500"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/origin_ca_certificate"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/origin_ca_certificate/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestOriginCACertificateMigrationModelSchemaParity verifies that TargetOriginCACertificateModel

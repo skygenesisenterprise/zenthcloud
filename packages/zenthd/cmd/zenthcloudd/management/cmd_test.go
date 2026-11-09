@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/zenthcloudd/cfapi"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cfapi"
 )
 
 func TestParseResource_ValidResources(t *testing.T) {

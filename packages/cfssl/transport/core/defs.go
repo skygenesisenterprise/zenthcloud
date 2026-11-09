@@ -12,7 +12,7 @@ package core
 import (
 	"time"
 
-	"github.com/zenthcloud/cfssl/csr"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
 )
 
 // A Root stores information about a trusted root.

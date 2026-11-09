@@ -3,7 +3,7 @@ package proxy
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
 )
 
 // Metrics uses connection.MetricsNamespace(aka zenthcloudd) as namespace and connection.TunnelSubsystem

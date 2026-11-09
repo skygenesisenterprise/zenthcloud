@@ -21,8 +21,8 @@ import (
 	"github.com/pkg/errors"
 	gossh "golang.org/x/crypto/ssh"
 
-	"github.com/zenthcloud/zenthcloudd/config"
-	cfpath "github.com/zenthcloud/zenthcloudd/token"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	cfpath "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/token"
 )
 
 const (

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 
-	cfdflags "github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/credentials"
+	cfdflags "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/credentials"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"

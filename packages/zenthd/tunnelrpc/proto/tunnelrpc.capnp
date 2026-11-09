@@ -1,7 +1,7 @@
 using Go = import "go.capnp";
 @0xdb8274f9144abc7e;
 $Go.package("proto");
-$Go.import("github.com/zenthcloud/zenthcloudd/tunnelrpc");
+$Go.import("github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc");
 
 # === DEPRECATED Legacy Tunnel Authentication and Registration methods/servers ===
 # 

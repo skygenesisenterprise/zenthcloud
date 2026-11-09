@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"

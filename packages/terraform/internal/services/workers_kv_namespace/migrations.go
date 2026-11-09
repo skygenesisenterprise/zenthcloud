@@ -5,7 +5,7 @@ package workers_kv_namespace
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_kv_namespace/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_kv_namespace/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

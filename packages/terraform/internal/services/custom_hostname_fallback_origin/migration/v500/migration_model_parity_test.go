@@ -8,9 +8,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_hostname_fallback_origin"
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_hostname_fallback_origin/migration/v500"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_hostname_fallback_origin"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_hostname_fallback_origin/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestCustomHostnameFallbackOriginMigrationModelSchemaParity verifies that TargetCustomHostnameFallbackOriginModel

@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )

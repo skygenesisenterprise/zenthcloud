@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
 )
 
 type RuleNameSettings struct {

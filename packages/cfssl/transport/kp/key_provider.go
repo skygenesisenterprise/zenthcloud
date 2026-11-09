@@ -27,10 +27,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/zenthcloud/cfssl/csr"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/helpers/derhelpers"
-	"github.com/zenthcloud/cfssl/transport/core"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers/derhelpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/transport/core"
 )
 
 const (

@@ -70,7 +70,7 @@ blocks for new v5 resources — across 80+ resource types.
 Download the latest release from the [tf-migrate releases] page, or build from source:
 
 ```bash
-go install github.com/zenthcloud/tf-migrate/cmd/tf-migrate@latest
+go install github.com/skygenesisenterprise/zenthcloud/tf-migrate/cmd/tf-migrate@latest
 ```
 
 **Migrate your configuration:**

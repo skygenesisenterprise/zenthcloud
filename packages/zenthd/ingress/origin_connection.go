@@ -8,10 +8,10 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/ipaccess"
-	"github.com/zenthcloud/zenthcloudd/socks"
-	"github.com/zenthcloud/zenthcloudd/stream"
-	"github.com/zenthcloud/zenthcloudd/websocket"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ipaccess"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/socks"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/stream"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/websocket"
 )
 
 // OriginConnection is a way to stream to a service running on the user's origin.

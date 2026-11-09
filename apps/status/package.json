@@ -1,5 +1,13 @@
 {
 	"name": "@zenthcloud/status-app",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/skygenesisenterprise/zenthcloud.git"
+	},
+	"homepage": "https://github.com/skygenesisenterprise/zenthcloud",
+	"bugs": {
+		"url": "https://github.com/skygenesisenterprise/zenthcloud/issues"
+	},
 	"version": "0.1.0",
 	"private": true,
 	"license": "Apache-2.0",

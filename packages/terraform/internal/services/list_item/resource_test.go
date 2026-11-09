@@ -7,17 +7,17 @@ import (
 	"os"
 	"testing"
 
-	"github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/zenthcloud-go/v7/option"
-	"github.com/zenthcloud/zenthcloud-go/v7/rules"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/rules"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	_ "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/list"
+	_ "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/list"
 )
 
 func TestMain(m *testing.M) {

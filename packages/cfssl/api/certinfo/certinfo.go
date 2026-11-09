@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/zenthcloud/cfssl/api"
-	"github.com/zenthcloud/cfssl/certdb"
-	"github.com/zenthcloud/cfssl/certinfo"
-	"github.com/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certinfo"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 )
 
 // Handler accepts requests for either remote or uploaded

@@ -22,10 +22,10 @@ import (
 	"strconv"
 	"strings"
 
-	cferr "github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/helpers/derhelpers"
-	"github.com/zenthcloud/cfssl/log"
+	cferr "github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers/derhelpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 )
 
 const (

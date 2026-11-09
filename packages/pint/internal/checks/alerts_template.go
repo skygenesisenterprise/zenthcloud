@@ -20,10 +20,10 @@ import (
 	"github.com/prometheus/prometheus/promql/parser/posrange"
 	promTemplate "github.com/prometheus/prometheus/template"
 
-	"github.com/zenthcloud/pint/internal/diags"
-	"github.com/zenthcloud/pint/internal/discovery"
-	"github.com/zenthcloud/pint/internal/parser"
-	"github.com/zenthcloud/pint/internal/parser/source"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/diags"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/discovery"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser/source"
 )
 
 const (

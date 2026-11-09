@@ -9,9 +9,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 
-	"github.com/zenthcloud/zenthcloudd/cfapi"
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/updater"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cfapi"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/updater"
 )
 
 var (

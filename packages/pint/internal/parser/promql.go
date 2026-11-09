@@ -7,7 +7,7 @@ import (
 
 	promParser "github.com/prometheus/prometheus/promql/parser"
 
-	"github.com/zenthcloud/pint/internal/parser/source"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser/source"
 )
 
 // PromQLParser is a shared, goroutine-safe PromQL parser with all feature flags enabled.

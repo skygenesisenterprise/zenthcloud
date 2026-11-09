@@ -16,13 +16,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/zenthcloud/redoctober/config"
-	"github.com/zenthcloud/redoctober/keycache"
-	"github.com/zenthcloud/redoctober/msp"
-	"github.com/zenthcloud/redoctober/padding"
-	"github.com/zenthcloud/redoctober/passvault"
-	"github.com/zenthcloud/redoctober/persist"
-	"github.com/zenthcloud/redoctober/symcrypt"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/config"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/keycache"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/msp"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/padding"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/passvault"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/persist"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/symcrypt"
 )
 
 const (

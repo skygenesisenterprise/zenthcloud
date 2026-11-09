@@ -5,8 +5,8 @@ package queue_consumer
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"

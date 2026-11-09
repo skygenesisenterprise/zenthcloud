@@ -8,9 +8,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_trusted_domains"
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_trusted_domains/migration/v500"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_trusted_domains"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_trusted_domains/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestEmailSecurityTrustedDomainsMigrationModelSchemaParity verifies that TargetModel

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/pint/internal/output"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/output"
 )
 
 type BitBucketReporter struct {

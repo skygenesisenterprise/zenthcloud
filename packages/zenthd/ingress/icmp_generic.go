@@ -11,7 +11,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/packet"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/packet"
 )
 
 var errICMPProxyNotImplemented = fmt.Errorf("ICMP proxy is not implemented on %s %s", runtime.GOOS, runtime.GOARCH)

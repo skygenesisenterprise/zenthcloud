@@ -8,12 +8,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/cli/genkey"
-	"github.com/zenthcloud/cfssl/config"
-	"github.com/zenthcloud/cfssl/csr"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/selfsign"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli/genkey"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/selfsign"
 )
 
 var selfSignUsageText = `cfssl selfsign -- generate a new self-signed key and signed certificate

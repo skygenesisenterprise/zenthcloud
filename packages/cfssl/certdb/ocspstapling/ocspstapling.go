@@ -10,9 +10,9 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/zenthcloud/cfssl/certdb"
-	cferr "github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb"
+	cferr "github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 	ct "github.com/google/certificate-transparency-go"
 	"golang.org/x/crypto/ocsp"
 )

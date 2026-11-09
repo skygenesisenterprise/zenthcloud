@@ -15,8 +15,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/ubiquity"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/ubiquity"
 )
 
 const (

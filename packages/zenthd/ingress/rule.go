@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/zenthcloud/zenthcloudd/ingress/middleware"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress/middleware"
 )
 
 // Rule routes traffic from a hostname/path on the public internet to the

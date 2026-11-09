@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/promapi"
 )
 
 func TestRuleLinkCheck(t *testing.T) {

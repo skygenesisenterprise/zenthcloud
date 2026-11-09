@@ -4,8 +4,8 @@ import (
 	"github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v2/altsrc"
 
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/logger"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/logger"
 )
 
 func Action(actionFunc cli.ActionFunc) cli.ActionFunc {

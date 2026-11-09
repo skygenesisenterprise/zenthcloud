@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
 )
 
 // TestNewLocalConfig_MarshalJSON tests that we are able to converte a compiled and validated config back

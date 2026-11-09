@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/access"
-	"github.com/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/access"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
 )
 
 // ForwardServiceType is used to identify what kind of overwatch service this is

@@ -8,16 +8,16 @@ import (
 	"os"
 	"testing"
 
-	cfv7 "github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
+	cfv7 "github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_certificate"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_certificate"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 func TestZeroTrustGatewayCertificateModelSchemaParity(t *testing.T) {

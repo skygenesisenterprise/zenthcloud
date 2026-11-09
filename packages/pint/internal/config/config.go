@@ -13,8 +13,8 @@ import (
 
 	"github.com/zclconf/go-cty/cty"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/discovery"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsimple"

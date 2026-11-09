@@ -8,9 +8,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/leaked_credential_check_rule"
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/leaked_credential_check_rule/migration/v500"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/leaked_credential_check_rule"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/leaked_credential_check_rule/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestLeakedCredentialCheckRuleMigrationModelSchemaParity verifies that TargetLeakedCredentialCheckRuleModel

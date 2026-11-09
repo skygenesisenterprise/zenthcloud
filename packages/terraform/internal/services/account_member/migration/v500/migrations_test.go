@@ -8,8 +8,8 @@ import (
 	"os"
 	"testing"
 
-	zenthcloudv6 "github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/zenthcloud-go/v7/accounts"
+	zenthcloudv6 "github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/accounts"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (

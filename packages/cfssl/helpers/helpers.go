@@ -21,10 +21,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/cfssl/crypto/pkcs7"
-	cferr "github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers/derhelpers"
-	"github.com/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/crypto/pkcs7"
+	cferr "github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers/derhelpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 
 	ct "github.com/google/certificate-transparency-go"
 	cttls "github.com/google/certificate-transparency-go/tls"

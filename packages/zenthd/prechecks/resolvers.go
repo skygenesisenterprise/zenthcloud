@@ -10,9 +10,9 @@ import (
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/connection/dialopts"
-	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
-	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection/dialopts"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	cfdquic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic"
 )
 
 // DNSResolver abstracts edge DNS discovery used by DNS probes.

@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/log"
-	"github.com/zenthcloud/cfssl/ocsp"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/ocsp"
 )
 
 // Usage text of 'cfssl serve'

@@ -10,7 +10,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/option"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )

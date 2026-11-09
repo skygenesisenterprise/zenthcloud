@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/zenthcloud/cfssl/log"
-	"github.com/zenthcloud/cfssl/revoke"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/revoke"
 )
 
 // worker does all the parsing and validation of the certificate(s)

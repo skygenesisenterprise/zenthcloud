@@ -3,8 +3,8 @@ package orchestration
 import (
 	"encoding/json"
 
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
 )
 
 type newRemoteConfig struct {

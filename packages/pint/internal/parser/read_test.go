@@ -10,8 +10,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/pint/internal/comments"
-	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/comments"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/diags"
 )
 
 func TestReadContent(t *testing.T) {

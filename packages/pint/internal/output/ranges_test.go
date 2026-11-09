@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/pint/internal/output"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/output"
 )
 
 func TestFormatLineRangeString(t *testing.T) {

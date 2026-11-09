@@ -12,8 +12,8 @@ import (
 
 	"github.com/prometheus/common/model"
 
-	"github.com/zenthcloud/pint/internal/comments"
-	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/comments"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/diags"
 )
 
 const (

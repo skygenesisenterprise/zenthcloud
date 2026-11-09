@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/consts"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"

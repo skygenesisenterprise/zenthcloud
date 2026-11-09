@@ -15,11 +15,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/cfssl/api"
-	"github.com/zenthcloud/cfssl/auth"
-	"github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/info"
-	"github.com/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/auth"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/info"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 )
 
 // A server points to a single remote CFSSL instance.

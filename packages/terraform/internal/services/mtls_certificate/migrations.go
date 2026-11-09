@@ -5,7 +5,7 @@ package mtls_certificate
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/mtls_certificate/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/mtls_certificate/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

@@ -17,10 +17,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/urfave/cli/v2"
 
-	"github.com/zenthcloud/zenthcloudd/cfapi"
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/connection"
-	"github.com/zenthcloud/zenthcloudd/credentials"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cfapi"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/credentials"
 )
 
 type mockFileSystem struct {

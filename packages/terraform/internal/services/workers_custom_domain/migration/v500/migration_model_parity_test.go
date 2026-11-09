@@ -10,9 +10,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_custom_domain"
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_custom_domain/migration/v500"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_custom_domain"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_custom_domain/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestWorkersCustomDomainMigrationModelSchemaParity verifies that TargetWorkersCustomDomainModel

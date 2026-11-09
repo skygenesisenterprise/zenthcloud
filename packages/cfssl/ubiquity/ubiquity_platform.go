@@ -13,8 +13,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 )
 
 // SHA1RawPublicKey returns a SHA1 hash of the raw certificate public key

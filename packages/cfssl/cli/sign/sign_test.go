@@ -3,9 +3,9 @@ package sign
 import (
 	"testing"
 
-	"github.com/zenthcloud/cfssl/certdb/sql"
-	"github.com/zenthcloud/cfssl/certdb/testdb"
-	"github.com/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/sql"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/testdb"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
 )
 
 func TestSignFromConfig(t *testing.T) {

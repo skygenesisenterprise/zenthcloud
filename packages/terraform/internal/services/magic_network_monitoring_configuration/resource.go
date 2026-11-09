@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/zenthcloud-go/v7/magic_network_monitoring"
-	"github.com/zenthcloud/zenthcloud-go/v7/option"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/magic_network_monitoring"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

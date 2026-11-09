@@ -11,13 +11,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/config"
-	"github.com/zenthcloud/pint/internal/discovery"
-	"github.com/zenthcloud/pint/internal/git"
-	"github.com/zenthcloud/pint/internal/log"
-	"github.com/zenthcloud/pint/internal/parser"
-	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/config"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/discovery"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/git"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/log"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/promapi"
 )
 
 func BenchmarkGlobFinder(b *testing.B) {

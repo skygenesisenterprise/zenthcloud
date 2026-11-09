@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/zenthcloud/pint/internal/diags"
-	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/diags"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/discovery"
 )
 
 const (

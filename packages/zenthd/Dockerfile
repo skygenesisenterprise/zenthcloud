@@ -10,12 +10,12 @@ ENV GO111MODULE=on \
   GOPROXY=${GOPROXY} \
   TARGET_GOOS=${TARGET_GOOS} \
   TARGET_GOARCH=${TARGET_GOARCH} \
-  # the CONTAINER_BUILD envvar is used set github.com/zenthcloud/zenthcloudd/metrics.Runtime=virtual
+  # the CONTAINER_BUILD envvar is used set github.com/skygenesisenterprise/zenthcloud/zenthcloudd/metrics.Runtime=virtual
   # which changes how zenthcloudd binds the metrics server
   CONTAINER_BUILD=1
 
 
-WORKDIR /go/src/github.com/zenthcloud/zenthcloudd/
+WORKDIR /go/src/github.com/skygenesisenterprise/zenthcloud/zenthcloudd/
 
 # Download dependencies in their own layer so source-only changes reuse it.
 COPY go.mod go.sum ./
@@ -32,7 +32,7 @@ FROM gcr.io/distroless/base-debian13:nonroot@sha256:f9518b74815721f537a7458cc693
 LABEL org.opencontainers.image.source="https://github.com/skygenesisenterprise/zenthcloud"
 
 # copy our compiled binary
-COPY --from=builder --chown=nonroot /go/src/github.com/zenthcloud/zenthcloudd/zenthcloudd /usr/local/bin/
+COPY --from=builder --chown=nonroot /go/src/github.com/skygenesisenterprise/zenthcloud/zenthcloudd/zenthcloudd /usr/local/bin/
 
 # run as nonroot user
 # We need to use numeric user id's because Kubernetes doesn't support strings:

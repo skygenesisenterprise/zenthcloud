@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/cli/certinfo"
-	"github.com/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli/certinfo"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
 
 	_ "github.com/go-sql-driver/mysql" // import to support MySQL
 	_ "github.com/lib/pq"              // import to support Postgres

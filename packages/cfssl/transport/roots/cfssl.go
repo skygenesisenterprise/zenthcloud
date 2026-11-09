@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/zenthcloud/cfssl/api/client"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/info"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api/client"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/info"
 )
 
 // This package contains CFSSL integration.

@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/zenthcloud/zenthcloudd/watcher"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/watcher"
 )
 
 type mockNotifier struct {

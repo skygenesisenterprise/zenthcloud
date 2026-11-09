@@ -3,7 +3,7 @@ package queue
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/queue/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/queue/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

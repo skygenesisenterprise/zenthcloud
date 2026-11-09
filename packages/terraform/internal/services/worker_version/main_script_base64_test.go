@@ -3,8 +3,8 @@ package worker_version_test
 import (
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
 )
 
 // TestMainScriptBase64Unmarshal verifies that the main_script_base64 field

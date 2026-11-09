@@ -12,7 +12,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
 )
 
 const (

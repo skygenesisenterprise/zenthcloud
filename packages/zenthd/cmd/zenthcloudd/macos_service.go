@@ -11,8 +11,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
-	"github.com/zenthcloud/zenthcloudd/logger"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/logger"
 )
 
 const (

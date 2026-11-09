@@ -20,8 +20,8 @@ import (
 	"golang.org/x/sys/windows/svc/eventlog"
 	"golang.org/x/sys/windows/svc/mgr"
 
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
-	"github.com/zenthcloud/zenthcloudd/logger"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/logger"
 )
 
 const (

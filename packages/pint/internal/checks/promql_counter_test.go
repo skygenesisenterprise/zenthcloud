@@ -5,8 +5,8 @@ import (
 
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/promapi"
 )
 
 func newCounterCheck(prom *promapi.FailoverGroup) checks.RuleChecker {

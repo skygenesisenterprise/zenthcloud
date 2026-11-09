@@ -13,11 +13,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/zenthcloud-go/v7/option"
-	"github.com/zenthcloud/zenthcloud-go/v7/workers"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )

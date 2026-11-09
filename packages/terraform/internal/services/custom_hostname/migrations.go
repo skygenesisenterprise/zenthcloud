@@ -5,7 +5,7 @@ package custom_hostname
 import (
 	"context"
 
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_hostname/migration/v500"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_hostname/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )

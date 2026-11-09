@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/cfssl/certdb"
-	"github.com/zenthcloud/cfssl/certdb/sql"
-	"github.com/zenthcloud/cfssl/certdb/testdb"
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/sql"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/testdb"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 
 	"github.com/jmhodges/clock"
 	goocsp "golang.org/x/crypto/ocsp"

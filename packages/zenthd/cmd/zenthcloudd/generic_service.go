@@ -8,7 +8,7 @@ import (
 
 	cli "github.com/urfave/cli/v2"
 
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
 )
 
 func runApp(app *cli.App, graceShutdownC chan struct{}) {

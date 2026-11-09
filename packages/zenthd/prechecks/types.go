@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/zenthcloud/zenthcloudd/connection"
-	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/edgediscovery/allregions"
 )
 
 // Status represents the outcome of a single connectivity pre-check.

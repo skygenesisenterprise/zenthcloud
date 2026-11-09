@@ -65,7 +65,7 @@ Installation requires a [working Go 1.27+ installation](http://golang.org/doc/in
 Alternatively, [prebuilt binaries are available](https://github.com/skygenesisenterprise/zenthcloud)
 
 ```
-$ go install github.com/zenthcloud/cfssl/cmd/...@latest
+$ go install github.com/skygenesisenterprise/zenthcloud/cfssl/cmd/...@latest
 ```
 
 This will download, build, and install all of the utility programs
@@ -337,7 +337,7 @@ for configuring and running the CA.
 verifying certificates. It can be installed with
 
 ```
-go install github.com/zenthcloud/cfssl/cmd/mkbundle@latest
+go install github.com/skygenesisenterprise/zenthcloud/cfssl/cmd/mkbundle@latest
 ```
 
 It takes a collection of certificates, checks for CRL revocation (OCSP

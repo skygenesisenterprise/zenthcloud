@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 // RegistrationServer provides a handler interface for a client to provide methods to handle the different types of

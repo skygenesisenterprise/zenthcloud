@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 )
 
 // Handler is an interface providing a generic mechanism for handling HTTP requests.

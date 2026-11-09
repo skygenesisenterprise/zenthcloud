@@ -5,7 +5,7 @@ package notification_policy
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/notification_policy/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/notification_policy/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

@@ -18,9 +18,9 @@ import (
 	"golang.org/x/net/proxy"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/zenthcloud/zenthcloudd/socks"
-	"github.com/zenthcloud/zenthcloudd/stream"
-	"github.com/zenthcloud/zenthcloudd/websocket"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/socks"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/stream"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/websocket"
 )
 
 const (

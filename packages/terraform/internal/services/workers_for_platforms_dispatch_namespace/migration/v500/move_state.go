@@ -6,7 +6,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )

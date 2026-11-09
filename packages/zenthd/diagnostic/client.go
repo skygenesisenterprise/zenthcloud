@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strconv"
 
-	cfdflags "github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	cfdflags "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
 )
 
 type httpClient struct {

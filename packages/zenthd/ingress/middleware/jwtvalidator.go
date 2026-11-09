@@ -7,7 +7,7 @@ import (
 
 	"github.com/coreos/go-oidc/v3/oidc"
 
-	"github.com/zenthcloud/zenthcloudd/credentials"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/credentials"
 )
 
 const (

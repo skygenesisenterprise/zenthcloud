@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.nhat.io/httpmock"
 
-	"github.com/zenthcloud/pint/internal/output"
-	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/output"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/promapi"
 )
 
 func newAbsoluteRange(start, end time.Time, step time.Duration) absoluteRange {

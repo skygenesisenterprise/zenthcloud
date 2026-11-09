@@ -5,7 +5,7 @@ package certificate_pack
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/certificate_pack/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/certificate_pack/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

@@ -9,18 +9,18 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/zenthcloud-go/v7/option"
-	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/workers"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.

@@ -47,7 +47,7 @@ const Ripple = React.memo(function Ripple({
 		{
 			name: "Lxaer",
 			image:
-				"https://raw.githubusercontent.com/zenthcloud/zenthcloud/canary/.github/sponsors/lxaer.png",
+				"https://raw.githubusercontent.com/skygenesisenterprise/zenthcloud/canary/.github/sponsors/lxaer.png",
 			link: "https://www.lxaer.com?ref=zenthcloud",
 			type: "hero",
 		},
@@ -68,7 +68,7 @@ const Ripple = React.memo(function Ripple({
 		{
 			name: "AgentDock",
 			image:
-				"https://raw.githubusercontent.com/zenthcloud/zenthcloud/refs/heads/canary/.github/sponsors/agentdock.png",
+				"https://raw.githubusercontent.com/skygenesisenterprise/zenthcloud/refs/heads/canary/.github/sponsors/agentdock.png",
 			link: "https://agentdock.ai/?ref=zenthcloud",
 			type: "premium",
 		},
@@ -101,7 +101,7 @@ const Ripple = React.memo(function Ripple({
 		{
 			name: "Synexa",
 			image:
-				"https://raw.githubusercontent.com/zenthcloud/zenthcloud/refs/heads/canary/.github/sponsors/synexa.png",
+				"https://raw.githubusercontent.com/skygenesisenterprise/zenthcloud/refs/heads/canary/.github/sponsors/synexa.png",
 			link: "https://synexa.ai/?ref=zenthcloud",
 			type: "supporting",
 		},

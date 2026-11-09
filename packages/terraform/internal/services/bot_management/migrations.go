@@ -2,7 +2,7 @@ package bot_management
 
 import (
 	"context"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/bot_management/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/bot_management/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

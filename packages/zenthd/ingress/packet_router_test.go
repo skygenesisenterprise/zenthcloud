@@ -14,8 +14,8 @@ import (
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
 
-	"github.com/zenthcloud/zenthcloudd/packet"
-	quicpogs "github.com/zenthcloud/zenthcloudd/quic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/packet"
+	quicpogs "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic"
 )
 
 var (

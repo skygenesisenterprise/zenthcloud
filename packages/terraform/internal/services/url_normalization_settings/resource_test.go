@@ -7,13 +7,13 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/zenthcloud/zenthcloud-go/v7/url_normalization"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/url_normalization"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	zenthcloud "github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
+	zenthcloud "github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"

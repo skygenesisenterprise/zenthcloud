@@ -15,9 +15,9 @@ import (
 	"github.com/urfave/cli/v2"
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/ipaccess"
-	"github.com/zenthcloud/zenthcloudd/tlsconfig"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ipaccess"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tlsconfig"
 )
 
 func TestParseUnixSocket(t *testing.T) {

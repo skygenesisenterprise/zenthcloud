@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	tunnelpogs "github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	tunnelpogs "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 const (

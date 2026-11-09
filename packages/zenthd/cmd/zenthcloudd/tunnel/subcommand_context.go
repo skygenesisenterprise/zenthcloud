@@ -14,11 +14,11 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
 
-	"github.com/zenthcloud/zenthcloudd/cfapi"
-	cfdflags "github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
-	"github.com/zenthcloud/zenthcloudd/connection"
-	"github.com/zenthcloud/zenthcloudd/credentials"
-	"github.com/zenthcloud/zenthcloudd/logger"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cfapi"
+	cfdflags "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/credentials"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/logger"
 )
 
 const fedRampBaseApiURL = "https://github.com/skygenesisenterprise/zenthcloud"

@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/zenthcloud/pint/internal/git"
-	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/git"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser"
 )
 
 func NewGitBranchFinder(

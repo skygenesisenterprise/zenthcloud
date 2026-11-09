@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 // Restrict key names to characters allowed in an HTTP header name.

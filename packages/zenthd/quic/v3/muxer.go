@@ -9,8 +9,8 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/ingress"
-	"github.com/zenthcloud/zenthcloudd/packet"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/packet"
 )
 
 const (

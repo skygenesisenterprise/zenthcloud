@@ -7,9 +7,9 @@ import (
 	"path"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"

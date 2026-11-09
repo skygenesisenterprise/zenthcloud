@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/promapi"
 
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/model/labels"

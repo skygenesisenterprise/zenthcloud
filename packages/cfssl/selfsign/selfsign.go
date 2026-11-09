@@ -15,9 +15,9 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/zenthcloud/cfssl/config"
-	cferr "github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/signer"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	cferr "github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer"
 )
 
 const threeMonths = 2190 * time.Hour

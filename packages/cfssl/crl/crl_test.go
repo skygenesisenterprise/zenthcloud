@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/zenthcloud/cfssl/csr"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/initca"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/initca"
 )
 
 const (

@@ -9,13 +9,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/quic-go/quic-go"
 
-	"github.com/zenthcloud/zenthcloudd/connection"
-	"github.com/zenthcloud/zenthcloudd/edgediscovery"
-	"github.com/zenthcloud/zenthcloudd/orchestration"
-	v3 "github.com/zenthcloud/zenthcloudd/quic/v3"
-	"github.com/zenthcloud/zenthcloudd/retry"
-	"github.com/zenthcloud/zenthcloudd/signal"
-	"github.com/zenthcloud/zenthcloudd/tunnelstate"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/edgediscovery"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/orchestration"
+	v3 "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic/v3"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/retry"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/signal"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelstate"
 )
 
 const (

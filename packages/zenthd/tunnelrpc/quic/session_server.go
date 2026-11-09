@@ -6,8 +6,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 // SessionManagerServer handles streams with the SessionManager RPCs.

@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
 )
 
 const (

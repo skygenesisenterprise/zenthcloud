@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/zenthcloud/redoctober/core"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/core"
 )
 
 // RemoteServer represents a remote RedOctober server.

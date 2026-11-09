@@ -8,9 +8,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/zenthcloud/zenthcloudd/management"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/management"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 // registerClient derives a named tunnel rpc client that can then be used to register and unregister connections.

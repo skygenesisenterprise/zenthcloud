@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli/v2"
 
-	cfdflags "github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	cfdflags "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
 )
 
 func TestLogClientOptionsRedactsAllowedMail(t *testing.T) {

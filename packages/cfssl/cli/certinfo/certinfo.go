@@ -7,10 +7,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/zenthcloud/cfssl/certdb/dbconf"
-	"github.com/zenthcloud/cfssl/certdb/sql"
-	"github.com/zenthcloud/cfssl/certinfo"
-	"github.com/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/dbconf"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/sql"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certinfo"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
 	"github.com/jmoiron/sqlx"
 )
 

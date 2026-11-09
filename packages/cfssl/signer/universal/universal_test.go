@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
-	apiinfo "github.com/zenthcloud/cfssl/api/info"
-	apisign "github.com/zenthcloud/cfssl/api/signhandler"
-	"github.com/zenthcloud/cfssl/config"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/helpers/testsuite"
-	"github.com/zenthcloud/cfssl/info"
-	"github.com/zenthcloud/cfssl/signer"
+	apiinfo "github.com/skygenesisenterprise/zenthcloud/cfssl/api/info"
+	apisign "github.com/skygenesisenterprise/zenthcloud/cfssl/api/signhandler"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers/testsuite"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/info"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer"
 )
 
 const (

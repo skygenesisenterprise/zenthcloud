@@ -3,7 +3,7 @@ package reporter
 import (
 	"testing"
 
-	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
 
 	"github.com/stretchr/testify/require"
 )

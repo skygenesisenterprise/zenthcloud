@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/parser/source"
-	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser/source"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/promapi"
 )
 
 func newFeaturesCheck(prom *promapi.FailoverGroup) checks.RuleChecker {

@@ -17,7 +17,7 @@ import (
 	"github.com/urfave/cli/v2"
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/zenthcloud/zenthcloudd/validation"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/validation"
 )
 
 var (

@@ -5,7 +5,7 @@ package regional_tiered_cache
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/regional_tiered_cache/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/regional_tiered_cache/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

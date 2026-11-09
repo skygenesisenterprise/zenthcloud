@@ -6,10 +6,10 @@ import (
 	"net"
 	"os"
 
-	"github.com/zenthcloud/cfssl/log"
-	"github.com/zenthcloud/cfssl/transport"
-	"github.com/zenthcloud/cfssl/transport/core"
-	"github.com/zenthcloud/cfssl/transport/example/exlib"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/transport"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/transport/core"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/transport/example/exlib"
 )
 
 // maclient is a mutual-authentication server, meant to demonstrate

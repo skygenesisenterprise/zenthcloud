@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/snippet_rules/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/snippet_rules/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*SnippetRulesResource)(nil)

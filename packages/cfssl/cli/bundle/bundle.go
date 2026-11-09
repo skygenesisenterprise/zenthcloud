@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/zenthcloud/cfssl/bundler"
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/ubiquity"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/bundler"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/ubiquity"
 )
 
 // Usage text of 'cfssl bundle'

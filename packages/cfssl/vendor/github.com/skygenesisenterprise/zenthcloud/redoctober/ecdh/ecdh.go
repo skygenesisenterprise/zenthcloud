@@ -14,8 +14,8 @@ import (
 	"crypto/sha256"
 	"errors"
 
-	"github.com/zenthcloud/redoctober/padding"
-	"github.com/zenthcloud/redoctober/symcrypt"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/padding"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/symcrypt"
 )
 
 var Curve = elliptic.P256

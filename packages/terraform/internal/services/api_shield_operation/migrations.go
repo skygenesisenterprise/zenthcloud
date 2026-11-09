@@ -5,8 +5,8 @@ package api_shield_operation
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_shield_operation/migration/v500"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_shield_operation/migration/v501"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/api_shield_operation/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/api_shield_operation/migration/v501"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
-	"github.com/zenthcloud/zenthcloudd/mocks"
+	cfdflow "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/flow"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/mocks"
 )
 
 func TestRateLimitOnNewDatagramV2UDPSession(t *testing.T) {

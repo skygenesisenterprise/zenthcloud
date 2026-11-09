@@ -14,11 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/cfssl/auth"
-	cferr "github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/log"
-	ocspConfig "github.com/zenthcloud/cfssl/ocsp/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/auth"
+	cferr "github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	ocspConfig "github.com/skygenesisenterprise/zenthcloud/cfssl/ocsp/config"
 
 	// empty import of zlint/v3 required to have lints registered.
 	_ "github.com/zmap/zlint/v3"

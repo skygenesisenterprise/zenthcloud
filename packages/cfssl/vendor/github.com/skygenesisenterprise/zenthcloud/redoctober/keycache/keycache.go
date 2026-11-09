@@ -18,8 +18,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/zenthcloud/redoctober/ecdh"
-	"github.com/zenthcloud/redoctober/passvault"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/ecdh"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/passvault"
 )
 
 // DelegateIndex is used to index the map of currently delegated keys.

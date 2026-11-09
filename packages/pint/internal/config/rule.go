@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/comments"
-	"github.com/zenthcloud/pint/internal/config/options"
-	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/comments"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/config/options"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser"
 )
 
 type Rule struct {

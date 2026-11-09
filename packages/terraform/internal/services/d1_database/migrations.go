@@ -3,7 +3,7 @@ package d1_database
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/d1_database/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/d1_database/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

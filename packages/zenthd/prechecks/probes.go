@@ -12,15 +12,15 @@ import (
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/connection/dialopts"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection/dialopts"
 
-	"github.com/zenthcloud/zenthcloudd/connection"
-	cfdcrypto "github.com/zenthcloud/zenthcloudd/crypto"
-	edgedial "github.com/zenthcloud/zenthcloudd/edgediscovery"
-	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
-	"github.com/zenthcloud/zenthcloudd/features"
-	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
-	"github.com/zenthcloud/zenthcloudd/tlsconfig"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	cfdcrypto "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/crypto"
+	edgedial "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/edgediscovery"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/features"
+	cfdquic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tlsconfig"
 )
 
 const (

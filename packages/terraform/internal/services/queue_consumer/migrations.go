@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/queue_consumer/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/queue_consumer/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*QueueConsumerResource)(nil)

@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/zenthcloud/pint/internal/log"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/log"
 
 	"github.com/stretchr/testify/require"
 )

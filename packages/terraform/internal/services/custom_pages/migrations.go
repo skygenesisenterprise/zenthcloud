@@ -6,7 +6,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_pages/migration/v500"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_pages/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*CustomPagesResource)(nil)

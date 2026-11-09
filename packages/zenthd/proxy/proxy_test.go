@@ -24,18 +24,18 @@ import (
 	"go.uber.org/mock/gomock"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/zenthcloud/zenthcloudd/mocks"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/mocks"
 
-	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
+	cfdflow "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/flow"
 
-	"github.com/zenthcloud/zenthcloudd/cfio"
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/connection"
-	"github.com/zenthcloud/zenthcloudd/hello"
-	"github.com/zenthcloud/zenthcloudd/ingress"
-	"github.com/zenthcloud/zenthcloudd/quicktunnelauth"
-	"github.com/zenthcloud/zenthcloudd/tracing"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cfio"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/hello"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quicktunnelauth"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 var (

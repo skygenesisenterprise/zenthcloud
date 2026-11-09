@@ -14,9 +14,9 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/idna"
 
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/ingress/middleware"
-	"github.com/zenthcloud/zenthcloudd/ipaccess"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress/middleware"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ipaccess"
 )
 
 var (

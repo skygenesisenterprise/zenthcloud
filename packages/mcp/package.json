@@ -1,5 +1,13 @@
 {
   "name": "zenthcloud-mcp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skygenesisenterprise/zenthcloud.git"
+  },
+  "homepage": "https://github.com/skygenesisenterprise/zenthcloud",
+  "bugs": {
+    "url": "https://github.com/skygenesisenterprise/zenthcloud/issues"
+  },
   "version": "0.1.0",
   "description": "MCP server for the entire Zenthcloud API using codemode",
   "type": "module",

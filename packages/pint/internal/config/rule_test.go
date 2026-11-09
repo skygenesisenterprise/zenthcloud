@@ -8,9 +8,9 @@ import (
 
 	"github.com/neilotoole/slogt/v2"
 
-	"github.com/zenthcloud/pint/internal/config"
-	"github.com/zenthcloud/pint/internal/discovery"
-	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/config"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/discovery"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser"
 
 	"github.com/stretchr/testify/require"
 )

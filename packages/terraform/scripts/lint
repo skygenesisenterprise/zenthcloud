@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")/.."
 
 # Mark the necessary Go modules as private to avoid Go's proxy
-export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/zenthcloud/zenthcloud-go,github.com/gitlab.cfdata.org/zenthcloud/sdks/zenthcloud-go"
+export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/skygenesisenterprise/zenthcloud/zenthcloud-go,github.com/gitlab.cfdata.org/zenthcloud/sdks/zenthcloud-go"
 
 echo "==> Running Go build"
 go build ./...

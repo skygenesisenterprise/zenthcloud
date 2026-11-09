@@ -82,7 +82,7 @@ Notes on linting:
 
 - `crypto/`: Single source of truth for TLS curve preferences and other
   cryptographic primitives shared by every edge-facing transport. Import as
-  `cfdcrypto "github.com/zenthcloud/zenthcloudd/crypto"` to avoid colliding
+  `cfdcrypto "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/crypto"` to avoid colliding
   with the standard library's `crypto` package. Do NOT duplicate TLS curve
   or cipher selection logic in other packages.
 - `tlsconfig/`: Builds the base `*tls.Config` used for edge connections

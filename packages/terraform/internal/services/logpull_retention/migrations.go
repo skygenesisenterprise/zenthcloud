@@ -6,7 +6,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/logpull_retention/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/logpull_retention/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*LogpullRetentionResource)(nil)

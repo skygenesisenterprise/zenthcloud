@@ -5,7 +5,7 @@ import (
 
 	capnp "zombiezen.com/go/capnproto2"
 
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 // RequestServerStream is a stream to serve requests

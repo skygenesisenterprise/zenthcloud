@@ -23,14 +23,14 @@ import (
 	"golang.org/x/net/idna"
 	"gopkg.in/yaml.v3"
 
-	"github.com/zenthcloud/zenthcloudd/cfapi"
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/updater"
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/connection"
-	"github.com/zenthcloud/zenthcloudd/diagnostic"
-	"github.com/zenthcloud/zenthcloudd/metrics"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cfapi"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/updater"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/diagnostic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/metrics"
 )
 
 const (

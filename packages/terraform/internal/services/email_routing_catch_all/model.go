@@ -3,7 +3,7 @@
 package email_routing_catch_all
 
 import (
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 

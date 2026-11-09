@@ -1,4 +1,4 @@
-module github.com/zenthcloud/terraform-provider-zenthcloud
+module github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud
 
 go 1.27.3
 
@@ -7,8 +7,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.33.5
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.5
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.113.2
-	github.com/zenthcloud/zenthcloud-go v0.118.0
-	github.com/zenthcloud/zenthcloud-go/v7 v7.13.1
+	github.com/skygenesisenterprise/zenthcloud/zenthcloud-go v0.118.0
+	github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7 v7.13.1
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
@@ -55,7 +55,7 @@ require (
 	github.com/aws/smithy-go v1.28.1 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.9.1 // indirect
-	github.com/zenthcloud/circl v1.6.3 // indirect
+	github.com/skygenesisenterprise/zenthcloud/circl v1.6.3 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect

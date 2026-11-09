@@ -3,7 +3,7 @@ package zero_trust_access_policy
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_policy/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_policy/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

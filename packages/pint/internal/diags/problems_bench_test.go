@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zenthcloud/pint/internal/output"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/output"
 )
 
 // BenchmarkInjectDiagnosticsLongExpr measures diagnostic injection for a

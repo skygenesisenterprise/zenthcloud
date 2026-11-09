@@ -14,14 +14,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/redoctober/config"
-	"github.com/zenthcloud/redoctober/cryptor"
-	"github.com/zenthcloud/redoctober/hipchat"
-	"github.com/zenthcloud/redoctober/keycache"
-	"github.com/zenthcloud/redoctober/order"
-	"github.com/zenthcloud/redoctober/passvault"
-	"github.com/zenthcloud/redoctober/persist"
-	"github.com/zenthcloud/redoctober/report"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/config"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/cryptor"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/hipchat"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/keycache"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/order"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/passvault"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/persist"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/report"
 	"golang.org/x/crypto/ssh"
 )
 

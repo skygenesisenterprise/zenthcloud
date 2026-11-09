@@ -75,7 +75,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/zenthcloud/cfssl/whitelist"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/whitelist"
 )
 
 var wl = whitelist.NewBasic()

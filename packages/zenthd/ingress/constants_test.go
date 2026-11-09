@@ -1,6 +1,6 @@
 package ingress
 
-import "github.com/zenthcloud/zenthcloudd/logger"
+import "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/logger"
 
 var (
 	TestLogger = logger.Create(nil)

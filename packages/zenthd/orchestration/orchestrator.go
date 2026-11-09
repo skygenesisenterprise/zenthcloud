@@ -11,13 +11,13 @@ import (
 	pkgerrors "github.com/pkg/errors"
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/connection"
-	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
-	"github.com/zenthcloud/zenthcloudd/ingress"
-	"github.com/zenthcloud/zenthcloudd/proxy"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	cfdflow "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/flow"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/proxy"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 // Orchestrator manages configurations, so they can be updatable during runtime

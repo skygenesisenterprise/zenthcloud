@@ -5,7 +5,7 @@ package ingress
 import (
 	"testing"
 
-	"github.com/zenthcloud/zenthcloudd/packet"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/packet"
 )
 
 func getFunnel(t *testing.T, proxy *icmpProxy, tuple flow3Tuple) (packet.Funnel, bool) {

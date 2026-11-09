@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	cfv7 "github.com/zenthcloud/zenthcloud-go/v7"
-	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	cfv7 "github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )

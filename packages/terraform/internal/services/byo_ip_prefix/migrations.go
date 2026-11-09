@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/byo_ip_prefix/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/byo_ip_prefix/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*ByoIPPrefixResource)(nil)

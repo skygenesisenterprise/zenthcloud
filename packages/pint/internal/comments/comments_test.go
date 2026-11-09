@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/pint/internal/comments"
-	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/comments"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/diags"
 
 	"github.com/stretchr/testify/require"
 )

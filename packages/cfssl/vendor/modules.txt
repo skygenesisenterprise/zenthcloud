@@ -12,25 +12,25 @@ github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.2.0
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
-# github.com/zenthcloud/backoff v0.0.0-20161212185259-647f3cdfc87a
+# github.com/skygenesisenterprise/zenthcloud/backoff v0.0.0-20161212185259-647f3cdfc87a
 ## explicit
-github.com/zenthcloud/backoff
-# github.com/zenthcloud/redoctober v0.0.0-20211013234631-6a74ccc611f6
+github.com/skygenesisenterprise/zenthcloud/backoff
+# github.com/skygenesisenterprise/zenthcloud/redoctober v0.0.0-20211013234631-6a74ccc611f6
 ## explicit; go 1.16
-github.com/zenthcloud/redoctober/client
-github.com/zenthcloud/redoctober/config
-github.com/zenthcloud/redoctober/core
-github.com/zenthcloud/redoctober/cryptor
-github.com/zenthcloud/redoctober/ecdh
-github.com/zenthcloud/redoctober/hipchat
-github.com/zenthcloud/redoctober/keycache
-github.com/zenthcloud/redoctober/msp
-github.com/zenthcloud/redoctober/order
-github.com/zenthcloud/redoctober/padding
-github.com/zenthcloud/redoctober/passvault
-github.com/zenthcloud/redoctober/persist
-github.com/zenthcloud/redoctober/report
-github.com/zenthcloud/redoctober/symcrypt
+github.com/skygenesisenterprise/zenthcloud/redoctober/client
+github.com/skygenesisenterprise/zenthcloud/redoctober/config
+github.com/skygenesisenterprise/zenthcloud/redoctober/core
+github.com/skygenesisenterprise/zenthcloud/redoctober/cryptor
+github.com/skygenesisenterprise/zenthcloud/redoctober/ecdh
+github.com/skygenesisenterprise/zenthcloud/redoctober/hipchat
+github.com/skygenesisenterprise/zenthcloud/redoctober/keycache
+github.com/skygenesisenterprise/zenthcloud/redoctober/msp
+github.com/skygenesisenterprise/zenthcloud/redoctober/order
+github.com/skygenesisenterprise/zenthcloud/redoctober/padding
+github.com/skygenesisenterprise/zenthcloud/redoctober/passvault
+github.com/skygenesisenterprise/zenthcloud/redoctober/persist
+github.com/skygenesisenterprise/zenthcloud/redoctober/report
+github.com/skygenesisenterprise/zenthcloud/redoctober/symcrypt
 # github.com/getsentry/sentry-go v0.11.0
 ## explicit; go 1.14
 github.com/getsentry/sentry-go

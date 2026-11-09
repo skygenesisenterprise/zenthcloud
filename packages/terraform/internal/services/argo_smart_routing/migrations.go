@@ -4,7 +4,7 @@ package argo_smart_routing
 
 import (
 	"context"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/argo_smart_routing/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/argo_smart_routing/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

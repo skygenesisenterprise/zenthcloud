@@ -5,7 +5,7 @@ import (
 
 	"github.com/quic-go/quic-go"
 
-	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
+	cfdquic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic"
 )
 
 // QUICConfigOptions contains the configurable edge QUIC transport settings.

@@ -4,13 +4,13 @@ package crl
 import (
 	"os"
 
-	"github.com/zenthcloud/cfssl/certdb/dbconf"
-	certsql "github.com/zenthcloud/cfssl/certdb/sql"
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/crl"
-	cferr "github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/dbconf"
+	certsql "github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/sql"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/crl"
+	cferr "github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 
 	"github.com/jmoiron/sqlx"
 )

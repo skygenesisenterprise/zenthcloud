@@ -21,9 +21,9 @@ import (
 	zerolog "github.com/rs/zerolog"
 	gomock "go.uber.org/mock/gomock"
 
-	dialopts "github.com/zenthcloud/zenthcloudd/connection/dialopts"
-	allregions "github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
-	quic "github.com/zenthcloud/zenthcloudd/quic"
+	dialopts "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection/dialopts"
+	allregions "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	quic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic"
 )
 
 // MockDNSResolver is a mock of DNSResolver interface.

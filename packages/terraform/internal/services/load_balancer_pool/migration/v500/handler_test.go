@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_pool"
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_pool/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_pool"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_pool/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"

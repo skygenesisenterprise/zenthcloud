@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/cfssl/certdb"
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 )
 
 // Certificate represents a JSON description of an X.509 certificate.

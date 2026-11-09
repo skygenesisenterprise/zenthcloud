@@ -5,7 +5,7 @@ package authenticated_origin_pulls_hostname_certificate
 import (
 	"context"
 
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls_hostname_certificate/migration/v500"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls_hostname_certificate/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

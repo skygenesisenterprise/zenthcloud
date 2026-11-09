@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/zenthcloud/cfssl/bundler"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/bundler"
 )
 
 // Broad contains scanners for large swaths of TLS hosts on the internet.

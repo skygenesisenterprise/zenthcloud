@@ -6,13 +6,13 @@ import (
 	"slices"
 	"time"
 
-	"github.com/zenthcloud/backoff"
+	"github.com/skygenesisenterprise/zenthcloud/backoff"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/connection"
-	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
-	"github.com/zenthcloud/zenthcloudd/features"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/features"
 )
 
 const (

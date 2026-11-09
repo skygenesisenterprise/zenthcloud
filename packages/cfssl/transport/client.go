@@ -6,15 +6,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/zenthcloud/backoff"
-	"github.com/zenthcloud/cfssl/csr"
-	"github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/log"
-	"github.com/zenthcloud/cfssl/revoke"
-	"github.com/zenthcloud/cfssl/transport/ca"
-	"github.com/zenthcloud/cfssl/transport/core"
-	"github.com/zenthcloud/cfssl/transport/kp"
-	"github.com/zenthcloud/cfssl/transport/roots"
+	"github.com/skygenesisenterprise/zenthcloud/backoff"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/revoke"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/transport/ca"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/transport/core"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/transport/kp"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/transport/roots"
 )
 
 func envOrDefault(key, def string) string {

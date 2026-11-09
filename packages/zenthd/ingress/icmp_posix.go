@@ -14,7 +14,7 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/net/icmp"
 
-	"github.com/zenthcloud/zenthcloudd/packet"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/packet"
 )
 
 // Opens a non-privileged ICMP socket on Linux and Darwin

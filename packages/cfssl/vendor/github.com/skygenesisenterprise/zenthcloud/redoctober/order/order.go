@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/zenthcloud/redoctober/hipchat"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/hipchat"
 )
 
 const (

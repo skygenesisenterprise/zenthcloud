@@ -9,13 +9,13 @@ import (
 	"net"
 	"path/filepath"
 
-	"github.com/zenthcloud/cfssl/api/client"
-	"github.com/zenthcloud/cfssl/auth"
-	"github.com/zenthcloud/cfssl/config"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/info"
-	"github.com/zenthcloud/cfssl/signer"
-	"github.com/zenthcloud/cfssl/transport/core"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api/client"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/auth"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/info"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/transport/core"
 )
 
 type authError struct {

@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/zenthcloudd/features"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/features"
 )
 
 // TestCurvePreferences verifies that GetCurvePreferences returns the

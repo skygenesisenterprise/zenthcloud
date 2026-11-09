@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 
 	"golang.org/x/crypto/ocsp"
 )

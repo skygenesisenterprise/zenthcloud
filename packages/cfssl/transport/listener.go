@@ -5,7 +5,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 )
 
 // A Listener is a TCP network listener for TLS-secured connections.

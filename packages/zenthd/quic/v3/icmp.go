@@ -6,9 +6,9 @@ import (
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/zenthcloud/zenthcloudd/ingress"
-	"github.com/zenthcloud/zenthcloudd/packet"
-	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/packet"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
 )
 
 // packetResponder is an implementation of the [ingress.ICMPResponder] which provides the ICMP Flow manager the

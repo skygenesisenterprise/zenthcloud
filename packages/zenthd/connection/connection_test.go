@@ -14,12 +14,12 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 
-	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
+	cfdflow "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/flow"
 
-	"github.com/zenthcloud/zenthcloudd/stream"
-	"github.com/zenthcloud/zenthcloudd/tracing"
-	tunnelpogs "github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
-	"github.com/zenthcloud/zenthcloudd/websocket"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/stream"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
+	tunnelpogs "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/websocket"
 )
 
 const (

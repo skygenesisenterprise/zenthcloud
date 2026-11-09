@@ -8,7 +8,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/ipaccess"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ipaccess"
 )
 
 // RequestHandler is the functions needed to handle a SOCKS5 command

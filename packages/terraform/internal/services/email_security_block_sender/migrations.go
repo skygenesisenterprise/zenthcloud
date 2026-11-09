@@ -3,7 +3,7 @@ package email_security_block_sender
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_block_sender/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_block_sender/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

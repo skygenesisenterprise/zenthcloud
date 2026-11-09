@@ -11,11 +11,11 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
 
-	"github.com/zenthcloud/zenthcloudd/carrier"
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/logger"
-	"github.com/zenthcloud/zenthcloudd/stream"
-	"github.com/zenthcloud/zenthcloudd/validation"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/carrier"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/logger"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/stream"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/validation"
 )
 
 const (

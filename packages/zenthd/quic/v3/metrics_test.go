@@ -1,6 +1,6 @@
 package v3_test
 
-import v3 "github.com/zenthcloud/zenthcloudd/quic/v3"
+import v3 "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic/v3"
 
 type noopMetrics struct{}
 

@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/cli/scan"
-	"github.com/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli/scan"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
 )
 
 // main defines the scan usage and registers all defined commands and flags.

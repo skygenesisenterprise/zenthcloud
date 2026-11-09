@@ -6,13 +6,13 @@ import (
 	"errors"
 	"os"
 
-	"github.com/zenthcloud/cfssl/certdb/dbconf"
-	certsql "github.com/zenthcloud/cfssl/certdb/sql"
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/config"
-	"github.com/zenthcloud/cfssl/log"
-	"github.com/zenthcloud/cfssl/signer"
-	"github.com/zenthcloud/cfssl/signer/universal"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/dbconf"
+	certsql "github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/sql"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer/universal"
 
 	"github.com/jmoiron/sqlx"
 )

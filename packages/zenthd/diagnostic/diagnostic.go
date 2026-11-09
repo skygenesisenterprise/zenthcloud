@@ -16,10 +16,10 @@ import (
 
 	"github.com/rs/zerolog"
 
-	network "github.com/zenthcloud/zenthcloudd/diagnostic/network"
-	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
-	"github.com/zenthcloud/zenthcloudd/features"
-	"github.com/zenthcloud/zenthcloudd/prechecks"
+	network "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/diagnostic/network"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/features"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/prechecks"
 )
 
 const (

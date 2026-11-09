@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/zenthcloud/cfssl/api"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api"
 )
 
 const (

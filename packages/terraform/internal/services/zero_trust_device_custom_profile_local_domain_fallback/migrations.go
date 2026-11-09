@@ -5,7 +5,7 @@ package zero_trust_device_custom_profile_local_domain_fallback
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_custom_profile_local_domain_fallback/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_custom_profile_local_domain_fallback/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

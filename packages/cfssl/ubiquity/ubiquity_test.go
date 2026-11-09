@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 )
 
 const (

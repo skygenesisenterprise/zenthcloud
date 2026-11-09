@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/zenthcloudd/diagnostic"
-	"github.com/zenthcloud/zenthcloudd/metrics"
-	"github.com/zenthcloud/zenthcloudd/tunnelstate"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/diagnostic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/metrics"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelstate"
 )
 
 func helperCreateServer(t *testing.T, listeners *gracenet.Net, tunnelID uuid.UUID, connectorID uuid.UUID) func() {

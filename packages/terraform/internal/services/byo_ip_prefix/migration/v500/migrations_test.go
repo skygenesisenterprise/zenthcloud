@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

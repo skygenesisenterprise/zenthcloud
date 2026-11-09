@@ -51,7 +51,7 @@ import (
 	"encoding/asn1"
 	"errors"
 
-	cferr "github.com/zenthcloud/cfssl/errors"
+	cferr "github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
 )
 
 // Types used for asn1 Unmarshaling.

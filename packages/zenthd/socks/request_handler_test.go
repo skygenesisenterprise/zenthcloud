@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/zenthcloud/zenthcloudd/ipaccess"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ipaccess"
 )
 
 func TestUnsupportedBind(t *testing.T) {

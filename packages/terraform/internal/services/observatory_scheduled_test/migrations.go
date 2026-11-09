@@ -5,7 +5,7 @@ package observatory_scheduled_test
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/observatory_scheduled_test/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/observatory_scheduled_test/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

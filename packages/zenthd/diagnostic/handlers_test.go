@@ -15,10 +15,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/zenthcloudd/connection"
-	"github.com/zenthcloud/zenthcloudd/diagnostic"
-	"github.com/zenthcloud/zenthcloudd/prechecks"
-	"github.com/zenthcloud/zenthcloudd/tunnelstate"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/diagnostic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/prechecks"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelstate"
 )
 
 type SystemCollectorMock struct {

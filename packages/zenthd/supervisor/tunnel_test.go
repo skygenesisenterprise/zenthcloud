@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/zenthcloud/zenthcloudd/connection"
-	"github.com/zenthcloud/zenthcloudd/retry"
-	"github.com/zenthcloud/zenthcloudd/signal"
-	"github.com/zenthcloud/zenthcloudd/tunnelstate"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/retry"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/signal"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelstate"
 )
 
 func immediateTimeAfter(time.Duration) <-chan time.Time {

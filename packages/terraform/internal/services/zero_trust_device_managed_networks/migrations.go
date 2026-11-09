@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_managed_networks/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_managed_networks/migration/v500"
 )
 
 var _ resource.ResourceWithMoveState = (*ZeroTrustDeviceManagedNetworksResource)(nil)

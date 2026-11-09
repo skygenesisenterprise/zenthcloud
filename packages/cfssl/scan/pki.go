@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/revoke"
-	"github.com/zenthcloud/cfssl/scan/crypto/tls"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/revoke"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/scan/crypto/tls"
 )
 
 // PKI contains scanners for the Public Key Infrastructure.

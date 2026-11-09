@@ -3,7 +3,7 @@ package selfsign
 import (
 	"testing"
 
-	"github.com/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
 )
 
 func TestSelfSignMain(t *testing.T) {

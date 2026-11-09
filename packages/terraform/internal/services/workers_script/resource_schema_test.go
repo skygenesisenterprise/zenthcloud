@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_script"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_script"
 	resource_schema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 

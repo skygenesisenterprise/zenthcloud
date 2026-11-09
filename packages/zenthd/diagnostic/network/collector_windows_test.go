@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	diagnostic "github.com/zenthcloud/zenthcloudd/diagnostic/network"
+	diagnostic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/diagnostic/network"
 )
 
 func TestDecode(t *testing.T) {

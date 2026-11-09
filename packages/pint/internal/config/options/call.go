@@ -3,7 +3,7 @@ package options
 import (
 	"errors"
 
-	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
 )
 
 type CallSettings struct {

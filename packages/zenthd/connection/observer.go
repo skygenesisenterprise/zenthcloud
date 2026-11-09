@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/management"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/management"
 )
 
 const (

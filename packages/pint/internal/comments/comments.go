@@ -6,7 +6,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/diags"
 )
 
 type Type uint8

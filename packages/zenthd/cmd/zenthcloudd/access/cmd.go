@@ -17,13 +17,13 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/idna"
 
-	"github.com/zenthcloud/zenthcloudd/carrier"
-	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
-	cfdflags "github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
-	"github.com/zenthcloud/zenthcloudd/logger"
-	"github.com/zenthcloud/zenthcloudd/sshgen"
-	"github.com/zenthcloud/zenthcloudd/token"
-	"github.com/zenthcloud/zenthcloudd/validation"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/carrier"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/cliutil"
+	cfdflags "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/logger"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/sshgen"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/token"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/validation"
 )
 
 const (

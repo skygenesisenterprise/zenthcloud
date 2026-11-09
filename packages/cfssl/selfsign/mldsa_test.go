@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/zenthcloud/cfssl/config"
-	"github.com/zenthcloud/cfssl/csr"
-	cferr "github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
+	cferr "github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 )
 
 // TestSignMLDSADefaultProfileKeyUsage verifies that a self-signed ML-DSA

@@ -4,10 +4,10 @@ import (
 	"flag"
 	"time"
 
-	"github.com/zenthcloud/cfssl/config"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/log"
-	"github.com/zenthcloud/cfssl/signer/universal"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer/universal"
 )
 
 // Config is a type to hold flag values used by cfssl commands.

@@ -1,4 +1,4 @@
-module github.com/zenthcloud/pint
+module github.com/skygenesisenterprise/zenthcloud/pint
 
 go 1.27.0
 

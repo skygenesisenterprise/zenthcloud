@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	_ "golang.org/x/net/trace" // ensure /debug/requests and /debug/events are registered on http.DefaultServeMux
 
-	"github.com/zenthcloud/zenthcloudd/diagnostic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/diagnostic"
 )
 
 // cmdlineMarker identifies os.Args in a response body. The base name of the test

@@ -21,8 +21,8 @@ import (
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/zenthcloud/zenthcloudd/packet"
-	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/packet"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
 )
 
 const (

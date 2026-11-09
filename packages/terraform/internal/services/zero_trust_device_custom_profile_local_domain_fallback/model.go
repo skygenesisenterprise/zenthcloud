@@ -3,7 +3,7 @@
 package zero_trust_device_custom_profile_local_domain_fallback
 
 import (
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 

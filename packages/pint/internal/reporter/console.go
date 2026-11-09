@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/diags"
-	"github.com/zenthcloud/pint/internal/output"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/diags"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/output"
 )
 
 func NewConsoleReporter(output io.Writer, minSeverity checks.Severity, noColor, showDuplicates bool) ConsoleReporter {

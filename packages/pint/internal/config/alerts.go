@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 
-	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
 )
 
 type AlertsSettings struct {

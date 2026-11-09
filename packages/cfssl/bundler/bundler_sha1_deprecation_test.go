@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/cfssl/config"
-	"github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/signer"
-	"github.com/zenthcloud/cfssl/signer/local"
-	"github.com/zenthcloud/cfssl/ubiquity"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer/local"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/ubiquity"
 )
 
 const (

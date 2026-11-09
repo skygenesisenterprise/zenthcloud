@@ -10,8 +10,8 @@ import (
 	"github.com/urfave/cli/v2"
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/zenthcloud/zenthcloudd/config"
-	"github.com/zenthcloud/zenthcloudd/ipaccess"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ipaccess"
 )
 
 // Ensure that the nullable config from `config` package and the

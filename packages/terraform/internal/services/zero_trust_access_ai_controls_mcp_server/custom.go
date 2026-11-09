@@ -3,7 +3,7 @@ package zero_trust_access_ai_controls_mcp_server
 import (
 	"encoding/json"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
 )
 
 // marshalMcpServerUpdate uses field-level diffing because this PUT endpoint

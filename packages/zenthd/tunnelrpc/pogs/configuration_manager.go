@@ -8,8 +8,8 @@ import (
 	"zombiezen.com/go/capnproto2/rpc"
 	"zombiezen.com/go/capnproto2/server"
 
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/metrics"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/proto"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/metrics"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/proto"
 )
 
 type ConfigurationManager interface {

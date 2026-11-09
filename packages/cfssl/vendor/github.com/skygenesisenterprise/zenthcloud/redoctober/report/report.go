@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/zenthcloud/redoctober/config"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/config"
 	"github.com/getsentry/sentry-go"
 )
 

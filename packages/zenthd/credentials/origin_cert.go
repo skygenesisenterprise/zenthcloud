@@ -12,7 +12,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/config"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
 )
 
 const (

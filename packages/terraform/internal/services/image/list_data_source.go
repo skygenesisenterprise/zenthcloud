@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go/v7"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 

@@ -7,7 +7,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/zenthcloud/cfssl/scan/crypto/tls"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/scan/crypto/tls"
 )
 
 // Connectivity contains scanners testing basic connectivity to the host

@@ -15,11 +15,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/hello"
-	"github.com/zenthcloud/zenthcloudd/ipaccess"
-	"github.com/zenthcloud/zenthcloudd/management"
-	"github.com/zenthcloud/zenthcloudd/socks"
-	"github.com/zenthcloud/zenthcloudd/tlsconfig"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/hello"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ipaccess"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/management"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/socks"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tlsconfig"
 )
 
 const (

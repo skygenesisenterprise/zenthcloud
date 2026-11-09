@@ -8,7 +8,7 @@ import (
 	"crypto/x509"
 	"math"
 
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 )
 
 // HashUbiquity represents a score for how ubiquitous a given hash

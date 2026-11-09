@@ -15,17 +15,17 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
-	"github.com/zenthcloud/zenthcloudd/management"
+	cfdflow "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/flow"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/management"
 
-	"github.com/zenthcloud/zenthcloudd/carrier"
-	"github.com/zenthcloud/zenthcloudd/cfio"
-	"github.com/zenthcloud/zenthcloudd/connection"
-	"github.com/zenthcloud/zenthcloudd/ingress"
-	"github.com/zenthcloud/zenthcloudd/quicktunnelauth"
-	"github.com/zenthcloud/zenthcloudd/stream"
-	"github.com/zenthcloud/zenthcloudd/tracing"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/carrier"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cfio"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quicktunnelauth"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/stream"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 const (

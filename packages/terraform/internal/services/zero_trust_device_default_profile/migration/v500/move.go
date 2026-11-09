@@ -5,7 +5,7 @@ package v500
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

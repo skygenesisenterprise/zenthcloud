@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_for_platforms_dispatch_namespace/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_for_platforms_dispatch_namespace/migration/v500"
 )
 
 var _ resource.ResourceWithMoveState = (*WorkersForPlatformsDispatchNamespaceResource)(nil)

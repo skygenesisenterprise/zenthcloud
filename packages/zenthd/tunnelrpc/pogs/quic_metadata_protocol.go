@@ -6,7 +6,7 @@ import (
 	capnp "zombiezen.com/go/capnproto2"
 	"zombiezen.com/go/capnproto2/pogs"
 
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/proto"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/proto"
 )
 
 // ConnectionType indicates the type of underlying connection proxied within the QUIC stream.

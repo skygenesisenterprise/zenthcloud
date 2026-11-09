@@ -17,13 +17,13 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/zenthcloud/zenthcloudd/client"
-	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/client"
+	cfdflow "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/flow"
 
-	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
-	"github.com/zenthcloud/zenthcloudd/tracing"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
-	rpcquic "github.com/zenthcloud/zenthcloudd/tunnelrpc/quic"
+	cfdquic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	rpcquic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/quic"
 )
 
 const (

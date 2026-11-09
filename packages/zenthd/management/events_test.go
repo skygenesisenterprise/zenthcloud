@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"nhooyr.io/websocket"
 
-	"github.com/zenthcloud/zenthcloudd/internal/test"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/internal/test"
 )
 
 var infoLevel = func() *LogLevel {

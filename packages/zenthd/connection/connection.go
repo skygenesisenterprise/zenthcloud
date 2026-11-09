@@ -15,9 +15,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
-	"github.com/zenthcloud/zenthcloudd/tracing"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
-	"github.com/zenthcloud/zenthcloudd/websocket"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/websocket"
 )
 
 const (

@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zenthcloud/cfssl/certdb"
-	"github.com/zenthcloud/cfssl/helpers"
-	"github.com/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 )
 
 // NewCRLFromFile takes in a list of serial numbers, one per line, as well as the issuing certificate

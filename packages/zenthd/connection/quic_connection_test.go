@@ -33,19 +33,19 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/nettest"
 
-	"github.com/zenthcloud/zenthcloudd/connection/dialopts"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection/dialopts"
 
-	"github.com/zenthcloud/zenthcloudd/client"
-	"github.com/zenthcloud/zenthcloudd/config"
-	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/client"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/config"
+	cfdflow "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/flow"
 
-	"github.com/zenthcloud/zenthcloudd/datagramsession"
-	"github.com/zenthcloud/zenthcloudd/ingress"
-	"github.com/zenthcloud/zenthcloudd/packet"
-	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
-	"github.com/zenthcloud/zenthcloudd/tracing"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
-	rpcquic "github.com/zenthcloud/zenthcloudd/tunnelrpc/quic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/datagramsession"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/packet"
+	cfdquic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	rpcquic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/quic"
 )
 
 var (

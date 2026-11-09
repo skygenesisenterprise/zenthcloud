@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/zenthcloud/cfssl/api/generator"
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/cli/genkey"
-	"github.com/zenthcloud/cfssl/cli/sign"
-	"github.com/zenthcloud/cfssl/csr"
-	"github.com/zenthcloud/cfssl/initca"
-	"github.com/zenthcloud/cfssl/log"
-	"github.com/zenthcloud/cfssl/signer"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/api/generator"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli/genkey"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli/sign"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/initca"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/signer"
 )
 
 var gencertUsageText = `cfssl gencert -- generate a new key and signed certificate

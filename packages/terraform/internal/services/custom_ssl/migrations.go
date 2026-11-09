@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_ssl/migration/v500"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_ssl/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*CustomSSLResource)(nil)

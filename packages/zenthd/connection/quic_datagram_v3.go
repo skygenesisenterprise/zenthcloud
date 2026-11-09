@@ -9,11 +9,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/ingress"
-	"github.com/zenthcloud/zenthcloudd/management"
-	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
-	v3 "github.com/zenthcloud/zenthcloudd/quic/v3"
-	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/ingress"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/management"
+	cfdquic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic"
+	v3 "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic/v3"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 var (

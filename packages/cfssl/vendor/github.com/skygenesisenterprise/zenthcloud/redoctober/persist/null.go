@@ -3,9 +3,9 @@ package persist
 import (
 	"errors"
 
-	"github.com/zenthcloud/redoctober/config"
-	"github.com/zenthcloud/redoctober/keycache"
-	"github.com/zenthcloud/redoctober/passvault"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/config"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/keycache"
+	"github.com/skygenesisenterprise/zenthcloud/redoctober/passvault"
 )
 
 // Null is a non-persisting store. It is used when persistence is not

@@ -7,7 +7,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
 )
 
 func NewCheckStyleReporter(output io.Writer) CheckStyleReporter {

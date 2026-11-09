@@ -3,7 +3,7 @@ package email_security_impersonation_registry
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_impersonation_registry/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_impersonation_registry/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

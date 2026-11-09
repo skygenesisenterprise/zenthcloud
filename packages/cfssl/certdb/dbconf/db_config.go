@@ -5,8 +5,8 @@ import (
 	"errors"
 	"os"
 
-	cferr "github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/log"
+	cferr "github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/log"
 
 	"github.com/jmoiron/sqlx"
 )

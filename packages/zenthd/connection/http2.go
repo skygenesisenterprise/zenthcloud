@@ -16,10 +16,10 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/net/http2"
 
-	"github.com/zenthcloud/zenthcloudd/client"
-	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/client"
+	cfdflow "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/flow"
 
-	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tracing"
 )
 
 // note: these constants are exported so we can reuse them in the edge-side code

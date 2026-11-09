@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/cli/bundle"
-	"github.com/zenthcloud/cfssl/config"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli/bundle"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/config"
 )
 
 // main defines the bundle usage and registers all defined commands and flags.

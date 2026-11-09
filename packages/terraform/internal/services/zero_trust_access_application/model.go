@@ -5,8 +5,8 @@ package zero_trust_access_application
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 )
 
 type ZeroTrustAccessApplicationResultEnvelope struct {

@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"mime/multipart"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apiform"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/apiform"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )

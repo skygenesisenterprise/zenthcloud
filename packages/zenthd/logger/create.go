@@ -15,8 +15,8 @@ import (
 	"golang.org/x/term"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	cfdflags "github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
-	"github.com/zenthcloud/zenthcloudd/management"
+	cfdflags "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/management"
 )
 
 const (

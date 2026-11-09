@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/zenthcloud/zenthcloudd/features"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/features"
 )
 
 // errUnknownPostQuantumMode is returned by GetCurvePreferences when the

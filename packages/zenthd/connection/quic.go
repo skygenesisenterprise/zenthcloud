@@ -12,8 +12,8 @@ import (
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/connection/dialopts"
-	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/connection/dialopts"
+	cfdquic "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic"
 )
 
 var (

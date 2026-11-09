@@ -17,9 +17,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/websocket"
 
-	"github.com/zenthcloud/zenthcloudd/hello"
-	"github.com/zenthcloud/zenthcloudd/tlsconfig"
-	cfwebsocket "github.com/zenthcloud/zenthcloudd/websocket"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/hello"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/tlsconfig"
+	cfwebsocket "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/websocket"
 )
 
 func websocketClientTLSConfig(t *testing.T) *tls.Config {

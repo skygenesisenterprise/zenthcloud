@@ -4,7 +4,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go"
 )
 
 // FindGoModuleVersion digs into the build information and extracts the version

@@ -14,8 +14,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/zenthcloud/cfssl/errors"
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/errors"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 )
 
 // TestNew validate the CertificateRequest created to return with a KeyRequest

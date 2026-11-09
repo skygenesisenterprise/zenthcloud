@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/promapi"
 )
 
 func newRegexpCheck(_ *promapi.FailoverGroup) checks.RuleChecker {

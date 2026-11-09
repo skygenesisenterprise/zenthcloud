@@ -1,5 +1,13 @@
 {
 	"name": "@zenthcloud/cf-root",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/skygenesisenterprise/zenthcloud.git"
+	},
+	"homepage": "https://github.com/skygenesisenterprise/zenthcloud",
+	"bugs": {
+		"url": "https://github.com/skygenesisenterprise/zenthcloud/issues"
+	},
 	"private": true,
 	"type": "module",
 	"scripts": {

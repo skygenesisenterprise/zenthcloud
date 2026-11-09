@@ -3,7 +3,7 @@ package zero_trust_tunnel_zenthcloudd_virtual_network
 import (
 	"context"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_tunnel_zenthcloudd_virtual_network/migration/v500"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_tunnel_zenthcloudd_virtual_network/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

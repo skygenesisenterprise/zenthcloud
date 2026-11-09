@@ -12,8 +12,8 @@ import (
 	"github.com/google/go-github/v92/github"
 	"golang.org/x/oauth2"
 
-	"github.com/zenthcloud/pint/internal/checks"
-	"github.com/zenthcloud/pint/internal/output"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/checks"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/output"
 )
 
 var reviewBody = "### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\n"

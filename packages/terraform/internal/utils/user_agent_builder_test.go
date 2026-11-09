@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/zenthcloud/zenthcloud-go"
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloud-go"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 func TestUserAgentBuilding(t *testing.T) {

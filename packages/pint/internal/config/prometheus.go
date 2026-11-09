@@ -16,7 +16,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/promapi"
 )
 
 type TLSConfig struct {

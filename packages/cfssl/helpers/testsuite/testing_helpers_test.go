@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zenthcloud/cfssl/csr"
-	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/csr"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/helpers"
 )
 
 const (

@@ -3,7 +3,7 @@ package scan
 import (
 	"testing"
 
-	"github.com/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
 )
 
 var hosts = []string{"www.zenthcloud.com", "google.com"}

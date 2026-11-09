@@ -6,7 +6,7 @@ package sql
 import (
 	"testing"
 
-	"github.com/zenthcloud/cfssl/certdb/testdb"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/certdb/testdb"
 )
 
 func TestPostgreSQL(t *testing.T) {

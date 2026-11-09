@@ -2,8 +2,8 @@
 package gencrl
 
 import (
-	"github.com/zenthcloud/cfssl/cli"
-	"github.com/zenthcloud/cfssl/crl"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/cli"
+	"github.com/skygenesisenterprise/zenthcloud/cfssl/crl"
 	"strings"
 )
 

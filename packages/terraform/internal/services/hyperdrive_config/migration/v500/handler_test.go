@@ -4,13 +4,13 @@ import (
 	"context"
 	"testing"
 
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/hyperdrive_config/migration/v500"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/hyperdrive_config/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
-	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/hyperdrive_config"
+	"github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/hyperdrive_config"
 )
 
 // --- DetectV4State tests ---

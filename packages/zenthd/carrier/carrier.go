@@ -16,7 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 
-	"github.com/zenthcloud/zenthcloudd/token"
+	"github.com/skygenesisenterprise/zenthcloud/zenthcloudd/token"
 )
 
 const (

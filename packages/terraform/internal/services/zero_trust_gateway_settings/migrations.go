@@ -5,7 +5,7 @@ package zero_trust_gateway_settings
 import (
 	"context"
 
-	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_settings/migration/v500"
+	v500 "github.com/skygenesisenterprise/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_settings/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )

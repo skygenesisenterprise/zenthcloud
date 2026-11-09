@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	v3 "github.com/zenthcloud/zenthcloudd/quic/v3"
+	v3 "github.com/skygenesisenterprise/zenthcloud/zenthcloudd/quic/v3"
 )
 
 func makePayload(size int) []byte {

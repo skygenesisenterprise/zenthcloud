@@ -11,7 +11,7 @@ import (
 	promParser "github.com/prometheus/prometheus/promql/parser"
 	"github.com/urfave/cli/v3"
 
-	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/skygenesisenterprise/zenthcloud/pint/internal/parser"
 )
 
 const levelStep = 2
