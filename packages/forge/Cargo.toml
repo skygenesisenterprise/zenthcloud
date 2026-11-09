@@ -1,0 +1,132 @@
+[workspace]
+resolver = "3"
+
+[package]
+name = "forge"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.6.7", features = ["derive"], optional = true }
+rayon = "1.12.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.151", features = ["preserve_order"], optional = true }
+strum = { version = "0.28.0", features = ["derive"], optional = true }
+wasmtime = { version = "49.0.2", default-features = false, features = ["runtime", "cranelift", "component-model", "parallel-compilation", "std"], optional = true }
+wasmtime-wasi = { version = "49.0.2", default-features = false, features = ["p2"], optional = true }
+
+[dev-dependencies]
+divan = "0.1.21"
+serde_json = "1.0.151"
+
+[[bench]]
+name = "parse"
+harness = false
+
+[features]
+default = ["cli"]
+# The `forge` command. Library users can turn it off with
+# `default-features = false`.
+cli = ["dep:clap", "dep:serde_json", "dep:strum"]
+# `forge::wasm`, which runs plugins compiled to WebAssembly components.
+wasm = ["dep:wasmtime", "dep:wasmtime-wasi"]
+
+[profile.release]
+strip = true # Drop symbols and debug info from the binary, which the npm packages ship.
+opt-level = 3        # Enable aggressive performance optimizations (default for release)
+lto = "fat"          # Maximum Link-Time Optimization across all crates
+codegen-units = 1    # Allow global LLVM optimizations across the entire binary
+panic = "abort"      # Slightly reduces binary bloat and can give minor speed boosts
+
+[[bin]]
+name = "forge"
+required-features = ["cli"]
+
+[[test]]
+name = "cli"
+required-features = ["cli"]
+
+[[test]]
+name = "wasm"
+required-features = ["cli", "wasm"]
+
+
+[lints.clippy]
+# https://rust-lang.github.io/rust-clippy/rust-1.88.0/index.html
+allow_attributes                  = "deny"
+assigning_clones                  = "warn"
+cfg_not_test                      = "warn"
+checked_conversions               = "warn"
+cloned_instead_of_copied          = "warn"
+copy_iterator                     = "warn"
+dbg_macro                         = "warn"
+doc_link_with_quotes              = "warn"
+empty_drop                        = "warn"
+empty_enum_variants_with_brackets = "warn"
+empty_enums                       = "warn"
+expl_impl_clone_on_copy           = "warn"
+explicit_into_iter_loop           = "warn"
+filter_map_next                   = "warn"
+flat_map_option                   = "warn"
+float_cmp_const                   = "warn"
+fn_params_excessive_bools         = "warn"
+get_unwrap                        = "warn"
+implicit_clone                    = "warn"
+implicit_hasher                   = "warn"
+index_refutable_slice             = "warn"
+inefficient_to_string             = "warn"
+infinite_loop                     = "warn"
+invalid_upcast_comparisons        = "warn"
+iter_filter_is_ok                 = "warn"
+iter_not_returning_iterator       = "warn"
+large_stack_arrays                = "warn"
+large_types_passed_by_value       = "warn"
+lossy_float_literal               = "warn"
+macro_use_imports                 = "warn"
+manual_is_variant_and             = "warn"
+manual_ok_or                      = "warn"
+manual_string_new                 = "warn"
+map_flatten                       = "warn"
+map_unwrap_or                     = "warn"
+mem_forget                        = "warn"
+mismatching_type_param_order      = "warn"
+mut_mut                           = "warn"
+naive_bytecount                   = "warn"
+needless_bitwise_bool             = "warn"
+needless_continue                 = "warn"
+needless_for_each                 = "warn"
+no_effect_underscore_binding      = "warn"
+option_as_ref_cloned              = "warn"
+rc_buffer                         = "warn"
+rc_mutex                          = "warn"
+ref_binding_to_reference          = "warn"
+ref_option_ref                    = "warn"
+rest_pat_in_fully_bound_structs   = "warn"
+single_char_pattern               = "warn"
+stable_sort_primitive             = "warn"
+str_split_at_newline              = "warn"
+string_lit_chars_any              = "warn"
+unnecessary_box_returns           = "warn"
+unnecessary_join                  = "warn"
+unnested_or_patterns              = "warn"
+unreadable_literal                = "warn"
+verbose_bit_mask                  = "warn"
+verbose_file_reads                = "warn"
+zero_sized_map_values             = "warn"
+
+[lints.rust]
+# https://doc.rust-lang.org/rustc/lints/listing/allowed-by-default.html
+ambiguous_negative_literals    = "warn"
+dead_code                      = "warn"
+explicit_outlives_requirements = "warn"
+# that's for salsa
+impl_trait_overcaptures        = "warn"
+impl_trait_redundant_captures  = "allow"
+missing_unsafe_on_extern       = "warn"
+redundant_lifetimes            = "warn"
+trivial_numeric_casts          = "warn"
+unit_bindings                  = "warn"
+unsafe_attr_outside_unsafe     = "warn"
+unused_import_braces           = "warn"
+unused_lifetimes               = "warn"
+unused_macro_rules             = "warn"

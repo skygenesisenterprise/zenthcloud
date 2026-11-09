@@ -1,0 +1,66 @@
+{
+  "name": "@cloudflare/forge",
+  "version": "0.1.0",
+  "description": "Generates SDKs from OpenAPI documents.",
+  "keywords": [
+    "codegen",
+    "openapi",
+    "plugin",
+    "sdk",
+    "typescript",
+    "wasm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cloudflare/forge.git",
+    "directory": "packages/forge"
+  },
+  "bin": {
+    "forge": "bin/forge.cjs",
+    "forge-plugin": "bin/forge-plugin.mjs"
+  },
+  "files": [
+    "bin",
+    "native",
+    "plugin"
+  ],
+  "type": "module",
+  "exports": {
+    "./plugin": {
+      "types": "./plugin/index.d.ts",
+      "default": "./plugin/index.js"
+    },
+    "./ts": {
+      "types": "./plugin/ts.d.ts",
+      "default": "./plugin/ts.js"
+    },
+    "./plugin/forge.wit": "./plugin/forge.wit",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "wit": "node scripts/wit.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/build.mjs && tsc -p test && node --test \"test/*.test.js\"",
+    "archive": "node scripts/archive.mjs",
+    "sync-version": "node scripts/version.mjs",
+    "prepack": "node -e \"console.error('error: this directory has no binaries; pack the package with just pack from the repository root'); process.exit(1)\""
+  },
+  "devDependencies": {
+    "@bytecodealliance/jco": "1.37.0",
+    "typescript": "7.0.2"
+  },
+  "peerDependencies": {
+    "@bytecodealliance/jco": "^1.37.0"
+  },
+  "peerDependenciesMeta": {
+    "@bytecodealliance/jco": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

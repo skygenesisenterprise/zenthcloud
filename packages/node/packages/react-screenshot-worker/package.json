@@ -13,7 +13,7 @@
     "lint": "vp lint src/"
   },
   "dependencies": {
-    "@zenthcloud/puppeteer": "^1.0.0",
+    "@zenthcloud/puppeteer": "npm:@cloudflare/puppeteer@^1.0.0",
     "hono": "^4.13.5"
   },
   "devDependencies": {

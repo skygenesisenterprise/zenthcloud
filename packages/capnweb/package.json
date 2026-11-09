@@ -1,5 +1,5 @@
 {
-  "name": "capnweb",
+  "name": "@zenthcloud/capnweb",
   "version": "0.12.0",
   "description": "JavaScript/TypeScript-native RPC library with Promise Pipelining",
   "main": "dist/index.js",
@@ -50,8 +50,8 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
-    "@zenthcloud/vitest-pool-workers": "^0.12.10",
-    "@zenthcloud/workers-types": "^5.20260820.1",
+    "@zenthcloud/vitest-pool-workers": "npm:@cloudflare/vitest-pool-workers@^0.12.10",
+    "@zenthcloud/workers-types": "workspace:*",
     "@types/bun": "^1.2.0",
     "@types/ws": "^8.18.1",
     "@vitest/browser": "^3.2.7",

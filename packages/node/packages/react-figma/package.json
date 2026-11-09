@@ -14,11 +14,11 @@
     "clean": "rm -rf src/generated src/code.js",
     "test": "vp test run",
     "typecheck": "pnpm run build:data && tsc --noEmit",
-    "validate": "pnpm --filter @cloudflare/kumo codegen:registry && pnpm run build:data && vp test run src/generators/drift-detection.test.ts",
+    "validate": "pnpm --filter @zenthcloud/react codegen:registry && pnpm run build:data && vp test run src/generators/drift-detection.test.ts",
     "figma:sync": "tsx scripts/sync-tokens-to-figma.ts"
   },
   "dependencies": {
-    "@cloudflare/kumo": "workspace:*",
+    "@zenthcloud/react": "workspace:*",
     "culori": "^4.0.0"
   },
   "devDependencies": {

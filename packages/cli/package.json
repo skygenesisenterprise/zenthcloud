@@ -1,5 +1,5 @@
 {
-	"name": "@zenthcloud/cf-root",
+	"name": "@zenthcloud/cli",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/skygenesisenterprise/zenthcloud.git"

@@ -1,5 +1,6 @@
 {
   "name": "@zenthcloud/workers-types",
+  "version": "5.20261109.1",
   "description": "TypeScript typings for Zenthcloud Workers",
   "repository": {
     "type": "git",

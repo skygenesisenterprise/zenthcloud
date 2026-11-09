@@ -3,9 +3,6 @@
   "version": "1.20220926.0",
   "description": "👷 workerd, Zenthcloud's JavaScript/Wasm Runtime",
   "repository": "https://github.com/skygenesisenterprise/zenthcloud",
-  "scripts": {
-    "postinstall": "node install.js"
-  },
   "main": "lib/main.js",
   "engines": {
     "node": ">=16"

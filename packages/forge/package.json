@@ -1,0 +1,27 @@
+{
+  "name": "@zenthcloud/forge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint .",
+    "check": "pnpm format:check && pnpm lint",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm -r run test",
+    "test:e2e": "pnpm -r run test:e2e",
+    "build": "pnpm -r run build",
+    "generate:terraform-docs": "pnpm --filter cloudflare-terraform-docs generate --output ../cloudflare-api-site/src/generated/terraform-docs.json"
+  },
+  "devDependencies": {
+    "@types/node": "26.0.1",
+    "oxfmt": "0.71.0",
+    "oxlint": "1.86.0",
+    "pkg-pr-new": "0.0.91"
+  },
+  "engines": {
+    "node": ">=26.0.0"
+  },
+  "packageManager": "pnpm@12.11.2"
+}
