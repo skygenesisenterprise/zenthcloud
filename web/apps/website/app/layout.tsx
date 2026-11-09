@@ -1,44 +1,12 @@
-import clsx from "clsx";
 import type { Metadata } from "next";
 import { Inter, Lexend } from "next/font/google";
 import type { ReactNode } from "react";
 import "@/styles/tailwind.css";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
-import { zenthcloudTraffic } from "@/components/zenthcloudTraffic";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import { ThemeProvider, themeInitScript } from "@/components/site/ThemeProvider";
+import { SITE_URL } from "@/lib/domain/queries";
 
-type Props = {
-	children: ReactNode;
-};
-
-export const metadata: Metadata = {
-	metadataBase: new URL("https://zenthcloud.com"),
-	title: {
-		default:
-			"zenthcloud - The open-source infrastructure platform for deploying and operating applications",
-		template: "%s | zenthcloud",
-	},
-	description:
-		"zenthcloud is an open-source infrastructure platform. Deploy applications, databases and Compose projects, manage servers and clusters, and handle routing, certificates and backups — self-hosted with zenthcloud Self or managed with zenthcloud Cloud.",
-	icons: {
-		icon: "/icon.svg",
-		apple: "/apple-touch-icon.png",
-	},
-	openGraph: {
-		title: "zenthcloud - The open-source infrastructure platform",
-		description:
-			"Deploy applications, databases and Compose projects, manage servers and clusters, and handle routing, certificates and backups — self-hosted with zenthcloud Self or managed with zenthcloud Cloud.",
-		images: "/og.png",
-		type: "website",
-	},
-	twitter: {
-		card: "summary_large_image",
-		title: "zenthcloud - The open-source infrastructure platform",
-		description:
-			"Deploy applications, databases and Compose projects, manage servers and clusters, and handle routing, certificates and backups — self-hosted with zenthcloud Self or managed with zenthcloud Cloud.",
-		images: ["/og.png"],
-	},
-};
 const inter = Inter({
 	subsets: ["latin"],
 	display: "swap",
@@ -50,34 +18,68 @@ const lexend = Lexend({
 	display: "swap",
 	variable: "--font-lexend",
 });
-// Since we have a `not-found.tsx` page on the root, a layout file
-// is required, even if it's just passing children through.
+
+export const metadata: Metadata = {
+	metadataBase: new URL(SITE_URL),
+	title: {
+		default: "ZenthCloud — Cloud infrastructure. Without boundaries.",
+		template: "%s | ZenthCloud",
+	},
+	description:
+		"Hybrid cloud infrastructure from ZenthCloud: compute, storage, networking, managed services and hosting on owned and partner infrastructure. Availability and pricing published per product and region.",
+	applicationName: "ZenthCloud",
+	icons: {
+		icon: "/icon.svg",
+		apple: "/apple-touch-icon.png",
+	},
+	openGraph: {
+		title: "ZenthCloud — Cloud infrastructure. Without boundaries.",
+		description:
+			"Compute, storage, networking and managed services on owned and partner infrastructure. European roots. Global ambitions.",
+		url: SITE_URL,
+		siteName: "ZenthCloud",
+		locale: "en_GB",
+		type: "website",
+		images: "/og.png",
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "ZenthCloud — Cloud infrastructure. Without boundaries.",
+		description:
+			"Hybrid cloud infrastructure with availability published per product and region.",
+		images: ["/og.png"],
+	},
+};
+
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
 		<html
 			lang="en"
-			className={clsx(
-				"h-full scroll-smooth antialiased",
-				inter.variable,
-				lexend.variable,
-			)}
+			className={`${inter.variable} ${lexend.variable}`}
+			suppressHydrationWarning
 		>
+			<head>
+				<script
+					// Applies the stored theme before first paint.
+					dangerouslySetInnerHTML={{ __html: themeInitScript }}
+				/>
+			</head>
 			<body>
-				{/* Traffic Manager instrumentation (no-op without the env vars). */}
-				<zenthcloudTraffic />
-				<a
-					href="#main-content"
-					className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
-				>
-					Skip to content
-				</a>
-				<div className="flex h-full flex-col">
-					<Header />
-					<div id="main-content" tabIndex={-1}>
-						{children}
+				<ThemeProvider>
+					<a
+						href="#main-content"
+						className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
+					>
+						Skip to content
+					</a>
+					<div className="flex min-h-svh flex-col">
+						<SiteHeader />
+						<main id="main-content" tabIndex={-1} className="flex-1">
+							{children}
+						</main>
+						<SiteFooter />
 					</div>
-					<Footer />
-				</div>
+				</ThemeProvider>
 			</body>
 		</html>
 	);

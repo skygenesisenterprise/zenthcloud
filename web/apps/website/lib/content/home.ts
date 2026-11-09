@@ -1,272 +1,111 @@
-/**
- * Homepage content.
- *
- * Copy follows the positioning decided in REDESIGN.md: zenthcloud is a platform
- * to deploy, operate and control services, run either on infrastructure you
- * control (Self) or as a managed platform (Cloud). European development is
- * stated as a fact about the team, not as a sovereignty guarantee.
- */
+export type FaqEntry = { question: string; answer: string };
 
-export interface LifecycleStep {
-	step: string;
-	title: string;
-	description: string;
-}
+export const homeHero = {
+	eyebrow: "European roots. Global ambitions.",
+	title: "Cloud infrastructure.",
+	highlight: "Without boundaries.",
+	description:
+		"Compute, storage, networking and managed services on owned and partner infrastructure. One catalogue, one commercial model, and availability published per product and region.",
+	primaryCta: { href: "/products", label: "Explore the catalogue" },
+	secondaryCta: { href: "/contact-sales", label: "Talk to sales" },
+} as const;
 
-export const lifecycle: LifecycleStep[] = [
+export const valueProps = [
 	{
-		step: "01",
-		title: "Infrastructure",
+		title: "Infrastructure flexibility",
 		description:
-			"A Linux server, a homelab machine, a VPS or a Docker Swarm cluster — the machines you already run.",
+			"Run on capacity operated by ZenthCloud or supplied by a partner. The catalogue labels which is which, and a product page never hardcodes its supplier.",
 	},
 	{
-		step: "02",
-		title: "Platform",
+		title: "Operational transparency",
 		description:
-			"zenthcloud installs on that infrastructure and becomes the control plane: deployments, routing, certificates, secrets, backups and monitoring.",
+			"Every product states its commercial state and its regional availability. Prices stay unpublished until approved, instead of being replaced by a placeholder number.",
 	},
 	{
-		step: "03",
-		title: "Services",
+		title: "A consistent cloud experience",
 		description:
-			"Applications from Git or Docker, Compose stacks, databases and scheduled jobs — running where you decided they should run.",
+			"Six product families share one navigation, one availability model and one commercial vocabulary — from a first instance to a private estate.",
 	},
-];
+] as const;
 
-export interface AudiencePath {
-	title: string;
-	description: string;
-	href: string;
-	cta: string;
-}
+export const hybridPoints = [
+	{
+		title: "Owned infrastructure",
+		description:
+			"Facilities and capacity operated directly by ZenthCloud. Availability entries reference the owned provider and say so in the interface.",
+	},
+	{
+		title: "Partner infrastructure",
+		description:
+			"Capacity from external providers, integrated into the same catalogue. Partner facilities are never presented as ZenthCloud-owned, and the provider of record is named before purchase.",
+	},
+	{
+		title: "Independent product data",
+		description:
+			"Products are modelled without a supplier. Changing infrastructure provider is a data change to availability entries, not a rebuild of the website.",
+	},
+] as const;
 
-export const audiencePaths: AudiencePath[] = [
+export const developerPoints = [
 	{
-		title: "Personal & homelab",
+		title: "API-first resources",
 		description:
-			"Host the applications and services you actually use, on hardware you already own. Start with one server and grow at your own pace.",
-		href: "/self",
-		cta: "Start with Self",
+			"Instances, volumes, networks and managed services are API resources. The public reference documents what exists.",
+		href: "/resources/api",
+		linkLabel: "API reference",
 	},
 	{
-		title: "Developers & small teams",
+		title: "Explicit limits",
 		description:
-			"Deploy from Git, keep logs, rollbacks and environments, and stop stitching five separate tools together.",
-		href: "/platform",
-		cta: "See the platform",
+			"Attachment rules, resize behaviour and region scope are written down per product rather than discovered in a ticket.",
+		href: "/resources/documentation",
+		linkLabel: "Documentation",
 	},
 	{
-		title: "Businesses & organisations",
+		title: "No hidden orchestration",
 		description:
-			"Repeatable deployments, access control, audit trails and support for teams that answer to someone.",
-		href: "/enterprise",
-		cta: "zenthcloud for teams",
+			"ZenthCloud provides the infrastructure primitives. Your deployment tooling, CI and observability remain yours.",
+		href: "/solutions/developers",
+		linkLabel: "For developers",
 	},
-];
+] as const;
 
-export interface EditionOption {
-	name: string;
-	operator: string;
-	description: string;
-	bullets: string[];
-	cta: string;
-	href: string;
-}
-
-export const editionOptions: EditionOption[] = [
+export const homeFaqs: FaqEntry[] = [
 	{
-		name: "zenthcloud Self",
-		operator: "You operate the platform",
-		description:
-			"Install zenthcloud on the servers you control. You decide the upgrades, the network boundaries, the backups and who has access.",
-		bullets: [
-			"Free and open source (Apache-2.0)",
-			"Runs on any Linux server with Docker",
-			"Data, secrets and backups stay in your boundary",
-			"Start on one server, add nodes when you need them",
-		],
-		cta: "Install zenthcloud",
-		href: "/self",
-	},
-	{
-		name: "zenthcloud Cloud",
-		operator: "zenthcloud operates the platform",
-		description:
-			"The control plane is hosted, monitored and upgraded by zenthcloud. Your workloads stay on the servers you connect.",
-		bullets: [
-			"Nothing to install to get started",
-			"Upgrades and monitoring handled for you",
-			"Your applications and data stay yours",
-			"Same product as Self, different operating model",
-		],
-		cta: "Explore zenthcloud Cloud",
-		href: "/cloud",
-	},
-];
-
-export interface CapabilityGroup {
-	title: string;
-	description: string;
-}
-
-export const capabilityGroups: CapabilityGroup[] = [
-	{
-		title: "Workloads",
-		description:
-			"Applications from Git or Docker images, Docker Compose stacks, databases and scheduled jobs.",
-	},
-	{
-		title: "Infrastructure",
-		description:
-			"One server or several, remote hosts over SSH, Docker Swarm clusters, volumes and registries.",
-	},
-	{
-		title: "Operations",
-		description:
-			"Deployment history and rollback, logs, metrics, backups and restore workflows.",
-	},
-	{
-		title: "Networking",
-		description:
-			"Domains, Traefik routing, TLS certificates and internal service networks.",
-	},
-	{
-		title: "Access",
-		description:
-			"Organisations, roles, API keys, single sign-on and audit logs where available.",
-	},
-	{
-		title: "Automation",
-		description:
-			"REST API, CLI, SDK, webhooks, MCP and CI integration for everything you do in the dashboard.",
-	},
-];
-
-export interface Principle {
-	title: string;
-	description: string;
-	href?: string;
-	linkLabel?: string;
-}
-
-export const principles: Principle[] = [
-	{
-		title: "Self-hosting first",
-		description:
-			"The default is software you install and keep. zenthcloud Cloud is an option, not a requirement.",
-	},
-	{
-		title: "Open source",
-		description:
-			"Apache-2.0. The source, the issues and the release notes are public.",
-	},
-	{
-		title: "Control stays with you",
-		description:
-			"Data, backups, network boundaries and upgrade timing are your decisions.",
-	},
-	{
-		title: "Transparent dependencies",
-		description:
-			"Docker, Compose, Traefik and Swarm — standard tools you can inspect, replace and take with you.",
-	},
-	{
-		title: "European development",
-		description:
-			"zenthcloud is developed by a European team. We say what that means, and what it does not guarantee, instead of trading on the label.",
-	},
-];
-
-export interface ResourceLink {
-	label: string;
-	description: string;
-	href: string;
-	external?: boolean;
-}
-
-export const resources: ResourceLink[] = [
-	{
-		label: "Documentation",
-		description: "Installation, architecture and reference.",
-		href: "https://docs.zenthcloud.com/docs/core",
-		external: true,
-	},
-	{
-		label: "Installation guide",
-		description: "Prerequisites and the one-command install.",
-		href: "https://docs.zenthcloud.com/docs/core/installation",
-		external: true,
-	},
-	{
-		label: "Source code",
-		description: "Apache-2.0 repository, issues and releases.",
-		href: "https://github.com/skygenesisenterprise/zenthcloud",
-		external: true,
-	},
-	{
-		label: "Feature matrix",
-		description: "What is available today, and what is not.",
-		href: "https://docs.zenthcloud.com/docs/core/feature-matrix",
-		external: true,
-	},
-	{
-		label: "Service status",
-		description: "Availability of the hosted services.",
-		href: "https://status.zenthcloud.com",
-		external: true,
-	},
-	{
-		label: "Community",
-		description: "Discussions, Discord and contribution guide.",
-		href: "/community",
-	},
-];
-
-export interface HomeFaq {
-	question: string;
-	answer: string;
-}
-
-export const homeFaqs: HomeFaq[] = [
-	{
-		question: "What is zenthcloud?",
+		question: "Can I order every product shown on the website?",
 		answer:
-			"zenthcloud is a platform for deploying, operating and controlling application services. It runs on infrastructure you control with zenthcloud Self, or as a managed platform with zenthcloud Cloud.",
+			"No. The catalogue is complete by design, but each product carries a commercial state — available, coming soon, contact sales or partner service — and a per-region availability table. A product marked coming soon cannot be ordered and no launch date is implied.",
 	},
 	{
-		question: "Is zenthcloud only for self-hosting?",
+		question: "Are prices final?",
 		answer:
-			"No. Self-hosting is the default way to run zenthcloud, and zenthcloud Cloud is the managed option. Both use the same platform — what changes is who operates the control plane.",
+			"No commercial price is published yet. Pricing plans exist in the data model, but every plan is in draft and shows “Price not published”. We do not display placeholder prices that could be mistaken for an offer.",
 	},
 	{
-		question: "What do I need to run zenthcloud Self?",
+		question: "Does ZenthCloud own all of its infrastructure?",
 		answer:
-			"A Linux server with Docker: a small VPS, a homelab machine or bare metal. Windows Server is supported through the PowerShell installer. The documentation lists prerequisites and supported environments.",
+			"No. ZenthCloud operates a hybrid model: owned infrastructure plus partner infrastructure. Products delivered on partner capacity are labelled “Partner service”, and the operating provider is named in the contract for that product and region.",
 	},
 	{
-		question: "Do I need Kubernetes?",
+		question: "Where are the regions located?",
 		answer:
-			"No. zenthcloud is built on Docker, with Docker Swarm for multi-node deployments and Traefik for routing and certificates.",
+			"The catalogue currently models a European Union core region and a partner network. Both carry a pending verification state, so no city or facility address is claimed on this website. Verified locations will be listed with their operating entity.",
 	},
 	{
-		question: "What can I deploy?",
+		question: "Is there an SLA or certification?",
 		answer:
-			"Applications built from a Git repository or a Docker image, Docker Compose projects, supported databases and scheduled jobs. Runtime and integration support is listed in the documentation.",
+			"None is claimed on this website. An SLA applies only where a signed contract states one, and a certification is listed only with its scope, issuing body and validity period.",
 	},
 	{
-		question: "Can I start on one server and add more later?",
+		question: "How do I get access?",
 		answer:
-			"Yes. Start with the local server, then add remote servers over SSH and group them into a Swarm cluster. Multi-node distributes workloads across nodes; it is not automatic high availability.",
+			"Public self-service onboarding is not open yet. Request access or contact sales with the products and region you are targeting. Existing customers sign in through the console.",
 	},
-	{
-		question: "Is zenthcloud free?",
-		answer:
-			"zenthcloud Self is free and open source under Apache-2.0, so you pay only for your infrastructure. zenthcloud Cloud is a paid managed service, and a commercial Enterprise offer adds governance features and support.",
-	},
-	{
-		question: "How do I get started?",
-		answer:
-			"Run the install command above on a Linux or Windows Server host, or explore zenthcloud Cloud if you would rather not operate the control plane. The documentation walks through the first deployment.",
-	},
-];
+] as const;
+
+export const trustPoints = [
+	"Owned and partner infrastructure are labelled separately.",
+	"No certification, uptime or residency claim without evidence.",
+	"Prices are either published and approved, or explicitly not published.",
+	"Product pages describe limits, not just capabilities.",
+] as const;

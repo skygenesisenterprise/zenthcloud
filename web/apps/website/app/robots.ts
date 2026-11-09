@@ -1,6 +1,6 @@
+import { SITE_URL } from "@/lib/domain/queries";
 import type { MetadataRoute } from "next";
 
-// Required for `output: "export"` (GitHub Pages).
 export const dynamic = "force-static";
 
 export default function robots(): MetadataRoute.Robots {
@@ -8,7 +8,9 @@ export default function robots(): MetadataRoute.Robots {
 		rules: {
 			userAgent: "*",
 			allow: "/",
+			disallow: ["/api/"],
 		},
-		sitemap: ["https://zenthcloud.com/sitemap.xml", "https://zenthcloud.com/llms.txt"],
+		sitemap: `${SITE_URL}/sitemap.xml`,
+		host: SITE_URL,
 	};
 }

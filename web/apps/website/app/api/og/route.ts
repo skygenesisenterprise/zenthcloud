@@ -1,30 +1,18 @@
 import { generateOGImage } from "@/lib/og-image";
-import { getTemplate } from "@/lib/templates.server";
 import type { NextRequest } from "next/server";
 
+export const runtime = "nodejs";
+
+const DEFAULT_TITLE = "Cloud infrastructure. Without boundaries.";
+
 export async function GET(request: NextRequest) {
+	const { searchParams } = new URL(request.url);
+	const title = (searchParams.get("title")?.trim() || DEFAULT_TITLE).slice(0, 90);
+	const eyebrow = (searchParams.get("eyebrow")?.trim() || "ZenthCloud").slice(0, 40);
+
 	try {
-		const { searchParams } = new URL(request.url);
-		const templateId = searchParams.get("template");
-
-		if (!templateId) {
-			console.error("Missing template parameter");
-			return new Response("Missing template parameter", { status: 400 });
-		}
-
-		const template = await getTemplate(templateId);
-
-		if (!template) {
-			console.error("Template not found:", templateId);
-			return new Response("Template not found", { status: 404 });
-		}
-
-		const ogImage = await generateOGImage({
-			title: `Deploy ${template.name} on Notploy`,
-			label: "Notploy - Open Source Templates",
-		});
-
-		return new Response(new Uint8Array(ogImage), {
+		const png = await generateOGImage({ title, eyebrow });
+		return new Response(new Uint8Array(png), {
 			headers: {
 				"Content-Type": "image/png",
 				"Cache-Control": "public, max-age=86400, stale-while-revalidate",
@@ -32,6 +20,6 @@ export async function GET(request: NextRequest) {
 		});
 	} catch (error) {
 		console.error("Error generating OG image:", error);
-		return new Response(`Error generating image: ${error}`, { status: 500 });
+		return new Response("Unable to generate image", { status: 500 });
 	}
 }

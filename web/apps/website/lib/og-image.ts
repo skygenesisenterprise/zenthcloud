@@ -5,22 +5,24 @@ import sharp from "sharp";
 
 interface GenerateOGImageOptions {
 	title: string;
-	label?: string;
+	eyebrow?: string;
 }
 
-const ZENTHCLOUD_WORDMARK = {
-	type: "div",
-	props: {
-		style: { fontSize: "140px", fontWeight: 700, color: "#ffffff", opacity: 0.12 },
-		children: "Notploy",
-	},
-};
+/** Official palette for generated visual assets (sRGB hex, exported). */
+export const OG_PALETTE = {
+	ink: "#0B1526",
+	surface: "#101E36",
+	white: "#F7F9FC",
+	muted: "#93A4BD",
+	signal: "#6E9BFF",
+} as const;
+
+const LINE = `${OG_PALETTE.white}22`;
 
 export async function generateOGImage({
 	title,
-	label = "Notploy",
+	eyebrow = "ZenthCloud",
 }: GenerateOGImageOptions): Promise<Buffer> {
-	// Cargar la fuente
 	const interRegular = await fs.readFile(
 		join(process.cwd(), "public/fonts/Inter-Regular.ttf"),
 	);
@@ -28,7 +30,6 @@ export async function generateOGImage({
 		join(process.cwd(), "public/fonts/Inter-Bold.ttf"),
 	);
 
-	// Crear el markup para la imagen OG
 	const markup = {
 		type: "div",
 		props: {
@@ -37,71 +38,159 @@ export async function generateOGImage({
 				width: "100%",
 				display: "flex",
 				flexDirection: "column",
-				alignItems: "flex-start",
-				justifyContent: "center",
-				backgroundColor: "#000000",
-				padding: "80px",
+				justifyContent: "space-between",
+				backgroundColor: OG_PALETTE.ink,
+				padding: "64px",
 				position: "relative",
 				overflow: "hidden",
+				fontFamily: "Inter",
 			},
 			children: [
+				// Boundary motif, right edge.
 				{
 					type: "div",
 					props: {
 						style: {
 							position: "absolute",
-							left: "80px",
-							top: "40px",
-							fontSize: "32px",
-							fontWeight: 700,
-							color: "#fff",
-							zIndex: 1,
-						},
-						children: label,
-					},
-				},
-				{
-					type: "div",
-					props: {
-						style: {
-							position: "absolute",
-							right: "-50px",
-							bottom: "-50px",
-							width: "500px",
-							height: "500px",
-							opacity: 0.1,
+							right: "-80px",
+							top: "-40px",
+							width: "460px",
+							height: "460px",
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
-							transform: "rotate(-10deg)",
-							color: "#ffffff",
-						},
-						children: ZENTHCLOUD_WORDMARK,
-					},
-				},
-				{
-					type: "div",
-					props: {
-						style: {
-							display: "flex",
-							flexDirection: "column",
-							gap: "24px",
-							position: "relative",
-							zIndex: 1,
 						},
 						children: [
 							{
 								type: "div",
 								props: {
 									style: {
-										fontSize: "64px",
-										fontWeight: 700,
-										color: "#fff",
-										lineHeight: 1.2,
-										maxWidth: "900px",
+										position: "absolute",
+										width: "440px",
+										height: "340px",
+										border: `1px solid ${OG_PALETTE.white}1f`,
+										borderRadius: "18px",
 									},
-									children: title,
 								},
+							},
+							{
+								type: "div",
+								props: {
+									style: {
+										position: "absolute",
+										width: "310px",
+										height: "235px",
+										border: `1px solid ${OG_PALETTE.white}14`,
+										borderRadius: "14px",
+									},
+								},
+							},
+							{
+								type: "div",
+								props: {
+									style: {
+										position: "absolute",
+										width: "150px",
+										height: "150px",
+										borderRadius: "75px",
+										backgroundColor: OG_PALETTE.signal,
+										opacity: 0.16,
+									},
+								},
+							},
+						],
+					},
+				},
+				// Header
+				{
+					type: "div",
+					props: {
+						style: {
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "space-between",
+							paddingBottom: "20px",
+							borderBottom: `1px solid ${LINE}`,
+							position: "relative",
+						},
+						children: [
+							{
+								type: "div",
+								props: {
+									style: {
+										display: "flex",
+										alignItems: "center",
+										gap: "14px",
+										fontSize: "22px",
+										fontWeight: 700,
+										letterSpacing: "0.16em",
+										color: OG_PALETTE.white,
+									},
+									children: [
+										{
+											type: "div",
+											props: {
+												style: {
+													width: "12px",
+													height: "12px",
+													borderRadius: "6px",
+													backgroundColor: OG_PALETTE.signal,
+												},
+											},
+										},
+										{ type: "div", props: { children: eyebrow.toUpperCase() } },
+									],
+								},
+							},
+							{
+								type: "div",
+								props: {
+									style: {
+										fontSize: "18px",
+										color: OG_PALETTE.muted,
+									},
+									children: "Cloud infrastructure. Without boundaries.",
+								},
+							},
+						],
+					},
+				},
+				// Title
+				{
+					type: "div",
+					props: {
+						style: {
+							display: "flex",
+							maxWidth: "860px",
+							fontSize: "62px",
+							fontWeight: 700,
+							lineHeight: 1.12,
+							letterSpacing: "-0.03em",
+							color: OG_PALETTE.white,
+							position: "relative",
+						},
+						children: title,
+					},
+				},
+				// Footer
+				{
+					type: "div",
+					props: {
+						style: {
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "space-between",
+							paddingTop: "20px",
+							borderTop: `1px solid ${LINE}`,
+							fontSize: "18px",
+							color: OG_PALETTE.muted,
+							position: "relative",
+						},
+						children: [
+							{ type: "div", props: { children: "zenthcloud.com" } },
+							{
+								type: "div",
+								props: { children: "European roots. Global ambitions." },
 							},
 						],
 					},
@@ -110,28 +199,14 @@ export async function generateOGImage({
 		},
 	};
 
-	// Generar SVG con Satori
-	const svg = await satori(markup as any, {
+	const svg = await satori(markup as Parameters<typeof satori>[0], {
 		width: 1200,
 		height: 630,
 		fonts: [
-			{
-				name: "Inter",
-				data: interRegular,
-				weight: 400,
-				style: "normal",
-			},
-			{
-				name: "Inter",
-				data: interBold,
-				weight: 700,
-				style: "normal",
-			},
+			{ name: "Inter", data: interRegular, weight: 400, style: "normal" },
+			{ name: "Inter", data: interBold, weight: 700, style: "normal" },
 		],
 	});
 
-	// Convertir SVG a PNG
-	const png = await sharp(Buffer.from(svg)).png().toBuffer();
-
-	return png;
+	return sharp(Buffer.from(svg)).png().toBuffer();
 }

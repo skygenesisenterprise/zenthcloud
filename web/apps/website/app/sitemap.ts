@@ -1,98 +1,41 @@
-import { coreSitePages } from "@/lib/site-navigation";
-import { getTemplates } from "@/lib/templates.server";
+import { companyPages, infrastructurePages, resourcePages, solutions } from "@/lib/content/pages";
+import { legalDocuments } from "@/lib/content/legal";
+import { pricingCategories } from "@/lib/content/pricing";
+import { getAllProducts, SITE_URL } from "@/lib/domain/queries";
 import type { MetadataRoute } from "next";
 
-// Required for `output: "export"` (GitHub Pages).
 export const dynamic = "force-static";
 
-const BASE_URL = "https://zenthcloud.com";
-
-const featurePages = [
-	"/features/application-deployment-platform",
-	"/features/application-management-software",
-	"/features/database-management-tool",
-	"/features/security",
-	"/features/role-based-access-control",
-	"/features/single-sign-on",
-	"/features/audit-logs",
-	"/features/white-labeling",
-];
-
-const comparisonPages = [
-	"/comparison",
-	"/zenthcloud-vs-coolify",
-	"/zenthcloud-vs-portainer",
-	"/zenthcloud-vs-caprover",
-	"/zenthcloud-vs-dokku",
-	"/zenthcloud-vs-render",
-	"/zenthcloud-vs-vercel",
-];
-
-const industryPages = [
-	"/industries",
-	"/industries/finance-banking",
-	"/industries/agencies",
-	"/industries/healthcare",
-	"/industries/government",
-	"/industries/manufacturing",
-	"/industries/pharmaceuticals",
-	"/industries/higher-education",
-];
-
-const legalPages = ["/terms-of-service", "/privacy"];
-
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-	const templates = await getTemplates();
+export default function sitemap(): MetadataRoute.Sitemap {
 	const now = new Date();
+	const entry = (
+		path: string,
+		priority: number,
+		changeFrequency: "weekly" | "monthly" | "yearly" = "monthly",
+	) => ({
+		url: `${SITE_URL}${path}`,
+		lastModified: now,
+		changeFrequency,
+		priority,
+	});
 
 	return [
-		{
-			url: BASE_URL,
-			lastModified: now,
-			changeFrequency: "monthly",
-			priority: 1,
-		},
-		...coreSitePages.map(({ path, priority }) => ({
-			url: `${BASE_URL}${path}`,
-			lastModified: now,
-			changeFrequency: "monthly" as const,
-			priority,
-		})),
-		...featurePages.map((path) => ({
-			url: `${BASE_URL}${path}`,
-			lastModified: now,
-			changeFrequency: "monthly" as const,
-			priority: 0.7,
-		})),
-		...comparisonPages.map((path) => ({
-			url: `${BASE_URL}${path}`,
-			lastModified: now,
-			changeFrequency: "monthly" as const,
-			priority: 0.6,
-		})),
-		...industryPages.map((path) => ({
-			url: `${BASE_URL}${path}`,
-			lastModified: now,
-			changeFrequency: "monthly" as const,
-			priority: 0.7,
-		})),
-		...legalPages.map((path) => ({
-			url: `${BASE_URL}${path}`,
-			lastModified: now,
-			changeFrequency: "yearly" as const,
-			priority: 0.3,
-		})),
-		{
-			url: `${BASE_URL}/templates`,
-			lastModified: now,
-			changeFrequency: "weekly" as const,
-			priority: 0.8,
-		},
-		...templates.map((template) => ({
-			url: `${BASE_URL}/templates/${template.id}`,
-			lastModified: now,
-			changeFrequency: "weekly" as const,
-			priority: 0.7,
-		})),
+		entry("/", 1, "weekly"),
+		entry("/products", 0.9, "weekly"),
+		entry("/products/public-cloud", 0.9),
+		...getAllProducts().map((product) => entry(product.route, 0.8, "weekly")),
+		entry("/solutions", 0.8),
+		...solutions.map((solution) => entry(solution.path, 0.75)),
+		entry("/pricing", 0.9),
+		...pricingCategories.map((category) => entry(`/pricing/${category.slug}`, 0.8)),
+		entry("/infrastructure", 0.8),
+		...infrastructurePages.map((page) => entry(page.path, 0.75)),
+		entry("/resources", 0.7),
+		...resourcePages.map((page) => entry(page.path, 0.65)),
+		entry("/company", 0.6),
+		...companyPages.map((page) => entry(page.path, 0.55)),
+		entry("/contact-sales", 0.7),
+		entry("/legal/terms", 0.3, "yearly"),
+		...legalDocuments.map((document) => entry(`/legal/${document.slug}`, 0.3, "yearly")),
 	];
 }
